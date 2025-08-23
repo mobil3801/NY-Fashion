@@ -3,7 +3,7 @@
 function connectionPool(operation, options = {}) {
   const startTime = Date.now();
   const operationId = `pool_${operation}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+
   console.log(`[POOL] ${operation} operation started:`, { operationId });
 
   // Simulate advanced connection pool
@@ -30,12 +30,12 @@ function connectionPool(operation, options = {}) {
   };
 
   poolStats.idleConnections = poolStats.totalConnections - poolStats.activeConnections;
-  poolStats.poolUtilization = (poolStats.activeConnections / poolStats.totalConnections) * 100;
+  poolStats.poolUtilization = poolStats.activeConnections / poolStats.totalConnections * 100;
 
   try {
     // Connection acquisition simulation
     const acquisitionTime = Math.random() * 100 + 50; // 50-150ms
-    
+
     // Check pool health
     const poolHealth = {
       status: 'healthy',
@@ -81,7 +81,7 @@ function connectionPool(operation, options = {}) {
 
     // Update pool statistics
     poolStats.acquiredConnections++;
-    
+
     const result = {
       success: true,
       operationId,
@@ -109,7 +109,7 @@ function connectionPool(operation, options = {}) {
       poolStats.releasedConnections++;
       poolStats.activeConnections = Math.max(0, poolStats.activeConnections - 1);
       poolStats.idleConnections = poolStats.totalConnections - poolStats.activeConnections;
-      
+
       console.log(`[POOL] Connection released:`, {
         operationId,
         connectionId: result.connectionInfo.connectionId,
@@ -167,7 +167,7 @@ function analyzeQuery(operation, options = {}) {
   // Query pattern analysis
   if (operation.includes('select')) {
     analysis.optimizations.push('Read operation detected - using read replica if available');
-    
+
     if (!options.limit) {
       analysis.warnings.push('No LIMIT clause detected - consider pagination for large result sets');
       analysis.performanceTips.push('Add LIMIT clause to prevent memory issues');
@@ -181,7 +181,7 @@ function analyzeQuery(operation, options = {}) {
 
   if (operation.includes('insert') || operation.includes('update') || operation.includes('delete')) {
     analysis.optimizations.push('Write operation detected - using primary database connection');
-    
+
     if (operation.includes('batch')) {
       analysis.optimizations.push('Batch operation detected - using transaction for consistency');
     }
@@ -190,7 +190,7 @@ function analyzeQuery(operation, options = {}) {
   // Index recommendations based on common patterns
   if (options.whereClause) {
     const whereColumns = extractColumnsFromWhere(options.whereClause);
-    whereColumns.forEach(column => {
+    whereColumns.forEach((column) => {
       analysis.indexRecommendations.push(`Consider adding index on column: ${column}`);
     });
   }
@@ -214,8 +214,8 @@ function extractColumnsFromWhere(whereClause) {
   // Simple extraction - in real implementation, use proper SQL parsing
   const columns = [];
   const matches = whereClause.match(/(\w+)\s*[=<>]/g) || [];
-  
-  matches.forEach(match => {
+
+  matches.forEach((match) => {
     const column = match.replace(/\s*[=<>].*/, '').trim();
     if (column && !columns.includes(column)) {
       columns.push(column);

@@ -18,8 +18,8 @@ async function updateUploadProgress(sessionId, completedFiles, failedFiles, stat
     }
 
     const current = currentResult[0];
-    const newCompleted = (completedFiles !== undefined) ? completedFiles : current.completed_files;
-    const newFailed = (failedFiles !== undefined) ? failedFiles : current.failed_files;
+    const newCompleted = completedFiles !== undefined ? completedFiles : current.completed_files;
+    const newFailed = failedFiles !== undefined ? failedFiles : current.failed_files;
 
     // Determine status if not provided
     let newStatus = status;
@@ -45,19 +45,19 @@ async function updateUploadProgress(sessionId, completedFiles, failedFiles, stat
     `;
 
     const result = await window.ezsite.db.query(updateQuery, [
-      newCompleted,
-      newFailed,
-      newStatus,
-      sessionId
-    ]);
+    newCompleted,
+    newFailed,
+    newStatus,
+    sessionId]
+    );
 
     if (!result || result.length === 0) {
       throw new Error('Failed to update upload progress');
     }
 
     const updated = result[0];
-    const progress = updated.total_files > 0 ? 
-      Math.round((updated.completed_files / updated.total_files) * 100) : 0;
+    const progress = updated.total_files > 0 ?
+    Math.round(updated.completed_files / updated.total_files * 100) : 0;
 
     return {
       sessionId: sessionId,

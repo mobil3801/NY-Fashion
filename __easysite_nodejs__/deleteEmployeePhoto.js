@@ -12,7 +12,7 @@ async function deleteEmployeePhoto(photoId) {
       WHERE id = $1
     `;
     const photoResult = await window.ezsite.db.query(selectQuery, [parseInt(photoId)]);
-    
+
     if (!photoResult || photoResult.length === 0) {
       throw new Error('Photo ID not found');
     }
@@ -22,20 +22,20 @@ async function deleteEmployeePhoto(photoId) {
     // Delete files from storage if file IDs exist
     if (photo.front_file_id) {
       try {
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(photo.front_file_id);
-      } catch (error) {
-        console.warn('Could not delete front image from storage:', error.message);
-      }
+      } catch (error) {console.warn('Could not delete front image from storage:', error.message);}
     }
 
     if (photo.back_file_id) {
       try {
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(photo.back_file_id);
-      } catch (error) {
-        console.warn('Could not delete back image from storage:', error.message);
-      }
+      } catch (error) {console.warn('Could not delete back image from storage:', error.message);}
     }
 
     // Delete from database

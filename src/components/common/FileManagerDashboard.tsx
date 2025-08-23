@@ -6,16 +6,16 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  Image, 
-  Trash2, 
-  Download, 
-  RefreshCw, 
-  AlertTriangle, 
+import {
+  FileText,
+  Image,
+  Trash2,
+  Download,
+  RefreshCw,
+  AlertTriangle,
   CheckCircle,
-  Clock
-} from 'lucide-react';
+  Clock } from
+'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useLoadingState } from '@/hooks/use-loading-state';
 
@@ -54,10 +54,10 @@ const FileManagerDashboard: React.FC = () => {
       const invoicesQuery = `SELECT COUNT(*) as count, COALESCE(SUM(file_size), 0) as size FROM purchase_order_invoices`;
 
       const [productResult, employeeResult, invoiceResult] = await Promise.all([
-        window.ezsite.db.query(productImagesQuery),
-        window.ezsite.db.query(employeePhotosQuery),
-        window.ezsite.db.query(invoicesQuery)
-      ]);
+      window.ezsite.db.query(productImagesQuery),
+      window.ezsite.db.query(employeePhotosQuery),
+      window.ezsite.db.query(invoicesQuery)]
+      );
 
       const stats: FileStats = {
         totalFiles: (productResult[0]?.count || 0) + (employeeResult[0]?.count || 0) + (invoiceResult[0]?.count || 0),
@@ -108,7 +108,7 @@ const FileManagerDashboard: React.FC = () => {
       }
 
       setCleanupProgress(100);
-      
+
       toast({
         title: "Cleanup Complete",
         description: result.data.message
@@ -152,8 +152,8 @@ const FileManagerDashboard: React.FC = () => {
       <Badge variant={config.variant}>
         <Icon className="h-3 w-3 mr-1" />
         {config.text}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   useEffect(() => {
@@ -165,15 +165,15 @@ const FileManagerDashboard: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">File Management</h2>
-        <Button onClick={() => { loadFileStats(); loadUploadSessions(); }} disabled={loading}>
+        <Button onClick={() => {loadFileStats();loadUploadSessions();}} disabled={loading}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {/* File Statistics */}
-      {fileStats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {fileStats &&
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -211,7 +211,7 @@ const FileManagerDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      )}
+      }
 
       <Tabs defaultValue="sessions" className="w-full">
         <TabsList>
@@ -225,15 +225,15 @@ const FileManagerDashboard: React.FC = () => {
               <CardTitle>Recent Upload Sessions</CardTitle>
             </CardHeader>
             <CardContent>
-              {uploadSessions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+              {uploadSessions.length === 0 ?
+              <div className="text-center py-8 text-gray-500">
                   <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>No recent upload sessions</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {uploadSessions.map((session) => (
-                    <div key={session.session_id} className="border rounded-lg p-4">
+                </div> :
+
+              <div className="space-y-3">
+                  {uploadSessions.map((session) =>
+                <div key={session.session_id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <div className="font-medium">{session.upload_type.replace('_', ' ').toUpperCase()}</div>
@@ -253,21 +253,21 @@ const FileManagerDashboard: React.FC = () => {
                           <span>{session.completed_files} / {session.total_files} files</span>
                         </div>
                         
-                        <Progress 
-                          value={(session.completed_files / session.total_files) * 100} 
-                          className="h-2"
-                        />
+                        <Progress
+                      value={session.completed_files / session.total_files * 100}
+                      className="h-2" />
 
-                        {session.failed_files > 0 && (
-                          <div className="text-sm text-red-600">
+
+                        {session.failed_files > 0 &&
+                    <div className="text-sm text-red-600">
                             {session.failed_files} file(s) failed to upload
                           </div>
-                        )}
+                    }
                       </div>
                     </div>
-                  ))}
+                )}
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
         </TabsContent>
@@ -294,40 +294,40 @@ const FileManagerDashboard: React.FC = () => {
                   </p>
                 </div>
                 
-                <Button 
+                <Button
                   onClick={cleanupOrphanedFiles}
                   disabled={loading}
-                  variant="outline"
-                >
-                  {loading ? (
-                    <>
+                  variant="outline">
+
+                  {loading ?
+                  <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       Cleaning...
-                    </>
-                  ) : (
-                    <>
+                    </> :
+
+                  <>
                       <Trash2 className="h-4 w-4 mr-2" />
                       Start Cleanup
                     </>
-                  )}
+                  }
                 </Button>
               </div>
 
-              {cleanupProgress !== null && (
-                <div className="space-y-2">
+              {cleanupProgress !== null &&
+              <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Cleanup Progress</span>
                     <span>{cleanupProgress}%</span>
                   </div>
                   <Progress value={cleanupProgress} className="h-2" />
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default FileManagerDashboard;

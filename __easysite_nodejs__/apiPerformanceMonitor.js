@@ -36,7 +36,7 @@ function createAPIPerformanceMonitor() {
     // Track slow queries
     if (duration > metrics.alertThresholds.responseTime) {
       metrics.slowQueries.push(callData);
-      
+
       // Keep only last 100 slow queries
       if (metrics.slowQueries.length > 100) {
         metrics.slowQueries = metrics.slowQueries.slice(-100);
@@ -46,7 +46,7 @@ function createAPIPerformanceMonitor() {
     // Track errors
     if (!success && error) {
       metrics.errors.push(callData);
-      
+
       // Keep only last 100 errors
       if (metrics.errors.length > 100) {
         metrics.errors = metrics.errors.slice(-100);
@@ -61,40 +61,40 @@ function createAPIPerformanceMonitor() {
     return callData;
   }
 
-  function getPerformanceMetrics(timeWindow = 3600000) { // 1 hour default
+  function getPerformanceMetrics(timeWindow = 3600000) {// 1 hour default
     const now = Date.now();
     const cutoff = now - timeWindow;
-    
-    const recentRequests = metrics.requests.filter(req => req.timestamp >= cutoff);
-    const recentErrors = metrics.errors.filter(err => err.timestamp >= cutoff);
-    const recentSlowQueries = metrics.slowQueries.filter(sq => sq.timestamp >= cutoff);
+
+    const recentRequests = metrics.requests.filter((req) => req.timestamp >= cutoff);
+    const recentErrors = metrics.errors.filter((err) => err.timestamp >= cutoff);
+    const recentSlowQueries = metrics.slowQueries.filter((sq) => sq.timestamp >= cutoff);
 
     // Calculate metrics
     const totalRequests = recentRequests.length;
     const totalErrors = recentErrors.length;
-    const errorRate = totalRequests > 0 ? (totalErrors / totalRequests) : 0;
-    
-    const successfulRequests = recentRequests.filter(req => req.success);
-    const averageResponseTime = successfulRequests.length > 0 
-      ? successfulRequests.reduce((sum, req) => sum + req.duration, 0) / successfulRequests.length
-      : 0;
+    const errorRate = totalRequests > 0 ? totalErrors / totalRequests : 0;
 
-    const p95ResponseTime = calculatePercentile(successfulRequests.map(req => req.duration), 95);
-    const p99ResponseTime = calculatePercentile(successfulRequests.map(req => req.duration), 99);
+    const successfulRequests = recentRequests.filter((req) => req.success);
+    const averageResponseTime = successfulRequests.length > 0 ?
+    successfulRequests.reduce((sum, req) => sum + req.duration, 0) / successfulRequests.length :
+    0;
+
+    const p95ResponseTime = calculatePercentile(successfulRequests.map((req) => req.duration), 95);
+    const p99ResponseTime = calculatePercentile(successfulRequests.map((req) => req.duration), 99);
 
     // Group by endpoint
     const endpointMetrics = groupRequestsByEndpoint(recentRequests);
-    
+
     // Top slow endpoints
-    const slowEndpoints = Object.entries(endpointMetrics)
-      .map(([endpoint, data]) => ({
-        endpoint,
-        averageTime: data.averageTime,
-        requestCount: data.requestCount,
-        errorRate: data.errorRate
-      }))
-      .sort((a, b) => b.averageTime - a.averageTime)
-      .slice(0, 10);
+    const slowEndpoints = Object.entries(endpointMetrics).
+    map(([endpoint, data]) => ({
+      endpoint,
+      averageTime: data.averageTime,
+      requestCount: data.requestCount,
+      errorRate: data.errorRate
+    })).
+    sort((a, b) => b.averageTime - a.averageTime).
+    slice(0, 10);
 
     // Recent health status
     const healthStatus = getSystemHealth();
@@ -118,16 +118,16 @@ function createAPIPerformanceMonitor() {
 
   function calculatePercentile(values, percentile) {
     if (values.length === 0) return 0;
-    
+
     const sorted = values.sort((a, b) => a - b);
-    const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+    const index = Math.ceil(percentile / 100 * sorted.length) - 1;
     return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
   }
 
   function groupRequestsByEndpoint(requests) {
     const grouped = {};
-    
-    requests.forEach(req => {
+
+    requests.forEach((req) => {
       if (!grouped[req.endpoint]) {
         grouped[req.endpoint] = {
           requestCount: 0,
@@ -136,22 +136,22 @@ function createAPIPerformanceMonitor() {
           methods: new Set()
         };
       }
-      
+
       const group = grouped[req.endpoint];
       group.requestCount++;
       group.totalTime += req.duration;
       group.methods.add(req.method);
-      
+
       if (!req.success) {
         group.errors++;
       }
     });
 
     // Calculate derived metrics
-    Object.keys(grouped).forEach(endpoint => {
+    Object.keys(grouped).forEach((endpoint) => {
       const group = grouped[endpoint];
       group.averageTime = Math.round(group.totalTime / group.requestCount);
-      group.errorRate = Math.round((group.errors / group.requestCount) * 10000) / 100;
+      group.errorRate = Math.round(group.errors / group.requestCount * 10000) / 100;
       group.methods = Array.from(group.methods);
     });
 
@@ -161,11 +161,11 @@ function createAPIPerformanceMonitor() {
   function getSystemHealth() {
     try {
       // Basic system health indicators
-      const memoryUsage = typeof process !== 'undefined' && process.memoryUsage ? 
-        process.memoryUsage() : null;
-      
-      const uptime = typeof process !== 'undefined' && process.uptime ? 
-        process.uptime() : null;
+      const memoryUsage = typeof process !== 'undefined' && process.memoryUsage ?
+      process.memoryUsage() : null;
+
+      const uptime = typeof process !== 'undefined' && process.uptime ?
+      process.uptime() : null;
 
       return {
         status: 'healthy',
@@ -247,24 +247,24 @@ function createAPIPerformanceMonitor() {
     const now = Date.now();
     const cutoff = now - timeWindow;
 
-    const recentHealthChecks = metrics.healthChecks.filter(hc => hc.timestamp >= cutoff);
-    
+    const recentHealthChecks = metrics.healthChecks.filter((hc) => hc.timestamp >= cutoff);
+
     return {
       ...performanceMetrics,
       healthChecks: {
         total: recentHealthChecks.length,
-        successful: recentHealthChecks.filter(hc => hc.success).length,
-        failed: recentHealthChecks.filter(hc => !hc.success).length,
+        successful: recentHealthChecks.filter((hc) => hc.success).length,
+        failed: recentHealthChecks.filter((hc) => !hc.success).length,
         checks: recentHealthChecks.slice(-20) // Last 20 checks
       },
-      recentErrors: metrics.errors.slice(-10).map(error => ({
+      recentErrors: metrics.errors.slice(-10).map((error) => ({
         endpoint: error.endpoint,
         method: error.method,
         error: error.error,
         timestamp: error.timestamp,
         duration: error.duration
       })),
-      recentSlowQueries: metrics.slowQueries.slice(-10).map(query => ({
+      recentSlowQueries: metrics.slowQueries.slice(-10).map((query) => ({
         endpoint: query.endpoint,
         method: query.method,
         duration: query.duration,
@@ -278,7 +278,7 @@ function createAPIPerformanceMonitor() {
     metrics.slowQueries = [];
     metrics.errors = [];
     metrics.healthChecks = [];
-    
+
     return { success: true, message: 'All metrics cleared' };
   }
 

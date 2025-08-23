@@ -150,7 +150,7 @@ class InventoryService {
       return {
         products: result.data?.List || [],
         total: result.data?.VirtualCount || 0,
-        hasMore: (page * pageSize) < (result.data?.VirtualCount || 0)
+        hasMore: page * pageSize < (result.data?.VirtualCount || 0)
       };
 
     } catch (error: any) {
@@ -189,12 +189,12 @@ class InventoryService {
     }
   }
 
-  async saveProduct(product: Omit<Product, 'id'> & { id?: number }) {
+  async saveProduct(product: Omit<Product, 'id'> & {id?: number;}) {
     try {
       // Validate product data
       const validation = validateProduct(product);
       if (!validation.success) {
-        const errorMessages = validation.error.errors.map(err => err.message);
+        const errorMessages = validation.error.errors.map((err) => err.message);
         enhancedToast.showValidationErrorToast(errorMessages);
         throw new Error(errorMessages.join(', '));
       }
@@ -287,7 +287,7 @@ class InventoryService {
     }
   }
 
-  async saveCategory(category: Omit<Category, 'id'> & { id?: number }) {
+  async saveCategory(category: Omit<Category, 'id'> & {id?: number;}) {
     try {
       const isUpdate = !!category.id;
       logger.logDatabaseOperation(isUpdate ? 'Updating category' : 'Creating category', {
@@ -400,7 +400,7 @@ class InventoryService {
       return {
         movements: result.data?.List || [],
         total: result.data?.VirtualCount || 0,
-        hasMore: (page * pageSize) < (result.data?.VirtualCount || 0)
+        hasMore: page * pageSize < (result.data?.VirtualCount || 0)
       };
 
     } catch (error: any) {
@@ -415,7 +415,7 @@ class InventoryService {
       // Validate movement data
       const validation = validateStockMovement(movement);
       if (!validation.success) {
-        const errorMessages = validation.error.errors.map(err => err.message);
+        const errorMessages = validation.error.errors.map((err) => err.message);
         enhancedToast.showValidationErrorToast(errorMessages);
         throw new Error(errorMessages.join(', '));
       }
@@ -457,9 +457,9 @@ class InventoryService {
     try {
       // Get current product data
       const product = await this.getProduct(productId);
-      
+
       let newQuantity = product.stock_quantity;
-      
+
       switch (movementType) {
         case 'in':
           newQuantity += quantity;
@@ -508,8 +508,8 @@ class InventoryService {
         OrderByField: 'name',
         IsAsc: true,
         Filters: [
-          { name: 'status', op: 'Equal', value: 'active' }
-        ]
+        { name: 'status', op: 'Equal', value: 'active' }]
+
       });
 
       if (result.error) {
@@ -536,12 +536,12 @@ class InventoryService {
   }
 
   // Bulk Operations
-  async bulkUpdateProducts(products: Array<Partial<Product> & { id: number }>) {
+  async bulkUpdateProducts(products: Array<Partial<Product> & {id: number;}>) {
     try {
       logger.logDatabaseOperation('Bulk updating products', { count: products.length });
 
-      const operations = products.map(product => 
-        () => productionApi.tableUpdate('products', product)
+      const operations = products.map((product) =>
+      () => productionApi.tableUpdate('products', product)
       );
 
       const result = await productionApi.batchOperations(operations, {

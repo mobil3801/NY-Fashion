@@ -34,8 +34,8 @@ async function getUploadProgress(uploadSessionId) {
     }
 
     const session = result[0];
-    const progress = session.total_files > 0 ? 
-      Math.round((session.completed_files / session.total_files) * 100) : 0;
+    const progress = session.total_files > 0 ?
+    Math.round(session.completed_files / session.total_files * 100) : 0;
 
     return {
       sessionId: uploadSessionId,

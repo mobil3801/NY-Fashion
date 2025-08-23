@@ -57,10 +57,10 @@ async function getFileStatistics() {
     const employeePhotos = employeePhotosResult[0] || { count: 0, total_size: 0 };
     const invoices = invoicesResult[0] || { count: 0, total_size: 0 };
 
-    const orphanedCount = 
-      (orphanedProductImagesResult[0]?.count || 0) +
-      (orphanedEmployeePhotosResult[0]?.count || 0) +
-      (orphanedInvoicesResult[0]?.count || 0);
+    const orphanedCount =
+    (orphanedProductImagesResult[0]?.count || 0) + (
+    orphanedEmployeePhotosResult[0]?.count || 0) + (
+    orphanedInvoicesResult[0]?.count || 0);
 
     const totalFiles = parseInt(productImages.count) + parseInt(employeePhotos.count) + parseInt(invoices.count);
     const totalSize = parseInt(productImages.total_size) + parseInt(employeePhotos.total_size) + parseInt(invoices.total_size);

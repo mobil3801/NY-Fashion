@@ -40,10 +40,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState<NodeJS.Timeout | null>(null);
-  
+
   const { toast } = useToast();
   const { isLoading, withLoading } = useLoadingState();
-  
+
   const isAuthenticated = !!user;
 
   // Initialize auth state
@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       logger.logInfo('Initializing auth state');
       const result = await productionApi.getUserInfo();
-      
+
       if (result.data && !result.error) {
         const userData: User = {
           id: result.data.ID,
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           role: result.data.Roles || 'GeneralUser',
           createdAt: result.data.CreateTime
         };
-        
+
         setUser(userData);
         logger.setUserId(userData.id.toString());
         logger.logUserAction('user_session_restored', { userId: userData.id });
@@ -120,9 +120,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await withLoading(async () => {
       try {
         logger.logSecurityEvent('login_attempt', { email: credentials.email });
-        
+
         const result = await productionApi.login(credentials);
-        
+
         if (result.error) {
           handleFailedLogin();
           throw new Error(result.error);
@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Get user info after successful login
         const userResult = await productionApi.getUserInfo();
-        
+
         if (userResult.error || !userResult.data) {
           throw new Error('Failed to get user information after login');
         }
@@ -146,12 +146,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(userData);
         setLoginAttempts(0);
         logger.setUserId(userData.id.toString());
-        logger.logSecurityEvent('login_success', { 
-          userId: userData.id, 
+        logger.logSecurityEvent('login_success', {
+          userId: userData.id,
           email: userData.email,
-          role: userData.role 
+          role: userData.role
         });
-        
+
         toast({
           title: 'Welcome back!',
           description: `Logged in as ${userData.name || userData.email}`,
@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       } catch (error) {
         handleFailedLogin();
-        logger.logSecurityEvent('login_failed', { 
+        logger.logSecurityEvent('login_failed', {
           email: credentials.email,
           error: error instanceof Error ? error.message : 'Unknown error',
           attempts: loginAttempts + 1
@@ -180,15 +180,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await withLoading(async () => {
       try {
         logger.logSecurityEvent('registration_attempt', { email: credentials.email });
-        
+
         const result = await productionApi.register(credentials);
-        
+
         if (result.error) {
           throw new Error(result.error);
         }
 
         logger.logSecurityEvent('registration_success', { email: credentials.email });
-        
+
         toast({
           title: 'Registration Successful',
           description: 'Please check your email to verify your account, then log in.',
@@ -196,7 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
       } catch (error) {
-        logger.logSecurityEvent('registration_failed', { 
+        logger.logSecurityEvent('registration_failed', {
           email: credentials.email,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
@@ -209,23 +209,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await withLoading(async () => {
       try {
         const currentUserId = user?.id;
-        
+
         await productionApi.logout();
-        
+
         setUser(null);
         logger.logSecurityEvent('logout_success', { userId: currentUserId });
-        
+
         toast({
           title: 'Logged out',
           description: 'You have been successfully logged out.',
           variant: 'default'
         });
-        
+
       } catch (error) {
         // Even if logout fails on server, clear local state
         setUser(null);
         logger.logError('Logout failed', error);
-        
+
         toast({
           title: 'Logged out',
           description: 'You have been logged out locally.',
@@ -239,7 +239,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await withLoading(async () => {
       try {
         const result = await productionApi.getUserInfo();
-        
+
         if (result.error || !result.data) {
           // User session expired
           setUser(null);
@@ -256,7 +256,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         setUser(userData);
         logger.logUserAction('user_data_refreshed', { userId: userData.id });
-        
+
       } catch (error) {
         logger.logError('Failed to refresh user data', error);
         setUser(null);
@@ -272,20 +272,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLocked(true);
       const lockoutEnd = Date.now() + PRODUCTION_CONFIG.security.lockoutDuration;
       localStorage.setItem('auth_lockout_end', lockoutEnd.toString());
-      
+
       const timer = setTimeout(() => {
         setIsLocked(false);
         setLoginAttempts(0);
         localStorage.removeItem('auth_lockout_end');
       }, PRODUCTION_CONFIG.security.lockoutDuration);
-      
+
       setLockoutTimer(timer);
-      
-      logger.logSecurityEvent('account_locked', { 
+
+      logger.logSecurityEvent('account_locked', {
         attempts: newAttempts,
         lockoutDuration: PRODUCTION_CONFIG.security.lockoutDuration
       });
-      
+
       toast({
         title: 'Account Locked',
         description: `Too many failed login attempts. Account locked for ${Math.ceil(PRODUCTION_CONFIG.security.lockoutDuration / 60000)} minutes.`,
@@ -322,6 +322,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };

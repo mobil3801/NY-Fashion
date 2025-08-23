@@ -36,7 +36,7 @@ class DataSyncManager {
   private syncInterval: NodeJS.Timeout | null = null;
   private isOnline: boolean = navigator.onLine;
   private isSyncing: boolean = false;
-  
+
   // Configuration
   private readonly SYNC_INTERVAL = 30000; // 30 seconds
   private readonly MAX_RETRY_COUNT = 5;
@@ -87,16 +87,16 @@ class DataSyncManager {
       data,
       timestamp: Date.now(),
       expires: Date.now() + ttl,
-      key,
+      key
     };
-    
+
     this.cache.set(key, entry);
     logBusinessMetric('cache_set', 1, 'count', 'CACHING', { key, size: JSON.stringify(data).length });
   }
 
   getCache<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       logBusinessMetric('cache_miss', 1, 'count', 'CACHING', { key });
       return null;
@@ -123,17 +123,17 @@ class DataSyncManager {
     } else {
       this.cache.clear();
     }
-    
+
     logBusinessMetric('cache_cleared', 1, 'count', 'CACHING', { pattern });
   }
 
   // Queue Management
   queueOperation(
-    type: SyncOperation['type'],
-    table: string,
-    data: any,
-    optimisticId?: string
-  ): string {
+  type: SyncOperation['type'],
+  table: string,
+  data: any,
+  optimisticId?: string)
+  : string {
     const operation: SyncOperation = {
       id: optimisticId || `${type}_${table}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       type,
@@ -141,17 +141,17 @@ class DataSyncManager {
       data,
       timestamp: new Date().toISOString(),
       retryCount: 0,
-      status: 'pending',
+      status: 'pending'
     };
 
     this.syncQueue.set(operation.id, operation);
-    
+
     // Clear related cache entries
     this.clearCache(`${table}_.*`);
-    
+
     logger.info(`Operation queued: ${type} on ${table}`, {
       operationId: operation.id,
-      dataSize: JSON.stringify(data).length,
+      dataSize: JSON.stringify(data).length
     }, 'OPERATION_QUEUED', 'SYNC');
 
     // Try immediate sync if online
@@ -168,7 +168,7 @@ class DataSyncManager {
     }
 
     this.isSyncing = true;
-    
+
     try {
       await this.processSyncQueue();
     } catch (error: any) {
@@ -179,20 +179,20 @@ class DataSyncManager {
   }
 
   private async processSyncQueue(): Promise<void> {
-    const pendingOperations = Array.from(this.syncQueue.values())
-      .filter(op => op.status === 'pending' || (op.status === 'failed' && op.retryCount < this.MAX_RETRY_COUNT))
-      .slice(0, this.BATCH_SIZE);
+    const pendingOperations = Array.from(this.syncQueue.values()).
+    filter((op) => op.status === 'pending' || op.status === 'failed' && op.retryCount < this.MAX_RETRY_COUNT).
+    slice(0, this.BATCH_SIZE);
 
     if (pendingOperations.length === 0) {
       return;
     }
 
     logger.info(`Processing ${pendingOperations.length} sync operations`, {
-      totalQueued: this.syncQueue.size,
+      totalQueued: this.syncQueue.size
     }, 'SYNC_BATCH_START', 'SYNC');
 
     const results = await Promise.allSettled(
-      pendingOperations.map(operation => this.processOperation(operation))
+      pendingOperations.map((operation) => this.processOperation(operation))
     );
 
     let successCount = 0;
@@ -200,7 +200,7 @@ class DataSyncManager {
 
     results.forEach((result, index) => {
       const operation = pendingOperations[index];
-      
+
       if (result.status === 'fulfilled') {
         this.syncQueue.delete(operation.id);
         successCount++;
@@ -215,9 +215,9 @@ class DataSyncManager {
             operationId: operation.id,
             type: operation.type,
             table: operation.table,
-            error: operation.error,
+            error: operation.error
           }, 'OPERATION_PERMANENTLY_FAILED', 'SYNC');
-          
+
           // Move to permanent failure queue or handle as needed
           this.syncQueue.delete(operation.id);
         }
@@ -227,7 +227,7 @@ class DataSyncManager {
     logBusinessMetric('sync_batch_completed', 1, 'count', 'SYNC', {
       successCount,
       failureCount,
-      totalProcessed: pendingOperations.length,
+      totalProcessed: pendingOperations.length
     });
 
     if (successCount > 0) {
@@ -237,10 +237,10 @@ class DataSyncManager {
 
   private async processOperation(operation: SyncOperation): Promise<void> {
     operation.status = 'syncing';
-    
+
     const startTime = Date.now();
     const tableId = this.getTableId(operation.table);
-    
+
     if (!tableId) {
       throw new Error(`Unknown table: ${operation.table}`);
     }
@@ -259,11 +259,11 @@ class DataSyncManager {
       }
 
       operation.status = 'completed';
-      
+
       const duration = Date.now() - startTime;
       logDatabaseOperation(operation.type, operation.table, duration, true, {
         operationId: operation.id,
-        retryCount: operation.retryCount,
+        retryCount: operation.retryCount
       });
 
     } catch (error: any) {
@@ -271,9 +271,9 @@ class DataSyncManager {
       logDatabaseOperation(operation.type, operation.table, duration, false, {
         operationId: operation.id,
         retryCount: operation.retryCount,
-        error: error.message,
+        error: error.message
       });
-      
+
       throw error;
     }
   }
@@ -289,7 +289,7 @@ class DataSyncManager {
       'employees': 'employees',
       'time_entries': 'timeEntries',
       'sales': 'sales',
-      'audit_logs': 'auditLogs',
+      'audit_logs': 'auditLogs'
     };
 
     const configKey = tableMap[tableName];
@@ -298,10 +298,10 @@ class DataSyncManager {
 
   // Data fetching with caching
   async fetchWithCache<T>(
-    cacheKey: string,
-    fetchFn: () => Promise<T>,
-    ttl: number = this.CACHE_DEFAULT_TTL
-  ): Promise<T> {
+  cacheKey: string,
+  fetchFn: () => Promise<T>,
+  ttl: number = this.CACHE_DEFAULT_TTL)
+  : Promise<T> {
     // Try cache first
     const cached = this.getCache<T>(cacheKey);
     if (cached) {
@@ -312,22 +312,22 @@ class DataSyncManager {
     const startTime = Date.now();
     try {
       const data = await fetchFn();
-      
+
       // Cache the result
       this.setCache(cacheKey, data, ttl);
-      
+
       const duration = Date.now() - startTime;
-      logBusinessMetric('cache_fetch_success', duration, 'ms', 'CACHING', { 
-        cacheKey, 
-        dataSize: JSON.stringify(data).length 
+      logBusinessMetric('cache_fetch_success', duration, 'ms', 'CACHING', {
+        cacheKey,
+        dataSize: JSON.stringify(data).length
       });
-      
+
       return data;
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      logBusinessMetric('cache_fetch_failed', duration, 'ms', 'CACHING', { 
-        cacheKey, 
-        error: error.message 
+      logBusinessMetric('cache_fetch_failed', duration, 'ms', 'CACHING', {
+        cacheKey,
+        error: error.message
       });
       throw error;
     }
@@ -335,22 +335,22 @@ class DataSyncManager {
 
   // Optimistic updates
   performOptimisticUpdate<T>(
-    cacheKey: string,
-    updateFn: (data: T | null) => T,
-    syncOperation: Omit<SyncOperation, 'id' | 'timestamp' | 'retryCount' | 'status'>
-  ): string {
+  cacheKey: string,
+  updateFn: (data: T | null) => T,
+  syncOperation: Omit<SyncOperation, 'id' | 'timestamp' | 'retryCount' | 'status'>)
+  : string {
     // Update cache optimistically
     const cachedData = this.getCache<T>(cacheKey);
     const updatedData = updateFn(cachedData);
     this.setCache(cacheKey, updatedData);
-    
+
     // Queue for sync
     const operationId = this.queueOperation(
       syncOperation.type,
       syncOperation.table,
       syncOperation.data
     );
-    
+
     return operationId;
   }
 
@@ -370,14 +370,14 @@ class DataSyncManager {
       if (savedQueue) {
         const queueData: [string, SyncOperation][] = JSON.parse(savedQueue);
         this.syncQueue = new Map(queueData);
-        
+
         // Reset failed operations to pending for retry
         for (const [id, operation] of this.syncQueue) {
           if (operation.status === 'syncing') {
             operation.status = 'pending';
           }
         }
-        
+
         logger.info(`Loaded ${this.syncQueue.size} operations from persistence`, {}, 'QUEUE_LOADED', 'SYNC');
       }
     } catch (error) {
@@ -389,15 +389,15 @@ class DataSyncManager {
   // Statistics
   getSyncStats(): SyncStats {
     const operations = Array.from(this.syncQueue.values());
-    const completed = operations.filter(op => op.status === 'completed').length;
-    const failed = operations.filter(op => op.status === 'failed').length;
-    
+    const completed = operations.filter((op) => op.status === 'completed').length;
+    const failed = operations.filter((op) => op.status === 'failed').length;
+
     return {
       totalOperations: this.syncQueue.size,
       successfulOperations: completed,
       failedOperations: failed,
       lastSyncTime: new Date().toISOString(),
-      isOnline: this.isOnline,
+      isOnline: this.isOnline
     };
   }
 
@@ -406,7 +406,7 @@ class DataSyncManager {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
     }
-    
+
     this.persistQueue();
     this.cache.clear();
     this.syncQueue.clear();
@@ -414,13 +414,13 @@ class DataSyncManager {
 
   // Public API for components
   async queryWithCache<T>(
-    tableId: number,
-    params: any,
-    cacheKey?: string,
-    ttl?: number
-  ): Promise<{ List: T[]; VirtualCount: number }> {
+  tableId: number,
+  params: any,
+  cacheKey?: string,
+  ttl?: number)
+  : Promise<{List: T[];VirtualCount: number;}> {
     const key = cacheKey || `table_${tableId}_${JSON.stringify(params)}`;
-    
+
     return this.fetchWithCache(
       key,
       () => productionApi.queryTable<T>(tableId, params),
@@ -429,11 +429,11 @@ class DataSyncManager {
   }
 
   async createWithOptimisticUpdate<T>(
-    tableId: number,
-    data: Partial<T>,
-    cacheKey?: string,
-    optimisticUpdateFn?: (cached: any) => any
-  ): Promise<string> {
+  tableId: number,
+  data: Partial<T>,
+  cacheKey?: string,
+  optimisticUpdateFn?: (cached: any) => any)
+  : Promise<string> {
     const tableName = this.getTableNameById(tableId);
     if (!tableName) {
       throw new Error(`Unknown table ID: ${tableId}`);
@@ -466,20 +466,20 @@ class DataSyncManager {
 export const dataSyncManager = new DataSyncManager();
 
 // Convenience functions
-export const queueCreate = (table: string, data: any) => 
-  dataSyncManager.queueOperation('CREATE', table, data);
+export const queueCreate = (table: string, data: any) =>
+dataSyncManager.queueOperation('CREATE', table, data);
 
-export const queueUpdate = (table: string, data: any) => 
-  dataSyncManager.queueOperation('UPDATE', table, data);
+export const queueUpdate = (table: string, data: any) =>
+dataSyncManager.queueOperation('UPDATE', table, data);
 
-export const queueDelete = (table: string, data: any) => 
-  dataSyncManager.queueOperation('DELETE', table, data);
+export const queueDelete = (table: string, data: any) =>
+dataSyncManager.queueOperation('DELETE', table, data);
 
-export const getCachedData = <T>(key: string): T | null => 
-  dataSyncManager.getCache<T>(key);
+export const getCachedData = <T,>(key: string): T | null =>
+dataSyncManager.getCache<T>(key);
 
-export const setCachedData = <T>(key: string, data: T, ttl?: number) => 
-  dataSyncManager.setCache(key, data, ttl);
+export const setCachedData = <T,>(key: string, data: T, ttl?: number) =>
+dataSyncManager.setCache(key, data, ttl);
 
 export const syncNow = () => dataSyncManager.triggerSync();
 

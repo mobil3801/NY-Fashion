@@ -6,20 +6,20 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Activity, 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  AlertTriangle, 
+import {
+  Activity,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  AlertTriangle,
   CheckCircle,
   Clock,
   Database,
   TrendingUp,
   Settings,
   Download,
-  Upload
-} from 'lucide-react';
+  Upload } from
+'lucide-react';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { format } from 'date-fns';
 
@@ -32,15 +32,15 @@ interface DiagnosticTest {
 }
 
 export function NetworkDiagnosticsPanel() {
-  const { 
-    online, 
-    status, 
-    connectionState, 
-    getDiagnostics, 
-    retryNow, 
+  const {
+    online,
+    status,
+    connectionState,
+    getDiagnostics,
+    retryNow,
     isAutoRetrying,
     forceOffline,
-    forceOnline 
+    forceOnline
   } = useNetwork();
 
   const [diagnostics, setDiagnostics] = useState(getDiagnostics());
@@ -51,21 +51,21 @@ export function NetworkDiagnosticsPanel() {
     const interval = setInterval(() => {
       setDiagnostics(getDiagnostics());
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, [getDiagnostics]);
 
   const runDiagnosticTests = async () => {
     setIsRunningTests(true);
     const testSuite: DiagnosticTest[] = [
-      { name: 'DNS Resolution', status: 'pending' },
-      { name: 'HTTP Connectivity', status: 'pending' },
-      { name: 'HTTPS Connectivity', status: 'pending' },
-      { name: 'API Endpoint', status: 'pending' },
-      { name: 'WebSocket Support', status: 'pending' },
-      { name: 'Local Storage', status: 'pending' },
-      { name: 'IndexedDB', status: 'pending' }
-    ];
+    { name: 'DNS Resolution', status: 'pending' },
+    { name: 'HTTP Connectivity', status: 'pending' },
+    { name: 'HTTPS Connectivity', status: 'pending' },
+    { name: 'API Endpoint', status: 'pending' },
+    { name: 'WebSocket Support', status: 'pending' },
+    { name: 'Local Storage', status: 'pending' },
+    { name: 'IndexedDB', status: 'pending' }];
+
 
     setTests([...testSuite]);
 
@@ -76,7 +76,7 @@ export function NetworkDiagnosticsPanel() {
       setTests([...testSuite]);
 
       const startTime = performance.now();
-      
+
       try {
         await runSingleTest(test.name);
         test.status = 'passed';
@@ -86,11 +86,11 @@ export function NetworkDiagnosticsPanel() {
         test.error = error instanceof Error ? error.message : 'Unknown error';
         test.duration = performance.now() - startTime;
       }
-      
+
       setTests([...testSuite]);
-      
+
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     setIsRunningTests(false);
@@ -101,17 +101,17 @@ export function NetworkDiagnosticsPanel() {
       case 'DNS Resolution':
         await fetch('https://dns.google', { method: 'HEAD', mode: 'no-cors' });
         break;
-        
+
       case 'HTTP Connectivity':
-        await fetch(`${window.location.protocol}//${window.location.host}/favicon.ico`, { 
+        await fetch(`${window.location.protocol}//${window.location.host}/favicon.ico`, {
           method: 'HEAD',
           cache: 'no-cache'
         });
         break;
-        
+
       case 'HTTPS Connectivity':
         if (window.location.protocol === 'https:') {
-          await fetch(`${window.location.origin}/favicon.ico`, { 
+          await fetch(`${window.location.origin}/favicon.ico`, {
             method: 'HEAD',
             cache: 'no-cache'
           });
@@ -119,22 +119,22 @@ export function NetworkDiagnosticsPanel() {
           throw new Error('Not using HTTPS');
         }
         break;
-        
+
       case 'API Endpoint':
         try {
           await window.ezsite?.apis?.getUserInfo?.();
         } catch (error) {
+
+
+
+
           // EasySite API might not be available or user not logged in
           // This is not necessarily a connection error
-        }
-        break;
-        
-      case 'WebSocket Support':
-        if (!('WebSocket' in window)) {
+        }break;case 'WebSocket Support':if (!('WebSocket' in window)) {
           throw new Error('WebSocket not supported');
         }
         break;
-        
+
       case 'Local Storage':
         localStorage.setItem('diagnostics_test', 'test');
         const value = localStorage.getItem('diagnostics_test');
@@ -143,7 +143,7 @@ export function NetworkDiagnosticsPanel() {
           throw new Error('Local storage not working');
         }
         break;
-        
+
       case 'IndexedDB':
         if (!('indexedDB' in window)) {
           throw new Error('IndexedDB not supported');
@@ -163,7 +163,7 @@ export function NetworkDiagnosticsPanel() {
           };
         });
         break;
-        
+
       default:
         throw new Error('Unknown test');
     }
@@ -171,19 +171,19 @@ export function NetworkDiagnosticsPanel() {
 
   const getStatusColor = (status: DiagnosticTest['status']) => {
     switch (status) {
-      case 'passed': return 'text-green-500';
-      case 'failed': return 'text-red-500';
-      case 'running': return 'text-blue-500';
-      default: return 'text-gray-500';
+      case 'passed':return 'text-green-500';
+      case 'failed':return 'text-red-500';
+      case 'running':return 'text-blue-500';
+      default:return 'text-gray-500';
     }
   };
 
   const getStatusIcon = (status: DiagnosticTest['status']) => {
     switch (status) {
-      case 'passed': return <CheckCircle className="w-4 h-4" />;
-      case 'failed': return <AlertTriangle className="w-4 h-4" />;
-      case 'running': return <RefreshCw className="w-4 h-4 animate-spin" />;
-      default: return <Clock className="w-4 h-4" />;
+      case 'passed':return <CheckCircle className="w-4 h-4" />;
+      case 'failed':return <AlertTriangle className="w-4 h-4" />;
+      case 'running':return <RefreshCw className="w-4 h-4 animate-spin" />;
+      default:return <Clock className="w-4 h-4" />;
     }
   };
 
@@ -199,11 +199,11 @@ export function NetworkDiagnosticsPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {online ? (
-            <Wifi className="w-5 h-5 text-green-500" />
-          ) : (
-            <WifiOff className="w-5 h-5 text-red-500" />
-          )}
+          {online ?
+          <Wifi className="w-5 h-5 text-green-500" /> :
+
+          <WifiOff className="w-5 h-5 text-red-500" />
+          }
           <h2 className="text-lg font-semibold">Network Diagnostics</h2>
           <Badge variant={online ? 'default' : 'destructive'}>
             {connectionState}
@@ -215,21 +215,21 @@ export function NetworkDiagnosticsPanel() {
             onClick={runDiagnosticTests}
             disabled={isRunningTests}
             variant="outline"
-            size="sm"
-          >
-            {isRunningTests ? (
-              <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Activity className="w-4 h-4 mr-2" />
-            )}
+            size="sm">
+
+            {isRunningTests ?
+            <RefreshCw className="w-4 h-4 animate-spin mr-2" /> :
+
+            <Activity className="w-4 h-4 mr-2" />
+            }
             Run Tests
           </Button>
           
           <Button
             onClick={online ? () => forceOffline('Diagnostic test') : forceOnline}
             variant="outline"
-            size="sm"
-          >
+            size="sm">
+
             {online ? 'Force Offline' : 'Force Online'}
           </Button>
         </div>
@@ -255,9 +255,9 @@ export function NetworkDiagnosticsPanel() {
                   {online ? 'Good' : 'Offline'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {diagnostics.averageLatency > 0 
-                    ? `${Math.round(diagnostics.averageLatency)}ms avg latency`
-                    : 'No latency data'
+                  {diagnostics.averageLatency > 0 ?
+                  `${Math.round(diagnostics.averageLatency)}ms avg latency` :
+                  'No latency data'
                   }
                 </div>
               </div>
@@ -270,9 +270,9 @@ export function NetworkDiagnosticsPanel() {
               </div>
               <div className="mt-2">
                 <div className="text-2xl font-bold">
-                  {diagnostics.totalAttempts > 0 
-                    ? `${Math.round((diagnostics.successfulAttempts / diagnostics.totalAttempts) * 100)}%`
-                    : 'N/A'
+                  {diagnostics.totalAttempts > 0 ?
+                  `${Math.round(diagnostics.successfulAttempts / diagnostics.totalAttempts * 100)}%` :
+                  'N/A'
                   }
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -303,9 +303,9 @@ export function NetworkDiagnosticsPanel() {
               </div>
               <div className="mt-2">
                 <div className="text-2xl font-bold">
-                  {diagnostics.currentOutageMs > 0 
-                    ? `${Math.round(diagnostics.currentOutageMs / 1000)}s`
-                    : 'N/A'
+                  {diagnostics.currentOutageMs > 0 ?
+                  `${Math.round(diagnostics.currentOutageMs / 1000)}s` :
+                  'N/A'
                   }
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -323,24 +323,24 @@ export function NetworkDiagnosticsPanel() {
                 <span>{format(new Date(status.lastCheck), 'HH:mm:ss')}</span>
               </div>
               
-              {diagnostics.lastConnectedAt && (
-                <div className="flex justify-between">
+              {diagnostics.lastConnectedAt &&
+              <div className="flex justify-between">
                   <span>Last Connected:</span>
                   <span>{format(diagnostics.lastConnectedAt, 'HH:mm:ss')}</span>
                 </div>
-              )}
+              }
               
               <div className="flex justify-between">
                 <span>Consecutive Failures:</span>
                 <span>{status.consecutiveFailures}</span>
               </div>
               
-              {status.nextRetryAt && (
-                <div className="flex justify-between">
+              {status.nextRetryAt &&
+              <div className="flex justify-between">
                   <span>Next Retry:</span>
                   <span>{format(status.nextRetryAt, 'HH:mm:ss')}</span>
                 </div>
-              )}
+              }
             </div>
           </Card>
         </TabsContent>
@@ -354,29 +354,29 @@ export function NetworkDiagnosticsPanel() {
                   <span>Average Latency</span>
                   <span>{Math.round(diagnostics.averageLatency)}ms</span>
                 </div>
-                <Progress 
-                  value={Math.min((diagnostics.averageLatency / 1000) * 100, 100)} 
-                  className="h-2"
-                />
+                <Progress
+                  value={Math.min(diagnostics.averageLatency / 1000 * 100, 100)}
+                  className="h-2" />
+
               </div>
               
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Success Rate</span>
                   <span>
-                    {diagnostics.totalAttempts > 0 
-                      ? `${Math.round((diagnostics.successfulAttempts / diagnostics.totalAttempts) * 100)}%`
-                      : 'N/A'
+                    {diagnostics.totalAttempts > 0 ?
+                    `${Math.round(diagnostics.successfulAttempts / diagnostics.totalAttempts * 100)}%` :
+                    'N/A'
                     }
                   </span>
                 </div>
-                <Progress 
-                  value={diagnostics.totalAttempts > 0 
-                    ? (diagnostics.successfulAttempts / diagnostics.totalAttempts) * 100 
-                    : 0
-                  } 
-                  className="h-2"
-                />
+                <Progress
+                  value={diagnostics.totalAttempts > 0 ?
+                  diagnostics.successfulAttempts / diagnostics.totalAttempts * 100 :
+                  0
+                  }
+                  className="h-2" />
+
               </div>
             </div>
           </Card>
@@ -407,19 +407,19 @@ export function NetworkDiagnosticsPanel() {
               <Button
                 onClick={runDiagnosticTests}
                 disabled={isRunningTests}
-                size="sm"
-              >
+                size="sm">
+
                 {isRunningTests ? 'Running...' : 'Run All Tests'}
               </Button>
             </div>
             
             <ScrollArea className="h-64">
               <div className="space-y-2">
-                {tests.map((test, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-2 rounded border"
-                  >
+                {tests.map((test, index) =>
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 rounded border">
+
                     <div className="flex items-center gap-2">
                       <span className={getStatusColor(test.status)}>
                         {getStatusIcon(test.status)}
@@ -428,23 +428,23 @@ export function NetworkDiagnosticsPanel() {
                     </div>
                     
                     <div className="text-right text-xs text-muted-foreground">
-                      {test.duration && (
-                        <div>{Math.round(test.duration)}ms</div>
-                      )}
-                      {test.error && (
-                        <div className="text-red-500 max-w-32 truncate">
+                      {test.duration &&
+                    <div>{Math.round(test.duration)}ms</div>
+                    }
+                      {test.error &&
+                    <div className="text-red-500 max-w-32 truncate">
                           {test.error}
                         </div>
-                      )}
+                    }
                     </div>
                   </div>
-                ))}
+                )}
                 
-                {tests.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
+                {tests.length === 0 &&
+                <div className="text-center py-8 text-muted-foreground">
                     Click "Run All Tests" to start diagnostics
                   </div>
-                )}
+                }
               </div>
             </ScrollArea>
           </Card>
@@ -466,36 +466,36 @@ export function NetworkDiagnosticsPanel() {
                 </p>
               </div>
               
-              {diagnostics.queuedOperations > 0 && (
-                <div className="space-y-2">
+              {diagnostics.queuedOperations > 0 &&
+              <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Upload className="w-4 h-4" />
                     <span>{diagnostics.queuedOperations} operations pending sync</span>
                   </div>
                   
-                  {online && (
-                    <Button
-                      onClick={retryNow}
-                      disabled={isAutoRetrying}
-                      size="sm"
-                      className="w-full"
-                    >
+                  {online &&
+                <Button
+                  onClick={retryNow}
+                  disabled={isAutoRetrying}
+                  size="sm"
+                  className="w-full">
+
                       {isAutoRetrying ? 'Syncing...' : 'Sync Now'}
                     </Button>
-                  )}
+                }
                 </div>
-              )}
+              }
               
-              {diagnostics.queuedOperations === 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              {diagnostics.queuedOperations === 0 &&
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>All operations are up to date</span>
                 </div>
-              )}
+              }
             </div>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }

@@ -15,26 +15,26 @@ function productionHealthCheck() {
   try {
     // 1. Database Health Check
     healthReport.checks.database = checkDatabaseHealth();
-    
+
     // 2. API Endpoints Health Check
     healthReport.checks.api = checkAPIHealth();
-    
+
     // 3. Memory and Performance Check
     healthReport.checks.performance = checkPerformanceHealth();
-    
+
     // 4. System Resources Check
     healthReport.checks.system = checkSystemHealth();
-    
+
     // 5. Data Integrity Check
     healthReport.checks.dataIntegrity = checkDataIntegrity();
 
     // Calculate overall status
-    const failedChecks = Object.values(healthReport.checks).filter(check => 
-      check.status === 'CRITICAL' || check.status === 'ERROR'
+    const failedChecks = Object.values(healthReport.checks).filter((check) =>
+    check.status === 'CRITICAL' || check.status === 'ERROR'
     ).length;
 
-    const warningChecks = Object.values(healthReport.checks).filter(check => 
-      check.status === 'WARNING'
+    const warningChecks = Object.values(healthReport.checks).filter((check) =>
+    check.status === 'WARNING'
     ).length;
 
     if (failedChecks > 0) {
@@ -79,7 +79,7 @@ function checkDatabaseHealth() {
 
   try {
     const dbStart = Date.now();
-    
+
     // Test basic connectivity
     const connectivityTest = window.ezsite.db.query('SELECT 1 as test', []);
     if (!connectivityTest || connectivityTest.length === 0) {
@@ -113,15 +113,15 @@ function checkDatabaseHealth() {
         FROM information_schema.processlist 
         WHERE state LIKE '%lock%'
       `, []);
-      
+
       if (deadlocks[0]?.count > 0) {
         check.issues.push(`${deadlocks[0].count} potential deadlocks detected`);
         check.status = 'WARNING';
       }
     } catch (error) {
+
       // This query might not work on all database systems, ignore silently
     }
-
   } catch (error) {
     check.status = 'CRITICAL';
     check.issues.push(`Database health check failed: ${error.message}`);
@@ -139,10 +139,10 @@ function checkAPIHealth() {
   };
 
   const criticalEndpoints = [
-    { name: 'getProducts', path: 'getProducts', params: [{ limit: 1 }] },
-    { name: 'getCustomers', path: 'getCustomers', params: [{ limit: 1 }] },
-    { name: 'getDashboardAnalytics', path: 'getDashboardAnalytics', params: [{}] }
-  ];
+  { name: 'getProducts', path: 'getProducts', params: [{ limit: 1 }] },
+  { name: 'getCustomers', path: 'getCustomers', params: [{ limit: 1 }] },
+  { name: 'getDashboardAnalytics', path: 'getDashboardAnalytics', params: [{}] }];
+
 
   let totalResponseTime = 0;
   let successfulTests = 0;
@@ -155,7 +155,7 @@ function checkAPIHealth() {
         param: endpoint.params
       });
       const responseTime = Date.now() - startTime;
-      
+
       check.endpoints[endpoint.name] = {
         status: 'OK',
         responseTime,
@@ -200,7 +200,7 @@ function checkPerformanceHealth() {
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
         limit: memory.jsHeapSizeLimit,
-        percentage: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
+        percentage: Math.round(memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100)
       };
 
       if (check.metrics.memoryUsage.percentage > 80) {
@@ -250,9 +250,9 @@ function checkSystemHealth() {
     check.metrics.browserFeatures = features;
 
     // Check for any missing critical features
-    const missingFeatures = Object.entries(features)
-      .filter(([key, available]) => !available)
-      .map(([key]) => key);
+    const missingFeatures = Object.entries(features).
+    filter(([key, available]) => !available).
+    map(([key]) => key);
 
     if (missingFeatures.length > 0) {
       check.issues.push(`Missing browser features: ${missingFeatures.join(', ')}`);
@@ -277,42 +277,42 @@ function checkDataIntegrity() {
   try {
     // Check for orphaned records
     const integrityChecks = [
-      {
-        name: 'Orphaned product variants',
-        query: `
+    {
+      name: 'Orphaned product variants',
+      query: `
           SELECT COUNT(*) as count 
           FROM product_variants pv 
           LEFT JOIN products p ON pv.product_id = p.id 
           WHERE p.id IS NULL
         `
-      },
-      {
-        name: 'Stock movements without variants',
-        query: `
+    },
+    {
+      name: 'Stock movements without variants',
+      query: `
           SELECT COUNT(*) as count 
           FROM stock_movements sm 
           LEFT JOIN product_variants pv ON sm.variant_id = pv.id 
           WHERE pv.id IS NULL
         `
-      },
-      {
-        name: 'Sales without customers',
-        query: `
+    },
+    {
+      name: 'Sales without customers',
+      query: `
           SELECT COUNT(*) as count 
           FROM sales s 
           LEFT JOIN customers c ON s.customer_id = c.id 
           WHERE s.customer_id IS NOT NULL AND c.id IS NULL
         `
-      }
-    ];
+    }];
+
 
     for (const integrityCheck of integrityChecks) {
       try {
         const result = window.ezsite.db.query(integrityCheck.query, []);
         const count = result[0]?.count || 0;
-        
+
         check.metrics[integrityCheck.name] = count;
-        
+
         if (count > 0) {
           check.issues.push(`${integrityCheck.name}: ${count} records found`);
           check.status = check.status === 'HEALTHY' ? 'WARNING' : check.status;
@@ -329,10 +329,10 @@ function checkDataIntegrity() {
         FROM products 
         WHERE current_stock < 0 AND is_trackable = true
       `, []);
-      
+
       const count = negativeStock[0]?.count || 0;
       check.metrics['Negative stock products'] = count;
-      
+
       if (count > 0) {
         check.issues.push(`${count} products have negative stock levels`);
         check.status = check.status === 'HEALTHY' ? 'WARNING' : check.status;

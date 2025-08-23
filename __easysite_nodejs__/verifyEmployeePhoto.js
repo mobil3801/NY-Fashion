@@ -22,11 +22,11 @@ async function verifyEmployeePhoto(photoId, verified, verifiedBy) {
     `;
 
     const result = await window.ezsite.db.query(updateQuery, [
-      verified,
-      verifiedBy || null,
-      verified ? new Date().toISOString() : null,
-      parseInt(photoId)
-    ]);
+    verified,
+    verifiedBy || null,
+    verified ? new Date().toISOString() : null,
+    parseInt(photoId)]
+    );
 
     if (!result || result.length === 0) {
       throw new Error('Photo ID not found');

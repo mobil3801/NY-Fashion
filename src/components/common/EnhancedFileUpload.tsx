@@ -68,13 +68,13 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
+    const newFiles = acceptedFiles.map((file) => ({
       file,
       progress: 0,
       status: 'pending' as const
     }));
-    
-    setUploadProgress(prev => [...prev, ...newFiles]);
+
+    setUploadProgress((prev) => [...prev, ...newFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -85,7 +85,7 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
     maxSize,
     onDropRejected: (fileRejections) => {
       fileRejections.forEach((rejection) => {
-        const errors = rejection.errors.map(e => e.message).join(', ');
+        const errors = rejection.errors.map((e) => e.message).join(', ');
         toast({
           title: "File Rejected",
           description: `${rejection.file.name}: ${errors}`,
@@ -96,7 +96,7 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
   });
 
   const removeFile = (index: number) => {
-    setUploadProgress(prev => prev.filter((_, i) => i !== index));
+    setUploadProgress((prev) => prev.filter((_, i) => i !== index));
   };
 
   const uploadFiles = async () => {
@@ -125,11 +125,11 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
       // Upload files one by one with progress tracking
       for (let i = 0; i < uploadProgress.length; i++) {
         const fileProgress = uploadProgress[i];
-        
+
         try {
           // Update status to uploading
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { ...fp, status: 'uploading', progress: 0 } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? { ...fp, status: 'uploading', progress: 0 } : fp
           ));
 
           // Validate file first
@@ -144,11 +144,11 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
 
           // Simulate progress updates during upload
           const progressInterval = setInterval(() => {
-            setUploadProgress(prev => prev.map((fp, index) => 
-              index === i ? { 
-                ...fp, 
-                progress: Math.min(fp.progress + Math.random() * 20, 90) 
-              } : fp
+            setUploadProgress((prev) => prev.map((fp, index) =>
+            index === i ? {
+              ...fp,
+              progress: Math.min(fp.progress + Math.random() * 20, 90)
+            } : fp
             ));
           }, 200);
 
@@ -171,14 +171,14 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
           }
 
           // Update progress to completed
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { 
-              ...fp, 
-              status: 'completed', 
-              progress: 100,
-              url: urlResult.data,
-              fileId: uploadResult.data
-            } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? {
+            ...fp,
+            status: 'completed',
+            progress: 100,
+            url: urlResult.data,
+            fileId: uploadResult.data
+          } : fp
           ));
 
           uploadedFiles.push({
@@ -193,12 +193,12 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
 
         } catch (error) {
           // Update progress to error
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { 
-              ...fp, 
-              status: 'error', 
-              error: error.message 
-            } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? {
+            ...fp,
+            status: 'error',
+            error: error.message
+          } : fp
           ));
 
           failedCount++;
@@ -276,42 +276,42 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
             border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
             ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
             ${isUploading ? 'pointer-events-none opacity-50' : ''}
-          `}
-        >
+          `}>
+
           <input {...getInputProps()} />
           <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
-          {isDragActive ? (
-            <p className="text-blue-600">Drop the files here...</p>
-          ) : (
-            <div>
+          {isDragActive ?
+          <p className="text-blue-600">Drop the files here...</p> :
+
+          <div>
               <p className="text-gray-600 mb-2">{description}</p>
               <p className="text-xs text-gray-500">
                 Max {maxFiles} files, {(maxSize / (1024 * 1024)).toFixed(1)}MB each
               </p>
             </div>
-          )}
+          }
         </div>
 
         {/* File list */}
-        {uploadProgress.length > 0 && (
-          <div className="space-y-2">
+        {uploadProgress.length > 0 &&
+        <div className="space-y-2">
             <div className="flex justify-between items-center">
               <h4 className="font-medium">Files ({uploadProgress.length})</h4>
-              {uploadProgress.length > 0 && !isUploading && (
-                <Button 
-                  onClick={uploadFiles}
-                  disabled={uploadProgress.every(fp => fp.status === 'completed')}
-                >
+              {uploadProgress.length > 0 && !isUploading &&
+            <Button
+              onClick={uploadFiles}
+              disabled={uploadProgress.every((fp) => fp.status === 'completed')}>
+
                   Upload All
                 </Button>
-              )}
+            }
             </div>
 
-            {uploadProgress.map((fileProgress, index) => (
-              <div 
-                key={index} 
-                className={`p-3 border rounded-lg ${getStatusColor(fileProgress.status)}`}
-              >
+            {uploadProgress.map((fileProgress, index) =>
+          <div
+            key={index}
+            className={`p-3 border rounded-lg ${getStatusColor(fileProgress.status)}`}>
+
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 flex-1">
                     {getFileIcon(fileProgress.file)}
@@ -324,62 +324,62 @@ const EnhancedFileUpload: React.FC<EnhancedFileUploadProps> = ({
                     {getStatusIcon(fileProgress.status)}
                   </div>
                   
-                  {fileProgress.status === 'pending' && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                      disabled={isUploading}
-                    >
+                  {fileProgress.status === 'pending' &&
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFile(index)}
+                disabled={isUploading}>
+
                       <X className="h-4 w-4" />
                     </Button>
-                  )}
+              }
                 </div>
 
-                {fileProgress.status === 'uploading' && (
-                  <Progress value={fileProgress.progress} className="h-2" />
-                )}
+                {fileProgress.status === 'uploading' &&
+            <Progress value={fileProgress.progress} className="h-2" />
+            }
 
-                {fileProgress.status === 'error' && fileProgress.error && (
-                  <Alert className="mt-2">
+                {fileProgress.status === 'error' && fileProgress.error &&
+            <Alert className="mt-2">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-sm">
                       {fileProgress.error}
                     </AlertDescription>
                   </Alert>
-                )}
+            }
 
-                {fileProgress.status === 'completed' && (
-                  <div className="mt-2">
+                {fileProgress.status === 'completed' &&
+            <div className="mt-2">
                     <Badge variant="outline" className="text-green-600 border-green-300">
                       ✓ Uploaded successfully
                     </Badge>
                   </div>
-                )}
+            }
               </div>
-            ))}
+          )}
           </div>
-        )}
+        }
 
         {/* Overall progress */}
-        {isUploading && uploadProgress.length > 0 && (
-          <div className="space-y-2">
+        {isUploading && uploadProgress.length > 0 &&
+        <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Overall Progress</span>
               <span>
-                {uploadProgress.filter(fp => fp.status === 'completed').length} / {uploadProgress.length}
+                {uploadProgress.filter((fp) => fp.status === 'completed').length} / {uploadProgress.length}
               </span>
             </div>
-            <Progress 
-              value={(uploadProgress.filter(fp => fp.status === 'completed').length / uploadProgress.length) * 100} 
-              className="h-2"
-            />
+            <Progress
+            value={uploadProgress.filter((fp) => fp.status === 'completed').length / uploadProgress.length * 100}
+            className="h-2" />
+
           </div>
-        )}
+        }
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default EnhancedFileUpload;

@@ -17,8 +17,8 @@ interface ProductionContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (userData: { name: string; email: string; password: string; role?: string }) => Promise<void>;
+  login: (credentials: {email: string;password: string;}) => Promise<void>;
+  register: (userData: {name: string;email: string;password: string;role?: string;}) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
@@ -45,23 +45,23 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
   // Initialize user session on app start
   useEffect(() => {
     initializeSession();
-    
+
     // Set up online/offline listeners
     const handleOnline = () => {
       setIsOnline(true);
       logger.logInfo('Application came online');
       enhancedToast.showInfoToast('Connection restored');
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
       logger.logWarn('Application went offline');
       enhancedToast.showWarningToast('You are now offline. Some features may be limited.');
     };
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     // Set up periodic sync if enabled
     let syncInterval: NodeJS.Timeout;
     if (PRODUCTION_CONFIG.sync.enableAutoSync) {
@@ -71,7 +71,7 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
         }
       }, PRODUCTION_CONFIG.sync.syncInterval);
     }
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -85,9 +85,9 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
     try {
       setIsLoading(true);
       logger.logInfo('Initializing user session');
-      
+
       const result = await productionApi.getUserInfo();
-      
+
       if (result.error) {
         // User not authenticated, clear any stored auth state
         setUser(null);
@@ -98,7 +98,7 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
         setIsAuthenticated(true);
         logger.logInfo('User session restored', { userId: result.data.ID, email: result.data.Email });
       }
-      
+
       setError(null);
     } catch (error) {
       logger.logError('Failed to initialize session', error);
@@ -110,23 +110,23 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
     }
   };
 
-  const login = async (credentials: { email: string; password: string }) => {
+  const login = async (credentials: {email: string;password: string;}) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const result = await productionApi.login(credentials);
-      
+
       if (result.error) {
         setError(result.error);
         throw new Error(result.error);
       }
-      
+
       // Fetch user info after successful login
       await refreshUser();
-      
+
       logger.logUserAction('User logged in', { email: credentials.email });
-      
+
     } catch (error) {
       logger.logError('Login failed', error);
       throw error;
@@ -135,20 +135,20 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
     }
   };
 
-  const register = async (userData: { name: string; email: string; password: string; role?: string }) => {
+  const register = async (userData: {name: string;email: string;password: string;role?: string;}) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const result = await productionApi.register(userData);
-      
+
       if (result.error) {
         setError(result.error);
         throw new Error(result.error);
       }
-      
+
       logger.logUserAction('User registered', { email: userData.email });
-      
+
     } catch (error) {
       logger.logError('Registration failed', error);
       throw error;
@@ -161,22 +161,22 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
     try {
       setIsLoading(true);
       logger.logUserAction('User logout initiated');
-      
+
       const result = await productionApi.logout();
-      
+
       if (result.error) {
         logger.logError('Logout failed', result.error);
         // Even if logout fails, clear local state
       }
-      
+
       setUser(null);
       setIsAuthenticated(false);
       setError(null);
       setLastSync(null);
       setSyncStatus('idle');
-      
+
       logger.logUserAction('User logged out');
-      
+
     } catch (error) {
       logger.logError('Logout error', error);
       // Clear local state regardless of API call result
@@ -190,18 +190,18 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
   const refreshUser = async () => {
     try {
       const result = await productionApi.getUserInfo();
-      
+
       if (result.error) {
         logger.logError('Failed to refresh user info', result.error);
         setUser(null);
         setIsAuthenticated(false);
         return;
       }
-      
+
       setUser(result.data);
       setIsAuthenticated(true);
       logger.logInfo('User info refreshed', { userId: result.data.ID });
-      
+
     } catch (error) {
       logger.logError('Failed to refresh user', error);
       setUser(null);
@@ -215,23 +215,23 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
 
   const performBackgroundSync = async () => {
     if (syncStatus === 'syncing') return; // Already syncing
-    
+
     try {
       setSyncStatus('syncing');
       logger.logInfo('Starting background sync');
-      
+
       // Perform any necessary data synchronization here
       // This could include:
       // - Sync offline changes
       // - Update cached data
       // - Validate data integrity
-      
+
       // For now, we'll just update the last sync time
       setLastSync(new Date());
       setSyncStatus('success');
-      
+
       logger.logInfo('Background sync completed');
-      
+
     } catch (error) {
       logger.logError('Background sync failed', error);
       setSyncStatus('error');
@@ -256,8 +256,8 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
   return (
     <ProductionContext.Provider value={contextValue}>
       {children}
-    </ProductionContext.Provider>
-  );
+    </ProductionContext.Provider>);
+
 };
 
 export const useProduction = (): ProductionContextType => {

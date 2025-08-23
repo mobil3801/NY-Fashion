@@ -4,10 +4,10 @@ const RUNTIME_CACHE = 'easysite-runtime-v1.0.0';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  // Add other static assets as needed
+'/',
+'/index.html',
+'/manifest.json'
+// Add other static assets as needed
 ];
 
 // Cache strategies
@@ -23,43 +23,43 @@ const CACHE_STRATEGIES = {
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...');
-  
+
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      })
-      .then(() => {
-        console.log('Static assets cached');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('Failed to cache static assets:', error);
-      })
+    caches.open(CACHE_NAME).
+    then((cache) => {
+      console.log('Caching static assets');
+      return cache.addAll(STATIC_ASSETS);
+    }).
+    then(() => {
+      console.log('Static assets cached');
+      return self.skipWaiting();
+    }).
+    catch((error) => {
+      console.error('Failed to cache static assets:', error);
+    })
   );
 });
 
 // Activate event - cleanup old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating...');
-  
+
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
-              console.log('Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('Old caches cleaned up');
-        return self.clients.claim();
-      })
+    caches.keys().
+    then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).
+    then(() => {
+      console.log('Old caches cleaned up');
+      return self.clients.claim();
+    })
   );
 });
 
@@ -67,35 +67,35 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
-  
+
   // Skip non-GET requests
   if (request.method !== 'GET') {
     return;
   }
-  
+
   // Skip chrome-extension and other non-http requests
   if (!request.url.startsWith('http')) {
     return;
   }
-  
+
   // Handle API requests
   if (url.pathname.includes('/api/') || url.pathname.includes('ezsite.apis.run')) {
     event.respondWith(handleApiRequest(request));
     return;
   }
-  
+
   // Handle static assets
   if (isStaticAsset(request.url)) {
     event.respondWith(handleStaticAsset(request));
     return;
   }
-  
+
   // Handle navigation requests
   if (request.mode === 'navigate') {
     event.respondWith(handleNavigation(request));
     return;
   }
-  
+
   // Default: network first
   event.respondWith(handleDefault(request));
 });
@@ -103,22 +103,22 @@ self.addEventListener('fetch', (event) => {
 // Handle API requests with network-first strategy
 async function handleApiRequest(request) {
   const cache = await caches.open(RUNTIME_CACHE);
-  
+
   try {
     // Try network first
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       // Cache successful responses (except real-time data)
       if (!isRealTimeData(request.url)) {
         cache.put(request, networkResponse.clone());
       }
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.log('Network failed for API request, trying cache:', request.url);
-    
+
     // Fallback to cache
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
@@ -127,7 +127,7 @@ async function handleApiRequest(request) {
       response.headers.set('X-Served-By', 'sw-cache');
       return response;
     }
-    
+
     // Return offline response for API requests
     return new Response(
       JSON.stringify({
@@ -146,25 +146,25 @@ async function handleApiRequest(request) {
 // Handle static assets with cache-first strategy
 async function handleStaticAsset(request) {
   const cache = await caches.open(CACHE_NAME);
-  
+
   try {
     // Try cache first
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Fallback to network
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.ok) {
       cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.error('Failed to serve static asset:', request.url, error);
-    
+
     // Return a basic offline page for HTML requests
     if (request.headers.get('accept')?.includes('text/html')) {
       return new Response(
@@ -191,7 +191,7 @@ async function handleStaticAsset(request) {
         }
       );
     }
-    
+
     throw error;
   }
 }
@@ -206,11 +206,11 @@ async function handleNavigation(request) {
     // Fallback to cached index.html for SPA routing
     const cache = await caches.open(CACHE_NAME);
     const cachedResponse = await cache.match('/index.html');
-    
+
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // Last resort offline page
     return handleStaticAsset(request);
   }
@@ -223,11 +223,11 @@ async function handleDefault(request) {
   } catch (error) {
     const cache = await caches.open(RUNTIME_CACHE);
     const cachedResponse = await cache.match(request);
-    
+
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     throw error;
   }
 }
@@ -235,17 +235,17 @@ async function handleDefault(request) {
 // Utility functions
 function isStaticAsset(url) {
   const staticExtensions = ['.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.woff', '.woff2'];
-  return staticExtensions.some(ext => url.includes(ext));
+  return staticExtensions.some((ext) => url.includes(ext));
 }
 
 function isRealTimeData(url) {
   const realTimeEndpoints = [
-    'getDashboardAnalytics',
-    'getSystemStatus',
-    'getAPIPerformanceMetrics',
-    'healthCheck'
-  ];
-  return realTimeEndpoints.some(endpoint => url.includes(endpoint));
+  'getDashboardAnalytics',
+  'getSystemStatus',
+  'getAPIPerformanceMetrics',
+  'healthCheck'];
+
+  return realTimeEndpoints.some((endpoint) => url.includes(endpoint));
 }
 
 // Handle background sync for offline actions
@@ -276,17 +276,17 @@ self.addEventListener('push', (event) => {
     tag: 'easysite-notification',
     requireInteraction: true,
     actions: [
-      {
-        action: 'view',
-        title: 'View',
-        icon: '/action-view.png'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss',
-        icon: '/action-dismiss.png'
-      }
-    ]
+    {
+      action: 'view',
+      title: 'View',
+      icon: '/action-view.png'
+    },
+    {
+      action: 'dismiss',
+      title: 'Dismiss',
+      icon: '/action-dismiss.png'
+    }]
+
   };
 
   event.waitUntil(
@@ -308,7 +308,7 @@ self.addEventListener('notificationclick', (event) => {
 // Performance monitoring
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CACHE_STATS') {
-    getCacheStats().then(stats => {
+    getCacheStats().then((stats) => {
       event.ports[0].postMessage({ type: 'CACHE_STATS_RESPONSE', data: stats });
     });
   }
@@ -326,7 +326,7 @@ async function getCacheStats() {
     const cache = await caches.open(cacheName);
     const keys = await cache.keys();
     stats.entries += keys.length;
-    
+
     // Estimate size (rough calculation)
     for (const request of keys) {
       const response = await cache.match(request);

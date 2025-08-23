@@ -18,7 +18,7 @@ async function getPurchaseOrderInvoices(poId) {
     `;
 
     const result = await window.ezsite.db.query(query, [parseInt(poId)]);
-    
+
     return {
       invoices: result || [],
       count: result?.length || 0

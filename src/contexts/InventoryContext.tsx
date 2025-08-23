@@ -15,7 +15,7 @@ interface InventoryContextType {
   totalProducts: number;
   hasMoreProducts: boolean;
   currentPage: number;
-  
+
   // Product operations
   fetchProducts: (params?: {
     page?: number;
@@ -30,14 +30,14 @@ interface InventoryContextType {
   deleteProduct: (id: number) => Promise<void>;
   getProduct: (id: number) => Promise<Product>;
   getProductById: (id: number) => Product | undefined;
-  bulkUpdateProducts: (products: Array<Partial<Product> & { id: number }>) => Promise<void>;
-  
+  bulkUpdateProducts: (products: Array<Partial<Product> & {id: number;}>) => Promise<void>;
+
   // Category operations
   fetchCategories: () => Promise<void>;
   createCategory: (category: Omit<Category, 'id'>) => Promise<Category>;
   updateCategory: (category: Category) => Promise<Category>;
   deleteCategory: (id: number) => Promise<void>;
-  
+
   // Stock operations
   fetchStockMovements: (params?: {
     page?: number;
@@ -49,10 +49,10 @@ interface InventoryContextType {
   }) => Promise<void>;
   createStockMovement: (movement: Omit<StockMovement, 'id'>) => Promise<StockMovement>;
   getLowStockProducts: () => Promise<void>;
-  
+
   // Image operations
   loadProductImages: (productId: number) => Promise<any[]>;
-  
+
   // Utility functions
   refreshData: () => Promise<void>;
   clearError: () => void;
@@ -74,7 +74,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const [totalProducts, setTotalProducts] = useState(0);
   const [hasMoreProducts, setHasMoreProducts] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const { isLoading, withLoading } = useLoadingState();
   const { toast } = useToast();
 
@@ -87,14 +87,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     await withLoading(async () => {
       try {
         logger.logInfo('Initializing inventory data');
-        
+
         // Load initial data in parallel
         await Promise.all([
-          fetchProducts({ page: 1 }),
-          fetchCategories(),
-          getLowStockProducts()
-        ]);
-        
+        fetchProducts({ page: 1 }),
+        fetchCategories(),
+        getLowStockProducts()]
+        );
+
         logger.logInfo('Inventory data initialized successfully');
       } catch (error: any) {
         logger.logError('Failed to initialize inventory data', error);
@@ -119,22 +119,22 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   } = {}) => {
     try {
       const { append = false, ...otherParams } = params;
-      
+
       logger.logDatabaseOperation('Fetching products', otherParams);
-      
+
       const result = await inventoryService.getProducts(otherParams);
-      
+
       if (append) {
-        setProducts(prev => [...prev, ...result.products]);
+        setProducts((prev) => [...prev, ...result.products]);
       } else {
         setProducts(result.products);
       }
-      
+
       setTotalProducts(result.total);
       setHasMoreProducts(result.hasMore);
       setCurrentPage(params.page || 1);
       setError(null);
-      
+
     } catch (error: any) {
       logger.logError('Failed to fetch products', error);
       setError(error.message || 'Failed to fetch products');
@@ -146,18 +146,18 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     return withLoading(async () => {
       try {
         logger.logDatabaseOperation('Creating product', { name: product.name });
-        
+
         const newProduct = await inventoryService.saveProduct(product);
-        
+
         // Add to local state
-        setProducts(prev => [newProduct, ...prev]);
+        setProducts((prev) => [newProduct, ...prev]);
         setError(null);
-        
-        logger.logDatabaseOperation('Product created successfully', { 
-          id: newProduct.id, 
-          name: product.name 
+
+        logger.logDatabaseOperation('Product created successfully', {
+          id: newProduct.id,
+          name: product.name
         });
-        
+
         return newProduct;
       } catch (error: any) {
         logger.logError('Failed to create product', error);
@@ -170,24 +170,24 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const updateProduct = async (product: Product): Promise<Product> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Updating product', { 
-          id: product.id, 
-          name: product.name 
+        logger.logDatabaseOperation('Updating product', {
+          id: product.id,
+          name: product.name
         });
-        
+
         const updatedProduct = await inventoryService.saveProduct(product);
-        
+
         // Update in local state
-        setProducts(prev => 
-          prev.map(p => p.id === product.id ? updatedProduct : p)
+        setProducts((prev) =>
+        prev.map((p) => p.id === product.id ? updatedProduct : p)
         );
         setError(null);
-        
-        logger.logDatabaseOperation('Product updated successfully', { 
-          id: product.id, 
-          name: product.name 
+
+        logger.logDatabaseOperation('Product updated successfully', {
+          id: product.id,
+          name: product.name
         });
-        
+
         return updatedProduct;
       } catch (error: any) {
         logger.logError('Failed to update product', error);
@@ -201,13 +201,13 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     return withLoading(async () => {
       try {
         logger.logDatabaseOperation('Deleting product', { id });
-        
+
         await inventoryService.deleteProduct(id);
-        
+
         // Remove from local state
-        setProducts(prev => prev.filter(p => p.id !== id));
+        setProducts((prev) => prev.filter((p) => p.id !== id));
         setError(null);
-        
+
         logger.logDatabaseOperation('Product deleted successfully', { id });
       } catch (error: any) {
         logger.logError('Failed to delete product', error);
@@ -220,14 +220,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const getProduct = async (id: number): Promise<Product> => {
     try {
       logger.logDatabaseOperation('Fetching single product', { id });
-      
+
       const product = await inventoryService.getProduct(id);
-      
-      logger.logDatabaseOperation('Product fetched successfully', { 
-        id, 
-        name: product.name 
+
+      logger.logDatabaseOperation('Product fetched successfully', {
+        id,
+        name: product.name
       });
-      
+
       return product;
     } catch (error: any) {
       logger.logError('Failed to fetch product', error);
@@ -236,23 +236,23 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   };
 
   const getProductById = (id: number): Product | undefined => {
-    return products.find(p => p.id === id);
+    return products.find((p) => p.id === id);
   };
 
-  const bulkUpdateProducts = async (productsToUpdate: Array<Partial<Product> & { id: number }>): Promise<void> => {
+  const bulkUpdateProducts = async (productsToUpdate: Array<Partial<Product> & {id: number;}>): Promise<void> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Bulk updating products', { 
-          count: productsToUpdate.length 
+        logger.logDatabaseOperation('Bulk updating products', {
+          count: productsToUpdate.length
         });
-        
+
         const result = await inventoryService.bulkUpdateProducts(productsToUpdate);
-        
+
         // Refresh products list to get updated data
         await fetchProducts({ page: 1 });
-        
+
         setError(null);
-        
+
         logger.logDatabaseOperation('Bulk update completed', {
           total: productsToUpdate.length,
           successful: result.results?.length || 0,
@@ -270,14 +270,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const fetchCategories = async (): Promise<void> => {
     try {
       logger.logDatabaseOperation('Fetching categories');
-      
+
       const categoriesList = await inventoryService.getCategories();
-      
+
       setCategories(categoriesList);
       setError(null);
-      
-      logger.logDatabaseOperation('Categories fetched successfully', { 
-        count: categoriesList.length 
+
+      logger.logDatabaseOperation('Categories fetched successfully', {
+        count: categoriesList.length
       });
     } catch (error: any) {
       logger.logError('Failed to fetch categories', error);
@@ -290,18 +290,18 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     return withLoading(async () => {
       try {
         logger.logDatabaseOperation('Creating category', { name: category.name });
-        
+
         const newCategory = await inventoryService.saveCategory(category);
-        
+
         // Add to local state
-        setCategories(prev => [...prev, newCategory]);
+        setCategories((prev) => [...prev, newCategory]);
         setError(null);
-        
-        logger.logDatabaseOperation('Category created successfully', { 
-          id: newCategory.id, 
-          name: category.name 
+
+        logger.logDatabaseOperation('Category created successfully', {
+          id: newCategory.id,
+          name: category.name
         });
-        
+
         return newCategory;
       } catch (error: any) {
         logger.logError('Failed to create category', error);
@@ -314,24 +314,24 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const updateCategory = async (category: Category): Promise<Category> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Updating category', { 
-          id: category.id, 
-          name: category.name 
+        logger.logDatabaseOperation('Updating category', {
+          id: category.id,
+          name: category.name
         });
-        
+
         const updatedCategory = await inventoryService.saveCategory(category);
-        
+
         // Update in local state
-        setCategories(prev => 
-          prev.map(c => c.id === category.id ? updatedCategory : c)
+        setCategories((prev) =>
+        prev.map((c) => c.id === category.id ? updatedCategory : c)
         );
         setError(null);
-        
-        logger.logDatabaseOperation('Category updated successfully', { 
-          id: category.id, 
-          name: category.name 
+
+        logger.logDatabaseOperation('Category updated successfully', {
+          id: category.id,
+          name: category.name
         });
-        
+
         return updatedCategory;
       } catch (error: any) {
         logger.logError('Failed to update category', error);
@@ -345,18 +345,18 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     return withLoading(async () => {
       try {
         logger.logDatabaseOperation('Deleting category', { id });
-        
+
         // Note: You might want to check if category has products before deleting
         const result = await inventoryService.productionApi.tableDelete('categories', { id });
-        
+
         if (result.error) {
           throw new Error(result.error);
         }
-        
+
         // Remove from local state
-        setCategories(prev => prev.filter(c => c.id !== id));
+        setCategories((prev) => prev.filter((c) => c.id !== id));
         setError(null);
-        
+
         logger.logDatabaseOperation('Category deleted successfully', { id });
       } catch (error: any) {
         logger.logError('Failed to delete category', error);
@@ -377,14 +377,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   } = {}): Promise<void> => {
     try {
       logger.logDatabaseOperation('Fetching stock movements', params);
-      
+
       const result = await inventoryService.getStockMovements(params);
-      
+
       setStockMovements(result.movements);
       setError(null);
-      
-      logger.logDatabaseOperation('Stock movements fetched successfully', { 
-        count: result.movements.length 
+
+      logger.logDatabaseOperation('Stock movements fetched successfully', {
+        count: result.movements.length
       });
     } catch (error: any) {
       logger.logError('Failed to fetch stock movements', error);
@@ -401,22 +401,22 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
           movement_type: movement.movement_type,
           quantity: movement.quantity
         });
-        
+
         const newMovement = await inventoryService.createStockMovement(movement);
-        
+
         // Add to local state
-        setStockMovements(prev => [newMovement, ...prev]);
-        
+        setStockMovements((prev) => [newMovement, ...prev]);
+
         // Refresh products to update stock quantities
         await fetchProducts({ page: currentPage });
-        
+
         setError(null);
-        
-        logger.logDatabaseOperation('Stock movement created successfully', { 
+
+        logger.logDatabaseOperation('Stock movement created successfully', {
           id: newMovement.id,
-          product_id: movement.product_id 
+          product_id: movement.product_id
         });
-        
+
         return newMovement;
       } catch (error: any) {
         logger.logError('Failed to create stock movement', error);
@@ -429,14 +429,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const getLowStockProducts = async (): Promise<void> => {
     try {
       logger.logDatabaseOperation('Fetching low stock products');
-      
+
       const lowStock = await inventoryService.getLowStockProducts();
-      
+
       setLowStockProducts(lowStock);
       setError(null);
-      
-      logger.logDatabaseOperation('Low stock products fetched successfully', { 
-        count: lowStock.length 
+
+      logger.logDatabaseOperation('Low stock products fetched successfully', {
+        count: lowStock.length
       });
     } catch (error: any) {
       logger.logError('Failed to fetch low stock products', error);
@@ -449,7 +449,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const loadProductImages = async (productId: number): Promise<any[]> => {
     try {
       logger.logDatabaseOperation('Loading product images', { productId });
-      
+
       const result = await window.ezsite.apis.run({
         path: 'getProductImages',
         param: [productId]
@@ -459,9 +459,9 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         throw new Error(result.error);
       }
 
-      logger.logDatabaseOperation('Product images loaded successfully', { 
-        productId, 
-        count: result.data.count 
+      logger.logDatabaseOperation('Product images loaded successfully', {
+        productId,
+        count: result.data.count
       });
 
       return result.data.images || [];
@@ -476,13 +476,13 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     await withLoading(async () => {
       try {
         logger.logInfo('Refreshing inventory data');
-        
+
         await Promise.all([
-          fetchProducts({ page: 1 }),
-          fetchCategories(),
-          getLowStockProducts()
-        ]);
-        
+        fetchProducts({ page: 1 }),
+        fetchCategories(),
+        getLowStockProducts()]
+        );
+
         logger.logInfo('Inventory data refreshed successfully');
       } catch (error: any) {
         logger.logError('Failed to refresh inventory data', error);
@@ -535,8 +535,8 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   return (
     <InventoryContext.Provider value={contextValue}>
       {children}
-    </InventoryContext.Provider>
-  );
+    </InventoryContext.Provider>);
+
 };
 
 export const useInventory = (): InventoryContextType => {

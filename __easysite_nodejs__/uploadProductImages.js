@@ -5,7 +5,7 @@ async function uploadProductImages(productId, files) {
       throw new Error('Product ID is required');
     }
 
-    if (!files || (!Array.isArray(files) && !files.file)) {
+    if (!files || !Array.isArray(files) && !files.file) {
       throw new Error('No files provided');
     }
 
@@ -72,13 +72,13 @@ async function uploadProductImages(productId, files) {
       `;
 
       const insertResult = await window.ezsite.db.query(insertQuery, [
-        parseInt(productId),
-        urlResult.data,
-        fileData.altText || `Product image ${sortOrder + 1}`,
-        sortOrder,
-        file.size,
-        file.type,
-        uploadResult.data // Store file ID for cleanup purposes
+      parseInt(productId),
+      urlResult.data,
+      fileData.altText || `Product image ${sortOrder + 1}`,
+      sortOrder,
+      file.size,
+      file.type,
+      uploadResult.data // Store file ID for cleanup purposes
       ]);
 
       if (!insertResult || insertResult.length === 0) {

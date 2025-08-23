@@ -6,15 +6,15 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Loader2, 
-  RefreshCw, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
   Clock,
   Wifi,
-  WifiOff
-} from 'lucide-react';
+  WifiOff } from
+'lucide-react';
 import { cn } from '@/lib/utils';
 import PRODUCTION_CONFIG from '@/config/production';
 
@@ -22,30 +22,30 @@ interface LoadingStateProps {
   isLoading: boolean;
   error?: string | null;
   children: React.ReactNode;
-  
+
   // Loading customization
   loadingMessage?: string;
   loadingProgress?: number;
   showSkeleton?: boolean;
   skeletonRows?: number;
-  
+
   // Error handling
   onRetry?: () => void;
   maxRetries?: number;
   currentRetries?: number;
-  
+
   // Timeout handling
   timeout?: number;
   onTimeout?: () => void;
-  
+
   // Offline handling
   isOffline?: boolean;
   showOfflineMessage?: boolean;
-  
+
   // Success state
   showSuccess?: boolean;
   successMessage?: string;
-  
+
   // Layout
   variant?: 'card' | 'inline' | 'page' | 'overlay';
   size?: 'sm' | 'md' | 'lg';
@@ -71,14 +71,14 @@ export function LoadingState({
   successMessage = 'Loaded successfully',
   variant = 'inline',
   size = 'md',
-  className,
+  className
 }: LoadingStateProps) {
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showSuccessState, setShowSuccessState] = useState(false);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (isLoading && timeout > 0) {
       timeoutId = setTimeout(() => {
         setTimeoutReached(true);
@@ -103,114 +103,114 @@ export function LoadingState({
   const sizeClasses = {
     sm: 'text-sm p-2',
     md: 'text-base p-4',
-    lg: 'text-lg p-6',
+    lg: 'text-lg p-6'
   };
 
-  const renderSkeleton = () => (
-    <div className="space-y-3">
-      {Array.from({ length: skeletonRows }).map((_, index) => (
-        <div key={index} className="space-y-2">
+  const renderSkeleton = () =>
+  <div className="space-y-3">
+      {Array.from({ length: skeletonRows }).map((_, index) =>
+    <div key={index} className="space-y-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-3/4" />
         </div>
-      ))}
-    </div>
-  );
+    )}
+    </div>;
 
-  const renderLoadingContent = () => (
-    <div className={cn(
-      'flex flex-col items-center justify-center space-y-4',
-      sizeClasses[size]
-    )}>
+
+  const renderLoadingContent = () =>
+  <div className={cn(
+    'flex flex-col items-center justify-center space-y-4',
+    sizeClasses[size]
+  )}>
       <div className="flex items-center space-x-3">
         <Loader2 className="h-5 w-5 animate-spin" />
         <span className="font-medium">{loadingMessage}</span>
       </div>
       
-      {loadingProgress !== undefined && (
-        <div className="w-full max-w-xs space-y-2">
+      {loadingProgress !== undefined &&
+    <div className="w-full max-w-xs space-y-2">
           <Progress value={loadingProgress} className="h-2" />
           <p className="text-sm text-muted-foreground text-center">
             {loadingProgress}% complete
           </p>
         </div>
-      )}
+    }
       
-      {timeoutReached && (
-        <Alert variant="destructive" className="w-full max-w-md">
+      {timeoutReached &&
+    <Alert variant="destructive" className="w-full max-w-md">
           <Clock className="h-4 w-4" />
           <AlertDescription>
             This is taking longer than expected. You can continue waiting or try again.
           </AlertDescription>
         </Alert>
-      )}
+    }
       
-      {isOffline && showOfflineMessage && (
-        <Alert variant="destructive" className="w-full max-w-md">
+      {isOffline && showOfflineMessage &&
+    <Alert variant="destructive" className="w-full max-w-md">
           <WifiOff className="h-4 w-4" />
           <AlertDescription>
             You appear to be offline. Some features may not work properly.
           </AlertDescription>
         </Alert>
-      )}
+    }
       
-      {showSkeleton && (
-        <div className="w-full max-w-md">
+      {showSkeleton &&
+    <div className="w-full max-w-md">
           {renderSkeleton()}
         </div>
-      )}
-    </div>
-  );
+    }
+    </div>;
 
-  const renderErrorContent = () => (
-    <div className={cn(
-      'flex flex-col items-center justify-center space-y-4',
-      sizeClasses[size]
-    )}>
+
+  const renderErrorContent = () =>
+  <div className={cn(
+    'flex flex-col items-center justify-center space-y-4',
+    sizeClasses[size]
+  )}>
       <Alert variant="destructive" className="w-full max-w-md">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
       
-      {onRetry && (
-        <div className="flex flex-col items-center space-y-2">
-          <Button 
-            onClick={onRetry} 
-            variant="outline" 
-            size="sm"
-            disabled={currentRetries >= maxRetries}
-          >
+      {onRetry &&
+    <div className="flex flex-col items-center space-y-2">
+          <Button
+        onClick={onRetry}
+        variant="outline"
+        size="sm"
+        disabled={currentRetries >= maxRetries}>
+
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry ({maxRetries - currentRetries} left)
           </Button>
           
-          {currentRetries > 0 && (
-            <Badge variant="secondary">
+          {currentRetries > 0 &&
+      <Badge variant="secondary">
               Attempt {currentRetries + 1} of {maxRetries + 1}
             </Badge>
-          )}
+      }
         </div>
-      )}
+    }
       
-      {isOffline && (
-        <Alert className="w-full max-w-md">
+      {isOffline &&
+    <Alert className="w-full max-w-md">
           <WifiOff className="h-4 w-4" />
           <AlertDescription>
             Check your internet connection and try again.
           </AlertDescription>
         </Alert>
-      )}
-    </div>
-  );
+    }
+    </div>;
 
-  const renderSuccessContent = () => (
-    <Alert className="w-full max-w-md border-green-200 bg-green-50">
+
+  const renderSuccessContent = () =>
+  <Alert className="w-full max-w-md border-green-200 bg-green-50">
       <CheckCircle className="h-4 w-4 text-green-600" />
       <AlertDescription className="text-green-800">
         {successMessage}
       </AlertDescription>
-    </Alert>
-  );
+    </Alert>;
+
 
   // Show success state briefly
   if (showSuccessState) {
@@ -223,15 +223,15 @@ export function LoadingState({
           <CardContent className="p-6">
             {renderSuccessContent()}
           </CardContent>
-        </Card>
-      );
+        </Card>);
+
     }
   }
 
   // Show error state
   if (error) {
     const errorContent = renderErrorContent();
-    
+
     switch (variant) {
       case 'card':
         return (
@@ -239,8 +239,8 @@ export function LoadingState({
             <CardContent>
               {errorContent}
             </CardContent>
-          </Card>
-        );
+          </Card>);
+
       case 'page':
         return (
           <div className={cn(
@@ -248,8 +248,8 @@ export function LoadingState({
             className
           )}>
             {errorContent}
-          </div>
-        );
+          </div>);
+
       case 'overlay':
         return (
           <div className={cn(
@@ -257,8 +257,8 @@ export function LoadingState({
             className
           )}>
             {errorContent}
-          </div>
-        );
+          </div>);
+
       default:
         return errorContent;
     }
@@ -267,7 +267,7 @@ export function LoadingState({
   // Show loading state
   if (isLoading) {
     const loadingContent = renderLoadingContent();
-    
+
     switch (variant) {
       case 'card':
         return (
@@ -275,8 +275,8 @@ export function LoadingState({
             <CardContent>
               {loadingContent}
             </CardContent>
-          </Card>
-        );
+          </Card>);
+
       case 'page':
         return (
           <div className={cn(
@@ -284,8 +284,8 @@ export function LoadingState({
             className
           )}>
             {loadingContent}
-          </div>
-        );
+          </div>);
+
       case 'overlay':
         return (
           <div className={cn(
@@ -293,8 +293,8 @@ export function LoadingState({
             className
           )}>
             {loadingContent}
-          </div>
-        );
+          </div>);
+
       default:
         return loadingContent;
     }

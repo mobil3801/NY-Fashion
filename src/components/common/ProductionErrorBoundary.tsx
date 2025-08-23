@@ -32,7 +32,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-      errorId: '',
+      errorId: ''
     };
   }
 
@@ -40,22 +40,22 @@ export class ProductionErrorBoundary extends Component<Props, State> {
     return {
       hasError: true,
       error,
-      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    
+
     // Log error to console
     console.error('Production Error Boundary caught an error:', error, errorInfo);
-    
+
     // Log error details
     this.logError(error, errorInfo);
-    
+
     // Call custom error handler
     this.props.onError?.(error, errorInfo);
-    
+
     // Show user-friendly error toast
     enhancedToast.error('Something went wrong. Our team has been notified.');
   }
@@ -70,7 +70,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        level: this.props.level || 'component',
+        level: this.props.level || 'component'
       };
 
       // Log to audit logs table for production monitoring
@@ -78,7 +78,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
         action: 'ERROR_BOUNDARY_TRIGGERED',
         details: JSON.stringify(errorData),
         timestamp: new Date().toISOString(),
-        severity: 'ERROR',
+        severity: 'ERROR'
       });
     } catch (loggingError) {
       console.error('Failed to log error:', loggingError);
@@ -92,7 +92,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
         hasError: false,
         error: null,
         errorInfo: null,
-        errorId: '',
+        errorId: ''
       });
       enhancedToast.success('Retrying...');
     } else {
@@ -110,19 +110,19 @@ export class ProductionErrorBoundary extends Component<Props, State> {
 
   private renderErrorDetails() {
     const { error, errorInfo, errorId } = this.state;
-    
+
     if (!error) return null;
 
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {isProduction 
-              ? 'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.'
-              : error.message
+            {isProduction ?
+            'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.' :
+            error.message
             }
           </AlertDescription>
         </Alert>
@@ -139,8 +139,8 @@ export class ProductionErrorBoundary extends Component<Props, State> {
           </Badge>
         </div>
 
-        {!isProduction && (
-          <Card>
+        {!isProduction &&
+        <Card>
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
                 <Bug className="h-4 w-4" />
@@ -151,22 +151,22 @@ export class ProductionErrorBoundary extends Component<Props, State> {
               <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-32">
                 {error.stack}
               </pre>
-              {errorInfo && (
-                <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-32 mt-2">
+              {errorInfo &&
+            <pre className="text-xs bg-muted p-2 rounded overflow-auto max-h-32 mt-2">
                   {errorInfo.componentStack}
                 </pre>
-              )}
+            }
             </CardContent>
           </Card>
-        )}
+        }
 
         <div className="flex flex-wrap gap-2">
-          <Button 
+          <Button
             onClick={this.handleRetry}
             disabled={this.retryCount >= this.maxRetries}
             variant="default"
-            size="sm"
-          >
+            size="sm">
+
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry ({this.maxRetries - this.retryCount} left)
           </Button>
@@ -176,15 +176,15 @@ export class ProductionErrorBoundary extends Component<Props, State> {
             Reload Page
           </Button>
           
-          {this.props.level === 'page' && (
-            <Button onClick={this.handleGoHome} variant="ghost" size="sm">
+          {this.props.level === 'page' &&
+          <Button onClick={this.handleGoHome} variant="ghost" size="sm">
               <Home className="h-4 w-4 mr-2" />
               Go Home
             </Button>
-          )}
+          }
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   render() {
@@ -196,7 +196,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
 
       // Default error UI based on level
       const { level = 'component' } = this.props;
-      
+
       if (level === 'global') {
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
@@ -211,10 +211,10 @@ export class ProductionErrorBoundary extends Component<Props, State> {
                 {this.renderErrorDetails()}
               </CardContent>
             </Card>
-          </div>
-        );
+          </div>);
+
       }
-      
+
       if (level === 'page') {
         return (
           <div className="flex items-center justify-center p-8">
@@ -229,8 +229,8 @@ export class ProductionErrorBoundary extends Component<Props, State> {
                 {this.renderErrorDetails()}
               </CardContent>
             </Card>
-          </div>
-        );
+          </div>);
+
       }
 
       // Component level error
@@ -245,8 +245,8 @@ export class ProductionErrorBoundary extends Component<Props, State> {
           <CardContent className="pt-0">
             {this.renderErrorDetails()}
           </CardContent>
-        </Card>
-      );
+        </Card>);
+
     }
 
     return this.props.children;

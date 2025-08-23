@@ -71,9 +71,9 @@ class EnhancedCache {
     try {
       const cacheObject = Object.fromEntries(this.cache);
       const serialized = JSON.stringify(cacheObject);
-      
+
       // Check if we're approaching localStorage limit
-      if (serialized.length > 4 * 1024 * 1024) { // 4MB limit
+      if (serialized.length > 4 * 1024 * 1024) {// 4MB limit
         this.evictLeastUsed(Math.floor(this.cache.size / 2));
       }
 
@@ -134,15 +134,15 @@ class EnhancedCache {
   }
 
   private evictLeastUsed(count: number): void {
-    const entries = Array.from(this.cache.entries())
-      .sort((a, b) => {
-        // Sort by access count (ascending) then by last accessed (ascending)
-        if (a[1].accessCount !== b[1].accessCount) {
-          return a[1].accessCount - b[1].accessCount;
-        }
-        return a[1].lastAccessed - b[1].lastAccessed;
-      })
-      .slice(0, count);
+    const entries = Array.from(this.cache.entries()).
+    sort((a, b) => {
+      // Sort by access count (ascending) then by last accessed (ascending)
+      if (a[1].accessCount !== b[1].accessCount) {
+        return a[1].accessCount - b[1].accessCount;
+      }
+      return a[1].lastAccessed - b[1].lastAccessed;
+    }).
+    slice(0, count);
 
     entries.forEach(([key]) => {
       this.cache.delete(key);
@@ -177,7 +177,7 @@ class EnhancedCache {
     if (!entry) return null;
 
     const now = Date.now();
-    
+
     // Check if expired
     if (entry.timestamp + entry.ttl < now) {
       this.cache.delete(key);
@@ -273,7 +273,7 @@ class EnhancedCache {
       expiredEntries,
       totalSizeBytes: totalSize,
       maxSize: this.config.maxSize,
-      utilization: (this.cache.size / this.config.maxSize) * 100
+      utilization: this.cache.size / this.config.maxSize * 100
     };
   }
 
@@ -282,11 +282,11 @@ class EnhancedCache {
     try {
       logger.logInfo('Starting cache warming');
       const data = await warmingFunction();
-      
+
       Object.entries(data).forEach(([key, value]) => {
         this.set(key, value, this.config.defaultTTL * 2); // Longer TTL for warmed data
       });
-      
+
       logger.logInfo('Cache warming completed', { entriesWarmed: Object.keys(data).length });
     } catch (error) {
       logger.logError('Cache warming failed', error);

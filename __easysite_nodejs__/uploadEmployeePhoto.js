@@ -10,7 +10,7 @@ async function uploadEmployeePhoto(employeeId, photoData, files) {
     }
 
     const { frontImageFile, backImageFile } = files || {};
-    
+
     if (!frontImageFile) {
       throw new Error('Front image is required');
     }
@@ -79,8 +79,8 @@ async function uploadEmployeePhoto(employeeId, photoData, files) {
 
     // Mask the ID number (show only last 4 characters)
     const id_number_masked = photoData.id_number.length > 4 ?
-      '*'.repeat(photoData.id_number.length - 4) + photoData.id_number.slice(-4) :
-      '*'.repeat(photoData.id_number.length);
+    '*'.repeat(photoData.id_number.length - 4) + photoData.id_number.slice(-4) :
+    '*'.repeat(photoData.id_number.length);
 
     // Begin database transaction
     await window.ezsite.db.query('BEGIN');
@@ -118,19 +118,19 @@ async function uploadEmployeePhoto(employeeId, photoData, files) {
         `;
 
         const updateResult = await window.ezsite.db.query(updateQuery, [
-          photoData.id_type,
-          photoData.id_number,
-          id_number_masked,
-          frontUrlResult.data,
-          backImageUrl,
-          frontUploadResult.data,
-          backFileId,
-          photoData.issue_date,
-          photoData.expiry_date,
-          photoData.is_primary,
-          photoData.notes,
-          photoData.id
-        ]);
+        photoData.id_type,
+        photoData.id_number,
+        id_number_masked,
+        frontUrlResult.data,
+        backImageUrl,
+        frontUploadResult.data,
+        backFileId,
+        photoData.issue_date,
+        photoData.expiry_date,
+        photoData.is_primary,
+        photoData.notes,
+        photoData.id]
+        );
 
         result = updateResult[0];
         result.message = 'Photo ID updated successfully';
@@ -147,19 +147,19 @@ async function uploadEmployeePhoto(employeeId, photoData, files) {
         `;
 
         const insertResult = await window.ezsite.db.query(insertQuery, [
-          parseInt(employeeId),
-          photoData.id_type,
-          photoData.id_number,
-          id_number_masked,
-          frontUrlResult.data,
-          backImageUrl,
-          frontUploadResult.data,
-          backFileId,
-          photoData.issue_date,
-          photoData.expiry_date,
-          photoData.is_primary,
-          photoData.notes
-        ]);
+        parseInt(employeeId),
+        photoData.id_type,
+        photoData.id_number,
+        id_number_masked,
+        frontUrlResult.data,
+        backImageUrl,
+        frontUploadResult.data,
+        backFileId,
+        photoData.issue_date,
+        photoData.expiry_date,
+        photoData.is_primary,
+        photoData.notes]
+        );
 
         result = insertResult[0];
         result.message = 'Photo ID created successfully';

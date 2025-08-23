@@ -6,21 +6,21 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Activity, 
-  Database, 
-  Zap, 
-  HardDrive, 
-  Network, 
+import {
+  Activity,
+  Database,
+  Zap,
+  HardDrive,
+  Network,
   AlertTriangle,
   CheckCircle,
   TrendingUp,
   RefreshCw,
   Settings,
-  Eye
-} from 'lucide-react';
+  Eye } from
+'lucide-react';
 import { usePerformanceMonitor } from '@/utils/enhanced-performance-monitor';
-import useCache from  '@/utils/production-cache';
+import useCache from '@/utils/production-cache';
 import { useMemoryManagement } from '@/utils/memory-manager';
 import ProductionDashboard from './ProductionDashboard';
 import { useToast } from '@/hooks/use-toast';
@@ -38,7 +38,7 @@ const PerformanceDashboard: React.FC = () => {
   const { stats: cacheStats } = useCache();
   const { memoryInfo, forceCleanup } = useMemoryManagement('performance-dashboard');
   const { toast } = useToast();
-  
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [healthStatus, setHealthStatus] = useState<any>(null);
   const [systemMetrics, setSystemMetrics] = useState<PerformanceMetrics[]>([]);
@@ -83,8 +83,8 @@ const PerformanceDashboard: React.FC = () => {
         category: 'Database',
         value: Math.round(report.categories.database.averageDuration || 0),
         unit: 'ms',
-        status: report.categories.database.averageDuration > 1000 ? 'critical' : 
-               report.categories.database.averageDuration > 500 ? 'warning' : 'good'
+        status: report.categories.database.averageDuration > 1000 ? 'critical' :
+        report.categories.database.averageDuration > 500 ? 'warning' : 'good'
       });
     }
 
@@ -94,8 +94,8 @@ const PerformanceDashboard: React.FC = () => {
         category: 'API',
         value: Math.round(report.categories.api.averageDuration || 0),
         unit: 'ms',
-        status: report.categories.api.averageDuration > 2000 ? 'critical' : 
-               report.categories.api.averageDuration > 1000 ? 'warning' : 'good'
+        status: report.categories.api.averageDuration > 2000 ? 'critical' :
+        report.categories.api.averageDuration > 1000 ? 'warning' : 'good'
       });
     }
 
@@ -105,8 +105,8 @@ const PerformanceDashboard: React.FC = () => {
         category: 'Memory',
         value: Math.round(memoryInfo.percentage),
         unit: '%',
-        status: memoryInfo.percentage > 80 ? 'critical' : 
-               memoryInfo.percentage > 60 ? 'warning' : 'good'
+        status: memoryInfo.percentage > 80 ? 'critical' :
+        memoryInfo.percentage > 60 ? 'warning' : 'good'
       });
     }
 
@@ -194,8 +194,8 @@ const PerformanceDashboard: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleMemoryCleanup}
-          >
+            onClick={handleMemoryCleanup}>
+
             <HardDrive className="h-4 w-4 mr-2" />
             Cleanup Memory
           </Button>
@@ -203,8 +203,8 @@ const PerformanceDashboard: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
+            disabled={isRefreshing}>
+
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -231,32 +231,32 @@ const PerformanceDashboard: React.FC = () => {
 
       {/* Performance Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {systemMetrics.map((metric) => (
-          <Card key={metric.category}>
+        {systemMetrics.map((metric) =>
+        <Card key={metric.category}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{metric.category}</CardTitle>
               <div className="flex items-center gap-1">
                 {getStatusIcon(metric.status)}
-                {metric.trend && (
-                  <TrendingUp className={`h-3 w-3 ${
-                    metric.trend === 'up' ? 'text-red-500' : 
-                    metric.trend === 'down' ? 'text-green-500' : 
-                    'text-gray-500'
-                  }`} />
-                )}
+                {metric.trend &&
+              <TrendingUp className={`h-3 w-3 ${
+              metric.trend === 'up' ? 'text-red-500' :
+              metric.trend === 'down' ? 'text-green-500' :
+              'text-gray-500'}`
+              } />
+              }
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {metric.value}{metric.unit}
               </div>
-              <Progress 
-                value={metric.unit === '%' ? metric.value : Math.min(metric.value / 1000 * 100, 100)} 
-                className="mt-2"
-              />
+              <Progress
+              value={metric.unit === '%' ? metric.value : Math.min(metric.value / 1000 * 100, 100)}
+              className="mt-2" />
+
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
       {/* Detailed Metrics Tabs */}
@@ -283,8 +283,8 @@ const PerformanceDashboard: React.FC = () => {
               <CardContent>
                 <ScrollArea className="h-80">
                   <div className="space-y-2">
-                    {metrics.slice(0, 20).map((metric, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 border rounded">
+                    {metrics.slice(0, 20).map((metric, index) =>
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
                         <div className="flex items-center gap-2">
                           {metric.category === 'database' && <Database className="h-4 w-4" />}
                           {metric.category === 'api' && <Zap className="h-4 w-4" />}
@@ -304,7 +304,7 @@ const PerformanceDashboard: React.FC = () => {
                           </Badge>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -316,8 +316,8 @@ const PerformanceDashboard: React.FC = () => {
                 <CardTitle className="text-sm">Performance Summary</CardTitle>
               </CardHeader>
               <CardContent>
-                {report && (
-                  <div className="space-y-4">
+                {report &&
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-2xl font-bold">{report.summary.totalMetrics}</div>
@@ -341,56 +341,56 @@ const PerformanceDashboard: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
         <TabsContent value="health" className="space-y-4">
-          {healthStatus && (
-            <div className="grid gap-4">
-              {Object.entries(healthStatus.checks || {}).map(([category, check]: [string, any]) => (
-                <Card key={category}>
+          {healthStatus &&
+          <div className="grid gap-4">
+              {Object.entries(healthStatus.checks || {}).map(([category, check]: [string, any]) =>
+            <Card key={category}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium capitalize">{category}</CardTitle>
                     {getStatusIcon(check.status)}
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {check.responseTime && (
-                        <div className="text-sm">
+                      {check.responseTime &&
+                  <div className="text-sm">
                           Response Time: <Badge variant="outline">{check.responseTime}ms</Badge>
                         </div>
-                      )}
-                      {check.issues && check.issues.length > 0 && (
-                        <div className="text-sm">
+                  }
+                      {check.issues && check.issues.length > 0 &&
+                  <div className="text-sm">
                           <div className="font-medium">Issues:</div>
                           <ul className="list-disc list-inside text-muted-foreground">
-                            {check.issues.map((issue: string, index: number) => (
-                              <li key={index}>{issue}</li>
-                            ))}
+                            {check.issues.map((issue: string, index: number) =>
+                      <li key={index}>{issue}</li>
+                      )}
                           </ul>
                         </div>
-                      )}
-                      {check.metrics && (
-                        <div className="text-sm">
+                  }
+                      {check.metrics &&
+                  <div className="text-sm">
                           <div className="font-medium">Metrics:</div>
                           <div className="grid grid-cols-2 gap-2 mt-1">
-                            {Object.entries(check.metrics).map(([key, value]: [string, any]) => (
-                              <div key={key} className="text-xs">
+                            {Object.entries(check.metrics).map(([key, value]: [string, any]) =>
+                      <div key={key} className="text-xs">
                                 <span className="text-muted-foreground">{key}:</span> {value}
                               </div>
-                            ))}
+                      )}
                           </div>
                         </div>
-                      )}
+                  }
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+            )}
             </div>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="cache" className="space-y-4">
@@ -433,8 +433,8 @@ const PerformanceDashboard: React.FC = () => {
                 <CardTitle className="text-sm">Memory Usage</CardTitle>
               </CardHeader>
               <CardContent>
-                {memoryInfo ? (
-                  <div className="space-y-4">
+                {memoryInfo ?
+                <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-2xl font-bold">
@@ -453,12 +453,12 @@ const PerformanceDashboard: React.FC = () => {
                     <div className="text-sm text-muted-foreground">
                       {Math.round(memoryInfo.percentage)}% of available memory used
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
+                  </div> :
+
+                <div className="text-sm text-muted-foreground">
                     Memory information not available
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
           </div>
@@ -471,30 +471,30 @@ const PerformanceDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {report?.recommendations?.map((recommendation: string, index: number) => (
-                  <div key={index} className="flex items-start gap-2 p-2 border rounded">
+                {report?.recommendations?.map((recommendation: string, index: number) =>
+                <div key={index} className="flex items-start gap-2 p-2 border rounded">
                     <Settings className="h-4 w-4 mt-0.5 text-blue-500" />
                     <div className="text-sm">{recommendation}</div>
                   </div>
-                ))}
-                {healthStatus?.recommendations?.map((recommendation: string, index: number) => (
-                  <div key={`health-${index}`} className="flex items-start gap-2 p-2 border rounded">
+                )}
+                {healthStatus?.recommendations?.map((recommendation: string, index: number) =>
+                <div key={`health-${index}`} className="flex items-start gap-2 p-2 border rounded">
                     <AlertTriangle className="h-4 w-4 mt-0.5 text-yellow-500" />
                     <div className="text-sm">{recommendation}</div>
                   </div>
-                ))}
-                {(!report?.recommendations?.length && !healthStatus?.recommendations?.length) && (
-                  <div className="text-sm text-muted-foreground">
+                )}
+                {!report?.recommendations?.length && !healthStatus?.recommendations?.length &&
+                <div className="text-sm text-muted-foreground">
                     No performance recommendations at this time
                   </div>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PerformanceDashboard;

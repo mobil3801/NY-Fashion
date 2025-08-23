@@ -11,21 +11,21 @@ interface OfflineBannerProps {
 }
 
 export function OfflineBanner({ className = '' }: OfflineBannerProps) {
-  const { 
-    online, 
-    connectionState, 
-    errorDetails, 
+  const {
+    online,
+    connectionState,
+    errorDetails,
     recoveryInfo,
-    retryNow, 
+    retryNow,
     isAutoRetrying,
     getDiagnostics,
-    status 
+    status
   } = useNetwork();
-  
+
   const [isDismissed, setIsDismissed] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  
+
   const diagnostics = getDiagnostics();
 
   // Auto-dismiss when back online
@@ -34,7 +34,7 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
       const timer = setTimeout(() => {
         setIsDismissed(true);
       }, 3000); // Show "back online" message for 3 seconds
-      
+
       return () => clearTimeout(timer);
     } else {
       setIsDismissed(false);
@@ -49,15 +49,15 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
         const nextRetry = status.nextRetryAt!.getTime();
         const diff = Math.max(0, Math.ceil((nextRetry - now) / 1000));
         setCountdown(diff);
-        
+
         if (diff <= 0) {
           setCountdown(null);
         }
       };
-      
+
       updateCountdown();
       const interval = setInterval(updateCountdown, 1000);
-      
+
       return () => clearInterval(interval);
     } else {
       setCountdown(null);
@@ -68,21 +68,21 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
   const shouldShowBanner = () => {
     if (isDismissed) return false;
     if (online && connectionState === 'online') return false;
-    
+
     // Show for all offline states
     if (!online) return true;
-    
+
     // Show during recovery
     if (connectionState === 'recovering') return true;
-    
+
     // Show if we have error details that warrant a banner
     if (errorDetails && NetworkErrorClassifier.shouldShowBanner(
-      errorDetails.type, 
+      errorDetails.type,
       status.consecutiveFailures || 0
     )) {
       return true;
     }
-    
+
     return false;
   };
 
@@ -101,35 +101,35 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
     if (connectionState === 'recovering') {
       return {
         title: 'Connection Restored',
-        description: recoveryInfo 
-          ? `Back online after ${Math.round(recoveryInfo.wasOfflineFor / 1000)}s. Syncing changes...`
-          : 'Connection restored. Syncing changes...'
+        description: recoveryInfo ?
+        `Back online after ${Math.round(recoveryInfo.wasOfflineFor / 1000)}s. Syncing changes...` :
+        'Connection restored. Syncing changes...'
       };
     }
-    
+
     if (connectionState === 'reconnecting') {
       return {
         title: 'Reconnecting...',
-        description: countdown 
-          ? `Retrying in ${countdown}s`
-          : 'Attempting to restore connection'
+        description: countdown ?
+        `Retrying in ${countdown}s` :
+        'Attempting to restore connection'
       };
     }
-    
+
     if (connectionState === 'poor_connection') {
       return {
         title: 'Poor Connection',
         description: 'Your connection is unstable. Some features may be limited.'
       };
     }
-    
+
     if (errorDetails) {
       return {
         title: 'Connection Lost',
         description: errorDetails.userMessage
       };
     }
-    
+
     return {
       title: 'You\'re Offline',
       description: 'Check your internet connection. Changes will sync when you\'re back online.'
@@ -145,7 +145,7 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
 
   const message = getBannerMessage();
   const variant = getBannerVariant();
-  
+
   const bannerClasses = {
     destructive: 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200',
     warning: 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-800 dark:text-yellow-200',
@@ -162,90 +162,90 @@ export function OfflineBanner({ className = '' }: OfflineBannerProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-sm">{message.title}</span>
-                {diagnostics.queuedOperations > 0 && (
-                  <Badge variant="outline" className="text-xs">
+                {diagnostics.queuedOperations > 0 &&
+                <Badge variant="outline" className="text-xs">
                     {diagnostics.queuedOperations} queued
                   </Badge>
-                )}
+                }
               </div>
               
               <div className="text-sm opacity-90">
                 {message.description}
-                {showDetails && errorDetails?.suggestedAction && (
-                  <div className="mt-1 text-xs">
+                {showDetails && errorDetails?.suggestedAction &&
+                <div className="mt-1 text-xs">
                     💡 {errorDetails.suggestedAction}
                   </div>
-                )}
+                }
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {!online && (
-              <>
+            {!online &&
+            <>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="text-xs"
-                >
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDetails(!showDetails)}
+                className="text-xs">
+
                   {showDetails ? 'Less' : 'Details'}
                 </Button>
                 
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={retryNow}
-                  disabled={isAutoRetrying}
-                  className="text-xs"
-                >
-                  {isAutoRetrying ? (
-                    <>
+                variant="outline"
+                size="sm"
+                onClick={retryNow}
+                disabled={isAutoRetrying}
+                className="text-xs">
+
+                  {isAutoRetrying ?
+                <>
                       <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
                       Retrying...
-                    </>
-                  ) : countdown ? (
-                    <>
+                    </> :
+                countdown ?
+                <>
                       <Clock className="w-3 h-3 mr-1" />
                       Retry ({countdown}s)
-                    </>
-                  ) : (
-                    <>
+                    </> :
+
+                <>
                       <RefreshCw className="w-3 h-3 mr-1" />
                       Retry
                     </>
-                  )}
+                }
                 </Button>
               </>
-            )}
+            }
             
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsDismissed(true)}
-              className="p-1 h-auto"
-            >
+              className="p-1 h-auto">
+
               <X className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        {showDetails && (
-          <div className="pb-3 pt-1 border-t border-current/20">
+        {showDetails &&
+        <div className="pb-3 pt-1 border-t border-current/20">
             <div className="text-xs space-y-1 opacity-75">
               <div>Status: {connectionState}</div>
               <div>Failures: {status.consecutiveFailures}</div>
               <div>Last Check: {status.lastCheck.toLocaleTimeString()}</div>
-              {diagnostics.currentOutageMs > 0 && (
-                <div>Offline for: {Math.round(diagnostics.currentOutageMs / 1000)}s</div>
-              )}
-              {errorDetails && (
-                <div>Error Type: {errorDetails.type}</div>
-              )}
+              {diagnostics.currentOutageMs > 0 &&
+            <div>Offline for: {Math.round(diagnostics.currentOutageMs / 1000)}s</div>
+            }
+              {errorDetails &&
+            <div>Error Type: {errorDetails.type}</div>
+            }
             </div>
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }

@@ -7,21 +7,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Database, 
-  Globe, 
-  MemoryStick, 
-  Server, 
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Database,
+  Globe,
+  MemoryStick,
+  Server,
   TrendingUp,
   Zap,
   Eye,
   Download,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw } from
+'lucide-react';
 import { usePerformanceMonitor } from '@/utils/enhanced-performance-monitor';
 import { useAuditLogger } from '@/utils/audit-logger';
 import { globalCache } from '@/utils/production-cache';
@@ -89,7 +89,7 @@ const ProductionDashboard: React.FC = () => {
       // Trigger manual refresh of all statistics
       setAuditStats(getStatistics(24));
       setCacheStats(globalCache.getStats());
-      
+
       const response = await window.ezsite.apis.run({
         path: 'systemHealthMonitor',
         param: []
@@ -156,21 +156,21 @@ const ProductionDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'healthy': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      case 'degraded': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+      case 'healthy':return 'bg-green-500';
+      case 'warning':return 'bg-yellow-500';
+      case 'critical':return 'bg-red-500';
+      case 'degraded':return 'bg-orange-500';
+      default:return 'bg-gray-500';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'healthy': return <Badge className="bg-green-100 text-green-800">Healthy</Badge>;
-      case 'warning': return <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>;
-      case 'critical': return <Badge className="bg-red-100 text-red-800">Critical</Badge>;
-      case 'degraded': return <Badge className="bg-orange-100 text-orange-800">Degraded</Badge>;
-      default: return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>;
+      case 'healthy':return <Badge className="bg-green-100 text-green-800">Healthy</Badge>;
+      case 'warning':return <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>;
+      case 'critical':return <Badge className="bg-red-100 text-red-800">Critical</Badge>;
+      case 'degraded':return <Badge className="bg-orange-100 text-orange-800">Degraded</Badge>;
+      default:return <Badge className="bg-gray-100 text-gray-800">Unknown</Badge>;
     }
   };
 
@@ -216,9 +216,9 @@ const ProductionDashboard: React.FC = () => {
             </div>
             <TrendingUp className="h-8 w-8 text-blue-600" />
           </div>
-          {systemStats?.performanceScore && (
-            <Progress value={systemStats.performanceScore} className="mt-2" />
-          )}
+          {systemStats?.performanceScore &&
+          <Progress value={systemStats.performanceScore} className="mt-2" />
+          }
         </Card>
 
         <Card className="p-4">
@@ -238,9 +238,9 @@ const ProductionDashboard: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Uptime</p>
               <p className="text-2xl font-bold">
-                {systemStats?.metrics?.uptime 
-                  ? `${Math.floor(systemStats.metrics.uptime / 3600)}h`
-                  : 'N/A'
+                {systemStats?.metrics?.uptime ?
+                `${Math.floor(systemStats.metrics.uptime / 3600)}h` :
+                'N/A'
                 }
               </p>
             </div>
@@ -250,27 +250,27 @@ const ProductionDashboard: React.FC = () => {
       </div>
 
       {/* Active Alerts */}
-      {systemStats?.alerts && systemStats.alerts.length > 0 && (
-        <Alert className="border-red-200 bg-red-50">
+      {systemStats?.alerts && systemStats.alerts.length > 0 &&
+      <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertDescription>
             <div className="space-y-2">
               <p className="font-semibold text-red-800">Active System Alerts:</p>
-              {systemStats.alerts.slice(0, 3).map((alert: any, index: number) => (
-                <div key={index} className="text-sm text-red-700">
+              {systemStats.alerts.slice(0, 3).map((alert: any, index: number) =>
+            <div key={index} className="text-sm text-red-700">
                   <Badge variant="destructive" className="mr-2">{alert.level}</Badge>
                   {alert.message} ({alert.service})
                 </div>
-              ))}
-              {systemStats.alerts.length > 3 && (
-                <p className="text-sm text-red-600">
+            )}
+              {systemStats.alerts.length > 3 &&
+            <p className="text-sm text-red-600">
                   +{systemStats.alerts.length - 3} more alerts...
                 </p>
-              )}
+            }
             </div>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Detailed Monitoring Tabs */}
       <Tabs defaultValue="performance" className="space-y-4">
@@ -359,8 +359,8 @@ const ProductionDashboard: React.FC = () => {
             </h3>
             <ScrollArea className="h-64">
               <div className="space-y-2">
-                {metrics.slice(0, 20).map((metric, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                {metrics.slice(0, 20).map((metric, index) =>
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline">{metric.category}</Badge>
                       <span>{metric.name}</span>
@@ -369,14 +369,14 @@ const ProductionDashboard: React.FC = () => {
                       <span className={metric.duration && metric.duration > 1000 ? 'text-red-600' : 'text-gray-600'}>
                         {metric.duration?.toFixed(0)}ms
                       </span>
-                      {metric.success ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                      )}
+                      {metric.success ?
+                    <CheckCircle className="h-4 w-4 text-green-600" /> :
+
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    }
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </ScrollArea>
           </Card>
@@ -385,37 +385,37 @@ const ProductionDashboard: React.FC = () => {
         {/* System Health Tab */}
         <TabsContent value="system" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {systemStats?.services && Object.entries(systemStats.services).map(([service, data]: [string, any]) => (
-              <Card key={service} className="p-4">
+            {systemStats?.services && Object.entries(systemStats.services).map(([service, data]: [string, any]) =>
+            <Card key={service} className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold capitalize">{service}</h3>
                   {getStatusBadge(data.status)}
                 </div>
                 <div className="space-y-2 text-sm">
-                  {data.responseTime && (
-                    <div className="flex justify-between">
+                  {data.responseTime &&
+                <div className="flex justify-between">
                       <span>Response Time</span>
                       <span>{data.responseTime.toFixed(0)}ms</span>
                     </div>
-                  )}
-                  {data.usage !== undefined && (
-                    <div className="space-y-1">
+                }
+                  {data.usage !== undefined &&
+                <div className="space-y-1">
                       <div className="flex justify-between">
                         <span>Usage</span>
                         <span>{data.usage.toFixed(1)}%</span>
                       </div>
                       <Progress value={data.usage} className="h-2" />
                     </div>
-                  )}
-                  {data.errorRate !== undefined && (
-                    <div className="flex justify-between">
+                }
+                  {data.errorRate !== undefined &&
+                <div className="flex justify-between">
                       <span>Error Rate</span>
                       <span className="text-red-600">{data.errorRate.toFixed(1)}%</span>
                     </div>
-                  )}
+                }
                 </div>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -429,7 +429,7 @@ const ProductionDashboard: React.FC = () => {
                   <span>Hit Rate</span>
                   <span className="text-green-600">{(cacheStats?.hitRate * 100)?.toFixed(1) || 0}%</span>
                 </div>
-                <Progress value={(cacheStats?.hitRate * 100) || 0} className="h-2" />
+                <Progress value={cacheStats?.hitRate * 100 || 0} className="h-2" />
                 <div className="flex justify-between">
                   <span>Total Hits</span>
                   <span>{cacheStats?.hits || 0}</span>
@@ -458,15 +458,15 @@ const ProductionDashboard: React.FC = () => {
             <Card className="p-4">
               <h3 className="font-semibold mb-3">Recommendations</h3>
               <div className="space-y-1 text-sm">
-                {(cacheStats?.hitRate || 1) < 0.7 && (
-                  <div className="text-orange-600">• Consider increasing cache TTL</div>
-                )}
-                {(cacheStats?.size || 0) > 800 && (
-                  <div className="text-yellow-600">• Cache size is growing large</div>
-                )}
-                {(cacheStats?.hitRate || 1) > 0.9 && (
-                  <div className="text-green-600">• Cache performing excellently</div>
-                )}
+                {(cacheStats?.hitRate || 1) < 0.7 &&
+                <div className="text-orange-600">• Consider increasing cache TTL</div>
+                }
+                {(cacheStats?.size || 0) > 800 &&
+                <div className="text-yellow-600">• Cache size is growing large</div>
+                }
+                {(cacheStats?.hitRate || 1) > 0.9 &&
+                <div className="text-green-600">• Cache performing excellently</div>
+                }
               </div>
             </Card>
           </div>
@@ -494,12 +494,12 @@ const ProductionDashboard: React.FC = () => {
               <h3 className="font-semibold mb-3">Top Actions</h3>
               <ScrollArea className="h-32">
                 <div className="space-y-1 text-sm">
-                  {auditStats?.topActions?.slice(0, 5).map((action: any, index: number) => (
-                    <div key={index} className="flex justify-between">
+                  {auditStats?.topActions?.slice(0, 5).map((action: any, index: number) =>
+                  <div key={index} className="flex justify-between">
                       <span>{action.action}</span>
                       <span>{action.count}</span>
                     </div>
-                  ))}
+                  )}
                 </div>
               </ScrollArea>
             </Card>
@@ -507,14 +507,14 @@ const ProductionDashboard: React.FC = () => {
             <Card className="p-4">
               <h3 className="font-semibold mb-3">Security Events</h3>
               <div className="space-y-2 text-sm">
-                {auditStats?.severityBreakdown && Object.entries(auditStats.severityBreakdown).map(([severity, count]: [string, any]) => (
-                  <div key={severity} className="flex justify-between">
+                {auditStats?.severityBreakdown && Object.entries(auditStats.severityBreakdown).map(([severity, count]: [string, any]) =>
+                <div key={severity} className="flex justify-between">
                     <Badge variant={severity === 'critical' ? 'destructive' : 'outline'}>
                       {severity}
                     </Badge>
                     <span>{count}</span>
                   </div>
-                ))}
+                )}
               </div>
             </Card>
           </div>
@@ -526,8 +526,8 @@ const ProductionDashboard: React.FC = () => {
             <Card className="p-4">
               <h3 className="font-semibold mb-3">Database Health</h3>
               <div className="space-y-2 text-sm">
-                {systemStats?.services?.database && (
-                  <>
+                {systemStats?.services?.database &&
+                <>
                     <div className="flex justify-between">
                       <span>Status</span>
                       {getStatusBadge(systemStats.services.database.status)}
@@ -545,15 +545,15 @@ const ProductionDashboard: React.FC = () => {
                       <span>{systemStats.services.database.connectionPool?.idle || 0}</span>
                     </div>
                   </>
-                )}
+                }
               </div>
             </Card>
 
             <Card className="p-4">
               <h3 className="font-semibold mb-3">Query Performance</h3>
               <div className="space-y-2 text-sm">
-                {systemStats?.services?.database?.queryPerformance && (
-                  <>
+                {systemStats?.services?.database?.queryPerformance &&
+                <>
                     <div className="flex justify-between">
                       <span>Avg Query Time</span>
                       <span>{systemStats.services.database.queryPerformance.avgQueryTime?.toFixed(0)}ms</span>
@@ -565,7 +565,7 @@ const ProductionDashboard: React.FC = () => {
                       </span>
                     </div>
                   </>
-                )}
+                }
               </div>
             </Card>
           </div>
@@ -579,45 +579,45 @@ const ProductionDashboard: React.FC = () => {
               System Recommendations
             </h3>
             <div className="space-y-3">
-              {report?.recommendations?.map((rec: string, index: number) => (
-                <div key={index} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+              {report?.recommendations?.map((rec: string, index: number) =>
+              <div key={index} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-800">{rec}</p>
                 </div>
-              ))}
+              )}
               
-              {systemStats?.recommendations?.map((rec: string, index: number) => (
-                <div key={`sys-${index}`} className="p-3 bg-green-50 rounded-lg border border-green-200">
+              {systemStats?.recommendations?.map((rec: string, index: number) =>
+              <div key={`sys-${index}`} className="p-3 bg-green-50 rounded-lg border border-green-200">
                   <p className="text-sm text-green-800">{rec}</p>
                 </div>
-              ))}
+              )}
               
-              {(!report?.recommendations?.length && !systemStats?.recommendations?.length) && (
-                <div className="p-3 bg-gray-50 rounded-lg">
+              {!report?.recommendations?.length && !systemStats?.recommendations?.length &&
+              <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600">No recommendations available. System is performing well!</p>
                 </div>
-              )}
+              }
             </div>
           </Card>
 
-          {report?.criticalIssues && report.criticalIssues.length > 0 && (
-            <Card className="p-4 border-red-200 bg-red-50">
+          {report?.criticalIssues && report.criticalIssues.length > 0 &&
+          <Card className="p-4 border-red-200 bg-red-50">
               <h3 className="font-semibold mb-3 text-red-800 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
                 Critical Issues Requiring Immediate Attention
               </h3>
               <div className="space-y-2">
-                {report.criticalIssues.map((issue: string, index: number) => (
-                  <div key={index} className="p-2 bg-red-100 rounded border border-red-300">
+                {report.criticalIssues.map((issue: string, index: number) =>
+              <div key={index} className="p-2 bg-red-100 rounded border border-red-300">
                     <p className="text-sm text-red-900">{issue}</p>
                   </div>
-                ))}
+              )}
               </div>
             </Card>
-          )}
+          }
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ProductionDashboard;

@@ -25,13 +25,13 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
     onError,
     showSuccessToast = false,
     showErrorToast = true,
-    debounceMs = PRODUCTION_CONFIG.ui.loadingDebounce,
+    debounceMs = PRODUCTION_CONFIG.ui.loadingDebounce
   } = options;
 
   const [state, setState] = useState<LoadingState>({
     isLoading: initialLoading,
     error: null,
-    data: null,
+    data: null
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -51,9 +51,9 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
 
   // Execute async operation with loading state management
   const execute = useCallback(async (
-    operation: (signal?: AbortSignal) => Promise<T>,
-    options?: { immediate?: boolean }
-  ): Promise<T | null> => {
+  operation: (signal?: AbortSignal) => Promise<T>,
+  options?: {immediate?: boolean;})
+  : Promise<T | null> => {
     // Cleanup any existing operation
     cleanup();
 
@@ -63,7 +63,7 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
 
     // Set loading state with optional debounce
     const setLoading = () => {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
     };
 
     if (options?.immediate || debounceMs === 0) {
@@ -74,7 +74,7 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
 
     try {
       const result = await operation(signal);
-      
+
       // Check if aborted
       if (signal.aborted) {
         return null;
@@ -83,15 +83,15 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
       setState({
         isLoading: false,
         error: null,
-        data: result,
+        data: result
       });
 
       onSuccess?.(result);
-      
+
       if (showSuccessToast) {
         toast({
           title: "Success",
-          description: "Operation completed successfully",
+          description: "Operation completed successfully"
         });
       }
 
@@ -103,11 +103,11 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
       }
 
       const errorMessage = error.message || 'An unexpected error occurred';
-      
+
       setState({
         isLoading: false,
         error: errorMessage,
-        data: null,
+        data: null
       });
 
       onError?.(errorMessage);
@@ -116,7 +116,7 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
         toast({
           title: "Error",
           description: errorMessage,
-          variant: "destructive",
+          variant: "destructive"
         });
       }
 
@@ -136,23 +136,23 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
     setState({
       isLoading: false,
       error: null,
-      data: null,
+      data: null
     });
   }, [cleanup]);
 
   // Set loading manually
   const setLoading = useCallback((loading: boolean) => {
-    setState(prev => ({ ...prev, isLoading: loading }));
+    setState((prev) => ({ ...prev, isLoading: loading }));
   }, []);
 
   // Set error manually
   const setError = useCallback((error: string | null) => {
-    setState(prev => ({ ...prev, error, isLoading: false }));
+    setState((prev) => ({ ...prev, error, isLoading: false }));
   }, []);
 
   // Set data manually
   const setData = useCallback((data: any) => {
-    setState(prev => ({ ...prev, data, error: null }));
+    setState((prev) => ({ ...prev, data, error: null }));
   }, []);
 
   // Cleanup on unmount
@@ -167,16 +167,16 @@ export function useLoadingState<T = any>(options: UseLoadingStateOptions = {}) {
     setLoading,
     setError,
     setData,
-    abort: cleanup,
+    abort: cleanup
   };
 }
 
 // Hook for simple async operations
 export function useAsyncOperation<T = any>(
-  operation: () => Promise<T>,
-  dependencies: any[] = [],
-  options: UseLoadingStateOptions = {}
-) {
+operation: () => Promise<T>,
+dependencies: any[] = [],
+options: UseLoadingStateOptions = {})
+{
   const loadingState = useLoadingState<T>(options);
 
   useEffect(() => {
@@ -190,8 +190,8 @@ export function useAsyncOperation<T = any>(
 
 // Hook for manual async operations
 export function useManualAsyncOperation<T = any>(
-  options: UseLoadingStateOptions = {}
-) {
+options: UseLoadingStateOptions = {})
+{
   return useLoadingState<T>(options);
 }
 

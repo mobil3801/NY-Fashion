@@ -8,18 +8,18 @@ import { useNetwork } from '@/contexts/NetworkContext';
 import { networkDiagnostics } from '@/lib/network/diagnostics';
 
 export function ConnectionQualityIndicator() {
-  const { 
-    online, 
-    connectionState, 
-    getDiagnostics, 
+  const {
+    online,
+    connectionState,
+    getDiagnostics,
     getConnectionQuality,
     retryNow,
-    isAutoRetrying 
+    isAutoRetrying
   } = useNetwork();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [diagnostics, setDiagnostics] = useState(getDiagnostics());
-  
+
   const quality = getConnectionQuality();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function ConnectionQualityIndicator() {
       const interval = setInterval(() => {
         setDiagnostics(getDiagnostics());
       }, 1000);
-      
+
       return () => clearInterval(interval);
     }
   }, [isOpen, getDiagnostics]);
@@ -36,11 +36,11 @@ export function ConnectionQualityIndicator() {
     if (!online || connectionState === 'offline') {
       return <WifiOff className="w-4 h-4" />;
     }
-    
+
     if (connectionState === 'reconnecting') {
       return <Signal className="w-4 h-4 animate-pulse" />;
     }
-    
+
     switch (quality) {
       case 'excellent':
         return <SignalHigh className="w-4 h-4" />;
@@ -57,13 +57,13 @@ export function ConnectionQualityIndicator() {
 
   const getQualityColor = () => {
     if (!online) return 'destructive';
-    
+
     switch (quality) {
-      case 'excellent': return 'default';
-      case 'good': return 'default';
-      case 'fair': return 'secondary';
-      case 'poor': return 'destructive';
-      default: return 'destructive';
+      case 'excellent':return 'default';
+      case 'good':return 'default';
+      case 'fair':return 'secondary';
+      case 'poor':return 'destructive';
+      default:return 'destructive';
     }
   };
 
@@ -71,13 +71,13 @@ export function ConnectionQualityIndicator() {
     if (!online) return 'Offline';
     if (connectionState === 'reconnecting') return 'Reconnecting...';
     if (connectionState === 'recovering') return 'Recovering...';
-    
+
     switch (quality) {
-      case 'excellent': return 'Excellent';
-      case 'good': return 'Good';
-      case 'fair': return 'Fair';
-      case 'poor': return 'Poor';
-      default: return 'Unknown';
+      case 'excellent':return 'Excellent';
+      case 'good':return 'Good';
+      case 'fair':return 'Fair';
+      case 'poor':return 'Poor';
+      default:return 'Unknown';
     }
   };
 
@@ -101,8 +101,8 @@ export function ConnectionQualityIndicator() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 gap-2"
-        >
+          className="h-8 px-2 gap-2">
+
           {getQualityIcon()}
           <Badge variant={getQualityColor()} className="text-xs">
             {getQualityText()}
@@ -115,11 +115,11 @@ export function ConnectionQualityIndicator() {
           <div className="space-y-2">
             <h4 className="font-medium flex items-center gap-2">
               Network Status
-              {online ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-red-500" />
-              )}
+              {online ?
+              <CheckCircle className="w-4 h-4 text-green-500" /> :
+
+              <AlertTriangle className="w-4 h-4 text-red-500" />
+              }
             </h4>
             
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -153,9 +153,9 @@ export function ConnectionQualityIndicator() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Success Rate:</span>
                 <span>
-                  {diagnostics.totalAttempts > 0 
-                    ? `${Math.round((diagnostics.successfulAttempts / diagnostics.totalAttempts) * 100)}%`
-                    : 'N/A'
+                  {diagnostics.totalAttempts > 0 ?
+                  `${Math.round(diagnostics.successfulAttempts / diagnostics.totalAttempts * 100)}%` :
+                  'N/A'
                   }
                 </span>
               </div>
@@ -170,44 +170,44 @@ export function ConnectionQualityIndicator() {
                 <span>{formatDuration(diagnostics.longestOutageMs)}</span>
               </div>
               
-              {diagnostics.lastConnectedAt && (
-                <div className="flex justify-between">
+              {diagnostics.lastConnectedAt &&
+              <div className="flex justify-between">
                   <span className="text-muted-foreground">Last Connected:</span>
                   <span>
                     {diagnostics.lastConnectedAt.toLocaleTimeString()}
                   </span>
                 </div>
-              )}
+              }
             </div>
           </div>
 
-          {!online && (
-            <div className="pt-2 border-t">
+          {!online &&
+          <div className="pt-2 border-t">
               <Button
-                onClick={() => {
-                  retryNow();
-                  setIsOpen(false);
-                }}
-                disabled={isAutoRetrying}
-                className="w-full"
-                size="sm"
-              >
-                {isAutoRetrying ? (
-                  <>
+              onClick={() => {
+                retryNow();
+                setIsOpen(false);
+              }}
+              disabled={isAutoRetrying}
+              className="w-full"
+              size="sm">
+
+                {isAutoRetrying ?
+              <>
                     <Signal className="w-4 h-4 mr-2 animate-pulse" />
                     Reconnecting...
-                  </>
-                ) : (
-                  <>
+                  </> :
+
+              <>
                     <Wifi className="w-4 h-4 mr-2" />
                     Retry Connection
                   </>
-                )}
+              }
               </Button>
             </div>
-          )}
+          }
         </div>
       </PopoverContent>
-    </Popover>
-  );
+    </Popover>);
+
 }

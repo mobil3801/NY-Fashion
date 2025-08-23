@@ -30,11 +30,11 @@ export const legacyApi = {
       Filters: [],
       ...params
     }, { showLoading: true });
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data?.List || [];
   },
 
@@ -45,82 +45,82 @@ export const legacyApi = {
     } else {
       result = await productionApi.tableCreate('products', product, { showLoading: true });
     }
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data;
   },
 
   async deleteProduct(id: number) {
     const result = await productionApi.tableDelete('products', { id }, { showLoading: true });
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data;
   },
 
   async uploadFile(file: File) {
     const result = await productionApi.uploadFile(file, { showLoading: true });
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data;
   },
 
   async getFileUrl(fileId: number) {
     const result = await productionApi.getUploadUrl(fileId);
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data;
   },
 
   // Authentication wrapper methods
-  async login(credentials: { email: string; password: string }) {
+  async login(credentials: {email: string;password: string;}) {
     const result = await productionApi.login(credentials);
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return { success: true };
   },
 
-  async register(userData: { name: string; email: string; password: string; role?: string }) {
+  async register(userData: {name: string;email: string;password: string;role?: string;}) {
     const result = await productionApi.register(userData);
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return { success: true };
   },
 
   async logout() {
     const result = await productionApi.logout();
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return { success: true };
   },
 
   async getUserInfo() {
     const result = await productionApi.getUserInfo();
-    
+
     if (result.error) {
       throw new Error(result.error);
     }
-    
+
     return result.data;
   }
 };

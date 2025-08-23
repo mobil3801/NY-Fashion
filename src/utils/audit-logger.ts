@@ -180,8 +180,8 @@ class AuditLogger {
       const allLogs = [...existingLogs, ...logsToFlush];
 
       // Keep only logs within retention period
-      const cutoff = Date.now() - (this.config.retentionDays * 24 * 60 * 60 * 1000);
-      const validLogs = allLogs.filter(log => log.timestamp > cutoff);
+      const cutoff = Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000;
+      const validLogs = allLogs.filter((log) => log.timestamp > cutoff);
 
       localStorage.setItem('auditLogs', JSON.stringify(validLogs.slice(-1000))); // Keep last 1000 logs
 
@@ -251,16 +251,16 @@ class AuditLogger {
       let filteredLogs = [...this.logs, ...storedLogs];
 
       if (filter) {
-        filteredLogs = filteredLogs.filter(log => {
-          return Object.keys(filter).every(key => {
+        filteredLogs = filteredLogs.filter((log) => {
+          return Object.keys(filter).every((key) => {
             return log[key as keyof AuditLog] === filter[key as keyof AuditLog];
           });
         });
       }
 
-      return filteredLogs
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, limit);
+      return filteredLogs.
+      sort((a, b) => b.timestamp - a.timestamp).
+      slice(0, limit);
     } catch (error) {
       logger.logError('Failed to get audit logs', error);
       return [];
@@ -287,17 +287,17 @@ class AuditLogger {
   getAuditStatistics(hours: number = 24): {
     totalEvents: number;
     successRate: number;
-    topActions: Array<{ action: string; count: number }>;
-    topResources: Array<{ resource: string; count: number }>;
+    topActions: Array<{action: string;count: number;}>;
+    topResources: Array<{resource: string;count: number;}>;
     severityBreakdown: Record<string, number>;
-    errorBreakdown: Array<{ error: string; count: number }>;
+    errorBreakdown: Array<{error: string;count: number;}>;
   } {
-    const cutoff = Date.now() - (hours * 60 * 60 * 1000);
-    const recentLogs = this.getLogs({}, 1000).filter(log => log.timestamp > cutoff);
+    const cutoff = Date.now() - hours * 60 * 60 * 1000;
+    const recentLogs = this.getLogs({}, 1000).filter((log) => log.timestamp > cutoff);
 
     const stats = {
       totalEvents: recentLogs.length,
-      successRate: recentLogs.length > 0 ? (recentLogs.filter(l => l.success).length / recentLogs.length) * 100 : 100,
+      successRate: recentLogs.length > 0 ? recentLogs.filter((l) => l.success).length / recentLogs.length * 100 : 100,
       topActions: this.getTopItems(recentLogs, 'action'),
       topResources: this.getTopItems(recentLogs, 'resource'),
       severityBreakdown: this.getBreakdown(recentLogs, 'severity'),
@@ -307,17 +307,17 @@ class AuditLogger {
     return stats;
   }
 
-  private getTopItems(logs: AuditLog[], field: keyof AuditLog): Array<{ [key: string]: any; count: number }> {
+  private getTopItems(logs: AuditLog[], field: keyof AuditLog): Array<{[key: string]: any;count: number;}> {
     const counts = logs.reduce((acc, log) => {
       const value = log[field] as string;
       acc[value] = (acc[value] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(counts)
-      .map(([key, count]) => ({ [field]: key, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    return Object.entries(counts).
+    map(([key, count]) => ({ [field]: key, count })).
+    sort((a, b) => b.count - a.count).
+    slice(0, 10);
   }
 
   private getBreakdown(logs: AuditLog[], field: keyof AuditLog): Record<string, number> {
@@ -328,18 +328,18 @@ class AuditLogger {
     }, {} as Record<string, number>);
   }
 
-  private getErrorBreakdown(logs: AuditLog[]): Array<{ error: string; count: number }> {
-    const errorLogs = logs.filter(l => !l.success && l.error);
+  private getErrorBreakdown(logs: AuditLog[]): Array<{error: string;count: number;}> {
+    const errorLogs = logs.filter((l) => !l.success && l.error);
     const counts = errorLogs.reduce((acc, log) => {
       const error = log.error || 'Unknown error';
       acc[error] = (acc[error] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(counts)
-      .map(([error, count]) => ({ error, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    return Object.entries(counts).
+    map(([error, count]) => ({ error, count })).
+    sort((a, b) => b.count - a.count).
+    slice(0, 10);
   }
 
   destroy(): void {
@@ -360,12 +360,12 @@ export const useAuditLogger = () => {
   const { user } = useAuth();
 
   const logUserAction = React.useCallback((
-    action: string,
-    resource: string,
-    details: Record<string, any> = {},
-    success: boolean = true,
-    error?: string
-  ) => {
+  action: string,
+  resource: string,
+  details: Record<string, any> = {},
+  success: boolean = true,
+  error?: string) =>
+  {
     auditLogger.log({
       action,
       resource,
@@ -378,10 +378,10 @@ export const useAuditLogger = () => {
   }, [user]);
 
   const logSecurityEvent = React.useCallback((
-    action: string,
-    details: Record<string, any> = {},
-    success: boolean = true
-  ) => {
+  action: string,
+  details: Record<string, any> = {},
+  success: boolean = true) =>
+  {
     auditLogger.logSecurityEvent(action, {
       ...details,
       userId: user?.ID?.toString(),
@@ -390,11 +390,11 @@ export const useAuditLogger = () => {
   }, [user]);
 
   const logDataAccess = React.useCallback((
-    resource: string,
-    resourceId: string,
-    action: string = 'access',
-    details: Record<string, any> = {}
-  ) => {
+  resource: string,
+  resourceId: string,
+  action: string = 'access',
+  details: Record<string, any> = {}) =>
+  {
     auditLogger.logDataAccess(resource, resourceId, action, {
       ...details,
       userId: user?.ID?.toString(),

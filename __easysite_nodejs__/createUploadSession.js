@@ -28,11 +28,11 @@ async function createUploadSession(totalFiles, uploadType, entityId) {
     `;
 
     const result = await window.ezsite.db.query(insertQuery, [
-      sessionId,
-      uploadType,
-      entityId ? parseInt(entityId) : null,
-      parseInt(totalFiles)
-    ]);
+    sessionId,
+    uploadType,
+    entityId ? parseInt(entityId) : null,
+    parseInt(totalFiles)]
+    );
 
     if (!result || result.length === 0) {
       throw new Error('Failed to create upload session');

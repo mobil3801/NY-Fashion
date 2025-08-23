@@ -74,7 +74,7 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
     maxSize: 5 * 1024 * 1024, // 5MB
     onDropRejected: (fileRejections) => {
       fileRejections.forEach((rejection) => {
-        const errors = rejection.errors.map(e => e.message).join(', ');
+        const errors = rejection.errors.map((e) => e.message).join(', ');
         toast({
           title: "File Rejected",
           description: `${rejection.file.name}: ${errors}`,
@@ -107,10 +107,10 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
       // Upload files with progress tracking
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        
+
         try {
           // Update progress
-          setUploadProgress(((i + 0.5) / files.length) * 100);
+          setUploadProgress((i + 0.5) / files.length * 100);
 
           // Upload file
           const uploadResult = await window.ezsite.apis.upload({
@@ -136,17 +136,17 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
           `;
 
           const insertResult = await window.ezsite.db.query(insertQuery, [
-            productId,
-            urlResult.data,
-            `Product image ${images.length + i + 1}`,
-            images.length + i,
-            file.size,
-            file.type,
-            uploadResult.data
-          ]);
+          productId,
+          urlResult.data,
+          `Product image ${images.length + i + 1}`,
+          images.length + i,
+          file.size,
+          file.type,
+          uploadResult.data]
+          );
 
           completedCount++;
-          setUploadProgress(((i + 1) / files.length) * 100);
+          setUploadProgress((i + 1) / files.length * 100);
 
           // Update session
           await window.ezsite.apis.run({
@@ -156,7 +156,7 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
 
         } catch (error: any) {
           console.error(`Failed to upload file ${file.name}:`, error);
-          
+
           // Update session with failure
           await window.ezsite.apis.run({
             path: 'updateUploadProgress',
@@ -201,7 +201,7 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
       }
 
       await loadImages();
-      
+
       toast({
         title: "Success",
         description: result.data.message
@@ -228,7 +228,7 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
 
       setImages(newOrder);
       onImagesChange?.(newOrder);
-      
+
       toast({
         title: "Success",
         description: result.data.message
@@ -265,14 +265,14 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
               border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
               ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
               ${uploading ? 'pointer-events-none opacity-50' : ''}
-            `}
-          >
+            `}>
+
             <input {...getInputProps()} />
             <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
-            {isDragActive ? (
-              <p className="text-blue-600">Drop the images here...</p>
-            ) : (
-              <div>
+            {isDragActive ?
+            <p className="text-blue-600">Drop the images here...</p> :
+
+            <div>
                 <p className="text-gray-600 mb-2">
                   Drag & drop product images here, or click to select
                 </p>
@@ -280,11 +280,11 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
                   PNG, JPG, WebP up to 5MB each (max {10 - images.length} more images)
                 </p>
               </div>
-            )}
+            }
           </div>
 
-          {uploading && (
-            <div className="mt-4 space-y-2">
+          {uploading &&
+          <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Uploading images...</span>
                 <span>{Math.round(uploadProgress)}%</span>
@@ -294,16 +294,16 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
                 Processing {pendingFiles.length} file(s)
               </div>
             </div>
-          )}
+          }
 
-          {images.length >= 10 && (
-            <Alert className="mt-4">
+          {images.length >= 10 &&
+          <Alert className="mt-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 Maximum of 10 images per product reached. Delete some images to upload new ones.
               </AlertDescription>
             </Alert>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -320,12 +320,12 @@ const EnhancedProductImageUpload: React.FC<EnhancedProductImageUploadProps> = ({
             images={images}
             onDeleteImage={handleDeleteImage}
             onReorderImages={handleReorderImages}
-            productId={productId}
-          />
+            productId={productId} />
+
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default EnhancedProductImageUpload;

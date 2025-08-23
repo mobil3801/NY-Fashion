@@ -26,7 +26,7 @@ class NetworkOptimizer {
   private requestQueue: (() => Promise<any>)[] = [];
   private requestMetrics: RequestMetrics[] = [];
   private isProcessingQueue = false;
-  
+
   private config: ConnectionConfig = {
     maxConcurrent: 6,
     timeout: 30000,
@@ -43,16 +43,16 @@ class NetworkOptimizer {
   private startMetricsCollection(): void {
     // Clean up metrics every 5 minutes
     setInterval(() => {
-      const cutoff = Date.now() - (5 * 60 * 1000);
-      this.requestMetrics = this.requestMetrics.filter(m => m.duration > cutoff);
+      const cutoff = Date.now() - 5 * 60 * 1000;
+      this.requestMetrics = this.requestMetrics.filter((m) => m.duration > cutoff);
     }, 5 * 60 * 1000);
   }
 
   async optimizedFetch(
-    url: string,
-    options: RequestInit = {},
-    priority: 'low' | 'normal' | 'high' = 'normal'
-  ): Promise<Response> {
+  url: string,
+  options: RequestInit = {},
+  priority: 'low' | 'normal' | 'high' = 'normal')
+  : Promise<Response> {
     const startTime = performance.now();
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -108,7 +108,7 @@ class NetworkOptimizer {
       while (attempt < this.config.retries) {
         try {
           response = await fetch(url, optimizedOptions);
-          
+
           if (response.ok) {
             break;
           } else if (response.status >= 500 && attempt < this.config.retries - 1) {
@@ -201,11 +201,11 @@ class NetworkOptimizer {
 
   private shouldCompress(body: any): boolean {
     if (!body) return false;
-    
-    const size = typeof body === 'string' ? body.length : 
-                  body instanceof ArrayBuffer ? body.byteLength :
-                  body instanceof FormData ? 0 : // Skip FormData compression
-                  JSON.stringify(body).length;
+
+    const size = typeof body === 'string' ? body.length :
+    body instanceof ArrayBuffer ? body.byteLength :
+    body instanceof FormData ? 0 : // Skip FormData compression
+    JSON.stringify(body).length;
 
     return size > this.config.compressionThreshold;
   }
@@ -215,7 +215,7 @@ class NetworkOptimizer {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getResponseSize(response: Response): number {
@@ -249,40 +249,40 @@ class NetworkOptimizer {
     compressionRate: number;
     cacheHitRate: number;
   } {
-    const recentMetrics = this.requestMetrics.filter(m => 
-      Date.now() - m.duration < 60000 // Last minute
+    const recentMetrics = this.requestMetrics.filter((m) =>
+    Date.now() - m.duration < 60000 // Last minute
     );
 
     const totalRequests = recentMetrics.length;
-    const successfulRequests = recentMetrics.filter(m => m.success).length;
-    const compressedRequests = recentMetrics.filter(m => m.compressed).length;
-    const cachedRequests = recentMetrics.filter(m => m.cached).length;
+    const successfulRequests = recentMetrics.filter((m) => m.success).length;
+    const compressedRequests = recentMetrics.filter((m) => m.compressed).length;
+    const cachedRequests = recentMetrics.filter((m) => m.cached).length;
 
     return {
       activeRequests: this.activeRequests.size,
       queuedRequests: this.requestQueue.length,
       totalRequests,
-      averageResponseTime: totalRequests > 0 
-        ? recentMetrics.reduce((sum, m) => sum + m.duration, 0) / totalRequests 
-        : 0,
-      successRate: totalRequests > 0 ? (successfulRequests / totalRequests) * 100 : 100,
-      compressionRate: totalRequests > 0 ? (compressedRequests / totalRequests) * 100 : 0,
-      cacheHitRate: totalRequests > 0 ? (cachedRequests / totalRequests) * 100 : 0
+      averageResponseTime: totalRequests > 0 ?
+      recentMetrics.reduce((sum, m) => sum + m.duration, 0) / totalRequests :
+      0,
+      successRate: totalRequests > 0 ? successfulRequests / totalRequests * 100 : 100,
+      compressionRate: totalRequests > 0 ? compressedRequests / totalRequests * 100 : 0,
+      cacheHitRate: totalRequests > 0 ? cachedRequests / totalRequests * 100 : 0
     };
   }
 
   getSlowRequests(threshold: number = 2000): RequestMetrics[] {
-    return this.requestMetrics
-      .filter(m => m.duration > threshold)
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 10);
+    return this.requestMetrics.
+    filter((m) => m.duration > threshold).
+    sort((a, b) => b.duration - a.duration).
+    slice(0, 10);
   }
 
   optimizeForMobile(): void {
     this.config.maxConcurrent = 4; // Reduce concurrent requests
     this.config.timeout = 15000; // Shorter timeout
     this.config.compressionThreshold = 512; // Lower compression threshold
-    
+
     logger.logInfo('Network optimizer configured for mobile');
   }
 
@@ -290,7 +290,7 @@ class NetworkOptimizer {
     this.config.maxConcurrent = 8; // More concurrent requests
     this.config.timeout = 30000; // Longer timeout
     this.config.compressionThreshold = 1024; // Standard compression threshold
-    
+
     logger.logInfo('Network optimizer configured for desktop');
   }
 }

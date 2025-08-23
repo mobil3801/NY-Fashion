@@ -42,13 +42,13 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
   });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
+    const newFiles = acceptedFiles.map((file) => ({
       file,
       progress: 0,
       status: 'pending' as const
     }));
-    
-    setUploadProgress(prev => [...prev, ...newFiles]);
+
+    setUploadProgress((prev) => [...prev, ...newFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -63,7 +63,7 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
     maxSize: 10 * 1024 * 1024, // 10MB
     onDropRejected: (fileRejections) => {
       fileRejections.forEach((rejection) => {
-        const errors = rejection.errors.map(e => e.message).join(', ');
+        const errors = rejection.errors.map((e) => e.message).join(', ');
         toast({
           title: "File Rejected",
           description: `${rejection.file.name}: ${errors}`,
@@ -74,7 +74,7 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
   });
 
   const removeFile = (index: number) => {
-    setUploadProgress(prev => prev.filter((_, i) => i !== index));
+    setUploadProgress((prev) => prev.filter((_, i) => i !== index));
   };
 
   const getFileIcon = (file: File) => {
@@ -131,20 +131,20 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
       // Upload files one by one
       for (let i = 0; i < uploadProgress.length; i++) {
         const fileProgress = uploadProgress[i];
-        
+
         try {
           // Update status to uploading
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { ...fp, status: 'uploading', progress: 0 } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? { ...fp, status: 'uploading', progress: 0 } : fp
           ));
 
           // Simulate progress updates
           const progressInterval = setInterval(() => {
-            setUploadProgress(prev => prev.map((fp, index) => 
-              index === i ? { 
-                ...fp, 
-                progress: Math.min(fp.progress + Math.random() * 15, 90) 
-              } : fp
+            setUploadProgress((prev) => prev.map((fp, index) =>
+            index === i ? {
+              ...fp,
+              progress: Math.min(fp.progress + Math.random() * 15, 90)
+            } : fp
             ));
           }, 300);
 
@@ -161,26 +161,26 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
           }
 
           // Update to completed
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { 
-              ...fp, 
-              status: 'completed', 
-              progress: 100,
-              url: uploadResult.data.invoice?.file_url,
-              fileId: uploadResult.data.invoice?.id
-            } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? {
+            ...fp,
+            status: 'completed',
+            progress: 100,
+            url: uploadResult.data.invoice?.file_url,
+            fileId: uploadResult.data.invoice?.id
+          } : fp
           ));
 
           completedCount++;
 
         } catch (error: any) {
           // Update to error
-          setUploadProgress(prev => prev.map((fp, index) => 
-            index === i ? { 
-              ...fp, 
-              status: 'error', 
-              error: error.message 
-            } : fp
+          setUploadProgress((prev) => prev.map((fp, index) =>
+          index === i ? {
+            ...fp,
+            status: 'error',
+            error: error.message
+          } : fp
           ));
 
           failedCount++;
@@ -221,7 +221,7 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (uploadProgress.length === 0) {
       toast({
         title: "Validation Error",
@@ -243,8 +243,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
     await uploadFiles();
   };
 
-  const overallProgress = uploadProgress.length > 0 ? 
-    (uploadProgress.filter(fp => fp.status === 'completed').length / uploadProgress.length) * 100 : 0;
+  const overallProgress = uploadProgress.length > 0 ?
+  uploadProgress.filter((fp) => fp.status === 'completed').length / uploadProgress.length * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -288,8 +288,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   value={invoiceData.invoice_number}
                   onChange={(e) => setInvoiceData((prev) => ({ ...prev, invoice_number: e.target.value }))}
                   placeholder="Enter invoice number"
-                  required
-                />
+                  required />
+
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount">Invoice Amount *</Label>
@@ -300,8 +300,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   onChange={(e) => setInvoiceData((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                   step="0.01"
                   min="0"
-                  required
-                />
+                  required />
+
               </div>
             </div>
 
@@ -313,8 +313,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   type="date"
                   value={invoiceData.invoice_date}
                   onChange={(e) => setInvoiceData((prev) => ({ ...prev, invoice_date: e.target.value }))}
-                  required
-                />
+                  required />
+
               </div>
               <div className="space-y-2">
                 <Label htmlFor="due_date">Due Date</Label>
@@ -322,8 +322,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   id="due_date"
                   type="date"
                   value={invoiceData.due_date}
-                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, due_date: e.target.value }))}
-                />
+                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, due_date: e.target.value }))} />
+
               </div>
             </div>
           </CardContent>
@@ -341,14 +341,14 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
                 ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
                 ${loading ? 'pointer-events-none opacity-50' : ''}
-              `}
-            >
+              `}>
+
               <input {...getInputProps()} />
               <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
-              {isDragActive ? (
-                <p className="text-blue-600">Drop the files here...</p>
-              ) : (
-                <div>
+              {isDragActive ?
+              <p className="text-blue-600">Drop the files here...</p> :
+
+              <div>
                   <p className="text-gray-600 mb-2">
                     Drag & drop invoice files here, or click to select
                   </p>
@@ -356,26 +356,26 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                     Supports: JPG, PNG, PDF, DOC, DOCX (up to 10MB each)
                   </p>
                 </div>
-              )}
+              }
             </div>
 
             {/* File list with progress */}
-            {uploadProgress.length > 0 && (
-              <div className="mt-6 space-y-3">
+            {uploadProgress.length > 0 &&
+            <div className="mt-6 space-y-3">
                 <div className="flex justify-between items-center">
                   <h4 className="font-medium">Files ({uploadProgress.length})</h4>
-                  {!loading && uploadProgress.some(fp => fp.status === 'pending') && (
-                    <Button size="sm" onClick={uploadFiles}>
+                  {!loading && uploadProgress.some((fp) => fp.status === 'pending') &&
+                <Button size="sm" onClick={uploadFiles}>
                       Upload All
                     </Button>
-                  )}
+                }
                 </div>
 
-                {uploadProgress.map((fileProgress, index) => (
-                  <div 
-                    key={index} 
-                    className={`p-3 border rounded-lg ${getStatusColor(fileProgress.status)}`}
-                  >
+                {uploadProgress.map((fileProgress, index) =>
+              <div
+                key={index}
+                className={`p-3 border rounded-lg ${getStatusColor(fileProgress.status)}`}>
+
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2 flex-1">
                         {getFileIcon(fileProgress.file)}
@@ -388,66 +388,66 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                         {getStatusIcon(fileProgress.status)}
                       </div>
                       
-                      {fileProgress.status === 'pending' && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                          disabled={loading}
-                        >
+                      {fileProgress.status === 'pending' &&
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFile(index)}
+                    disabled={loading}>
+
                           <X className="h-4 w-4" />
                         </Button>
-                      )}
+                  }
                     </div>
 
-                    {fileProgress.status === 'uploading' && (
-                      <Progress value={fileProgress.progress} className="h-2" />
-                    )}
+                    {fileProgress.status === 'uploading' &&
+                <Progress value={fileProgress.progress} className="h-2" />
+                }
 
-                    {fileProgress.status === 'error' && fileProgress.error && (
-                      <Alert className="mt-2">
+                    {fileProgress.status === 'error' && fileProgress.error &&
+                <Alert className="mt-2">
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription className="text-sm">
                           {fileProgress.error}
                         </AlertDescription>
                       </Alert>
-                    )}
+                }
 
-                    {fileProgress.status === 'completed' && (
-                      <div className="mt-2 flex items-center justify-between">
+                    {fileProgress.status === 'completed' &&
+                <div className="mt-2 flex items-center justify-between">
                         <Badge variant="outline" className="text-green-600 border-green-300">
                           ✓ Uploaded successfully
                         </Badge>
-                        {fileProgress.url && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(fileProgress.url, '_blank')}
-                          >
+                        {fileProgress.url &&
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(fileProgress.url, '_blank')}>
+
                             <Download className="h-4 w-4" />
                           </Button>
-                        )}
+                  }
                       </div>
-                    )}
+                }
                   </div>
-                ))}
+              )}
 
                 {/* Overall progress */}
-                {loading && uploadProgress.length > 0 && (
-                  <div className="space-y-2 p-4 bg-blue-50 rounded-lg">
+                {loading && uploadProgress.length > 0 &&
+              <div className="space-y-2 p-4 bg-blue-50 rounded-lg">
                     <div className="flex justify-between text-sm font-medium">
                       <span>Overall Progress</span>
                       <span>
-                        {uploadProgress.filter(fp => fp.status === 'completed').length} / {uploadProgress.length}
+                        {uploadProgress.filter((fp) => fp.status === 'completed').length} / {uploadProgress.length}
                       </span>
                     </div>
                     <Progress value={overallProgress} className="h-3" />
                   </div>
-                )}
+              }
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -457,14 +457,14 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
           </Button>
           <Button
             type="submit"
-            disabled={loading || uploadProgress.length === 0 || !invoiceData.invoice_number.trim()}
-          >
+            disabled={loading || uploadProgress.length === 0 || !invoiceData.invoice_number.trim()}>
+
             {loading ? 'Uploading...' : 'Upload Invoices'}
           </Button>
         </div>
       </form>
-    </div>
-  );
+    </div>);
+
 };
 
 export default InvoiceUpload;

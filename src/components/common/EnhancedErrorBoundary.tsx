@@ -51,7 +51,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const errorId = this.state.errorId || `error_${Date.now()}`;
-    
+
     // Log error with enhanced context
     logger.logError('React Error Boundary caught error', error, {
       errorId,
@@ -108,7 +108,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       };
 
       // For now, use the production logger
-      logger.logError('Error boundary report', errorReport, { 
+      logger.logError('Error boundary report', errorReport, {
         category: 'error_boundary',
         severity: this.props.level === 'critical' ? 'critical' : 'error'
       });
@@ -144,7 +144,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       retryCount: this.state.retryCount + 1
     });
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
@@ -191,32 +191,32 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
               <p className="text-gray-600 mb-4">
                 A critical error has occurred. The application needs to be restarted.
               </p>
-              {PRODUCTION_CONFIG.development.enableDebugMode && errorId && (
-                <Badge variant="outline" className="mb-4">
+              {PRODUCTION_CONFIG.development.enableDebugMode && errorId &&
+              <Badge variant="outline" className="mb-4">
                   Error ID: {errorId}
                 </Badge>
-              )}
+              }
               <div className="space-y-2">
-                <Button 
+                <Button
                   onClick={this.handleReload}
                   className="w-full"
-                  variant="default"
-                >
+                  variant="default">
+
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Restart Application
                 </Button>
-                <Button 
+                <Button
                   onClick={this.handleGoHome}
                   className="w-full"
-                  variant="outline"
-                >
+                  variant="outline">
+
                   <Home className="w-4 h-4 mr-2" />
                   Go to Home
                 </Button>
               </div>
             </Card>
-          </div>
-        );
+          </div>);
+
       }
 
       // Page-level error
@@ -231,69 +231,69 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                 </AlertDescription>
               </Alert>
               
-              {PRODUCTION_CONFIG.development.enableDebugMode && (
-                <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
+              {PRODUCTION_CONFIG.development.enableDebugMode &&
+              <div className="mb-4 p-3 bg-gray-50 rounded text-sm">
                   <details>
                     <summary className="cursor-pointer font-medium">
                       <Bug className="inline w-4 h-4 mr-1" />
                       Debug Information
                     </summary>
                     <div className="mt-2 space-y-2">
-                      {errorId && (
-                        <div>
+                      {errorId &&
+                    <div>
                           <strong>Error ID:</strong> {errorId}
                         </div>
-                      )}
-                      {error && (
-                        <div>
+                    }
+                      {error &&
+                    <div>
                           <strong>Error:</strong> {error.message}
                         </div>
-                      )}
+                    }
                       <div>
                         <strong>Retry Count:</strong> {retryCount}
                       </div>
                     </div>
                   </details>
                 </div>
-              )}
+              }
 
               <div className="flex gap-2">
-                {canRetry && (
-                  <Button 
-                    onClick={this.handleRetry}
-                    variant="default"
-                    className="flex-1"
-                  >
+                {canRetry &&
+                <Button
+                  onClick={this.handleRetry}
+                  variant="default"
+                  className="flex-1">
+
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Try Again
                   </Button>
-                )}
+                }
                 
-                {this.props.showReloadButton && (
-                  <Button 
-                    onClick={this.handleReload}
-                    variant="outline"
-                    className="flex-1"
-                  >
+                {this.props.showReloadButton &&
+                <Button
+                  onClick={this.handleReload}
+                  variant="outline"
+                  className="flex-1">
+
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Reload Page
                   </Button>
-                )}
+                }
 
-                {this.props.showHomeButton && (
-                  <Button 
-                    onClick={this.handleGoHome}
-                    variant="outline"
-                    className="flex-1"
-                  >
+                {this.props.showHomeButton &&
+                <Button
+                  onClick={this.handleGoHome}
+                  variant="outline"
+                  className="flex-1">
+
                     <Home className="w-4 h-4 mr-2" />
                     Home
                   </Button>
-                )}
+                }
               </div>
             </Card>
-          </div>
-        );
+          </div>);
+
       }
 
       // Component-level error (inline)
@@ -302,19 +302,19 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>This component encountered an error</span>
-            {canRetry && (
-              <Button 
-                onClick={this.handleRetry}
-                variant="outline"
-                size="sm"
-              >
+            {canRetry &&
+            <Button
+              onClick={this.handleRetry}
+              variant="outline"
+              size="sm">
+
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Retry
               </Button>
-            )}
+            }
           </AlertDescription>
-        </Alert>
-      );
+        </Alert>);
+
     }
 
     return this.props.children;

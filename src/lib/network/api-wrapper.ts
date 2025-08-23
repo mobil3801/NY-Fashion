@@ -26,32 +26,32 @@ class NetworkAPIWrapper {
 
   // Enhanced GET with better error handling
   async get<T = any>(
-    url: string, 
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  url: string,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     const opts = { ...this.defaultOptions, ...options };
-    
+
     try {
       const data = await apiClient.get<T>(url, {
         timeout: opts.timeout,
         retry: { attempts: opts.maxRetries }
       });
-      
+
       opts.onSuccess?.(data);
       return { data, error: null };
-      
+
     } catch (error) {
       const apiError = error as ApiError;
       const errorMessage = this.getErrorMessage(apiError);
-      
+
       if (opts.showErrorToast) {
         this.showErrorToast(apiError);
       }
-      
+
       opts.onError?.(apiError);
-      
-      return { 
-        data: null, 
+
+      return {
+        data: null,
         error: errorMessage,
         wasQueued: apiError.code === 'QUEUED_OFFLINE'
       };
@@ -60,150 +60,150 @@ class NetworkAPIWrapper {
 
   // Enhanced POST with offline queue support
   async post<T = any>(
-    url: string, 
-    data?: any, 
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  url: string,
+  data?: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     const opts = { ...this.defaultOptions, ...options };
-    
+
     try {
       const result = await apiClient.post<T>(url, data, {
         timeout: opts.timeout,
         skipOfflineQueue: opts.skipOfflineQueue,
         retry: { attempts: opts.maxRetries }
       });
-      
+
       opts.onSuccess?.(result);
       return { data: result, error: null };
-      
+
     } catch (error) {
       const apiError = error as ApiError;
-      
+
       // Handle offline queueing gracefully
       if (apiError.code === 'QUEUED_OFFLINE') {
         if (opts.showErrorToast) {
           this.showQueuedToast();
         }
-        return { 
-          data: null, 
-          error: null, 
-          wasQueued: true 
+        return {
+          data: null,
+          error: null,
+          wasQueued: true
         };
       }
-      
+
       const errorMessage = this.getErrorMessage(apiError);
-      
+
       if (opts.showErrorToast) {
         this.showErrorToast(apiError);
       }
-      
+
       opts.onError?.(apiError);
-      
-      return { 
-        data: null, 
-        error: errorMessage 
+
+      return {
+        data: null,
+        error: errorMessage
       };
     }
   }
 
   // Enhanced PUT with offline queue support
   async put<T = any>(
-    url: string, 
-    data?: any, 
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  url: string,
+  data?: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     const opts = { ...this.defaultOptions, ...options };
-    
+
     try {
       const result = await apiClient.put<T>(url, data, {
         timeout: opts.timeout,
         skipOfflineQueue: opts.skipOfflineQueue,
         retry: { attempts: opts.maxRetries }
       });
-      
+
       opts.onSuccess?.(result);
       return { data: result, error: null };
-      
+
     } catch (error) {
       const apiError = error as ApiError;
-      
+
       if (apiError.code === 'QUEUED_OFFLINE') {
         if (opts.showErrorToast) {
           this.showQueuedToast();
         }
-        return { 
-          data: null, 
-          error: null, 
-          wasQueued: true 
+        return {
+          data: null,
+          error: null,
+          wasQueued: true
         };
       }
-      
+
       const errorMessage = this.getErrorMessage(apiError);
-      
+
       if (opts.showErrorToast) {
         this.showErrorToast(apiError);
       }
-      
+
       opts.onError?.(apiError);
-      
-      return { 
-        data: null, 
-        error: errorMessage 
+
+      return {
+        data: null,
+        error: errorMessage
       };
     }
   }
 
   // Enhanced DELETE with offline queue support
   async delete<T = any>(
-    url: string, 
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  url: string,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     const opts = { ...this.defaultOptions, ...options };
-    
+
     try {
       const result = await apiClient.delete<T>(url, {
         timeout: opts.timeout,
         skipOfflineQueue: opts.skipOfflineQueue,
         retry: { attempts: opts.maxRetries }
       });
-      
+
       opts.onSuccess?.(result);
       return { data: result, error: null };
-      
+
     } catch (error) {
       const apiError = error as ApiError;
-      
+
       if (apiError.code === 'QUEUED_OFFLINE') {
         if (opts.showErrorToast) {
           this.showQueuedToast();
         }
-        return { 
-          data: null, 
-          error: null, 
-          wasQueued: true 
+        return {
+          data: null,
+          error: null,
+          wasQueued: true
         };
       }
-      
+
       const errorMessage = this.getErrorMessage(apiError);
-      
+
       if (opts.showErrorToast) {
         this.showErrorToast(apiError);
       }
-      
+
       opts.onError?.(apiError);
-      
-      return { 
-        data: null, 
-        error: errorMessage 
+
+      return {
+        data: null,
+        error: errorMessage
       };
     }
   }
 
   // EasySite API integration methods
   async ezGet<T = any>(
-    path: string,
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null }> {
+  path: string,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;}> {
     try {
       const response = await window.ezsite.apis.get(path);
       if (response.error) {
@@ -214,18 +214,18 @@ class NetworkAPIWrapper {
       if (options.showErrorToast !== false) {
         this.showErrorToast(error as Error);
       }
-      return { 
-        data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   async ezTablePage<T = any>(
-    tableId: string,
-    queryParams: any,
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: { List: T[]; VirtualCount: number } | null; error: string | null }> {
+  tableId: string,
+  queryParams: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: {List: T[];VirtualCount: number;} | null;error: string | null;}> {
     try {
       const response = await window.ezsite.apis.tablePage(tableId, queryParams);
       if (response.error) {
@@ -236,18 +236,18 @@ class NetworkAPIWrapper {
       if (options.showErrorToast !== false) {
         this.showErrorToast(error as Error);
       }
-      return { 
-        data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   async ezTableCreate<T = any>(
-    tableId: string,
-    data: any,
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  tableId: string,
+  data: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     // Check if offline and queue the operation
     if (!navigator.onLine && !options.skipOfflineQueue) {
       try {
@@ -271,18 +271,18 @@ class NetworkAPIWrapper {
       if (options.showErrorToast !== false) {
         this.showErrorToast(error as Error);
       }
-      return { 
-        data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   async ezTableUpdate<T = any>(
-    tableId: string,
-    data: any,
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  tableId: string,
+  data: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     if (!navigator.onLine && !options.skipOfflineQueue) {
       try {
         await this.queueEzOperation('UPDATE', tableId, data);
@@ -305,18 +305,18 @@ class NetworkAPIWrapper {
       if (options.showErrorToast !== false) {
         this.showErrorToast(error as Error);
       }
-      return { 
-        data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   async ezTableDelete<T = any>(
-    tableId: string,
-    deleteParams: any,
-    options: ApiWrapperOptions = {}
-  ): Promise<{ data: T | null; error: string | null; wasQueued?: boolean }> {
+  tableId: string,
+  deleteParams: any,
+  options: ApiWrapperOptions = {})
+  : Promise<{data: T | null;error: string | null;wasQueued?: boolean;}> {
     if (!navigator.onLine && !options.skipOfflineQueue) {
       try {
         await this.queueEzOperation('DELETE', tableId, deleteParams);
@@ -339,18 +339,18 @@ class NetworkAPIWrapper {
       if (options.showErrorToast !== false) {
         this.showErrorToast(error as Error);
       }
-      return { 
-        data: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   private async queueEzOperation(
-    operation: 'CREATE' | 'UPDATE' | 'DELETE',
-    tableId: string,
-    data: any
-  ): Promise<void> {
+  operation: 'CREATE' | 'UPDATE' | 'DELETE',
+  tableId: string,
+  data: any)
+  : Promise<void> {
     // Store EasySite operations in a special format for later processing
     const queueData = {
       type: 'EZSITE_OPERATION',
@@ -359,7 +359,7 @@ class NetworkAPIWrapper {
       data,
       timestamp: Date.now()
     };
-    
+
     await apiClient.getOfflineQueue().enqueue(
       'POST',
       `/ezsite/${operation.toLowerCase()}/${tableId}`,
@@ -379,7 +379,7 @@ class NetworkAPIWrapper {
     import('@/hooks/use-toast').then(({ toast }) => {
       let title = "Connection Error";
       let description = "Please check your connection and try again.";
-      
+
       if (error instanceof ApiError) {
         switch (error.code) {
           case 'NETWORK_OFFLINE':

@@ -15,13 +15,13 @@ async function uploadInvoiceFile(poId, invoiceData, file) {
 
     // Validate file type and size
     const allowedTypes = [
-      'application/pdf',
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
     const maxFileSize = 10 * 1024 * 1024; // 10MB
 
     if (!allowedTypes.includes(file.type)) {
@@ -51,7 +51,7 @@ async function uploadInvoiceFile(poId, invoiceData, file) {
     // Get purchase order details
     const poQuery = `SELECT supplier_id FROM purchase_orders WHERE id = $1`;
     const poResult = await window.ezsite.db.query(poQuery, [parseInt(poId)]);
-    
+
     if (!poResult || poResult.length === 0) {
       throw new Error('Purchase order not found');
     }
@@ -69,20 +69,20 @@ async function uploadInvoiceFile(poId, invoiceData, file) {
     `;
 
     const insertResult = await window.ezsite.db.query(insertQuery, [
-      parseInt(poId),
-      supplier_id,
-      invoiceData.invoice_number,
-      invoiceData.invoice_date,
-      invoiceData.due_date || null,
-      parseFloat(invoiceData.amount),
-      invoiceData.currency || 'USD',
-      urlResult.data,
-      file.name,
-      uploadResult.data,
-      file.size,
-      file.type,
-      'pending'
-    ]);
+    parseInt(poId),
+    supplier_id,
+    invoiceData.invoice_number,
+    invoiceData.invoice_date,
+    invoiceData.due_date || null,
+    parseFloat(invoiceData.amount),
+    invoiceData.currency || 'USD',
+    urlResult.data,
+    file.name,
+    uploadResult.data,
+    file.size,
+    file.type,
+    'pending']
+    );
 
     if (!insertResult || insertResult.length === 0) {
       throw new Error('Failed to save invoice record');

@@ -12,7 +12,7 @@ async function deleteInvoiceFile(invoiceId) {
       WHERE id = $1
     `;
     const invoiceResult = await window.ezsite.db.query(selectQuery, [parseInt(invoiceId)]);
-    
+
     if (!invoiceResult || invoiceResult.length === 0) {
       throw new Error('Invoice not found');
     }
@@ -27,11 +27,11 @@ async function deleteInvoiceFile(invoiceId) {
     // Delete file from storage if file ID exists
     if (invoice.file_id) {
       try {
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(invoice.file_id);
-      } catch (error) {
-        console.warn('Could not delete file from storage:', error.message);
-        // Continue with database deletion even if storage deletion fails
+      } catch (error) {console.warn('Could not delete file from storage:', error.message); // Continue with database deletion even if storage deletion fails
       }
     }
 

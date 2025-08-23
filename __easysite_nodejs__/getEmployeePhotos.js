@@ -28,11 +28,11 @@ async function getEmployeePhotos(employeeId) {
     `;
 
     const result = await window.ezsite.db.query(query, [parseInt(employeeId)]);
-    
+
     return {
       photos: result || [],
       count: result?.length || 0,
-      primaryPhoto: result?.find(p => p.is_primary) || null
+      primaryPhoto: result?.find((p) => p.is_primary) || null
     };
 
   } catch (error) {

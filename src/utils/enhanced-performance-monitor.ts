@@ -42,7 +42,7 @@ class EnhancedPerformanceMonitor {
   private isEnabled: boolean = false;
   private healthMetrics: SystemHealthMetrics[] = [];
   private alertCallbacks: ((metric: PerformanceMetric) => void)[] = [];
-  
+
   private thresholds: PerformanceThresholds = {
     database: 1000, // 1s
     api: 2000, // 2s
@@ -82,7 +82,7 @@ class EnhancedPerformanceMonitor {
             metadata: { attribution: entry.attribution },
             success: entry.duration < this.thresholds.render
           });
-          
+
           if (entry.duration > 50) {
             logger.logPerformance('Long Task Detected', {
               duration: entry.duration,
@@ -92,7 +92,7 @@ class EnhancedPerformanceMonitor {
           }
         });
       });
-      
+
       longTaskObserver.observe({ entryTypes: ['longtask'] });
       this.observers.push(longTaskObserver);
     } catch (error) {
@@ -120,7 +120,7 @@ class EnhancedPerformanceMonitor {
           });
         });
       });
-      
+
       navigationObserver.observe({ entryTypes: ['navigation'] });
       this.observers.push(navigationObserver);
     } catch (error) {
@@ -150,7 +150,7 @@ class EnhancedPerformanceMonitor {
           }
         });
       });
-      
+
       resourceObserver.observe({ entryTypes: ['resource'] });
       this.observers.push(resourceObserver);
     } catch (error) {
@@ -203,7 +203,7 @@ class EnhancedPerformanceMonitor {
             used: usedMemory,
             total: totalMemory,
             limit: memoryLimit,
-            percentage: (usedMemory / memoryLimit) * 100
+            percentage: usedMemory / memoryLimit * 100
           },
           success: usedMemory < this.thresholds.memory
         });
@@ -213,9 +213,9 @@ class EnhancedPerformanceMonitor {
           logger.logError('Critical Memory Usage Detected', {
             used: usedMemory,
             limit: memoryLimit,
-            percentage: (usedMemory / memoryLimit) * 100
+            percentage: usedMemory / memoryLimit * 100
           });
-          
+
           this.triggerAlert({
             id: `memory_alert_${Date.now()}`,
             name: 'Critical Memory Usage',
@@ -244,7 +244,7 @@ class EnhancedPerformanceMonitor {
       };
 
       this.healthMetrics.push(healthMetric);
-      
+
       // Keep only last 100 health metrics
       if (this.healthMetrics.length > 100) {
         this.healthMetrics = this.healthMetrics.slice(-100);
@@ -263,10 +263,10 @@ class EnhancedPerformanceMonitor {
   private initializeCriticalPathMonitoring(): void {
     // Monitor POS transaction performance
     this.monitorCriticalPath('pos-transaction', 'pos');
-    
+
     // Monitor inventory updates
     this.monitorCriticalPath('inventory-update', 'inventory');
-    
+
     // Monitor payroll processing
     this.monitorCriticalPath('payroll-process', 'payroll');
   }
@@ -286,7 +286,7 @@ class EnhancedPerformanceMonitor {
   private getCPUUsage(): number {
     // Estimate CPU usage based on frame timing
     if ('requestIdleCallback' in window) {
-      return Math.min(100, Math.max(0, 100 - (performance.now() % 100)));
+      return Math.min(100, Math.max(0, 100 - performance.now() % 100));
     }
     return 0;
   }
@@ -294,52 +294,52 @@ class EnhancedPerformanceMonitor {
   private getMemoryUsage(): number {
     if ('memory' in performance) {
       const memory = (performance as any).memory;
-      return (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+      return memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100;
     }
     return 0;
   }
 
   private getNetworkHealth(): number {
-    const recentNetworkMetrics = this.metrics
-      .filter(m => m.category === 'network' && m.startTime > Date.now() - 60000)
-      .filter(m => m.success !== undefined);
-    
+    const recentNetworkMetrics = this.metrics.
+    filter((m) => m.category === 'network' && m.startTime > Date.now() - 60000).
+    filter((m) => m.success !== undefined);
+
     if (recentNetworkMetrics.length === 0) return 100;
-    
-    const successRate = (recentNetworkMetrics.filter(m => m.success).length / recentNetworkMetrics.length) * 100;
+
+    const successRate = recentNetworkMetrics.filter((m) => m.success).length / recentNetworkMetrics.length * 100;
     return successRate;
   }
 
   private getDatabaseHealth(): number {
-    const recentDbMetrics = this.metrics
-      .filter(m => m.category === 'database' && m.startTime > Date.now() - 60000)
-      .filter(m => m.success !== undefined);
-    
+    const recentDbMetrics = this.metrics.
+    filter((m) => m.category === 'database' && m.startTime > Date.now() - 60000).
+    filter((m) => m.success !== undefined);
+
     if (recentDbMetrics.length === 0) return 100;
-    
-    const successRate = (recentDbMetrics.filter(m => m.success).length / recentDbMetrics.length) * 100;
+
+    const successRate = recentDbMetrics.filter((m) => m.success).length / recentDbMetrics.length * 100;
     return successRate;
   }
 
   private getErrorRate(): number {
-    const recentMetrics = this.metrics.filter(m => m.startTime > Date.now() - 60000);
+    const recentMetrics = this.metrics.filter((m) => m.startTime > Date.now() - 60000);
     if (recentMetrics.length === 0) return 0;
-    
-    return (recentMetrics.filter(m => !m.success).length / recentMetrics.length) * 100;
+
+    return recentMetrics.filter((m) => !m.success).length / recentMetrics.length * 100;
   }
 
   private setupPeriodicCleanup(): void {
     setInterval(() => {
-      const cutoff = Date.now() - (10 * 60 * 1000); // 10 minutes ago
-      this.metrics = this.metrics.filter(metric => metric.startTime > cutoff);
-      
+      const cutoff = Date.now() - 10 * 60 * 1000; // 10 minutes ago
+      this.metrics = this.metrics.filter((metric) => metric.startTime > cutoff);
+
       // Clean up active metrics that are too old
       for (const [id, metric] of this.activeMetrics.entries()) {
         if (metric.startTime < cutoff) {
           this.activeMetrics.delete(id);
         }
       }
-      
+
       logger.logDebug('Performance metrics cleaned up', {
         remainingMetrics: this.metrics.length,
         activeMetrics: this.activeMetrics.size
@@ -348,7 +348,7 @@ class EnhancedPerformanceMonitor {
   }
 
   private triggerAlert(metric: PerformanceMetric): void {
-    this.alertCallbacks.forEach(callback => {
+    this.alertCallbacks.forEach((callback) => {
       try {
         callback(metric);
       } catch (error) {
@@ -370,7 +370,7 @@ class EnhancedPerformanceMonitor {
     };
 
     this.activeMetrics.set(id, metric);
-    
+
     // Mark performance for custom measurement
     if ('mark' in performance) {
       performance.mark(`app-${id}-start`);
@@ -416,7 +416,7 @@ class EnhancedPerformanceMonitor {
 
   private recordMetric(metric: PerformanceMetric): void {
     this.metrics.push(metric);
-    
+
     // Emit custom event for real-time monitoring
     window.dispatchEvent(new CustomEvent('performance-metric', {
       detail: metric
@@ -445,14 +445,14 @@ class EnhancedPerformanceMonitor {
   // Data retrieval methods
   getMetrics(category?: PerformanceMetric['category'], limit: number = 100): PerformanceMetric[] {
     let filteredMetrics = this.metrics;
-    
+
     if (category) {
-      filteredMetrics = filteredMetrics.filter(m => m.category === category);
+      filteredMetrics = filteredMetrics.filter((m) => m.category === category);
     }
-    
-    return filteredMetrics
-      .sort((a, b) => (b.startTime || 0) - (a.startTime || 0))
-      .slice(0, limit);
+
+    return filteredMetrics.
+    sort((a, b) => (b.startTime || 0) - (a.startTime || 0)).
+    slice(0, limit);
   }
 
   getSystemHealth(): SystemHealthMetrics | null {
@@ -460,8 +460,8 @@ class EnhancedPerformanceMonitor {
   }
 
   getHealthHistory(minutes: number = 60): SystemHealthMetrics[] {
-    const cutoff = Date.now() - (minutes * 60 * 1000);
-    return this.healthMetrics.filter(h => h.timestamp > cutoff);
+    const cutoff = Date.now() - minutes * 60 * 1000;
+    return this.healthMetrics.filter((h) => h.timestamp > cutoff);
   }
 
   getPerformanceReport(): {
@@ -473,39 +473,39 @@ class EnhancedPerformanceMonitor {
     criticalIssues: string[];
   } {
     const now = Date.now();
-    const recentMetrics = this.metrics.filter(m => m.startTime > now - (60 * 60 * 1000));
+    const recentMetrics = this.metrics.filter((m) => m.startTime > now - 60 * 60 * 1000);
 
     const summary = {
       totalMetrics: recentMetrics.length,
-      averageDuration: recentMetrics.length > 0 
-        ? recentMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / recentMetrics.length 
-        : 0,
-      successRate: recentMetrics.length > 0 
-        ? (recentMetrics.filter(m => m.success).length / recentMetrics.length) * 100 
-        : 100,
+      averageDuration: recentMetrics.length > 0 ?
+      recentMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / recentMetrics.length :
+      0,
+      successRate: recentMetrics.length > 0 ?
+      recentMetrics.filter((m) => m.success).length / recentMetrics.length * 100 :
+      100,
       timeRange: '1 hour',
       activeOperations: this.activeMetrics.size
     };
 
     const categories = Object.keys(this.thresholds).reduce((acc, category) => {
-      const categoryMetrics = recentMetrics.filter(m => m.category === category);
+      const categoryMetrics = recentMetrics.filter((m) => m.category === category);
       acc[category] = {
         count: categoryMetrics.length,
-        averageDuration: categoryMetrics.length > 0 
-          ? categoryMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / categoryMetrics.length 
-          : 0,
-        slowOperations: categoryMetrics.filter(m => (m.duration || 0) > this.thresholds[category as keyof PerformanceThresholds]).length,
-        errorRate: categoryMetrics.length > 0 
-          ? (categoryMetrics.filter(m => !m.success).length / categoryMetrics.length) * 100 
-          : 0
+        averageDuration: categoryMetrics.length > 0 ?
+        categoryMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) / categoryMetrics.length :
+        0,
+        slowOperations: categoryMetrics.filter((m) => (m.duration || 0) > this.thresholds[category as keyof PerformanceThresholds]).length,
+        errorRate: categoryMetrics.length > 0 ?
+        categoryMetrics.filter((m) => !m.success).length / categoryMetrics.length * 100 :
+        0
       };
       return acc;
     }, {} as Record<string, any>);
 
-    const slowOperations = recentMetrics
-      .filter(m => (m.duration || 0) > this.thresholds[m.category])
-      .sort((a, b) => (b.duration || 0) - (a.duration || 0))
-      .slice(0, 10);
+    const slowOperations = recentMetrics.
+    filter((m) => (m.duration || 0) > this.thresholds[m.category]).
+    sort((a, b) => (b.duration || 0) - (a.duration || 0)).
+    slice(0, 10);
 
     const recommendations = this.generateRecommendations(categories, slowOperations);
     const criticalIssues = this.identifyCriticalIssues(categories, this.getSystemHealth());
@@ -611,7 +611,7 @@ class EnhancedPerformanceMonitor {
   }
 
   destroy(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
     this.metrics = [];
     this.healthMetrics = [];
@@ -633,7 +633,7 @@ export const usePerformanceMonitor = () => {
 
   React.useEffect(() => {
     const handleMetric = (event: CustomEvent) => {
-      setMetrics(prev => [...prev.slice(-99), event.detail]);
+      setMetrics((prev) => [...prev.slice(-99), event.detail]);
     };
 
     window.addEventListener('performance-metric', handleMetric as EventListener);
@@ -665,10 +665,10 @@ export const usePerformanceMonitor = () => {
 };
 
 // HOC for automatic performance tracking
-export const withPerformanceTracking = <P extends object>(
-  Component: React.ComponentType<P>,
-  componentName: string
-): React.ComponentType<P> => {
+export const withPerformanceTracking = <P extends object,>(
+Component: React.ComponentType<P>,
+componentName: string)
+: React.ComponentType<P> => {
   return React.memo((props: P) => {
     React.useLayoutEffect(() => {
       const id = `render_${componentName}_${Date.now()}`;

@@ -12,7 +12,7 @@ async function deleteProductImage(imageId) {
       WHERE id = $1
     `;
     const imageResult = await window.ezsite.db.query(selectQuery, [parseInt(imageId)]);
-    
+
     if (!imageResult || imageResult.length === 0) {
       throw new Error('Image not found');
     }
@@ -22,11 +22,11 @@ async function deleteProductImage(imageId) {
     // Delete from storage if file_id exists
     if (image.file_id) {
       try {
+
+
         // Note: EasySite storage doesn't have a delete API yet, but we prepare for it
         // await window.ezsite.apis.deleteFile(image.file_id);
-      } catch (error) {
-        console.warn('Could not delete file from storage:', error.message);
-        // Continue with database deletion even if storage deletion fails
+      } catch (error) {console.warn('Could not delete file from storage:', error.message); // Continue with database deletion even if storage deletion fails
       }
     }
 

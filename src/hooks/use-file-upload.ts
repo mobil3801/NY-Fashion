@@ -91,7 +91,7 @@ export const useFileUpload = (options: UseFileUploadOptions) => {
         type: file.type
       };
 
-      options.onUploadComplete?.([ uploadedFile]);
+      options.onUploadComplete?.([uploadedFile]);
       options.onProgress?.(100);
 
       return uploadedFile;
@@ -99,7 +99,7 @@ export const useFileUpload = (options: UseFileUploadOptions) => {
     } catch (error: any) {
       const errorMessage = error.message || 'Upload failed';
       setUploadProgress({ progress: 0, status: 'error', error: errorMessage });
-      
+
       toast({
         title: "Upload Error",
         description: errorMessage,
@@ -134,9 +134,9 @@ export const useFileUpload = (options: UseFileUploadOptions) => {
       // Upload files with progress tracking
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        
+
         try {
-          const progress = ((i + 0.5) / files.length) * 100;
+          const progress = (i + 0.5) / files.length * 100;
           setUploadProgress({ progress, status: 'uploading' });
           options.onProgress?.(progress);
 
@@ -160,8 +160,8 @@ export const useFileUpload = (options: UseFileUploadOptions) => {
         }
       }
 
-      setUploadProgress({ 
-        progress: 100, 
+      setUploadProgress({
+        progress: 100,
         status: failedCount === 0 ? 'completed' : 'error',
         error: failedCount > 0 ? `${failedCount} files failed to upload` : undefined
       });
@@ -180,7 +180,7 @@ export const useFileUpload = (options: UseFileUploadOptions) => {
 
     } catch (error: any) {
       setUploadProgress({ progress: 0, status: 'error', error: error.message });
-      
+
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to upload files",

@@ -14,7 +14,7 @@ async function reorderProductImages(productId, imageOrder) {
       SELECT id FROM product_images WHERE product_id = $1
     `;
     const existingImages = await window.ezsite.db.query(existingImagesQuery, [parseInt(productId)]);
-    const existingIds = existingImages.map(img => img.id);
+    const existingIds = existingImages.map((img) => img.id);
 
     for (const image of imageOrder) {
       if (!existingIds.includes(image.id)) {

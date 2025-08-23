@@ -22,7 +22,7 @@ async function getProductImages(productId) {
     `;
 
     const result = await window.ezsite.db.query(query, [parseInt(productId)]);
-    
+
     return {
       images: result || [],
       count: result?.length || 0

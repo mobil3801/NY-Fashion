@@ -152,8 +152,8 @@ function systemHealthMonitor() {
     }
 
     // Determine overall status
-    const criticalAlerts = healthData.alerts.filter(a => a.level === 'critical').length;
-    const warningAlerts = healthData.alerts.filter(a => a.level === 'warning').length;
+    const criticalAlerts = healthData.alerts.filter((a) => a.level === 'critical').length;
+    const warningAlerts = healthData.alerts.filter((a) => a.level === 'warning').length;
 
     if (criticalAlerts > 0) {
       healthData.status = 'critical';
@@ -164,10 +164,10 @@ function systemHealthMonitor() {
     }
 
     // Performance scoring
-    healthData.performanceScore = Math.max(0, Math.min(100, 
-      100 - (criticalAlerts * 30) - (warningAlerts * 10) - 
-      (memoryUsage > 80 ? 10 : 0) - 
-      (diskUsage > 80 ? 10 : 0)
+    healthData.performanceScore = Math.max(0, Math.min(100,
+    100 - criticalAlerts * 30 - warningAlerts * 10 - (
+    memoryUsage > 80 ? 10 : 0) - (
+    diskUsage > 80 ? 10 : 0)
     ));
 
     console.log(`[HEALTH] System health check completed:`, {

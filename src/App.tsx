@@ -41,10 +41,10 @@ import NetworkDebugPage from '@/pages/debug/NetworkDebugPage';
 import TestingPage from '@/pages/TestingPage';
 
 // Lazy load Performance Dashboard
-const LazyPerformanceDashboard = React.lazy(() => 
-  import('@/components/monitoring/PerformanceDashboard').then(module => ({
-    default: module.default
-  }))
+const LazyPerformanceDashboard = React.lazy(() =>
+import('@/components/monitoring/PerformanceDashboard').then((module) => ({
+  default: module.default
+}))
 );
 
 // Import production initialization
@@ -71,7 +71,7 @@ const queryClient = new QueryClient({
       cacheTime: PRODUCTION_CONFIG.performance.cacheTimeout * 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
-      refetchOnMount: false,
+      refetchOnMount: false
     },
     mutations: {
       retry: (failureCount, error: any) => {
@@ -81,9 +81,9 @@ const queryClient = new QueryClient({
         }
         return failureCount < PRODUCTION_CONFIG.api.retryCount;
       },
-      retryDelay: PRODUCTION_CONFIG.api.retryDelay,
-    },
-  },
+      retryDelay: PRODUCTION_CONFIG.api.retryDelay
+    }
+  }
 });
 
 function App() {
@@ -91,7 +91,7 @@ function App() {
   React.useEffect(() => {
     if (PRODUCTION_CONFIG.isProduction) {
       logger.logInfo('Application started in production mode');
-      
+
       // Initialize error reporting if enabled
       if (PRODUCTION_CONFIG.enableErrorReporting) {
         logger.logInfo('Error reporting enabled');
@@ -100,7 +100,7 @@ function App() {
       // Initialize production monitoring
       bundleOptimizer.preloadCriticalResources();
       bundleOptimizer.initializeServiceWorker();
-      
+
       // Log application startup
       auditLogger.logSystemEvent('APPLICATION_START', 'APPLICATION', {
         version: '1.0.0',
@@ -116,7 +116,7 @@ function App() {
         'Application Error',
         event.error?.message || 'An unexpected error occurred'
       );
-      
+
       // Log error for audit
       auditLogger.logSecurityEvent('APPLICATION_ERROR', 'APPLICATION', 'HIGH', undefined, {
         error: event.error?.message,
@@ -153,189 +153,189 @@ function App() {
                               <Router>
                                 <Routes>
                                   {/* Public Routes */}
-                                  <Route 
-                                    path="/login" 
+                                  <Route
+                                    path="/login"
                                     element={
-                                      <ProductionErrorBoundary level="page">
+                                    <ProductionErrorBoundary level="page">
                                         <LoginPage />
                                       </ProductionErrorBoundary>
-                                    } 
-                                  />
-                                  <Route 
-                                    path="/register" 
+                                    } />
+
+                                  <Route
+                                    path="/register"
                                     element={
-                                      <ProductionErrorBoundary level="page">
+                                    <ProductionErrorBoundary level="page">
                                         <RegisterPage />
                                       </ProductionErrorBoundary>
-                                    } 
-                                  />
+                                    } />
+
                                   
                                   {/* Protected Routes */}
                                   <Route
                                     path="/*"
                                     element={
-                                      <ProtectedRoute>
+                                    <ProtectedRoute>
                                         <ProductionErrorBoundary level="layout">
                                           <MainLayout />
                                         </ProductionErrorBoundary>
                                       </ProtectedRoute>
-                                    }
-                                  >
-                                    <Route 
-                                      index 
+                                    }>
+
+                                    <Route
+                                      index
                                       element={
-                                        <ProductionErrorBoundary level="page">
+                                      <ProductionErrorBoundary level="page">
                                           <Navigate to="/dashboard" replace />
                                         </ProductionErrorBoundary>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="dashboard"
                                       element={
-                                        <ProtectedRoute resource="dashboard">
+                                      <ProtectedRoute resource="dashboard">
                                           <ProductionErrorBoundary level="page">
                                             <DashboardPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="sales"
                                       element={
-                                        <ProtectedRoute resource="sales">
+                                      <ProtectedRoute resource="sales">
                                           <ProductionErrorBoundary level="page">
                                             <SalesPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="invoices"
                                       element={
-                                        <ProtectedRoute resource="invoices">
+                                      <ProtectedRoute resource="invoices">
                                           <ProductionErrorBoundary level="page">
                                             <InvoicesPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="purchases"
                                       element={
-                                        <ProtectedRoute resource="purchases">
+                                      <ProtectedRoute resource="purchases">
                                           <ProductionErrorBoundary level="page">
                                             <PurchasePage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="inventory"
                                       element={
-                                        <ProtectedRoute resource="inventory">
+                                      <ProtectedRoute resource="inventory">
                                           <ProductionErrorBoundary level="page">
                                             <InventoryPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="employees"
                                       element={
-                                        <ProtectedRoute resource="employees">
+                                      <ProtectedRoute resource="employees">
                                           <ProductionErrorBoundary level="page">
                                             <EmployeesPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="salary"
                                       element={
-                                        <ProtectedRoute resource="salary">
+                                      <ProtectedRoute resource="salary">
                                           <ProductionErrorBoundary level="page">
                                             <SalaryPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="admin"
                                       element={
-                                        <ProtectedRoute resource="admin">
+                                      <ProtectedRoute resource="admin">
                                           <ProductionErrorBoundary level="page">
                                             <AdminPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="settings"
                                       element={
-                                        <ProtectedRoute resource="settings">
+                                      <ProtectedRoute resource="settings">
                                           <ProductionErrorBoundary level="page">
                                             <SettingsPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
                                     <Route
                                       path="pos"
                                       element={
-                                        <ProtectedRoute resource="pos">
+                                      <ProtectedRoute resource="pos">
                                           <ProductionErrorBoundary level="page">
                                             <POSPage />
                                           </ProductionErrorBoundary>
                                         </ProtectedRoute>
-                                      } 
-                                    />
+                                      } />
+
 
                                     {/* Debug Routes - Development Only */}
-                                    {process.env.NODE_ENV === 'development' && (
-                                      <>
+                                    {process.env.NODE_ENV === 'development' &&
+                                    <>
                                         <Route
-                                          path="debug/network"
-                                          element={
-                                            <ProtectedRoute resource="admin">
+                                        path="debug/network"
+                                        element={
+                                        <ProtectedRoute resource="admin">
                                               <ProductionErrorBoundary level="page">
                                                 <NetworkDebugPage />
                                               </ProductionErrorBoundary>
                                             </ProtectedRoute>
-                                          } 
-                                        />
+                                        } />
+
                                         <Route
-                                          path="performance"
-                                          element={
-                                            <ProtectedRoute resource="admin">
+                                        path="performance"
+                                        element={
+                                        <ProtectedRoute resource="admin">
                                               <ProductionErrorBoundary level="page">
                                                 <LazyPerformanceDashboard />
                                               </ProductionErrorBoundary>
                                             </ProtectedRoute>
-                                          } 
-                                        />
+                                        } />
+
                                         <Route
-                                          path="testing"
-                                          element={
-                                            <ProtectedRoute resource="admin">
+                                        path="testing"
+                                        element={
+                                        <ProtectedRoute resource="admin">
                                               <ProductionErrorBoundary level="page">
                                                 <TestingPage />
                                               </ProductionErrorBoundary>
                                             </ProtectedRoute>
-                                          } 
-                                        />
+                                        } />
+
                                       </>
-                                    )}
+                                    }
                                   </Route>
 
                                   {/* Fallback Route */}
-                                  <Route 
-                                    path="*" 
+                                  <Route
+                                    path="*"
                                     element={
-                                      <ProductionErrorBoundary level="page">
+                                    <ProductionErrorBoundary level="page">
                                         <NotFound />
                                       </ProductionErrorBoundary>
-                                    } 
-                                  />
+                                    } />
+
                                 </Routes>
                               </Router>
                             </DebugProvider>
@@ -351,8 +351,8 @@ function App() {
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
-    </ProductionErrorBoundary>
-  );
+    </ProductionErrorBoundary>);
+
 }
 
 export default App;

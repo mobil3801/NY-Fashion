@@ -14,10 +14,10 @@ async function batchFileUpload(files, uploadType, entityId, metadata = {}) {
 
     // Process files in batches to avoid overwhelming the storage system
     const batchSize = 3;
-    
+
     for (let i = 0; i < files.length; i += batchSize) {
       const batch = files.slice(i, i + batchSize);
-      
+
       const batchPromises = batch.map(async (file, index) => {
         try {
           // Validate file
@@ -74,8 +74,8 @@ async function batchFileUpload(files, uploadType, entityId, metadata = {}) {
       });
 
       const batchResults = await Promise.all(batchPromises);
-      
-      batchResults.forEach(result => {
+
+      batchResults.forEach((result) => {
         if (result.success) {
           uploadResults.push(result);
         } else {
@@ -85,7 +85,7 @@ async function batchFileUpload(files, uploadType, entityId, metadata = {}) {
 
       // Small delay between batches to prevent overwhelming the system
       if (i + batchSize < files.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 

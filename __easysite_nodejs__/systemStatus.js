@@ -1,7 +1,7 @@
 
 function getSystemStatus() {
   const startTime = Date.now();
-  
+
   try {
     const status = {
       timestamp: new Date().toISOString(),
@@ -14,27 +14,27 @@ function getSystemStatus() {
 
     // Check Database Service
     status.services.database = checkDatabaseService();
-    
+
     // Check API Services
     status.services.api = checkAPIServices();
-    
+
     // Check File System
     status.services.filesystem = checkFileSystem();
-    
+
     // Performance Metrics
     status.performance = getPerformanceMetrics();
-    
+
     // Generate Alerts
     status.alerts = generateSystemAlerts(status);
-    
+
     // Overall System Health
     status.overallHealth = calculateOverallHealth(status);
-    
+
     // Response Time
     status.responseTime = Date.now() - startTime;
-    
+
     return status;
-    
+
   } catch (error) {
     return {
       timestamp: new Date().toISOString(),
@@ -54,12 +54,12 @@ function getSystemStatus() {
 
 function checkDatabaseService() {
   const startTime = Date.now();
-  
+
   try {
     // Test basic connectivity
     const testResult = window.ezsite.db.query('SELECT 1 as test', []);
     const responseTime = Date.now() - startTime;
-    
+
     if (!testResult || testResult.length === 0) {
       return {
         status: 'DOWN',
@@ -67,11 +67,11 @@ function checkDatabaseService() {
         error: 'Database connectivity test failed'
       };
     }
-    
+
     // Test table accessibility
     const tableTests = [];
     const criticalTables = ['products', 'customers', 'sales', 'employees'];
-    
+
     for (const table of criticalTables) {
       try {
         const count = window.ezsite.db.query(`SELECT COUNT(*) as count FROM ${table} LIMIT 1`, []);
@@ -88,9 +88,9 @@ function checkDatabaseService() {
         });
       }
     }
-    
-    const failedTables = tableTests.filter(test => !test.accessible);
-    
+
+    const failedTables = tableTests.filter((test) => !test.accessible);
+
     return {
       status: failedTables.length > 0 ? 'DEGRADED' : 'UP',
       responseTime,
@@ -101,7 +101,7 @@ function checkDatabaseService() {
         accessibleTables: tableTests.length - failedTables.length
       }
     };
-    
+
   } catch (error) {
     return {
       status: 'DOWN',
@@ -114,16 +114,16 @@ function checkDatabaseService() {
 function checkAPIServices() {
   const startTime = Date.now();
   const apiTests = [];
-  
+
   // Test critical API endpoints
   const criticalAPIs = [
-    { name: 'getDashboardAnalytics', path: 'getDashboardAnalytics', params: [{}] },
-    { name: 'getProducts', path: 'getProducts', params: [{ limit: 1 }] },
-    { name: 'getCustomers', path: 'getCustomers', params: [{ limit: 1 }] }
-  ];
-  
+  { name: 'getDashboardAnalytics', path: 'getDashboardAnalytics', params: [{}] },
+  { name: 'getProducts', path: 'getProducts', params: [{ limit: 1 }] },
+  { name: 'getCustomers', path: 'getCustomers', params: [{ limit: 1 }] }];
+
+
   let successfulAPIs = 0;
-  
+
   for (const api of criticalAPIs) {
     const apiStartTime = Date.now();
     try {
@@ -131,18 +131,18 @@ function checkAPIServices() {
         path: api.path,
         param: api.params
       });
-      
+
       const apiResponseTime = Date.now() - apiStartTime;
-      
+
       apiTests.push({
         name: api.name,
         status: 'UP',
         responseTime: apiResponseTime,
         hasData: result && (Array.isArray(result) ? result.length > 0 : Object.keys(result).length > 0)
       });
-      
+
       successfulAPIs++;
-      
+
     } catch (error) {
       apiTests.push({
         name: api.name,
@@ -152,13 +152,13 @@ function checkAPIServices() {
       });
     }
   }
-  
+
   const overallResponseTime = Date.now() - startTime;
-  const successRate = (successfulAPIs / criticalAPIs.length) * 100;
-  
+  const successRate = successfulAPIs / criticalAPIs.length * 100;
+
   return {
-    status: successfulAPIs === criticalAPIs.length ? 'UP' : 
-           successfulAPIs > 0 ? 'DEGRADED' : 'DOWN',
+    status: successfulAPIs === criticalAPIs.length ? 'UP' :
+    successfulAPIs > 0 ? 'DEGRADED' : 'DOWN',
     responseTime: overallResponseTime,
     successRate: Math.round(successRate),
     apiTests,
@@ -172,11 +172,11 @@ function checkAPIServices() {
 
 function checkFileSystem() {
   const startTime = Date.now();
-  
+
   try {
     // Test file upload capability
     const testData = { test: 'data', timestamp: Date.now() };
-    
+
     // Since we can't actually test file system in browser environment,
     // we'll do a basic capability check
     const capabilities = {
@@ -185,10 +185,10 @@ function checkFileSystem() {
       indexedDB: typeof indexedDB !== 'undefined',
       fileAPI: typeof File !== 'undefined' && typeof FileReader !== 'undefined'
     };
-    
+
     const workingCapabilities = Object.values(capabilities).filter(Boolean).length;
     const totalCapabilities = Object.keys(capabilities).length;
-    
+
     return {
       status: workingCapabilities === totalCapabilities ? 'UP' : 'DEGRADED',
       responseTime: Date.now() - startTime,
@@ -199,7 +199,7 @@ function checkFileSystem() {
         storageQuota: getStorageQuota()
       }
     };
-    
+
   } catch (error) {
     return {
       status: 'DOWN',
@@ -228,7 +228,7 @@ function getPerformanceMetrics() {
       memory: null,
       timing: null
     };
-    
+
     // Memory metrics (if available)
     if (typeof performance !== 'undefined' && performance.memory) {
       const memory = performance.memory;
@@ -236,10 +236,10 @@ function getPerformanceMetrics() {
         used: Math.round(memory.usedJSHeapSize / 1024 / 1024), // MB
         total: Math.round(memory.totalJSHeapSize / 1024 / 1024), // MB
         limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024), // MB
-        percentage: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
+        percentage: Math.round(memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100)
       };
     }
-    
+
     // Timing metrics
     if (typeof performance !== 'undefined' && performance.timing) {
       const timing = performance.timing;
@@ -249,9 +249,9 @@ function getPerformanceMetrics() {
         serverResponse: timing.responseEnd - timing.requestStart
       };
     }
-    
+
     return metrics;
-    
+
   } catch (error) {
     return {
       error: error.message,
@@ -262,7 +262,7 @@ function getPerformanceMetrics() {
 
 function generateSystemAlerts(status) {
   const alerts = [];
-  
+
   // Database alerts
   if (status.services.database?.status === 'DOWN') {
     alerts.push({
@@ -279,7 +279,7 @@ function generateSystemAlerts(status) {
       service: 'database'
     });
   }
-  
+
   // API alerts
   if (status.services.api?.status === 'DOWN') {
     alerts.push({
@@ -296,7 +296,7 @@ function generateSystemAlerts(status) {
       service: 'api'
     });
   }
-  
+
   // Performance alerts
   if (status.performance.memory?.percentage > 80) {
     alerts.push({
@@ -306,7 +306,7 @@ function generateSystemAlerts(status) {
       service: 'performance'
     });
   }
-  
+
   // Response time alerts
   if (status.services.database?.responseTime > 2000) {
     alerts.push({
@@ -316,7 +316,7 @@ function generateSystemAlerts(status) {
       service: 'database'
     });
   }
-  
+
   if (status.services.api?.responseTime > 5000) {
     alerts.push({
       type: 'SLOW_API',
@@ -325,32 +325,32 @@ function generateSystemAlerts(status) {
       service: 'api'
     });
   }
-  
+
   return alerts;
 }
 
 function calculateOverallHealth(status) {
   const services = Object.values(status.services);
-  
+
   // Check for any critical failures
-  if (services.some(service => service.status === 'DOWN')) {
+  if (services.some((service) => service.status === 'DOWN')) {
     return 'CRITICAL';
   }
-  
+
   // Check for degraded services
-  if (services.some(service => service.status === 'DEGRADED')) {
+  if (services.some((service) => service.status === 'DEGRADED')) {
     return 'DEGRADED';
   }
-  
+
   // Check alerts
-  const highSeverityAlerts = status.alerts.filter(alert => 
-    alert.severity === 'CRITICAL' || alert.severity === 'HIGH'
+  const highSeverityAlerts = status.alerts.filter((alert) =>
+  alert.severity === 'CRITICAL' || alert.severity === 'HIGH'
   );
-  
+
   if (highSeverityAlerts.length > 0) {
     return 'WARNING';
   }
-  
+
   return 'HEALTHY';
 }
 
@@ -368,12 +368,12 @@ function getSystemInfo() {
 
 function performQuickHealthCheck() {
   const startTime = Date.now();
-  
+
   try {
     // Quick database test
     const dbTest = window.ezsite.db.query('SELECT 1', []);
     const dbOk = dbTest && dbTest.length > 0;
-    
+
     return {
       timestamp: new Date().toISOString(),
       status: dbOk ? 'HEALTHY' : 'UNHEALTHY',
@@ -382,7 +382,7 @@ function performQuickHealthCheck() {
         database: dbOk ? 'UP' : 'DOWN'
       }
     };
-    
+
   } catch (error) {
     return {
       timestamp: new Date().toISOString(),

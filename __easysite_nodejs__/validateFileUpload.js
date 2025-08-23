@@ -17,25 +17,25 @@ function validateFileUpload(file, type = 'general') {
     },
     invoice: {
       allowedTypes: [
-        'application/pdf',
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ],
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+
       maxSize: 10 * 1024 * 1024, // 10MB
       extensions: ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.doc', '.docx']
     },
     general: {
       allowedTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'application/json'
-      ],
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+      'text/plain',
+      'application/json'],
+
       maxSize: 5 * 1024 * 1024, // 5MB
       extensions: ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.txt', '.json']
     }

@@ -24,12 +24,12 @@ export const PRODUCTION_CONFIG = {
     enableMemoryMonitoring: true,
     enableGCHints: process.env.NODE_ENV === 'development',
     clearConsoleOnCleanup: process.env.NODE_ENV === 'production',
-    
+
     // Cache Configuration
     cacheMaxSize: parseInt(process.env.VITE_CACHE_MAX_SIZE || '1000'),
     cacheDefaultTTL: parseInt(process.env.VITE_CACHE_TTL || '300000'), // 5 minutes
     enableCachePersistence: process.env.VITE_CACHE_PERSISTENCE !== 'false',
-    
+
     // Bundle Optimization
     enableCodeSplitting: true,
     enableLazyLoading: true
@@ -42,7 +42,7 @@ export const PRODUCTION_CONFIG = {
     sendTelemetry: process.env.NODE_ENV === 'production',
     maxErrorStackTrace: 1000,
     errorReportingInterval: 60000, // 1 minute
-    
+
     // Audit Configuration
     auditRetentionDays: parseInt(process.env.VITE_AUDIT_RETENTION || '90'),
     enableAuditLogging: process.env.VITE_AUDIT_LOGGING !== 'false'
@@ -57,7 +57,7 @@ export const PRODUCTION_CONFIG = {
     lockoutDuration: 900000, // 15 minutes
     enableRateLimit: true,
     sanitizeInputs: true,
-    
+
     // Enhanced Security
     enableSecurityHeaders: true,
     enableCORS: true
@@ -71,7 +71,7 @@ export const PRODUCTION_CONFIG = {
     enableOptimisticLocking: true,
     batchSize: 100,
     enableQueryCache: true,
-    
+
     // Enhanced Database Config
     enableQueryOptimization: true,
     enableConnectionPooling: true,
@@ -85,11 +85,11 @@ export const PRODUCTION_CONFIG = {
     enableErrorTracking: true,
     enableApiMetrics: true,
     metricsFlushInterval: 30000, // 30 seconds
-    
+
     // Health Check Configuration
     healthCheckInterval: parseInt(process.env.VITE_HEALTH_CHECK_INTERVAL || '60000'), // 1 minute
     enableAutoHealthCheck: true,
-    
+
     // Alert Thresholds
     alertThresholds: {
       apiResponseTime: parseInt(process.env.VITE_API_RESPONSE_THRESHOLD || '2000'),
@@ -135,15 +135,15 @@ export const PRODUCTION_CONFIG = {
   fileUpload: {
     maxFileSize: 10 * 1024 * 1024, // 10MB
     allowedTypes: [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'application/pdf',
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ],
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+
     enableImageCompression: true,
     imageQuality: 0.8,
     enableProgressTracking: true
@@ -153,7 +153,7 @@ export const PRODUCTION_CONFIG = {
 // Environment-specific overrides
 export const getProductionConfig = () => {
   const config = { ...PRODUCTION_CONFIG };
-  
+
   // Production-specific overrides
   if (process.env.NODE_ENV === 'production') {
     config.errorHandling.logToConsole = false;
@@ -161,6 +161,6 @@ export const getProductionConfig = () => {
     config.development.enableConsoleLogging = false;
     config.development.enableSourceMaps = false;
   }
-  
+
   return config;
 };

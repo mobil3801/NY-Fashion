@@ -76,7 +76,7 @@ class BundleOptimizer {
 
       // Estimate compression ratio
       if (entry.transferSize && entry.decodedBodySize) {
-        const ratio = 1 - (entry.transferSize / entry.decodedBodySize);
+        const ratio = 1 - entry.transferSize / entry.decodedBodySize;
         this.metrics.compressionRatio = (this.metrics.compressionRatio + ratio) / 2;
       }
 
@@ -91,10 +91,10 @@ class BundleOptimizer {
     if (typeof document !== 'undefined') {
       // Preload critical resources
       this.preloadCriticalResources();
-      
+
       // Setup lazy loading for images and components
       this.setupLazyLoading();
-      
+
       // Optimize font loading
       this.optimizeFontLoading();
     }
@@ -102,12 +102,12 @@ class BundleOptimizer {
 
   private preloadCriticalResources(): void {
     const criticalResources = [
-      '/api/dashboard-data',
-      '/api/user-info',
-      '/api/products'
-    ];
+    '/api/dashboard-data',
+    '/api/user-info',
+    '/api/products'];
 
-    criticalResources.forEach(resource => {
+
+    criticalResources.forEach((resource) => {
       const link = document.createElement('link');
       link.rel = 'prefetch';
       link.href = resource;
@@ -118,7 +118,7 @@ class BundleOptimizer {
   private setupLazyLoading(): void {
     if ('IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const element = entry.target as HTMLElement;
             this.loadLazyElement(element);
@@ -131,7 +131,7 @@ class BundleOptimizer {
       });
 
       // Observe all lazy-loadable elements
-      document.querySelectorAll('[data-lazy-load]').forEach(element => {
+      document.querySelectorAll('[data-lazy-load]').forEach((element) => {
         observer.observe(element);
       });
     }
@@ -147,11 +147,11 @@ class BundleOptimizer {
   private optimizeFontLoading(): void {
     // Preload critical fonts
     const fontPreloads = [
-      { family: 'Inter', weight: '400', display: 'swap' },
-      { family: 'Inter', weight: '600', display: 'swap' }
-    ];
+    { family: 'Inter', weight: '400', display: 'swap' },
+    { family: 'Inter', weight: '600', display: 'swap' }];
 
-    fontPreloads.forEach(font => {
+
+    fontPreloads.forEach((font) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'font';
@@ -169,10 +169,10 @@ class BundleOptimizer {
     }
 
     const startTime = performance.now();
-    
+
     try {
       logger.logInfo(`Loading component chunk: ${componentName}`);
-      
+
       // Dynamic import based on component name
       let component;
       switch (componentName) {
@@ -193,7 +193,7 @@ class BundleOptimizer {
       }
 
       this.loadedChunks.add(componentName);
-      
+
       const loadTime = performance.now() - startTime;
       logger.logPerformance(`Component ${componentName} loaded`, {
         loadTime,
@@ -210,7 +210,7 @@ class BundleOptimizer {
   preloadComponent(componentName: string): void {
     if (!this.preloadedChunks.has(componentName)) {
       this.preloadedChunks.add(componentName);
-      
+
       // Use requestIdleCallback if available
       if ('requestIdleCallback' in window) {
         requestIdleCallback(() => {
@@ -235,7 +235,7 @@ class BundleOptimizer {
     };
 
     const componentsToPreload = routeOptimizations[routeName] || [];
-    componentsToPreload.forEach(component => {
+    componentsToPreload.forEach((component) => {
       this.preloadComponent(component);
     });
   }
@@ -246,15 +246,15 @@ class BundleOptimizer {
       const link = document.createElement('link');
       link.rel = type;
       link.href = url;
-      
+
       if (type === 'preload') {
         // Determine resource type
-        if (url.includes('.js')) link.as = 'script';
-        else if (url.includes('.css')) link.as = 'style';
-        else if (url.includes('.woff')) link.as = 'font';
-        else if (url.includes('.json')) link.as = 'fetch';
+        if (url.includes('.js')) link.as = 'script';else
+        if (url.includes('.css')) link.as = 'style';else
+        if (url.includes('.woff')) link.as = 'font';else
+        if (url.includes('.json')) link.as = 'fetch';
       }
-      
+
       document.head.appendChild(link);
     }
   }
@@ -339,7 +339,7 @@ class BundleOptimizer {
 // React hook for bundle optimization
 export const useBundleOptimization = () => {
   const [metrics, setMetrics] = React.useState<BundleMetrics | null>(null);
-  
+
   React.useEffect(() => {
     const updateMetrics = () => {
       setMetrics(bundleOptimizer.getBundleMetrics());

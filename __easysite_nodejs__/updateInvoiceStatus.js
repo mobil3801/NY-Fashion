@@ -27,10 +27,10 @@ async function updateInvoiceStatus(invoiceId, status, notes = null) {
     `;
 
     const result = await window.ezsite.db.query(updateQuery, [
-      status,
-      notes,
-      parseInt(invoiceId)
-    ]);
+    status,
+    notes,
+    parseInt(invoiceId)]
+    );
 
     if (!result || result.length === 0) {
       throw new Error('Invoice not found');
@@ -50,12 +50,12 @@ async function updateInvoiceStatus(invoiceId, status, notes = null) {
     `;
 
     await window.ezsite.db.query(logQuery, [
-      'purchase_order_invoices',
-      parseInt(invoiceId),
-      'status_update',
-      JSON.stringify({ status: 'previous_status' }),
-      JSON.stringify({ status, notes }),
-      null // User ID would come from session in real implementation
+    'purchase_order_invoices',
+    parseInt(invoiceId),
+    'status_update',
+    JSON.stringify({ status: 'previous_status' }),
+    JSON.stringify({ status, notes }),
+    null // User ID would come from session in real implementation
     ]);
 
     return {

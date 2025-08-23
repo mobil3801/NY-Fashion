@@ -119,7 +119,7 @@ class ProductionCache {
 
       // Decompress if needed
       const data = this.isCompressed(entry.data) ? this.decompress(entry.data) : entry.data;
-      
+
       return data as T;
     } catch (error) {
       logger.logError('Cache get failed', { key, error });
@@ -157,8 +157,8 @@ class ProductionCache {
   // Bulk operations
   mget<T>(keys: string[]): Map<string, T> {
     const results = new Map<string, T>();
-    
-    keys.forEach(key => {
+
+    keys.forEach((key) => {
       const value = this.get<T>(key);
       if (value !== null) {
         results.set(key, value);
@@ -168,7 +168,7 @@ class ProductionCache {
     return results;
   }
 
-  mset<T>(entries: Array<{ key: string; data: T; ttl?: number }>): void {
+  mset<T>(entries: Array<{key: string;data: T;ttl?: number;}>): void {
     entries.forEach(({ key, data, ttl }) => {
       this.set(key, data, ttl);
     });
@@ -197,10 +197,10 @@ class ProductionCache {
 
   // Cache-aside pattern
   async getOrSet<T>(
-    key: string,
-    dataProvider: () => Promise<T>,
-    ttl?: number
-  ): Promise<T> {
+  key: string,
+  dataProvider: () => Promise<T>,
+  ttl?: number)
+  : Promise<T> {
     // Try to get from cache first
     const cached = this.get<T>(key);
     if (cached !== null) {
@@ -322,9 +322,9 @@ class ProductionCache {
 
   private updateStats(): void {
     this.stats.size = this.cache.size;
-    this.stats.memoryUsage = Array.from(this.cache.values())
-      .reduce((sum, entry) => sum + (entry.size || 0), 0);
-    
+    this.stats.memoryUsage = Array.from(this.cache.values()).
+    reduce((sum, entry) => sum + (entry.size || 0), 0);
+
     const total = this.stats.hits + this.stats.misses;
     this.stats.hitRate = total > 0 ? this.stats.hits / total : 0;
   }

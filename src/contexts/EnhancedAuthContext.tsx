@@ -18,8 +18,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (credentials: { email: string; password: string }) => Promise<void>;
-  register: (userData: { name: string; email: string; password: string; role?: string }) => Promise<void>;
+  login: (credentials: {email: string;password: string;}) => Promise<void>;
+  register: (userData: {name: string;email: string;password: string;role?: string;}) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
@@ -78,7 +78,7 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
     }
   };
 
-  const login = async (credentials: { email: string; password: string }) => {
+  const login = async (credentials: {email: string;password: string;}) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -86,7 +86,7 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
       // Validate input
       const validation = validateLogin(credentials);
       if (!validation.success) {
-        const errorMessages = validation.error.errors.map(err => err.message);
+        const errorMessages = validation.error.errors.map((err) => err.message);
         enhancedToast.showValidationErrorToast(errorMessages);
         throw new Error(errorMessages.join(', '));
       }
@@ -118,7 +118,7 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
     }
   };
 
-  const register = async (userData: { name: string; email: string; password: string; role?: string }) => {
+  const register = async (userData: {name: string;email: string;password: string;role?: string;}) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -126,7 +126,7 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
       // Validate input
       const validation = validateRegister(userData);
       if (!validation.success) {
-        const errorMessages = validation.error.errors.map(err => err.message);
+        const errorMessages = validation.error.errors.map((err) => err.message);
         enhancedToast.showValidationErrorToast(errorMessages);
         throw new Error(errorMessages.join(', '));
       }
@@ -217,7 +217,7 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
 
   const getRoles = (): string[] => {
     if (!user || !user.Roles) return [];
-    return user.Roles.split(',').map(role => role.trim()).filter(Boolean);
+    return user.Roles.split(',').map((role) => role.trim()).filter(Boolean);
   };
 
   const hasRole = (role: string): boolean => {
@@ -229,35 +229,35 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
     if (!user) return false;
 
     const roles = getRoles();
-    
+
     // Administrator has all permissions
     if (roles.includes('Administrator')) return true;
 
     // Define role-based permissions
     const rolePermissions: Record<string, string[]> = {
       'GeneralUser': [
-        'view_dashboard',
-        'view_inventory',
-        'view_sales',
-        'create_sale',
-        'use_pos'
-      ],
+      'view_dashboard',
+      'view_inventory',
+      'view_sales',
+      'create_sale',
+      'use_pos'],
+
       'Manager': [
-        'view_dashboard',
-        'view_inventory',
-        'manage_inventory',
-        'view_sales',
-        'create_sale',
-        'edit_sale',
-        'delete_sale',
-        'view_employees',
-        'use_pos',
-        'manage_customers'
-      ],
+      'view_dashboard',
+      'view_inventory',
+      'manage_inventory',
+      'view_sales',
+      'create_sale',
+      'edit_sale',
+      'delete_sale',
+      'view_employees',
+      'use_pos',
+      'manage_customers'],
+
       'Administrator': ['*'] // All permissions
     };
 
-    return roles.some(role => {
+    return roles.some((role) => {
       const permissions = rolePermissions[role] || [];
       return permissions.includes('*') || permissions.includes(permission);
     });
@@ -281,8 +281,8 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
   return (
     <AuthContext.Provider value={contextValue}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };
 
 export const useEnhancedAuth = (): AuthContextType => {
