@@ -64,7 +64,7 @@ export function NetworkAwarePOSOperations({
       toast({
         title: "Sync Failed",
         description: "Could not sync offline data. Will retry automatically when online.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsSyncing(false);
@@ -78,23 +78,23 @@ export function NetworkAwarePOSOperations({
           <Badge variant="default" className="gap-1">
             <Wifi className="h-3 w-3" />
             Online
-          </Badge>
-        );
+          </Badge>);
+
       } else {
         return (
           <Badge variant="secondary" className="gap-1">
             <AlertTriangle className="h-3 w-3" />
             Unstable
-          </Badge>
-        );
+          </Badge>);
+
       }
     } else {
       return (
         <Badge variant="destructive" className="gap-1">
           <WifiOff className="h-3 w-3" />
           Offline
-        </Badge>
-      );
+        </Badge>);
+
     }
   };
 
@@ -107,59 +107,59 @@ export function NetworkAwarePOSOperations({
           {getNetworkStatusBadge()}
         </div>
         
-        {!online && (
-          <div className="flex items-center gap-2">
+        {!online &&
+        <div className="flex items-center gap-2">
             <Button
-              size="sm"
-              variant="outline"
-              onClick={handleSyncOfflineData}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <>
+            size="sm"
+            variant="outline"
+            onClick={handleSyncOfflineData}
+            disabled={isSyncing}>
+
+              {isSyncing ?
+            <>
                   <Clock className="h-3 w-3 animate-spin mr-1" />
                   Syncing...
-                </>
-              ) : (
-                <>
+                </> :
+
+            <>
                   <Wifi className="h-3 w-3 mr-1" />
                   Retry Sync
                 </>
-              )}
+            }
             </Button>
           </div>
-        )}
+        }
       </div>
 
       {/* Offline Alert */}
-      {!online && (
-        <Alert className="border-amber-200 bg-amber-50">
+      {!online &&
+      <Alert className="border-amber-200 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
             You're currently offline. Sales and returns will be saved locally and automatically 
             synced when your connection returns.
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Connection Issues Alert */}
-      {online && status.consecutiveFailures > 0 && (
-        <Alert className="border-yellow-200 bg-yellow-50">
+      {online && status.consecutiveFailures > 0 &&
+      <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="text-yellow-800">
             Connection is unstable ({status.consecutiveFailures} recent failures). 
             Operations may take longer than usual.
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* POS Operation Buttons */}
       <div className="grid grid-cols-2 gap-4">
         <Button
           onClick={() => handleCreateSale({})}
           disabled={false} // Always allow - will queue offline
-          className="h-12"
-        >
+          className="h-12">
+
           <div className="text-center">
             <div className="font-medium">Process Sale</div>
             <div className="text-xs opacity-75">
@@ -172,8 +172,8 @@ export function NetworkAwarePOSOperations({
           onClick={() => handleProcessReturn({})}
           disabled={false} // Always allow - will queue offline
           variant="outline"
-          className="h-12"
-        >
+          className="h-12">
+
           <div className="text-center">
             <div className="font-medium">Process Return</div>
             <div className="text-xs opacity-75">
@@ -184,8 +184,8 @@ export function NetworkAwarePOSOperations({
       </div>
 
       {/* Pending Operations Display */}
-      {pendingOperations.length > 0 && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+      {pendingOperations.length > 0 &&
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-900">
@@ -196,9 +196,9 @@ export function NetworkAwarePOSOperations({
             These will be automatically processed when connection is restored.
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
 
 export default NetworkAwarePOSOperations;

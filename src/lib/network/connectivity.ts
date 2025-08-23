@@ -105,11 +105,10 @@ export class ConnectivityMonitor {
     this.diagnostics.totalAttempts++;
 
     try {
-      // Use actual API endpoints - try database connection first, then fallbacks
+      // Use actual API endpoints - try EasySite built-in endpoints first, then fallbacks
       const endpoints = [
-        `${window.location.origin}/api/database/health`, // EasySite database health check
-        `${window.location.origin}/api/health`, // Generic health endpoint
-        `${window.location.origin}/favicon.ico`, // Static resource fallback
+        `${window.location.origin}/favicon.ico`, // Static resource (most reliable for EasySite)
+        `${window.location.origin}/`, // Home page
         'https://httpbin.org/status/200', // Reliable external fallback
         'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
@@ -121,28 +120,35 @@ export class ConnectivityMonitor {
       for (const endpoint of endpoints) {
         try {
           const requestStart = performance.now();
-          const response = await fetch(endpoint, {
+          
+          // Create a timeout promise for better control
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Heartbeat timeout')), this.config.heartbeatTimeout);
+          });
+          
+          const fetchPromise = fetch(endpoint, {
             method: 'HEAD',
-            mode: 'no-cors', // Allow cross-origin for fallback
+            mode: endpoint.includes(window.location.origin) ? 'cors' : 'no-cors',
             cache: 'no-cache',
-            signal: this.abortController.signal,
-            timeout: this.config.heartbeatTimeout
-          } as RequestInit);
+            signal: this.abortController.signal
+          });
+          
+          const response = await Promise.race([fetchPromise, timeoutPromise]);
 
           const latency = performance.now() - requestStart;
-          
+
           // Consider any non-network error as success for connectivity
           success = true;
           successfulEndpoint = endpoint;
           this.lastSuccessfulEndpoint = endpoint;
-          
+
           // Update latency tracking
           this.diagnostics.lastLatencies.push(latency);
           if (this.diagnostics.lastLatencies.length > 10) {
             this.diagnostics.lastLatencies.shift();
           }
           this.diagnostics.averageLatency = this.diagnostics.lastLatencies.reduce((a, b) => a + b, 0) / this.diagnostics.lastLatencies.length;
-          
+
           break;
         } catch (error) {
           lastError = error instanceof Error ? error.message : 'Unknown error';
@@ -232,9 +238,11 @@ export class ConnectivityMonitor {
 
     if (this.heartbeatTimer) {
       clearTimeout(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
     }
 
     this.abortController?.abort();
+    this.abortController = undefined;
     this.cleanup?.();
     this.listeners.clear();
   }

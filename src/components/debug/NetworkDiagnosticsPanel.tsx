@@ -7,17 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import {
-  Activity, 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  AlertCircle, 
-  CheckCircle, 
+  Activity,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
   Clock,
   Database,
   Server,
-  Zap
-} from 'lucide-react';
+  Zap } from
+'lucide-react';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -51,14 +51,14 @@ export function NetworkDiagnosticsPanel() {
 
   const runConnectivityTest = async () => {
     const testEndpoints = [
-      { name: 'Database Health', url: '/api/database/health' },
-      { name: 'API Health', url: '/api/health' },
-      { name: 'Static Resource', url: '/favicon.ico' },
-      { name: 'External Test', url: 'https://httpbin.org/status/200' }
-    ];
+    { name: 'Database Health', url: '/api/database/health' },
+    { name: 'API Health', url: '/api/health' },
+    { name: 'Static Resource', url: '/favicon.ico' },
+    { name: 'External Test', url: 'https://httpbin.org/status/200' }];
+
 
     const results = [];
-    
+
     for (const endpoint of testEndpoints) {
       const startTime = performance.now();
       try {
@@ -84,7 +84,7 @@ export function NetworkDiagnosticsPanel() {
         });
       }
     }
-    
+
     setTestResults(results);
   };
 
@@ -92,7 +92,7 @@ export function NetworkDiagnosticsPanel() {
     if (!diagnostics?.connectivity) return 0;
     const { totalAttempts, successfulAttempts } = diagnostics.connectivity;
     if (totalAttempts === 0) return 100;
-    return Math.round((successfulAttempts / totalAttempts) * 100);
+    return Math.round(successfulAttempts / totalAttempts * 100);
   };
 
   const getLatencyColor = (latency: number) => {
@@ -121,8 +121,8 @@ export function NetworkDiagnosticsPanel() {
                 size="sm"
                 variant="outline"
                 onClick={refreshDiagnostics}
-                disabled={isRefreshing}
-              >
+                disabled={isRefreshing}>
+
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
             </div>
@@ -178,11 +178,11 @@ export function NetworkDiagnosticsPanel() {
                 <div>
                   <span className="text-muted-foreground">Network State:</span>
                   <div className="flex items-center gap-2 mt-1">
-                    {online ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-red-500" />
-                    )}
+                    {online ?
+                    <CheckCircle className="h-4 w-4 text-green-500" /> :
+
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                    }
                     <span>{online ? 'Connected' : 'Disconnected'}</span>
                   </div>
                 </div>
@@ -196,25 +196,25 @@ export function NetworkDiagnosticsPanel() {
                   </div>
                 </div>
 
-                {status.lastError && (
-                  <div className="col-span-2">
+                {status.lastError &&
+                <div className="col-span-2">
                     <span className="text-muted-foreground">Last Error:</span>
                     <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">
                       {status.lastError}
                     </div>
                   </div>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="diagnostics" className="space-y-4">
-          {diagnostics && (
-            <>
+          {diagnostics &&
+          <>
               {/* Connectivity Diagnostics */}
-              {diagnostics.connectivity && (
-                <Card>
+              {diagnostics.connectivity &&
+            <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Database className="h-5 w-5" />
@@ -240,44 +240,44 @@ export function NetworkDiagnosticsPanel() {
                       <div>
                         <span className="text-muted-foreground">Success Rate:</span>
                         <div className="font-semibold">
-                          {Math.round((diagnostics.connectivity.successfulAttempts / diagnostics.connectivity.totalAttempts) * 100) || 0}%
+                          {Math.round(diagnostics.connectivity.successfulAttempts / diagnostics.connectivity.totalAttempts * 100) || 0}%
                         </div>
                       </div>
                     </div>
 
-                    {diagnostics.connectivity.lastSuccessfulEndpoint && (
-                      <div className="mt-4">
+                    {diagnostics.connectivity.lastSuccessfulEndpoint &&
+                <div className="mt-4">
                         <span className="text-muted-foreground text-sm">Last Successful Endpoint:</span>
                         <div className="mt-1 p-2 bg-gray-50 border rounded">
                           <code className="text-xs">{diagnostics.connectivity.lastSuccessfulEndpoint}</code>
                         </div>
                       </div>
-                    )}
+                }
 
-                    {diagnostics.connectivity.failedEndpoints && diagnostics.connectivity.failedEndpoints.size > 0 && (
-                      <div className="mt-4">
+                    {diagnostics.connectivity.failedEndpoints && diagnostics.connectivity.failedEndpoints.size > 0 &&
+                <div className="mt-4">
                         <span className="text-muted-foreground text-sm">Failed Endpoints:</span>
                         <ScrollArea className="mt-2 max-h-32">
                           <div className="space-y-1">
-                            {Array.from(diagnostics.connectivity.failedEndpoints.entries()).map(([endpoint, count]) => (
-                              <div key={endpoint} className="flex justify-between items-center p-2 bg-red-50 border border-red-200 rounded">
+                            {Array.from(diagnostics.connectivity.failedEndpoints.entries()).map(([endpoint, count]) =>
+                      <div key={endpoint} className="flex justify-between items-center p-2 bg-red-50 border border-red-200 rounded">
                                 <code className="text-xs">{new URL(endpoint).pathname}</code>
                                 <Badge variant="destructive" className="text-xs">
                                   {count} failures
                                 </Badge>
                               </div>
-                            ))}
+                      )}
                           </div>
                         </ScrollArea>
                       </div>
-                    )}
+                }
                   </CardContent>
                 </Card>
-              )}
+            }
 
               {/* API Client Diagnostics */}
-              {diagnostics.apiClient && (
-                <Card>
+              {diagnostics.apiClient &&
+            <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Server className="h-5 w-5" />
@@ -309,9 +309,9 @@ export function NetworkDiagnosticsPanel() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+            }
             </>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="testing" className="space-y-4">
@@ -327,24 +327,24 @@ export function NetworkDiagnosticsPanel() {
                 Run Connectivity Test
               </Button>
 
-              {testResults.length > 0 && (
-                <div className="space-y-2">
+              {testResults.length > 0 &&
+              <div className="space-y-2">
                   <h4 className="font-medium text-sm">Test Results</h4>
                   <div className="space-y-2">
-                    {testResults.map((result, index) => (
-                      <div
-                        key={index}
-                        className={`p-3 border rounded ${
-                          result.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
-                        }`}
-                      >
+                    {testResults.map((result, index) =>
+                  <div
+                    key={index}
+                    className={`p-3 border rounded ${
+                    result.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`
+                    }>
+
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            {result.success ? (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-red-500" />
-                            )}
+                            {result.success ?
+                        <CheckCircle className="h-4 w-4 text-green-500" /> :
+
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        }
                             <span className="font-medium text-sm">{result.name}</span>
                           </div>
                           <Badge variant={result.success ? 'default' : 'destructive'} className="text-xs">
@@ -354,22 +354,22 @@ export function NetworkDiagnosticsPanel() {
                         <div className="mt-1 text-xs text-muted-foreground">
                           {result.url}
                         </div>
-                        {result.error && (
-                          <div className="mt-1 text-xs text-red-600">
+                        {result.error &&
+                    <div className="mt-1 text-xs text-red-600">
                             Error: {result.error}
                           </div>
-                        )}
+                    }
                       </div>
-                    ))}
+                  )}
                   </div>
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }
 
 export default NetworkDiagnosticsPanel;

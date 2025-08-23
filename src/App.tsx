@@ -10,6 +10,7 @@ import { InventoryProvider } from './contexts/InventoryContext';
 import { PurchaseOrderProvider } from './contexts/PurchaseOrderContext';
 import { EmployeeProvider } from '@/contexts/EmployeeContext';
 import { DebugProvider } from '@/contexts/DebugContext';
+import NetworkErrorBoundary from '@/components/network/NetworkErrorBoundary';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';
 
@@ -45,12 +46,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <LanguageProvider>
-          <AuthProvider>
-            <InventoryProvider>
-              <PurchaseOrderProvider>
-                <EmployeeProvider>
-                <DebugProvider>
-                  <Router>
+          <NetworkErrorBoundary>
+            <AuthProvider>
+              <InventoryProvider>
+                <PurchaseOrderProvider>
+                  <EmployeeProvider>
+                  <DebugProvider>
+                    <Router>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
@@ -58,105 +60,105 @@ function App() {
                 
                 {/* Protected Routes */}
                 <Route
-                          path="/*"
-                          element={
-                          <ProtectedRoute>
+                            path="/*"
+                            element={
+                            <ProtectedRoute>
                       <MainLayout />
                     </ProtectedRoute>
-                          }>
+                            }>
 
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route
-                            path="dashboard"
-                            element={
-                            <ProtectedRoute resource="dashboard">
+                              path="dashboard"
+                              element={
+                              <ProtectedRoute resource="dashboard">
                         <DashboardPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="sales"
-                            element={
-                            <ProtectedRoute resource="sales">
+                              path="sales"
+                              element={
+                              <ProtectedRoute resource="sales">
                         <SalesPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="invoices"
-                            element={
-                            <ProtectedRoute resource="invoices">
+                              path="invoices"
+                              element={
+                              <ProtectedRoute resource="invoices">
                         <InvoicesPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="purchases"
-                            element={
-                            <ProtectedRoute resource="purchases">
+                              path="purchases"
+                              element={
+                              <ProtectedRoute resource="purchases">
                         <PurchasePage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="inventory"
-                            element={
-                            <ProtectedRoute resource="inventory">
+                              path="inventory"
+                              element={
+                              <ProtectedRoute resource="inventory">
                         <InventoryPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="employees"
-                            element={
-                            <ProtectedRoute resource="employees">
+                              path="employees"
+                              element={
+                              <ProtectedRoute resource="employees">
                         <EmployeesPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="salary"
-                            element={
-                            <ProtectedRoute resource="salary">
+                              path="salary"
+                              element={
+                              <ProtectedRoute resource="salary">
                         <SalaryPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="admin"
-                            element={
-                            <ProtectedRoute resource="admin">
+                              path="admin"
+                              element={
+                              <ProtectedRoute resource="admin">
                         <AdminPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="settings"
-                            element={
-                            <ProtectedRoute resource="settings">
+                              path="settings"
+                              element={
+                              <ProtectedRoute resource="settings">
                         <SettingsPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   <Route
-                            path="pos"
-                            element={
-                            <ProtectedRoute resource="pos">
+                              path="pos"
+                              element={
+                              <ProtectedRoute resource="pos">
                         <POSPage />
                       </ProtectedRoute>
-                            } />
+                              } />
 
                   {/* Debug Routes - Development Only */}
                   {process.env.NODE_ENV === 'development' &&
-                          <Route
-                            path="debug/network"
-                            element={
-                            <ProtectedRoute resource="admin">
+                            <Route
+                              path="debug/network"
+                              element={
+                              <ProtectedRoute resource="admin">
                           <NetworkDebugPage />
                         </ProtectedRoute>
-                            } />
+                              } />
 
-                          }
+                            }
 
                 </Route>
 
@@ -164,12 +166,13 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
                 </Router>
-                <Toaster />
                 </DebugProvider>
                 </EmployeeProvider>
               </PurchaseOrderProvider>
             </InventoryProvider>
           </AuthProvider>
+        </NetworkErrorBoundary>
+        <Toaster />
       </LanguageProvider>
     </TooltipProvider>
     </QueryClientProvider>);

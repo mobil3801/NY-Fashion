@@ -27,9 +27,22 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
 
   useEffect(() => {
     const unsubscribe = monitor.addListener((newStatus) => {
+      const wasOffline = !status.online;
       setStatus(newStatus);
       // Sync with API client
       apiClient.setOnlineStatus(newStatus.online);
+
+      // Show toast when connection is restored
+      if (wasOffline && newStatus.online) {
+        // Import toast dynamically to avoid circular dependencies
+        import('@/hooks/use-toast').then(({ toast }) => {
+          toast({
+            title: "Connection Restored",
+            description: "You're back online. Syncing your changes...",
+            variant: "default"
+          });
+        });
+      }
     });
 
     // Initial sync
@@ -39,7 +52,7 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
       unsubscribe();
       monitor.destroy();
     };
-  }, [monitor]);
+  }, [monitor, status.online]);
 
   const retryNow = useCallback(async () => {
     await monitor.checkNow();

@@ -281,9 +281,9 @@ export function getUserFriendlyMessage(error: unknown): string {
     case 'business':
       // Clean up business error messages
       return normalizedError.message.
-        replace(/reminder:\s*please\s+retry\s+it\s+or\s+send\s+email\s+to\s+support\s+for\s+help\.?/i,
-          'Operation completed with warnings')
-        .trim();
+      replace(/reminder:\s*please\s+retry\s+it\s+or\s+send\s+email\s+to\s+support\s+for\s+help\.?/i,
+      'Operation completed with warnings').
+      trim();
 
     case 'network':
       if (normalizedError.code === 'NETWORK_OFFLINE') {

@@ -1,7 +1,7 @@
 
 function healthCheck() {
   const currentTime = new Date();
-  
+
   return {
     status: 'healthy',
     timestamp: currentTime.toISOString(),

@@ -290,6 +290,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -316,8 +318,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                   <Undo2 className="w-6 h-6 mb-2" />
                   <span>Return for Refund</span>
                 </Button>
-                <Button variant={returnType === 'exchange' ? 'default' : 'outline'} onClick={() => setReturnType('exchange')}
-                className="h-20 flex flex-col">
+                <Button variant={returnType === 'exchange' ? 'default' : 'outline'} onClick={() => setReturnType('exchange')} className="h-20 flex flex-col">
 
                   <RefreshCcw className="w-6 h-6 mb-2" />
                   <span>Exchange</span>
@@ -340,8 +341,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       <SelectValue placeholder="Select reason" />
                     </SelectTrigger>
                     <SelectContent>
-                      {returnReasons.map((reason) =>
-                    <SelectItem key={reason} value={reason}>
+                      {returnReasons.map((reason) => <SelectItem key={reason} value={reason}>
                           {reason}
                         </SelectItem>
                     )}

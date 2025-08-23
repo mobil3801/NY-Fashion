@@ -2,13 +2,17 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import DebugFloatingButton from '@/components/debug/DebugFloatingButton';
-import ConnectionIndicator from '@/components/network/ConnectionIndicator';
+import ConnectionQualityIndicator from '@/components/network/ConnectionQualityIndicator';
+import { OfflineBanner } from '@/components/network/OfflineBanner';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
 const MainLayout: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Offline Banner - Global network status */}
+      <OfflineBanner />
+      
       {/* Sidebar */}
       <Sidebar />
 
@@ -23,9 +27,9 @@ const MainLayout: React.FC = () => {
         </main>
       </div>
 
-      {/* Network Connection Indicator */}
+      {/* Network Connection Quality Indicator */}
       <div className="fixed bottom-4 left-4 z-40">
-        <ConnectionIndicator variant="minimal" />
+        <ConnectionQualityIndicator variant="full" showDetails={true} />
       </div>
 
       {/* Debug Tools - Development Only */}

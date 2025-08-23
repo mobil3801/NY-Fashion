@@ -23,9 +23,9 @@ export class NetworkAwareAPI {
   }
 
   async execute<T>(
-    operation: () => Promise<T>,
-    options: NetworkAwareAPIOptions = {}
-  ): Promise<T> {
+  operation: () => Promise<T>,
+  options: NetworkAwareAPIOptions = {})
+  : Promise<T> {
     const {
       showSuccessToast = false,
       showErrorToast = true,
@@ -50,14 +50,14 @@ export class NetworkAwareAPI {
         toast({
           title: "Success",
           description: successMessage,
-          variant: "default",
+          variant: "default"
         });
       }
 
       return result;
     } catch (error) {
       const normalizedError = this.normalizeError(error);
-      
+
       if (showErrorToast) {
         this.handleErrorToast(normalizedError);
       }
@@ -72,20 +72,41 @@ export class NetworkAwareAPI {
     }
 
     if (error instanceof Error) {
-      // Check for network-related errors
-      if (error.message.includes('fetch') || error.message.includes('network')) {
+      // Check for network-related errors (more comprehensive)
+      if (error.name === 'TypeError' || 
+          error.message.includes('fetch') || 
+          error.message.includes('network') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError') ||
+          error.message.includes('ERR_NETWORK') ||
+          error.message.includes('ERR_INTERNET_DISCONNECTED')) {
         return new ApiError(
-          'Network connection error',
+          'Connection lost. Your changes will be saved offline.',
           ERROR_CODES.NETWORK_OFFLINE,
           true
         );
       }
 
-      // Check for timeout errors
-      if (error.message.includes('timeout') || error.message.includes('aborted')) {
+      // Check for timeout errors (more comprehensive)
+      if (error.name === 'AbortError' ||
+          error.message.includes('timeout') || 
+          error.message.includes('aborted') ||
+          error.message.includes('The operation was aborted')) {
         return new ApiError(
-          'Request timeout',
+          'Request timeout. Please check your connection and try again.',
           ERROR_CODES.TIMEOUT,
+          true
+        );
+      }
+
+      // Check for server errors that might be retryable
+      if (error.message.includes('500') || 
+          error.message.includes('502') ||
+          error.message.includes('503') ||
+          error.message.includes('504')) {
+        return new ApiError(
+          'Server temporarily unavailable. Will retry automatically.',
+          ERROR_CODES.SERVER_ERROR,
           true
         );
       }
@@ -98,82 +119,98 @@ export class NetworkAwareAPI {
     }
 
     return new ApiError(
-      'Unknown error occurred',
+      'An unexpected error occurred',
       ERROR_CODES.UNKNOWN_ERROR,
       false
     );
   }
 
-  private handleErrorToast(error: ApiError) {
+  private handleErrorToast(error: ApiError, retryFn?: () => Promise<void>) {
     const message = getUserFriendlyMessage(error);
-    
+
     // Different toast styles based on error type
     if (error.code === ERROR_CODES.QUEUED_OFFLINE) {
       toast({
         title: "Saved Offline",
         description: message,
-        variant: "default",
+        variant: "default"
       });
     } else if (error.retryable) {
       toast({
         title: "Connection Issue",
         description: message,
         variant: "default",
+        action: retryFn ? {
+          altText: "Retry now",
+          children: "Retry",
+          onClick: async () => {
+            try {
+              await retryFn();
+              toast({
+                title: "Retry Successful",
+                description: "Operation completed successfully",
+                variant: "default"
+              });
+            } catch (retryError) {
+              console.error('Retry failed:', retryError);
+            }
+          }
+        } as any : undefined
       });
     } else {
       toast({
         title: "Error",
         description: message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   }
 
   // Specific methods for different operation types
   async createWithOfflineSupport<T>(
-    createFn: () => Promise<T>,
-    entityName: string,
-    options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {}
-  ): Promise<T> {
+  createFn: () => Promise<T>,
+  entityName: string,
+  options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {})
+  : Promise<T> {
     return this.execute(createFn, {
       ...options,
       showSuccessToast: true,
-      successMessage: `${entityName} saved successfully`,
+      successMessage: `${entityName} saved successfully`
     });
   }
 
   async updateWithOfflineSupport<T>(
-    updateFn: () => Promise<T>,
-    entityName: string,
-    options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {}
-  ): Promise<T> {
+  updateFn: () => Promise<T>,
+  entityName: string,
+  options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {})
+  : Promise<T> {
     return this.execute(updateFn, {
       ...options,
       showSuccessToast: true,
-      successMessage: `${entityName} updated successfully`,
+      successMessage: `${entityName} updated successfully`
     });
   }
 
   async deleteWithConfirmation<T>(
-    deleteFn: () => Promise<T>,
-    entityName: string,
-    options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {}
-  ): Promise<T> {
+  deleteFn: () => Promise<T>,
+  entityName: string,
+  options: Omit<NetworkAwareAPIOptions, 'successMessage'> = {})
+  : Promise<T> {
     return this.execute(deleteFn, {
       ...options,
       showSuccessToast: true,
       successMessage: `${entityName} deleted successfully`,
-      requireOnline: true, // Deletes typically require immediate confirmation
+      requireOnline: true // Deletes typically require immediate confirmation
     });
   }
 
   async readWithRetry<T>(
-    readFn: () => Promise<T>,
-    options: NetworkAwareAPIOptions = {}
-  ): Promise<T> {
+  readFn: () => Promise<T>,
+  options: NetworkAwareAPIOptions = {})
+  : Promise<T> {
     return this.execute(readFn, {
       ...options,
-      requireOnline: true, // Reads need current data
+      requireOnline: true // Reads need current data
     });
   }
 }

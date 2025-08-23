@@ -111,7 +111,7 @@ export class ApiClient {
     this.isOnline = online;
 
     // Notify subscribers
-    this.networkStatusCallbacks.forEach(callback => {
+    this.networkStatusCallbacks.forEach((callback) => {
       try {
         callback(online);
       } catch (error) {
@@ -231,8 +231,10 @@ export class ApiClient {
 
       // Normalize network errors
       if (isOfflineError(error)) {
+        // Update network status when we detect offline
+        this.setOnlineStatus(false);
         throw new ApiError(
-          'Network connection error',
+          'Connection lost. Your changes will be saved offline.',
           'NETWORK_OFFLINE',
           true,
           { originalError: error }
