@@ -19,6 +19,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useResponsive } from '@/hooks/use-responsive';
 import { canAccess } from '@/utils/permissions';
 import { Button } from '@/components/ui/button';
+import { getAccessibleBadge, getAccessibleText } from '@/utils/accessible-colors';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -182,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
         <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-4 shadow-sm border border-emerald-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-emerald-700 font-semibold text-sm">
+              <span className="text-emerald-800 font-semibold text-sm">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
@@ -191,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
               <p className="text-xs text-emerald-600 mt-1 truncate" title={user?.name}>
                 {user?.name}
               </p>
-              <span className="inline-block text-xs bg-emerald-200 text-emerald-700 px-2 py-1 rounded-lg mt-1">
+              <span className={cn("inline-block text-xs px-2 py-1 rounded-lg mt-1", getAccessibleBadge('light'))}>
                 {user?.role}
               </span>
             </div>
