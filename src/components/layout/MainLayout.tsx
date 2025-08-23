@@ -37,7 +37,7 @@ const MainLayout: React.FC = () => {
 
         <Header />
         
-        <main className="p-6">
+        <main className="pt-4 px-6 pb-6">
           <Outlet />
         </main>
       </div>
