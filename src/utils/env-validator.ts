@@ -73,7 +73,7 @@ class EnvironmentValidator {
     // Set effective NODE_ENV if not present
     const effectiveNodeEnv = this.getEffectiveNodeEnv();
     if (!import.meta.env.NODE_ENV) {
-      import.meta.env.NODE_ENV = effectiveNodeEnv;
+      // We can't directly assign to import.meta.env, so we'll work with effectiveNodeEnv
       warnings.push(`NODE_ENV was not set, inferred as '${effectiveNodeEnv}'`);
     }
 

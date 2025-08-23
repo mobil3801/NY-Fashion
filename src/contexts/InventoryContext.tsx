@@ -120,7 +120,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     try {
       const { append = false, ...otherParams } = params;
 
-      logger.logDatabaseOperation('Fetching products', otherParams);
+      logger.logDatabaseOperation('fetch', 'products', otherParams);
 
       const result = await inventoryService.getProducts(otherParams);
 
@@ -145,7 +145,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const createProduct = async (product: Omit<Product, 'id'>): Promise<Product> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Creating product', { name: product.name });
+        logger.logDatabaseOperation('create', 'products', { name: product.name });
 
         const newProduct = await inventoryService.saveProduct(product);
 
@@ -153,7 +153,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         setProducts((prev) => [newProduct, ...prev]);
         setError(null);
 
-        logger.logDatabaseOperation('Product created successfully', {
+        logger.logDatabaseOperation('created', 'products', {
           id: newProduct.id,
           name: product.name
         });
@@ -170,7 +170,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const updateProduct = async (product: Product): Promise<Product> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Updating product', {
+        logger.logDatabaseOperation('update', 'products', {
           id: product.id,
           name: product.name
         });
@@ -183,7 +183,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         );
         setError(null);
 
-        logger.logDatabaseOperation('Product updated successfully', {
+        logger.logDatabaseOperation('updated', 'products', {
           id: product.id,
           name: product.name
         });
@@ -200,7 +200,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const deleteProduct = async (id: number): Promise<void> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Deleting product', { id });
+        logger.logDatabaseOperation('delete', 'products', { id });
 
         await inventoryService.deleteProduct(id);
 
@@ -208,7 +208,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         setProducts((prev) => prev.filter((p) => p.id !== id));
         setError(null);
 
-        logger.logDatabaseOperation('Product deleted successfully', { id });
+        logger.logDatabaseOperation('deleted', 'products', { id });
       } catch (error: any) {
         logger.logError('Failed to delete product', error);
         setError(error.message || 'Failed to delete product');
@@ -219,11 +219,11 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
   const getProduct = async (id: number): Promise<Product> => {
     try {
-      logger.logDatabaseOperation('Fetching single product', { id });
+      logger.logDatabaseOperation('fetch', 'products', { id });
 
       const product = await inventoryService.getProduct(id);
 
-      logger.logDatabaseOperation('Product fetched successfully', {
+      logger.logDatabaseOperation('fetched', 'products', {
         id,
         name: product.name
       });
@@ -242,7 +242,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const bulkUpdateProducts = async (productsToUpdate: Array<Partial<Product> & {id: number;}>): Promise<void> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Bulk updating products', {
+        logger.logDatabaseOperation('bulk_update', 'products', {
           count: productsToUpdate.length
         });
 
@@ -253,7 +253,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
         setError(null);
 
-        logger.logDatabaseOperation('Bulk update completed', {
+        logger.logDatabaseOperation('bulk_updated', 'products', {
           total: productsToUpdate.length,
           successful: result.results?.length || 0,
           failed: result.errors?.length || 0
@@ -269,14 +269,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   // Category operations
   const fetchCategories = async (): Promise<void> => {
     try {
-      logger.logDatabaseOperation('Fetching categories');
+      logger.logDatabaseOperation('fetch', 'categories');
 
       const categoriesList = await inventoryService.getCategories();
 
       setCategories(categoriesList);
       setError(null);
 
-      logger.logDatabaseOperation('Categories fetched successfully', {
+      logger.logDatabaseOperation('fetched', 'categories', {
         count: categoriesList.length
       });
     } catch (error: any) {
@@ -289,7 +289,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const createCategory = async (category: Omit<Category, 'id'>): Promise<Category> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Creating category', { name: category.name });
+        logger.logDatabaseOperation('create', 'categories', { name: category.name });
 
         const newCategory = await inventoryService.saveCategory(category);
 
@@ -297,7 +297,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         setCategories((prev) => [...prev, newCategory]);
         setError(null);
 
-        logger.logDatabaseOperation('Category created successfully', {
+        logger.logDatabaseOperation('created', 'categories', {
           id: newCategory.id,
           name: category.name
         });
@@ -314,7 +314,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const updateCategory = async (category: Category): Promise<Category> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Updating category', {
+        logger.logDatabaseOperation('update', 'categories', {
           id: category.id,
           name: category.name
         });
@@ -327,7 +327,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         );
         setError(null);
 
-        logger.logDatabaseOperation('Category updated successfully', {
+        logger.logDatabaseOperation('updated', 'categories', {
           id: category.id,
           name: category.name
         });
@@ -344,7 +344,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const deleteCategory = async (id: number): Promise<void> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Deleting category', { id });
+        logger.logDatabaseOperation('delete', 'categories', { id });
 
         // Note: You might want to check if category has products before deleting
         const result = await inventoryService.productionApi.tableDelete('categories', { id });
@@ -357,7 +357,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         setCategories((prev) => prev.filter((c) => c.id !== id));
         setError(null);
 
-        logger.logDatabaseOperation('Category deleted successfully', { id });
+        logger.logDatabaseOperation('deleted', 'categories', { id });
       } catch (error: any) {
         logger.logError('Failed to delete category', error);
         setError(error.message || 'Failed to delete category');
@@ -376,14 +376,14 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
     endDate?: string;
   } = {}): Promise<void> => {
     try {
-      logger.logDatabaseOperation('Fetching stock movements', params);
+      logger.logDatabaseOperation('fetch', 'stock_movements', params);
 
       const result = await inventoryService.getStockMovements(params);
 
       setStockMovements(result.movements);
       setError(null);
 
-      logger.logDatabaseOperation('Stock movements fetched successfully', {
+      logger.logDatabaseOperation('fetched', 'stock_movements', {
         count: result.movements.length
       });
     } catch (error: any) {
@@ -396,7 +396,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   const createStockMovement = async (movement: Omit<StockMovement, 'id'>): Promise<StockMovement> => {
     return withLoading(async () => {
       try {
-        logger.logDatabaseOperation('Creating stock movement', {
+        logger.logDatabaseOperation('create', 'stock_movements', {
           product_id: movement.product_id,
           movement_type: movement.movement_type,
           quantity: movement.quantity
@@ -412,7 +412,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
         setError(null);
 
-        logger.logDatabaseOperation('Stock movement created successfully', {
+        logger.logDatabaseOperation('created', 'stock_movements', {
           id: newMovement.id,
           product_id: movement.product_id
         });
@@ -428,14 +428,15 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
 
   const getLowStockProducts = async (): Promise<void> => {
     try {
-      logger.logDatabaseOperation('Fetching low stock products');
+      logger.logDatabaseOperation('fetch', 'products', { filter: 'low_stock' });
 
       const lowStock = await inventoryService.getLowStockProducts();
 
       setLowStockProducts(lowStock);
       setError(null);
 
-      logger.logDatabaseOperation('Low stock products fetched successfully', {
+      logger.logDatabaseOperation('fetched', 'products', {
+        filter: 'low_stock',
         count: lowStock.length
       });
     } catch (error: any) {
@@ -448,7 +449,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
   // Image operations
   const loadProductImages = async (productId: number): Promise<any[]> => {
     try {
-      logger.logDatabaseOperation('Loading product images', { productId });
+      logger.logDatabaseOperation('fetch', 'product_images', { productId });
 
       const result = await window.ezsite.apis.run({
         path: 'getProductImages',
@@ -459,7 +460,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         throw new Error(result.error);
       }
 
-      logger.logDatabaseOperation('Product images loaded successfully', {
+      logger.logDatabaseOperation('fetched', 'product_images', {
         productId,
         count: result.data.count
       });

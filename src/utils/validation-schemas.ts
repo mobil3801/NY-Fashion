@@ -20,7 +20,9 @@ const createStringSchema = (min = 1, max = 255, pattern?: RegExp) => {
   max(max, `Must be at most ${max} characters`);
 
   if (pattern) {
-    schema = schema.regex(pattern, 'Invalid format');
+    schema = schema.refine((val) => pattern.test(val), {
+      message: 'Invalid format'
+    });
   }
 
   return schema.transform(sanitizeString);
@@ -38,7 +40,9 @@ const createPasswordSchema = () =>
 z.string().
 min(8, 'Password must be at least 8 characters').
 max(128, 'Password must be at most 128 characters').
-regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one lowercase letter, one uppercase letter, and one number');
+refine((val) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(val), {
+  message: 'Password must contain at least one lowercase letter, one uppercase letter, and one number'
+});
 
 const createPriceSchema = () =>
 z.number().

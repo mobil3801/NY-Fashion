@@ -296,7 +296,17 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
       logger.logInfo('Retrying failed requests');
 
       // Process any queued operations
-      await connectivity.processQueue();
+      if (connectivity && typeof connectivity.processQueue === 'function') {
+        await connectivity.processQueue();
+      } else {
+        // Fallback to offlineQueue direct access
+        try {
+          const { offlineQueue } = await import('@/lib/offlineQueue');
+          await offlineQueue.processAll();
+        } catch (fallbackError) {
+          console.warn('Failed to process queue:', fallbackError);
+        }
+      }
 
       setQueuedOperations(0);
       clearErrors();
@@ -363,23 +373,29 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const queueSize = await connectivity.getQueueSize();
-        setQueuedOperations(queueSize);
-      } catch (error) {
-        // Fallback to offlineQueue direct access if connectivity method fails
-        try {
-          const { offlineQueue } = await import('@/lib/offlineQueue');
-          const queueSize = await offlineQueue.size();
+        // Try to get queue size from connectivity
+        if (connectivity && typeof connectivity.getQueueSize === 'function') {
+          const queueSize = await connectivity.getQueueSize();
           setQueuedOperations(queueSize);
-        } catch (fallbackError) {
-          console.warn('Failed to get queue size:', fallbackError);
-          setQueuedOperations(0);
+        } else {
+          // Fallback to offlineQueue direct access
+          try {
+            const { offlineQueue } = await import('@/lib/offlineQueue');
+            const queueSize = await offlineQueue.size();
+            setQueuedOperations(queueSize);
+          } catch (fallbackError) {
+            console.warn('Failed to get queue size:', fallbackError);
+            setQueuedOperations(0);
+          }
         }
+      } catch (error) {
+        // Final fallback - set to 0
+        setQueuedOperations(0);
       }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [connectivity]);
 
   const contextValue: NetworkContextType = {
     // Connection state

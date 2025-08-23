@@ -205,6 +205,29 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
     }
   });
 
+  // Helper functions for cart persistence
+  const setCart = (cartItems: CartItem[]) => {
+    // Since we're using useReducer, we need to dispatch actions to update cart
+    // Clear current cart first
+    dispatch({ type: 'CLEAR_CART' });
+
+    // Add each item to cart
+    cartItems.forEach((item) => {
+      dispatch({
+        type: 'ADD_TO_CART',
+        payload: {
+          product: item.product,
+          variant: item.variant,
+          quantity: item.quantity
+        }
+      });
+    });
+  };
+
+  const setSelectedCustomer = (customer: Customer | null) => {
+    dispatch({ type: 'SET_CUSTOMER', payload: { customer: customer || undefined } });
+  };
+
   // Load cart from storage on mount
   useEffect(() => {
     const loadPersistedCart = () => {
@@ -213,8 +236,12 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
       if (sessionCart) {
         try {
           const { cart: savedCart, selectedCustomer: savedCustomer } = JSON.parse(sessionCart);
-          setCart(savedCart || []);
-          setSelectedCustomer(savedCustomer || null);
+          if (savedCart && savedCart.length > 0) {
+            setCart(savedCart);
+          }
+          if (savedCustomer) {
+            setSelectedCustomer(savedCustomer);
+          }
           return;
         } catch (error) {
           console.warn('Error loading session cart:', error);
@@ -228,8 +255,12 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           const { cart: savedCart, selectedCustomer: savedCustomer, timestamp } = JSON.parse(backupCart);
           // Only restore if backup is less than 1 hour old
           if (Date.now() - timestamp < 3600000) {
-            setCart(savedCart || []);
-            setSelectedCustomer(savedCustomer || null);
+            if (savedCart && savedCart.length > 0) {
+              setCart(savedCart);
+            }
+            if (savedCustomer) {
+              setSelectedCustomer(savedCustomer);
+            }
             return;
           }
         } catch (error) {
@@ -242,7 +273,9 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
       if (legacyCart) {
         try {
           const parsedCart = JSON.parse(legacyCart);
-          setCart(parsedCart || []);
+          if (parsedCart && parsedCart.length > 0) {
+            setCart(parsedCart);
+          }
           // Clean up legacy storage
           localStorage.removeItem('posCart');
 

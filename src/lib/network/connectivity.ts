@@ -13,10 +13,10 @@ const DEFAULT_CONFIG: ConnectivityConfig = {
   retryAttempts: 3,
   retryDelay: 1000,
   endpoints: [
-    '/api/health',
-    '/api/healthCheck',
-    '/healthCheck'
-  ]
+  '/api/health',
+  '/api/healthCheck',
+  '/healthCheck']
+
 };
 
 export class Connectivity {
@@ -31,12 +31,12 @@ export class Connectivity {
 
   async checkConnection(): Promise<boolean> {
     const now = Date.now();
-    
+
     // Don't check too frequently
     if (now - this.lastCheckTime < 1000) {
       return this.isOnline;
     }
-    
+
     this.lastCheckTime = now;
 
     // Check browser online status first
@@ -58,9 +58,9 @@ export class Connectivity {
             cache: 'no-cache',
             mode: 'same-origin'
           });
-          
+
           clearTimeout(timeoutId);
-          
+
           if (response.ok) {
             this.isOnline = true;
             return true;
@@ -78,7 +78,7 @@ export class Connectivity {
           signal: controller.signal,
           cache: 'no-cache'
         });
-        
+
         clearTimeout(timeoutId);
         this.isOnline = response.ok;
         return this.isOnline;
@@ -113,9 +113,9 @@ export class Connectivity {
 
           return response.ok;
         } catch (error) {
-          logger.logWarn('Queue operation failed', { 
+          logger.logWarn('Queue operation failed', {
             operation: operation.id,
-            error: error instanceof Error ? error.message : 'Unknown error' 
+            error: error instanceof Error ? error.message : 'Unknown error'
           });
           return false;
         }
@@ -141,7 +141,7 @@ export class Connectivity {
     }
 
     this.checkInterval = setInterval(() => {
-      this.checkConnection().catch(error => {
+      this.checkConnection().catch((error) => {
         logger.logWarn('Connectivity monitoring error', { error: error instanceof Error ? error.message : 'Unknown error' });
       });
     }, interval);
