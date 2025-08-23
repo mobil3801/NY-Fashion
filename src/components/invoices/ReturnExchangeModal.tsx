@@ -314,6 +314,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -445,9 +447,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             </TableCell>
                             <TableCell className="text-center">{item.quantity}</TableCell>
                             <TableCell className="text-center">
-                              <Input type="number" min="0"
-                            max={maxReturnQty}
-                            value={returnItem?.returnQuantity || 0}
+                              <Input type="number" min="0" max={maxReturnQty} value={returnItem?.returnQuantity || 0}
                             onChange={(e) =>
                             handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
                             }

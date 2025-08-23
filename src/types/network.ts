@@ -1,17 +1,17 @@
 
-export type ConnectionErrorType = 
-  | 'network_unavailable'
-  | 'server_error'
-  | 'timeout'
-  | 'dns_error'
-  | 'unknown';
+export type ConnectionErrorType =
+'network_unavailable' |
+'server_error' |
+'timeout' |
+'dns_error' |
+'unknown';
 
-export type ConnectionState = 
-  | 'online'
-  | 'offline'
-  | 'reconnecting'
-  | 'poor_connection'
-  | 'recovering';
+export type ConnectionState =
+'online' |
+'offline' |
+'reconnecting' |
+'poor_connection' |
+'recovering';
 
 export interface EnhancedNetStatus {
   online: boolean;

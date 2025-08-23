@@ -35,44 +35,44 @@ export function useNetworkRetry(config: RetryConfig = {}) {
     }
   }, []);
 
-  const executeWithRetry = useCallback(async <T>(
-    operation: () => Promise<T>,
-    operationName = 'Network operation'
-  ): Promise<T> => {
+  const executeWithRetry = useCallback(async <T,>(
+  operation: () => Promise<T>,
+  operationName = 'Network operation')
+  : Promise<T> => {
     let attempt = 0;
-    
+
     while (attempt < maxRetries) {
       attempt++;
       setRetryCount(attempt);
-      
+
       try {
         // Create abort controller for this attempt
         abortControllerRef.current = new AbortController();
-        
+
         const result = await operation();
-        
+
         // Success - reset state
         setIsRetrying(false);
         setRetryCount(0);
         setCurrentError(null);
         clearRetry();
-        
+
         if (attempt > 1) {
           onSuccess?.();
         }
-        
+
         return result;
       } catch (error) {
         const errorDetails = NetworkErrorClassifier.classifyError(error);
         setCurrentError(errorDetails.type);
-        
+
         // Log the attempt
         console.warn(`${operationName} failed (attempt ${attempt}/${maxRetries}):`, {
           error: errorDetails.message,
           type: errorDetails.type,
           isRetryable: errorDetails.isRetryable
         });
-        
+
         // If not retryable or max attempts reached, throw
         if (!errorDetails.isRetryable || attempt >= maxRetries) {
           setIsRetrying(false);
@@ -81,25 +81,25 @@ export function useNetworkRetry(config: RetryConfig = {}) {
           }
           throw error;
         }
-        
+
         // Calculate delay for next attempt
         const delay = NetworkErrorClassifier.getRetryDelay(errorDetails.type, attempt);
-        
+
         setIsRetrying(true);
         onRetryAttempt?.(attempt, errorDetails.type);
-        
+
         // Wait before retry
         await new Promise((resolve) => {
           retryTimeoutRef.current = setTimeout(resolve, delay);
         });
-        
+
         // Check if we should continue (not aborted)
         if (abortControllerRef.current?.signal.aborted) {
           throw new Error('Operation aborted');
         }
       }
     }
-    
+
     throw new Error('Max retries exceeded');
   }, [maxRetries, onRetryAttempt, onMaxRetriesReached, onSuccess, clearRetry]);
 

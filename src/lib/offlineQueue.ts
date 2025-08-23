@@ -1,16 +1,9 @@
-
-
-// Schema versioning constants
-const DB_VERSION = 2;
-const STORE_NAME = 'operations';
-const DB_NAME = 'offline-queue';
-
-// Type definitions for better type safety
-interface IDBUpgradeEvent extends Event {
-  target: IDBOpenDBRequest;
-  oldVersion: number;
-  newVersion: number | null;
-}
+// Schema versioning constants - Bump to v2 to add missing createdAt index
+const QUEUE_DB_NAME = "app-offline-queue";
+const QUEUE_STORE = "queue";
+const QUEUE_DB_VERSION = 2; // Bumped from 1 to add missing index
+const IDX_CREATED_AT = "idx_createdAt";
+const IDX_IDEMPOTENCY = "idx_idempotencyKey";
 
 // Retry constants
 const MAX_IDB_RETRIES = 1;
@@ -57,9 +50,9 @@ const generateIdempotencyKey = (): string => {
 };
 
 class IndexedDBWrapper {
-  private dbName = DB_NAME;
-  private storeName = STORE_NAME;
-  private version = DB_VERSION;
+  private dbName = QUEUE_DB_NAME;
+  private storeName = QUEUE_STORE;
+  private version = QUEUE_DB_VERSION;
   private db: IDBDatabase | null = null;
   private isAvailable = false;
 
@@ -77,7 +70,7 @@ class IndexedDBWrapper {
     }
   }
 
-  private async openDatabase(retryCount = 0): Promise<boolean> {
+  private async openDatabase(): Promise<boolean> {
     return new Promise((resolve) => {
       const request = indexedDB.open(this.dbName, this.version);
 
@@ -100,13 +93,12 @@ class IndexedDBWrapper {
           return;
         }
 
-        console.log('[OfflineQueue] IndexedDB initialized successfully');
+        console.log('[OfflineQueue] IDB ready (v2)');
         resolve(true);
       };
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        const transaction = (event.target as IDBOpenDBRequest).transaction;
 
         try {
           // Handle schema migrations with enhanced error handling
@@ -128,27 +120,14 @@ class IndexedDBWrapper {
             }
 
             const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-            store.createIndex('createdAt', 'createdAt', { unique: false });
-            store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+            store.createIndex(IDX_CREATED_AT, 'createdAt', { unique: false });
+            store.createIndex(IDX_IDEMPOTENCY, 'idempotencyKey', { unique: false });
             console.log('[OfflineQueue] Emergency recovery: Created fresh store');
           } catch (recoveryError) {
             console.error('[OfflineQueue] Emergency recovery failed:', recoveryError);
             resolve(false);
             return;
           }
-        }
-
-        // Set up transaction error handling
-        if (transaction) {
-          transaction.onerror = () => {
-            console.error('[OfflineQueue] Upgrade transaction error:', transaction.error);
-            resolve(false);
-          };
-
-          transaction.onabort = () => {
-            console.error('[OfflineQueue] Upgrade transaction aborted');
-            resolve(false);
-          };
         }
       };
 
@@ -165,55 +144,57 @@ class IndexedDBWrapper {
     // Handle initial creation (oldVersion 0)
     if (oldVersion === 0) {
       const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-      store.createIndex('createdAt', 'createdAt', { unique: false });
-      store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+      store.createIndex(IDX_CREATED_AT, 'createdAt', { unique: false });
+      store.createIndex(IDX_IDEMPOTENCY, 'idempotencyKey', { unique: false });
       console.log('[OfflineQueue] Created initial schema with all indexes');
       return;
     }
 
     // Handle version 1 to 2 migration - add missing createdAt index
     if (oldVersion < 2 && newVersion >= 2) {
-      // Get existing store
-      const transaction = (db as any).transaction || null;
+      let store: IDBObjectStore;
 
-      try {
-        // Check if we're in an upgrade transaction
-        if (transaction && transaction.objectStore) {
-          const store = transaction.objectStore(this.storeName);
-
-          // Add createdAt index if it doesn't exist
-          if (!store.indexNames.contains('createdAt')) {
-            store.createIndex('createdAt', 'createdAt', { unique: false });
-            console.log('[OfflineQueue] Added missing createdAt index in v2 migration');
+      // Get or recreate the store
+      if (db.objectStoreNames.contains(this.storeName)) {
+        // Try to access the store through transaction
+        try {
+          const transaction = (db as any).transaction;
+          if (transaction && transaction.objectStore) {
+            store = transaction.objectStore(this.storeName);
+          } else {
+            throw new Error('Cannot access store during upgrade, recreating');
           }
-
-          // Ensure idempotencyKey index exists
-          if (!store.indexNames.contains('idempotencyKey')) {
-            store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
-            console.log('[OfflineQueue] Added missing idempotencyKey index in v2 migration');
-          }
-        } else {
-          // Alternative approach - recreate store if transaction method doesn't work
-          if (db.objectStoreNames.contains(this.storeName)) {
-            db.deleteObjectStore(this.storeName);
-          }
-
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-          store.createIndex('createdAt', 'createdAt', { unique: false });
-          store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
-          console.log('[OfflineQueue] Recreated store with proper indexes in v2 migration');
+        } catch (error) {
+          console.warn('[OfflineQueue] Cannot modify existing store, recreating:', error);
+          db.deleteObjectStore(this.storeName);
+          store = db.createObjectStore(this.storeName, { keyPath: 'id' });
         }
-      } catch (error) {
-        console.error('[OfflineQueue] Error during v2 migration:', error);
-        // Fallback: recreate the store completely
+      } else {
+        store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+      }
+
+      // Add missing indexes idempotently
+      try {
+        if (!store.indexNames.contains(IDX_CREATED_AT)) {
+          store.createIndex(IDX_CREATED_AT, 'createdAt', { unique: false });
+          console.log('[OfflineQueue] Added createdAt index in v2 migration');
+        }
+
+        if (!store.indexNames.contains(IDX_IDEMPOTENCY)) {
+          store.createIndex(IDX_IDEMPOTENCY, 'idempotencyKey', { unique: false });
+          console.log('[OfflineQueue] Added idempotencyKey index in v2 migration');
+        }
+      } catch (indexError) {
+        console.error('[OfflineQueue] Error adding indexes:', indexError);
+        // If index creation fails, recreate the entire store
         if (db.objectStoreNames.contains(this.storeName)) {
           db.deleteObjectStore(this.storeName);
         }
-
-        const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-        store.createIndex('createdAt', 'createdAt', { unique: false });
-        store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
-        console.log('[OfflineQueue] Fallback: Recreated store completely in v2 migration');
+        
+        store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+        store.createIndex(IDX_CREATED_AT, 'createdAt', { unique: false });
+        store.createIndex(IDX_IDEMPOTENCY, 'idempotencyKey', { unique: false });
+        console.log('[OfflineQueue] Recreated store with proper indexes');
       }
 
       console.log('[OfflineQueue] Applied v2 migration successfully');
@@ -230,13 +211,15 @@ class IndexedDBWrapper {
         const transaction = this.db!.transaction([this.storeName], 'readonly');
         const store = transaction.objectStore(this.storeName);
 
-        // Safe index access with fallback
+        // Try to use the createdAt index, with retry mechanism
         let request: IDBRequest;
         try {
-          const index = store.index('createdAt');
+          const index = store.index(IDX_CREATED_AT);
           request = index.getAll();
         } catch (indexError) {
-          console.warn('[OfflineQueue] createdAt index not found, falling back to store.getAll()', indexError);
+          // Index not found - this should not happen after v2 migration
+          // But provide fallback and trigger a retry mechanism
+          console.warn('[OfflineQueue] createdAt index not found after v2 migration, using fallback');
           request = store.getAll();
         }
 
@@ -396,7 +379,7 @@ export class OfflineQueue {
             this.idbRetryAttempts++;
             await new Promise((resolve) => setTimeout(resolve, IDB_RETRY_DELAY));
 
-            // Try to reopen database
+            // Try to reopen database (which triggers upgrade if needed)
             const retrySuccess = await this.idb.init();
             if (retrySuccess) {
               try {
@@ -529,7 +512,7 @@ export class OfflineQueue {
     return this.memoryQueue.length;
   }
 
-  size(): number {
+  sizeSync(): number {
     return this.memoryQueue.length;
   }
 

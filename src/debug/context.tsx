@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
-import { ApiError } from '@/lib/errors';
 
-// Basic debug types from legacy context
+// Basic debug types
 interface DebugLog {
   id: string;
   timestamp: number;
@@ -37,7 +36,7 @@ interface ApiCall {
   attempt: number;
   duration: number | null;
   status: 'pending' | 'success' | 'error' | 'retrying';
-  error?: ApiError;
+  error?: any;
   response?: any;
   requestHeaders?: Record<string, string>;
   responseHeaders?: Record<string, string>;
@@ -59,8 +58,8 @@ interface DebugSettings {
 }
 
 // Consolidated debug context interface
-interface DebugContextType {
-  // Basic debug functionality (from legacy debug provider)
+export interface DebugContextType {
+  // Basic debug functionality
   debugMode: boolean;
   logLevel: 'none' | 'error' | 'warn' | 'info' | 'debug';
   enableNetworkLogging: boolean;
@@ -70,7 +69,7 @@ interface DebugContextType {
   getLogs: () => DebugLog[];
   getDebugInfo: () => DebugInfo;
 
-  // Network status monitoring (from advanced debug context)
+  // Network status monitoring
   networkStatus: NetworkStatus;
   checkNetworkStatus: () => Promise<void>;
 
@@ -80,7 +79,7 @@ interface DebugContextType {
   updateApiCall: (id: string, updates: Partial<ApiCall>) => void;
   clearApiCalls: () => void;
 
-  // Debug settings (consolidated)
+  // Debug settings
   debugSettings: DebugSettings;
   updateDebugSettings: (updates: Partial<DebugSettings>) => void;
 
@@ -90,12 +89,15 @@ interface DebugContextType {
 
   // Testing utilities
   simulateNetworkFailure: (duration: number) => void;
-  runNetworkBenchmark: () => Promise<{latency: number;bandwidth: number;}>;
+  runNetworkBenchmark: () => Promise<{latency: number; bandwidth: number;}>;
 }
+
+// Export types for compatibility
+export type { DebugLog, DebugInfo, NetworkStatus, ApiCall, DebugSettings };
 
 // Default debug settings
 const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
-  enabled: process.env.NODE_ENV === 'development',
+  enabled: import.meta.env.DEV || process.env.NODE_ENV === 'development',
   logLevel: 'info',
   maxApiCalls: 100,
   simulateNetworkConditions: 'none',
@@ -120,13 +122,13 @@ const createNoOpDebugContext = (): DebugContextType => ({
   getDebugInfo: () => ({
     environment: 'production',
     buildMode: 'production',
-    userAgent: navigator.userAgent,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     timestamp: Date.now()
   }),
 
   // Network status
   networkStatus: {
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     latency: null,
     lastCheck: new Date()
   },
@@ -151,18 +153,19 @@ const createNoOpDebugContext = (): DebugContextType => ({
   runNetworkBenchmark: async () => ({ latency: 0, bandwidth: 0 })
 });
 
-// Custom hook with proper error handling
+// Custom hook with proper error handling and safe production fallback
 export const useDebug = (): DebugContextType => {
   const context = useContext(DebugContext);
 
   if (context === undefined) {
     // In development, throw error to catch missing provider
-    if (process.env.NODE_ENV === 'development') {
-      throw new Error('useDebug must be used within a DebugProvider');
+    if (import.meta.env.DEV || process.env.NODE_ENV === 'development') {
+      console.error('[DebugProvider] useDebug called outside of DebugProvider');
+      // In development, still return no-op to prevent crashes but log the error
+      return createNoOpDebugContext();
     }
 
-    // In production, return safe defaults
-    console.warn('[DebugProvider] useDebug called outside of DebugProvider, using no-op implementation');
+    // In production, return safe defaults silently
     return createNoOpDebugContext();
   }
 
@@ -176,12 +179,15 @@ interface DebugProviderProps {
 
 // Main debug provider component
 export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
-  // Debug logs state (from legacy provider)
+  // Environment checks
+  const isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
+  
+  // Debug logs state
   const [logs, setLogs] = useState<DebugLog[]>([]);
 
   // Network status state
   const [networkStatus, setNetworkStatus] = useState<NetworkStatus>({
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     latency: null,
     lastCheck: new Date()
   });
@@ -196,12 +202,9 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   const networkCheckRef = useRef<number>();
   const simulationTimeoutRef = useRef<number>();
 
-  // Environment check
-  const isDevelopment = process.env.NODE_ENV === 'development';
-
-  // Basic debug functionality (from legacy provider)
+  // Basic debug functionality
   const addLog = useCallback((level: string, message: string, data?: unknown): void => {
-    if (!debugSettings.enabled) return;
+    if (!debugSettings.enabled || !isDevelopment) return;
 
     const log: DebugLog = {
       id: `${Date.now()}-${Math.random()}`,
@@ -213,7 +216,6 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
     setLogs((prev) => {
       const updated = [log, ...prev];
-      // Keep only last 1000 logs to prevent memory issues
       return updated.length > 1000 ? updated.slice(0, 1000) : updated;
     });
 
@@ -237,27 +239,26 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   const getDebugInfo = useCallback((): DebugInfo => ({
     environment: process.env.NODE_ENV || 'development',
     buildMode: import.meta.env?.MODE || 'development',
-    userAgent: navigator.userAgent,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     timestamp: Date.now(),
-    memoryUsage: (performance as any)?.memory
+    memoryUsage: typeof performance !== 'undefined' ? (performance as any)?.memory : undefined
   }), []);
 
   // Network status monitoring
   const checkNetworkStatus = useCallback(async (): Promise<void> => {
     if (!debugSettings.enabled) return;
 
-    const startTime = performance.now();
+    const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     try {
-      // Use health check endpoint for better reliability
       const response = await fetch('/api/health', {
         method: 'HEAD',
         cache: 'no-cache',
-        signal: AbortSignal.timeout(5000) // 5 second timeout
+        signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
       });
 
-      const latency = performance.now() - startTime;
-      const connection = (navigator as any).connection;
+      const latency = typeof performance !== 'undefined' ? performance.now() - startTime : Date.now() - startTime;
+      const connection = typeof navigator !== 'undefined' ? (navigator as any).connection : undefined;
 
       setNetworkStatus({
         isOnline: response.ok,
@@ -295,7 +296,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     if (!debugSettings.enabled) return;
 
     setApiCalls((prev) => prev.map((call) =>
-    call.id === id ? { ...call, ...updates } : call
+      call.id === id ? { ...call, ...updates } : call
     ));
   }, [debugSettings.enabled]);
 
@@ -325,14 +326,14 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
       updateApiCall(callId, {
         status: 'success',
-        duration: performance.now(),
+        duration: typeof performance !== 'undefined' ? performance.now() : Date.now(),
         response: await response.json()
       });
     } catch (error) {
       updateApiCall(callId, {
         status: 'error',
-        error: error as ApiError,
-        duration: performance.now()
+        error: error,
+        duration: typeof performance !== 'undefined' ? performance.now() : Date.now()
       });
     }
   }, [debugSettings.enabled, apiCalls, updateApiCall]);
@@ -347,11 +348,13 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     }
 
     // Clear localStorage debug data
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('debug_') || key.startsWith('api_')) {
-        localStorage.removeItem(key);
-      }
-    });
+    if (typeof localStorage !== 'undefined') {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('debug_') || key.startsWith('api_')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
   }, [debugSettings.enabled]);
 
   // Testing utilities
@@ -373,7 +376,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     }, duration);
   }, [debugSettings.enabled]);
 
-  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number;bandwidth: number;}> => {
+  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number; bandwidth: number;}> => {
     if (!debugSettings.enabled) {
       return { latency: 0, bandwidth: 0 };
     }
@@ -382,16 +385,15 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     const results = [];
 
     for (const size of testSizes) {
-      const startTime = performance.now();
+      const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
       try {
-        // Use a more reliable endpoint for benchmarking
         const response = await fetch(`/api/benchmark?size=${size}`, {
           cache: 'no-cache'
         });
 
         const data = await response.text();
-        const endTime = performance.now();
+        const endTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const duration = endTime - startTime;
         const bandwidth = size * 1024 / (duration / 1000); // bytes per second
 
@@ -409,7 +411,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
   // Initialize network monitoring and event listeners
   useEffect(() => {
-    if (!debugSettings.enabled) return;
+    if (!debugSettings.enabled || !isDevelopment) return;
 
     // Initial network check
     checkNetworkStatus();
@@ -418,40 +420,21 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     const handleOnline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: true }));
     const handleOffline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: false }));
 
-    // Modern event patterns - no unload handlers
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
 
-    // Use pagehide instead of unload for cleanup
-    const handlePageHide = () => {
-      if (debugSettings.enabled && apiCalls.length > 0) {
-        const debugData = {
-          timestamp: Date.now(),
-          apiCalls: apiCalls.slice(0, 10), // Last 10 calls
-          networkStatus
-        };
+      // Periodic network checks
+      networkCheckRef.current = window.setInterval(checkNetworkStatus, 30000);
 
-        // Use sendBeacon for reliable data transmission
-        if (navigator.sendBeacon) {
-          const blob = new Blob([JSON.stringify(debugData)], { type: 'application/json' });
-          navigator.sendBeacon('/api/debug/flush', blob);
-        }
-      }
-    };
-
-    window.addEventListener('pagehide', handlePageHide, { capture: true });
-
-    // Periodic network checks
-    networkCheckRef.current = window.setInterval(checkNetworkStatus, 30000);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('pagehide', handlePageHide);
-      if (networkCheckRef.current) clearInterval(networkCheckRef.current);
-      if (simulationTimeoutRef.current) clearTimeout(simulationTimeoutRef.current);
-    };
-  }, [debugSettings.enabled, checkNetworkStatus, apiCalls, networkStatus]);
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+        if (networkCheckRef.current) clearInterval(networkCheckRef.current);
+        if (simulationTimeoutRef.current) clearTimeout(simulationTimeoutRef.current);
+      };
+    }
+  }, [debugSettings.enabled, checkNetworkStatus, isDevelopment]);
 
   // Create context value
   const contextValue: DebugContextType = {
@@ -488,21 +471,18 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     runNetworkBenchmark
   };
 
-  // Return no-op in production if disabled
+  // Always provide context, but with no-op in production if disabled
   if (!isDevelopment && !debugSettings.enabled) {
     return (
       <DebugContext.Provider value={createNoOpDebugContext()}>
         {children}
-      </DebugContext.Provider>);
-
+      </DebugContext.Provider>
+    );
   }
 
   return (
     <DebugContext.Provider value={contextValue}>
       {children}
-    </DebugContext.Provider>);
-
+    </DebugContext.Provider>
+  );
 };
-
-// Export types for use in components
-export type { DebugContextType, DebugLog, DebugInfo, NetworkStatus, ApiCall, DebugSettings };

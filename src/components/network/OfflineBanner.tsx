@@ -7,22 +7,30 @@ import { useNetwork } from '@/contexts/NetworkContext';
 import { NetworkErrorClassifier } from '@/lib/network/error-classifier';
 
 export function OfflineBanner() {
-  const { 
-    online, 
-    connectionState, 
-    errorDetails, 
-    recoveryInfo, 
-    retryNow, 
+  const {
+    online,
+    connectionState,
+    errorDetails,
+    recoveryInfo,
+    retryNow,
     abortRetry,
     isAutoRetrying,
     retryCount
   } = useNetwork();
-  
+
   const [isManualRetrying, setIsManualRetrying] = useState(false);
   const [nextAutoRetryIn, setNextAutoRetryIn] = useState<number>(0);
+  const [isDismissed, setIsDismissed] = useState(false);
 
-  // Don't show banner if online (unless recovering)
-  if (online && connectionState !== 'recovering') {
+  // Reset dismissal when connection state changes
+  React.useEffect(() => {
+    if (connectionState === 'recovering' || connectionState === 'reconnecting') {
+      setIsDismissed(false);
+    }
+  }, [connectionState]);
+
+  // Don't show banner if online (unless recovering) or if dismissed
+  if (online && connectionState !== 'recovering' || isDismissed) {
     return null;
   }
 
@@ -31,11 +39,11 @@ export function OfflineBanner() {
     if (isAutoRetrying && errorDetails) {
       const delay = NetworkErrorClassifier.getRetryDelay(errorDetails.type, retryCount + 1);
       setNextAutoRetryIn(Math.ceil(delay / 1000));
-      
+
       const interval = setInterval(() => {
-        setNextAutoRetryIn(prev => Math.max(0, prev - 1));
+        setNextAutoRetryIn((prev) => Math.max(0, prev - 1));
       }, 1000);
-      
+
       return () => clearInterval(interval);
     }
     setNextAutoRetryIn(0);
@@ -59,7 +67,7 @@ export function OfflineBanner() {
     if (connectionState === 'recovering') {
       return <Wifi className="h-4 w-4 text-green-600" />;
     }
-    
+
     if (!errorDetails) {
       return <WifiOff className="h-4 w-4" />;
     }
@@ -80,7 +88,7 @@ export function OfflineBanner() {
     if (connectionState === 'recovering') {
       return 'border-green-200 bg-green-50';
     }
-    
+
     if (connectionState === 'reconnecting') {
       return 'border-blue-200 bg-blue-50';
     }
@@ -114,13 +122,13 @@ export function OfflineBanner() {
 
   const getMessage = () => {
     if (connectionState === 'recovering') {
-      const duration = recoveryInfo?.wasOfflineFor 
-        ? recoveryInfo.wasOfflineFor > 60000 
-          ? `${Math.round(recoveryInfo.wasOfflineFor / 60000)} minute${Math.round(recoveryInfo.wasOfflineFor / 60000) > 1 ? 's' : ''}`
-          : `${Math.round(recoveryInfo.wasOfflineFor / 1000)} seconds`
-        : 'briefly';
-      
-      return `Connection restored after ${duration}. Syncing data...`;
+      const duration = recoveryInfo?.wasOfflineFor ?
+      recoveryInfo.wasOfflineFor > 60000 ?
+      `${Math.round(recoveryInfo.wasOfflineFor / 60000)} minute${Math.round(recoveryInfo.wasOfflineFor / 60000) > 1 ? 's' : ''}` :
+      `${Math.round(recoveryInfo.wasOfflineFor / 1000)} seconds` :
+      'briefly';
+
+      return `✓ Connection restored after ${duration}. Syncing data...`;
     }
 
     if (connectionState === 'reconnecting') {
@@ -134,48 +142,71 @@ export function OfflineBanner() {
       return errorDetails.userMessage;
     }
 
-    return "Connection lost. We'll retry when you're back online.";
+    return "Connection lost. Your changes are saved locally and will sync when reconnected.";
   };
 
   const getActionButton = () => {
     if (connectionState === 'recovering') {
-      return null; // No action needed during recovery
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsDismissed(true)}
+          className="border-current text-current hover:bg-current/10 hover:border-current/40"
+          aria-label="Dismiss connection restored message">
+
+          Dismiss
+        </Button>);
+
     }
 
     const isRetrying = isManualRetrying || isAutoRetrying;
-    
+
     if (isRetrying) {
       return (
         <div className="flex items-center gap-2">
-          {retryCount > 0 && (
-            <Badge variant="secondary" className="text-xs">
+          {retryCount > 0 &&
+          <Badge variant="secondary" className="text-xs">
               Attempt {retryCount + 1}
             </Badge>
-          )}
+          }
           <Button
             variant="outline"
             size="sm"
             onClick={handleAbort}
-            className={`border-current text-current hover:bg-current/10 hover:border-current/40`}
-          >
+            className="border-current text-current hover:bg-current/10 hover:border-current/40">
             Cancel
           </Button>
-        </div>
-      );
+        </div>);
+
     }
 
     return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleRetry}
-        className={`border-current text-current hover:bg-current/10 hover:border-current/40`}
-        aria-label="Retry connection now"
-      >
-        <RotateCcw className="h-3 w-3 mr-1" />
-        Try again
-      </Button>
-    );
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRetry}
+          className="border-current text-current hover:bg-current/10 hover:border-current/40"
+          aria-label="Retry connection now">
+
+          <RotateCcw className="h-3 w-3 mr-1" />
+          Try again
+        </Button>
+        
+        {!isRetrying &&
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsDismissed(true)}
+          className="border-current text-current hover:bg-current/10 hover:border-current/40 px-2"
+          aria-label="Dismiss offline message">
+
+            ✕
+          </Button>
+        }
+      </div>);
+
   };
 
   return (
@@ -183,8 +214,8 @@ export function OfflineBanner() {
       className={`sticky top-0 z-50 border-b px-4 py-3 transition-colors ${getBannerStyles()}`}
       role="status"
       aria-live="polite"
-      aria-label={`Network status: ${connectionState}`}
-    >
+      aria-label={`Network status: ${connectionState}`}>
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={getIconColor()}>
@@ -194,11 +225,11 @@ export function OfflineBanner() {
             <p className={`text-sm font-medium ${getTextColor()}`}>
               {getMessage()}
             </p>
-            {errorDetails?.suggestedAction && connectionState !== 'recovering' && (
-              <p className={`text-xs mt-1 opacity-75 ${getTextColor()}`}>
+            {errorDetails?.suggestedAction && connectionState !== 'recovering' &&
+            <p className={`text-xs mt-1 opacity-75 ${getTextColor()}`}>
                 {errorDetails.suggestedAction}
               </p>
-            )}
+            }
           </div>
         </div>
         
@@ -206,7 +237,7 @@ export function OfflineBanner() {
           {getActionButton()}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 
 }

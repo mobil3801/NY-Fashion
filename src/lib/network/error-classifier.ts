@@ -19,7 +19,7 @@ export class NetworkErrorClassifier {
 
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
-      
+
       if (message.includes('timeout') || message.includes('timed out')) {
         return {
           type: 'timeout',
@@ -54,7 +54,7 @@ export class NetworkErrorClassifier {
     // Check for HTTP status codes
     if (typeof error === 'object' && error !== null) {
       const status = (error as any).status || (error as any).statusCode;
-      
+
       if (status >= 500 && status < 600) {
         return {
           type: 'server_error',
@@ -98,7 +98,7 @@ export class NetworkErrorClassifier {
     const baseDelay = baseDelays[errorType] || 2000;
     const maxDelay = 30000; // 30 seconds max
     const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
-    
+
     // Add jitter (±25%)
     const jitter = exponentialDelay * 0.25 * (Math.random() - 0.5);
     return Math.floor(exponentialDelay + jitter);
@@ -107,16 +107,16 @@ export class NetworkErrorClassifier {
   static shouldShowBanner(errorType: ConnectionErrorType, consecutiveFailures: number): boolean {
     // Always show banner for network unavailable after first failure
     if (errorType === 'network_unavailable') return true;
-    
+
     // Show banner for server errors after 2 consecutive failures
     if (errorType === 'server_error') return consecutiveFailures >= 2;
-    
+
     // Show banner for timeouts after 3 consecutive failures
     if (errorType === 'timeout') return consecutiveFailures >= 3;
-    
+
     // Show banner for DNS errors immediately
     if (errorType === 'dns_error') return true;
-    
+
     // Show for unknown errors after 2 failures
     return consecutiveFailures >= 2;
   }
