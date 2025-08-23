@@ -3,7 +3,7 @@ import { PRODUCTION_CONFIG, getProductionConfig } from './production';
 // Enhanced production configuration with environment variable support
 export const ENHANCED_PRODUCTION_CONFIG = {
   ...PRODUCTION_CONFIG,
-  
+
   // Enhanced API Configuration
   api: {
     ...PRODUCTION_CONFIG.api,
@@ -38,7 +38,7 @@ export const ENHANCED_PRODUCTION_CONFIG = {
     enableRateLimit: import.meta.env.VITE_ENABLE_RATE_LIMIT !== 'false',
     enableSecurityHeaders: import.meta.env.VITE_ENABLE_SECURITY_HEADERS !== 'false',
     enableCORS: import.meta.env.VITE_ENABLE_CORS !== 'false',
-    
+
     // Content Security Policy
     cspDirectives: {
       'default-src': ["'self'"],
@@ -90,7 +90,7 @@ export const ENHANCED_PRODUCTION_CONFIG = {
     enableImageCompression: import.meta.env.VITE_ENABLE_IMAGE_COMPRESSION !== 'false',
     imageQuality: parseFloat(import.meta.env.VITE_IMAGE_QUALITY || '0.8'),
     enableProgressTracking: import.meta.env.VITE_ENABLE_PROGRESS_TRACKING !== 'false',
-    
+
     // Enhanced security
     enableVirusScanning: import.meta.env.VITE_ENABLE_VIRUS_SCAN === 'true',
     quarantineUnsafeFiles: true,
@@ -107,7 +107,7 @@ export const validateProductionConfig = () => {
   // Validate API configuration
   if (import.meta.env.NODE_ENV === 'production') {
     const apiBaseUrl = ENHANCED_PRODUCTION_CONFIG.api.baseUrl;
-    
+
     if (!apiBaseUrl.startsWith('https://')) {
       errors.push('Production API must use HTTPS');
     }
@@ -145,7 +145,7 @@ export const validateProductionConfig = () => {
 // Enhanced configuration getter with validation
 export const getEnhancedProductionConfig = () => {
   const validation = validateProductionConfig();
-  
+
   if (validation.errors.length > 0) {
     console.error('Production configuration errors:', validation.errors);
     throw new Error(`Production configuration validation failed: ${validation.errors.join(', ')}`);
@@ -161,15 +161,15 @@ export const getEnhancedProductionConfig = () => {
 // Type-safe environment variable getter
 export const getSecureEnvVar = (name: string, defaultValue: string | number, required = false): string | number => {
   const value = import.meta.env[name];
-  
+
   if (required && (value === undefined || value === null || value === '')) {
     throw new Error(`Required environment variable ${name} is not set`);
   }
-  
+
   if (value === undefined || value === null || value === '') {
     return defaultValue;
   }
-  
+
   // For numeric values, attempt to parse as number
   if (typeof defaultValue === 'number') {
     const numValue = Number(value);
@@ -179,7 +179,7 @@ export const getSecureEnvVar = (name: string, defaultValue: string | number, req
     }
     return numValue;
   }
-  
+
   return value;
 };
 

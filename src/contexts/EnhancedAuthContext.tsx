@@ -4,6 +4,7 @@ import { logger } from '@/utils/production-logger';
 import { PRODUCTION_CONFIG } from '@/config/production';
 import { enhancedToast } from '@/utils/enhanced-toast';
 import { validateLogin, validateRegister } from '@/utils/validation-schemas';
+import { secureAuthManager } from '@/utils/secure-auth-manager';
 
 interface User {
   ID: number;
@@ -83,6 +84,13 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
       setIsLoading(true);
       setError(null);
 
+      // Enhanced security validation
+      const securityCheck = secureAuthManager.validateLoginAttempt(credentials.email);
+      if (!securityCheck.allowed) {
+        setError(securityCheck.reason || 'Login not allowed');
+        throw new Error(securityCheck.reason || 'Login not allowed');
+      }
+
       // Validate input
       const validation = validateLogin(credentials);
       if (!validation.success) {
@@ -91,26 +99,46 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
         throw new Error(errorMessages.join(', '));
       }
 
-      logger.logUserAction('Login attempt started', { email: credentials.email });
+      logger.logSecurityEvent('login_attempt_started', 'AUTH', 'INFO', undefined, {
+        email: credentials.email,
+        timestamp: new Date().toISOString()
+      });
 
       const result = await productionApi.login(credentials);
 
       if (result.error) {
+        // Record failed attempt
+        secureAuthManager.recordFailedAttempt(credentials.email);
+
         setError(result.error);
-        logger.logError('Login failed', result.error, { email: credentials.email });
+        logger.logSecurityEvent('login_failed', 'AUTH', 'WARNING', undefined, {
+          email: credentials.email,
+          error: result.error
+        });
         throw new Error(result.error);
       }
+
+      // Clear failed attempts on successful login
+      secureAuthManager.clearFailedAttempts(credentials.email);
 
       // Fetch user info after successful login
       await refreshUser();
 
-      logger.logUserAction('Login successful', {
-        userId: user?.ID,
-        email: credentials.email
+      // Register session with security manager
+      if (user) {
+        secureAuthManager.registerSession(`session_${Date.now()}`, user.ID.toString());
+      }
+
+      logger.logSecurityEvent('login_successful', 'AUTH', 'INFO', user?.ID, {
+        email: credentials.email,
+        timestamp: new Date().toISOString()
       });
 
     } catch (error: any) {
-      logger.logError('Login error', error, { email: credentials.email });
+      logger.logSecurityEvent('login_error', 'AUTH', 'HIGH', undefined, {
+        email: credentials.email,
+        error: error.message || 'Unknown error'
+      });
       setError(error.message || 'Login failed');
       throw error;
     } finally {
@@ -131,20 +159,39 @@ export const EnhancedAuthProvider: React.FC<AuthProviderProps> = ({ children }) 
         throw new Error(errorMessages.join(', '));
       }
 
-      logger.logUserAction('Registration attempt started', { email: userData.email });
+      // Enhanced password strength validation
+      const passwordValidation = secureAuthManager.validatePasswordStrength(userData.password);
+      if (!passwordValidation.isValid) {
+        enhancedToast.showValidationErrorToast(passwordValidation.errors);
+        throw new Error(passwordValidation.errors.join(', '));
+      }
+
+      logger.logSecurityEvent('registration_attempt_started', 'AUTH', 'INFO', undefined, {
+        email: userData.email,
+        timestamp: new Date().toISOString()
+      });
 
       const result = await productionApi.register(userData);
 
       if (result.error) {
         setError(result.error);
-        logger.logError('Registration failed', result.error, { email: userData.email });
+        logger.logSecurityEvent('registration_failed', 'AUTH', 'WARNING', undefined, {
+          email: userData.email,
+          error: result.error
+        });
         throw new Error(result.error);
       }
 
-      logger.logUserAction('Registration successful', { email: userData.email });
+      logger.logSecurityEvent('registration_successful', 'AUTH', 'INFO', undefined, {
+        email: userData.email,
+        timestamp: new Date().toISOString()
+      });
 
     } catch (error: any) {
-      logger.logError('Registration error', error, { email: userData.email });
+      logger.logSecurityEvent('registration_error', 'AUTH', 'HIGH', undefined, {
+        email: userData.email,
+        error: error.message || 'Unknown error'
+      });
       setError(error.message || 'Registration failed');
       throw error;
     } finally {

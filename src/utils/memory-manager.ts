@@ -188,11 +188,11 @@ class ProductionMemoryManager implements MemoryManager {
       if (window.URL && window.URL.revokeObjectURL) {
 
 
+
+
         // URLs are tracked separately by the browser, but we can encourage cleanup
         // This would require tracking blob URLs separately in the application
-      }}}
-
-  getMemoryUsage(): MemoryInfo | null {
+      }}}getMemoryUsage(): MemoryInfo | null {
     if (typeof performance !== 'undefined' && (performance as any).memory) {
       const memory = (performance as any).memory;
       return {

@@ -47,7 +47,7 @@ class ConnectionValidator {
    */
   async validateAllConnections(): Promise<ConnectionValidationResult> {
     logger.logInfo('Starting comprehensive connection validation');
-    
+
     this.validationResults = {
       isValid: false,
       errors: [],
@@ -117,12 +117,12 @@ class ConnectionValidator {
 
     // Validate required environment variables
     const requiredVars = [
-      'VITE_API_BASE_URL',
-      'VITE_HEARTBEAT_INTERVAL_MS',
-      'VITE_HEARTBEAT_TIMEOUT_MS'
-    ];
+    'VITE_API_BASE_URL',
+    'VITE_HEARTBEAT_INTERVAL_MS',
+    'VITE_HEARTBEAT_TIMEOUT_MS'];
 
-    requiredVars.forEach(varName => {
+
+    requiredVars.forEach((varName) => {
       const value = import.meta.env[varName];
       if (!value) {
         this.validationResults.warnings.push(`Environment variable ${varName} not set, using default`);
@@ -146,21 +146,21 @@ class ConnectionValidator {
   private async validateAPIEndpoints(): Promise<void> {
     const config = ENHANCED_PRODUCTION_CONFIG;
     const baseUrl = config.api.baseUrl;
-    
+
     const criticalEndpoints = [
-      { path: '/', description: 'Root endpoint' },
-      { path: '/api/health', description: 'Health check endpoint' },
-      { path: config.api.healthUrl, description: 'Configured health endpoint' }
-    ];
+    { path: '/', description: 'Root endpoint' },
+    { path: '/api/health', description: 'Health check endpoint' },
+    { path: config.api.healthUrl, description: 'Configured health endpoint' }];
+
 
     const endpointTests: APIEndpointTest[] = [];
 
     for (const endpoint of criticalEndpoints) {
       const fullUrl = `${baseUrl}${endpoint.path}`;
-      
+
       try {
         const startTime = performance.now();
-        
+
         // Use HEAD request to avoid large responses
         const response = await fetch(fullUrl, {
           method: 'HEAD',
@@ -192,7 +192,7 @@ class ConnectionValidator {
 
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        
+
         endpointTests.push({
           endpoint: fullUrl,
           success: false,
@@ -223,7 +223,7 @@ class ConnectionValidator {
     try {
       // Test basic EasySite database connectivity
       const dbTest = await this.testDatabaseConnection();
-      
+
       if (!dbTest.success) {
         this.validationResults.errors.push(`Database connection failed: ${dbTest.error}`);
       } else {
@@ -235,7 +235,7 @@ class ConnectionValidator {
 
         // Validate connection pool configuration
         const config = ENHANCED_PRODUCTION_CONFIG.database;
-        
+
         if (config.connectionPoolSize < 5) {
           this.validationResults.warnings.push('Connection pool size is very small for production');
         }
@@ -276,14 +276,14 @@ class ConnectionValidator {
         connectionInfo: {
           poolSize: ENHANCED_PRODUCTION_CONFIG.database.connectionPoolSize,
           activeConnections: Math.floor(Math.random() * 5) + 1, // Simulated
-          idleConnections: Math.floor(Math.random() * 10) + 5   // Simulated
+          idleConnections: Math.floor(Math.random() * 10) + 5 // Simulated
         }
       };
 
     } catch (error) {
       const responseTime = performance.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       return {
         success: false,
         responseTime,
@@ -345,11 +345,11 @@ class ConnectionValidator {
     }
 
     // Validate session timeout
-    if (config.sessionTimeout > 86400000) { // 24 hours
+    if (config.sessionTimeout > 86400000) {// 24 hours
       this.validationResults.warnings.push('Session timeout is very long');
     }
 
-    if (config.sessionTimeout < 900000) { // 15 minutes
+    if (config.sessionTimeout < 900000) {// 15 minutes
       this.validationResults.warnings.push('Session timeout is very short');
     }
 
@@ -371,7 +371,7 @@ class ConnectionValidator {
 
     // Validate file size limits
     const maxSizeMB = config.maxFileSize / (1024 * 1024);
-    
+
     if (maxSizeMB > 50) {
       this.validationResults.warnings.push('File size limit is very high (>50MB)');
     }
@@ -382,10 +382,10 @@ class ConnectionValidator {
 
     // Validate allowed file types
     const allowedTypes = config.allowedTypes;
-    
-    if (allowedTypes.includes('application/javascript') || 
-        allowedTypes.includes('text/html') ||
-        allowedTypes.includes('application/x-executable')) {
+
+    if (allowedTypes.includes('application/javascript') ||
+    allowedTypes.includes('text/html') ||
+    allowedTypes.includes('application/x-executable')) {
       this.validationResults.errors.push('Potentially dangerous file types are allowed');
     }
 
@@ -456,13 +456,13 @@ class ConnectionValidator {
 - **Recommendations**: ${result.recommendations.length}
 
 ## Errors
-${result.errors.length > 0 ? result.errors.map(error => `- ❌ ${error}`).join('\n') : '✅ No errors found'}
+${result.errors.length > 0 ? result.errors.map((error) => `- ❌ ${error}`).join('\n') : '✅ No errors found'}
 
 ## Warnings
-${result.warnings.length > 0 ? result.warnings.map(warning => `- ⚠️ ${warning}`).join('\n') : '✅ No warnings found'}
+${result.warnings.length > 0 ? result.warnings.map((warning) => `- ⚠️ ${warning}`).join('\n') : '✅ No warnings found'}
 
 ## Recommendations
-${result.recommendations.length > 0 ? result.recommendations.map(rec => `- 💡 ${rec}`).join('\n') : '✅ No additional recommendations'}
+${result.recommendations.length > 0 ? result.recommendations.map((rec) => `- 💡 ${rec}`).join('\n') : '✅ No additional recommendations'}
 
 ---
 *Generated by Connection Validator v1.0*

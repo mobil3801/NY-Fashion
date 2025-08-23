@@ -123,7 +123,7 @@ class ProductionHealthMonitor {
     logger.logInfo('Starting production health monitoring', { interval });
 
     this.monitoringInterval = window.setInterval(() => {
-      this.collectMetrics().catch(error => {
+      this.collectMetrics().catch((error) => {
         logger.logError('Health monitoring error', error);
       });
     }, interval);
@@ -139,7 +139,7 @@ class ProductionHealthMonitor {
     if (!this.isMonitoring) return;
 
     this.isMonitoring = false;
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = undefined;
@@ -201,7 +201,7 @@ class ProductionHealthMonitor {
       memory: {
         used: memory ? Math.round(memory.usedJSHeapSize / 1024 / 1024) : 0,
         total: memory ? Math.round(memory.totalJSHeapSize / 1024 / 1024) : 0,
-        percentage: memory ? Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100) : 0
+        percentage: memory ? Math.round(memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100) : 0
       },
       cpu: {
         usage: this.estimateCPUUsage()
@@ -263,7 +263,7 @@ class ProductionHealthMonitor {
    */
   private async getNetworkMetrics(): Promise<NetworkMetrics> {
     const connection = (navigator as any).connection;
-    
+
     return {
       status: navigator.onLine ? 'healthy' : 'critical',
       connectivity: navigator.onLine ? 'online' : 'offline',
@@ -302,7 +302,7 @@ class ProductionHealthMonitor {
     return {
       status: 'healthy',
       pageLoadTime: nav ? nav.loadEventEnd - nav.navigationStart : 0,
-      renderTime: paint.find(p => p.name === 'first-contentful-paint')?.startTime || 0,
+      renderTime: paint.find((p) => p.name === 'first-contentful-paint')?.startTime || 0,
       scriptExecutionTime: 0, // Would be measured in real implementation
       longTasks: 0, // Would be counted in real implementation
       memoryLeaks: false // Would be detected in real implementation
@@ -357,8 +357,8 @@ class ProductionHealthMonitor {
     setInterval(() => {
       const memory = (performance as any).memory;
       if (memory) {
-        const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
-        
+        const usagePercent = memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100;
+
         if (usagePercent > ENHANCED_PRODUCTION_CONFIG.monitoring.alertThresholds.memoryUsage * 100) {
           logger.logWarn('High memory usage detected', {
             usage: `${usagePercent.toFixed(1)}%`,
@@ -414,8 +414,8 @@ class ProductionHealthMonitor {
     }
 
     // Send alerts
-    alerts.forEach(alert => {
-      this.alertCallbacks.forEach(callback => {
+    alerts.forEach((alert) => {
+      this.alertCallbacks.forEach((callback) => {
         try {
           callback(alert);
         } catch (error) {
@@ -432,17 +432,17 @@ class ProductionHealthMonitor {
     // Simplified CPU usage estimation based on performance timing
     const now = performance.now();
     const recent = this.metrics.slice(-5);
-    
+
     if (recent.length < 2) return 0;
-    
-    const intervals = recent.map((m, i) => 
-      i > 0 ? new Date(m.timestamp).getTime() - new Date(recent[i-1].timestamp).getTime() : 0
-    ).filter(i => i > 0);
-    
+
+    const intervals = recent.map((m, i) =>
+    i > 0 ? new Date(m.timestamp).getTime() - new Date(recent[i - 1].timestamp).getTime() : 0
+    ).filter((i) => i > 0);
+
     const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
     const expectedInterval = ENHANCED_PRODUCTION_CONFIG.monitoring.healthCheckInterval;
-    
-    return Math.min(100, Math.max(0, ((expectedInterval - avgInterval) / expectedInterval) * 100));
+
+    return Math.min(100, Math.max(0, (expectedInterval - avgInterval) / expectedInterval * 100));
   }
 
   private async getStorageMetrics() {
@@ -452,7 +452,7 @@ class ProductionHealthMonitor {
         return {
           used: Math.round((estimate.usage || 0) / 1024 / 1024),
           total: Math.round((estimate.quota || 0) / 1024 / 1024),
-          percentage: estimate.quota ? Math.round(((estimate.usage || 0) / estimate.quota) * 100) : 0
+          percentage: estimate.quota ? Math.round((estimate.usage || 0) / estimate.quota * 100) : 0
         };
       }
     } catch (error) {
@@ -464,9 +464,9 @@ class ProductionHealthMonitor {
 
   private getConnectionQuality(connection: any): NetworkMetrics['connectionQuality'] {
     if (!connection) return 'unknown';
-    
+
     const { effectiveType, downlink } = connection;
-    
+
     if (effectiveType === '4g' && downlink > 10) return 'excellent';
     if (effectiveType === '4g' && downlink > 2) return 'good';
     if (effectiveType === '3g') return 'fair';
@@ -476,21 +476,21 @@ class ProductionHealthMonitor {
   private estimateCacheSize(): number {
     try {
       let totalSize = 0;
-      
+
       // Estimate localStorage size
       for (const key in localStorage) {
         if (localStorage.hasOwnProperty(key)) {
           totalSize += localStorage[key].length;
         }
       }
-      
+
       // Estimate sessionStorage size
       for (const key in sessionStorage) {
         if (sessionStorage.hasOwnProperty(key)) {
           totalSize += sessionStorage[key].length;
         }
       }
-      
+
       return totalSize;
     } catch (error) {
       return 0;

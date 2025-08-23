@@ -120,9 +120,9 @@ function checkDatabaseHealth() {
       }
     } catch (error) {
 
+
       // This query might not work on all database systems, ignore silently
-    }
-  } catch (error) {
+    }} catch (error) {
     check.status = 'CRITICAL';
     check.issues.push(`Database health check failed: ${error.message}`);
   }

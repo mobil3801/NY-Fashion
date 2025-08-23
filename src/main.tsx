@@ -2,12 +2,47 @@ import React from "react";
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import SafeNetworkProvider from '@/components/network/SafeNetworkProvider';
+import ProductionSecurityProvider from '@/components/security/ProductionSecurityProvider';
 import { initConsoleDebugUtils } from '@/utils/consoleDebugUtils';
 import { setupPageLifecycle } from '@/lib/lifecycle';
+import { initializeSecurity } from '@/config/security';
+import { httpsEnforcer } from '@/utils/https-enforcer';
+import { securityHeadersManager } from '@/utils/security-headers';
+import { productionDebugDisabler } from '@/utils/production-debug-disabler';
+import { environmentValidator } from '@/utils/env-validator';
 import './index.css';
 import './styles/accessibility.css';
 
-// Initialize debug utilities and enhanced unload protection
+// Initialize production security measures first
+try {
+  // Validate environment variables
+  const envValidation = environmentValidator.validateAll();
+  if (!envValidation.isValid && import.meta.env.NODE_ENV === 'production') {
+    throw new Error(`Environment validation failed: ${envValidation.errors.join(', ')}`);
+  }
+
+  // Initialize core security
+  initializeSecurity();
+
+  // Initialize HTTPS enforcement
+  httpsEnforcer.initialize();
+
+  // Initialize security headers
+  securityHeadersManager.initialize();
+
+  // Initialize debug disabler for production
+  if (import.meta.env.NODE_ENV === 'production') {
+    console.log('Initializing production security measures...');
+  }
+
+} catch (error) {
+  console.error('Security initialization failed:', error);
+  if (import.meta.env.NODE_ENV === 'production') {
+    throw error; // Fail fast in production
+  }
+}
+
+// Initialize debug utilities (development only)
 if (import.meta.env.DEV || process.env.NODE_ENV === 'development') {
   initConsoleDebugUtils();
 
@@ -66,8 +101,10 @@ if (import.meta.env.DEV) {
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <SafeNetworkProvider>
-      <App />
-    </SafeNetworkProvider>
+    <ProductionSecurityProvider>
+      <SafeNetworkProvider>
+        <App />
+      </SafeNetworkProvider>
+    </ProductionSecurityProvider>
   </React.StrictMode>
 );

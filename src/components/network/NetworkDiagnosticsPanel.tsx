@@ -128,11 +128,11 @@ export function NetworkDiagnosticsPanel() {
 
 
 
+
+
           // EasySite API might not be available or user not logged in
           // This is not necessarily a connection error
-        }break;case 'WebSocket Support':if (!('WebSocket' in window)) {
-          throw new Error('WebSocket not supported');
-        }
+        }break;case 'WebSocket Support':if (!('WebSocket' in window)) {throw new Error('WebSocket not supported');}
         break;
 
       case 'Local Storage':
