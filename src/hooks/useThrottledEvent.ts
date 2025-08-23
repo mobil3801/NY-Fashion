@@ -9,7 +9,7 @@ interface ThrottledEventOptions<T extends Event> {
   capture?: boolean;
 }
 
-export const useThrottledEvent = <T extends Event>({
+export const useThrottledEvent = <T extends Event,>({
   element,
   eventType,
   handler,
@@ -33,7 +33,7 @@ export const useThrottledEvent = <T extends Event>({
 
     rafIdRef.current = requestAnimationFrame(() => {
       rafIdRef.current = null;
-      
+
       if (latestEventRef.current) {
         try {
           handlerRef.current(latestEventRef.current);
@@ -57,7 +57,7 @@ export const useThrottledEvent = <T extends Event>({
 
     return () => {
       element.removeEventListener(eventType, throttledHandler as EventListener, options);
-      
+
       // Cancel pending RAF on cleanup
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -80,10 +80,10 @@ export const useThrottledEvent = <T extends Event>({
 
 // Higher-order hook for common event types
 export const useThrottledClick = (
-  element: HTMLElement | null,
-  handler: (event: MouseEvent) => void,
-  options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>
-) => {
+element: HTMLElement | null,
+handler: (event: MouseEvent) => void,
+options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>) =>
+{
   return useThrottledEvent({
     element,
     eventType: 'click',
@@ -93,10 +93,10 @@ export const useThrottledClick = (
 };
 
 export const useThrottledMouseMove = (
-  element: HTMLElement | null,
-  handler: (event: MouseEvent) => void,
-  options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>
-) => {
+element: HTMLElement | null,
+handler: (event: MouseEvent) => void,
+options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>) =>
+{
   return useThrottledEvent({
     element,
     eventType: 'mousemove',
@@ -106,10 +106,10 @@ export const useThrottledMouseMove = (
 };
 
 export const useThrottledMouseDown = (
-  element: HTMLElement | null,
-  handler: (event: MouseEvent) => void,
-  options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>
-) => {
+element: HTMLElement | null,
+handler: (event: MouseEvent) => void,
+options?: Omit<ThrottledEventOptions<MouseEvent>, 'element' | 'eventType' | 'handler'>) =>
+{
   return useThrottledEvent({
     element,
     eventType: 'mousedown',

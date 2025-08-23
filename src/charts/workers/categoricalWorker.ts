@@ -12,7 +12,7 @@ interface DataPoint {
 interface ChartConfig {
   width: number;
   height: number;
-  margin: { top: number; right: number; bottom: number; left: number };
+  margin: {top: number;right: number;bottom: number;left: number;};
   barPadding: number;
   animate: boolean;
 }
@@ -69,10 +69,10 @@ const createBandScale = (domain: string[], range: [number, number], padding = 0.
 // Generate default colors for categories
 const generateColors = (count: number): string[] => {
   const colors = [
-    '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-    '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'
-  ];
-  
+  '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+  '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
+
+
   const result: string[] = [];
   for (let i = 0; i < count; i++) {
     result.push(colors[i % colors.length]);
@@ -83,29 +83,29 @@ const generateColors = (count: number): string[] => {
 // Main processing function
 const processChartData = (data: DataPoint[], config: ChartConfig): ProcessedData => {
   const { width, height, margin, barPadding } = config;
-  
+
   // Calculate chart area
   const chartWidth = width - margin.left - margin.right;
   const chartHeight = height - margin.top - margin.bottom;
-  
+
   // Extract categories and find max value
-  const categories = Array.from(new Set(data.map(d => d.category)));
-  const maxValue = Math.max(...data.map(d => d.value));
-  const minValue = Math.min(0, Math.min(...data.map(d => d.value)));
-  
+  const categories = Array.from(new Set(data.map((d) => d.category)));
+  const maxValue = Math.max(...data.map((d) => d.value));
+  const minValue = Math.min(0, Math.min(...data.map((d) => d.value)));
+
   // Create scales
   const xBandScale = createBandScale(categories, [0, chartWidth], barPadding);
   const yScale = createLinearScale([minValue, maxValue], [chartHeight, 0]);
-  
+
   // Generate colors if not provided
   const defaultColors = generateColors(categories.length);
-  
+
   // Process bars
   const bars = data.map((d, index) => {
     const x = xBandScale.scale(d.category);
     const y = yScale(Math.max(0, d.value));
     const barHeight = Math.abs(yScale(d.value) - yScale(0));
-    
+
     return {
       x: margin.left + x,
       y: margin.top + y,
@@ -117,7 +117,7 @@ const processChartData = (data: DataPoint[], config: ChartConfig): ProcessedData
       label: d.label || d.category
     };
   });
-  
+
   return {
     bars,
     xScale: {
@@ -136,30 +136,30 @@ const processChartData = (data: DataPoint[], config: ChartConfig): ProcessedData
 // Handle messages from main thread
 self.onmessage = (event: MessageEvent) => {
   const { type, data, config, id } = event.data;
-  
+
   try {
     switch (type) {
       case 'PROCESS_DATA':
         const result = processChartData(data, config);
         self.postMessage({ type: 'DATA_PROCESSED', result, id });
         break;
-        
+
       case 'PING':
         self.postMessage({ type: 'PONG', timestamp: Date.now(), id });
         break;
-        
+
       default:
-        self.postMessage({ 
-          type: 'ERROR', 
-          error: `Unknown message type: ${type}`, 
-          id 
+        self.postMessage({
+          type: 'ERROR',
+          error: `Unknown message type: ${type}`,
+          id
         });
     }
   } catch (error) {
-    self.postMessage({ 
-      type: 'ERROR', 
-      error: error instanceof Error ? error.message : String(error), 
-      id 
+    self.postMessage({
+      type: 'ERROR',
+      error: error instanceof Error ? error.message : String(error),
+      id
     });
   }
 };

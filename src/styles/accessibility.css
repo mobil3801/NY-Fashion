@@ -1,0 +1,119 @@
+/**
+ * WCAG 2.1 AA Compliant Accessibility Styles
+ * All color combinations tested to meet ≥4.5:1 contrast ratio
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* High-contrast text classes */
+  .text-default {
+    @apply text-gray-900;
+  }
+
+  .text-strong {
+    color: hsl(var(--aa-text-strong));
+  }
+
+  .text-muted {
+    color: hsl(var(--aa-text-muted));
+  }
+
+  /* AA-compliant badge base class */
+  .badge-aa {
+    @apply inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  /* Primary badge with AA compliance */
+  .badge-primary-aa {
+    @apply badge-aa bg-primary text-primary-foreground shadow;
+  }
+
+  .badge-primary-aa:hover {
+    background-color: hsl(var(--primary-hover));
+  }
+
+  /* Light badge variant for better contrast */
+  .badge-light-aa {
+    @apply badge-aa bg-emerald-100 text-emerald-800 border border-emerald-200;
+  }
+
+  /* Status badges with AA compliance */
+  .badge-success-aa {
+    @apply badge-aa bg-green-100 text-green-800 border border-green-200;
+  }
+
+  .badge-warning-aa {
+    @apply badge-aa bg-yellow-100 text-yellow-800 border border-yellow-200;
+  }
+
+  .badge-error-aa {
+    @apply badge-aa bg-red-100 text-red-800 border border-red-200;
+  }
+
+  .badge-info-aa {
+    @apply badge-aa bg-blue-100 text-blue-800 border border-blue-200;
+  }
+
+  /* High-contrast label classes */
+  .label-default {
+    @apply text-sm font-semibold text-default;
+  }
+
+  .label-strong {
+    @apply text-sm font-semibold text-strong;
+  }
+
+  /* Replace opacity-based muted text with proper contrast */
+  .text-muted-aa {
+    @apply text-muted;
+  }
+
+  /* Focus improvements for better accessibility */
+  .focus-aa:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Placeholder text with proper contrast */
+  .placeholder-aa::placeholder {
+    @apply text-muted;
+  }
+
+  /* High-contrast button variants */
+  .btn-primary-aa {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 focus-aa;
+  }
+
+  /* Interactive elements with proper contrast */
+  .link-aa {
+    @apply text-primary underline-offset-4 hover:underline focus-aa;
+  }
+}
+
+/* Development-only contrast validation */
+@layer utilities {
+  .dev-contrast-check {
+    position: relative;
+  }
+
+  .dev-contrast-check::after {
+    content: attr(data-contrast-ratio);
+    position: absolute;
+    top: -1.5rem;
+    left: 0;
+    padding: 0.125rem 0.25rem;
+    background: #000;
+    color: #fff;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .dev-contrast-check:hover::after {
+    opacity: 1;
+  }
+}

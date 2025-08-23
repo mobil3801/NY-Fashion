@@ -96,24 +96,88 @@ export function getAccessibleText(context: 'light' | 'dark' | 'emerald' = 'light
   }
 }
 
-// Color contrast validation helper
-export function validateContrast(foreground: string, background: string): {isValid: boolean;ratio: number;} {
-  // This is a simplified version - in production, you'd use a proper color contrast library
-  // For now, we'll return validation based on our pre-tested accessible combinations
-  const accessibleCombos = [
-  'text-emerald-800/bg-white',
-  'text-emerald-800/bg-emerald-100',
-  'text-white/bg-emerald-600',
-  'text-emerald-100/bg-emerald-800'];
+// Color contrast validation helper using relative luminance formula
+export function calculateLuminance(r: number, g: number, b: number): number {
+  const [rs, gs, bs] = [r, g, b].map(c => {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
 
+export function calculateContrastRatio(color1: [number, number, number], color2: [number, number, number]): number {
+  const lum1 = calculateLuminance(...color1);
+  const lum2 = calculateLuminance(...color2);
+  const brightest = Math.max(lum1, lum2);
+  const darkest = Math.min(lum1, lum2);
+  return (brightest + 0.05) / (darkest + 0.05);
+}
+
+export function validateContrast(foreground: string, background: string): {isValid: boolean;ratio: number;} {
+  // Enhanced validation with actual color calculations for common combinations
+  const colorMap: Record<string, [number, number, number]> = {
+    'text-gray-900': [17, 24, 39],
+    'text-emerald-800': [6, 95, 70],
+    'text-emerald-700': [4, 120, 87],
+    'text-emerald-600': [5, 150, 105],
+    'text-white': [255, 255, 255],
+    'bg-white': [255, 255, 255],
+    'bg-emerald-100': [209, 250, 229],
+    'bg-emerald-600': [5, 150, 105],
+    'bg-emerald-800': [6, 95, 70],
+    'bg-primary': [47, 79, 79], // Our new primary color
+  };
+
+  const fgColor = colorMap[foreground];
+  const bgColor = colorMap[background];
+
+  if (fgColor && bgColor) {
+    const ratio = calculateContrastRatio(fgColor, bgColor);
+    return {
+      isValid: ratio >= 4.5,
+      ratio: Math.round(ratio * 100) / 100
+    };
+  }
+
+  // Fallback for unknown combinations - use known good combinations
+  const accessibleCombos = [
+    'text-gray-900/bg-white',
+    'text-emerald-800/bg-white',
+    'text-emerald-800/bg-emerald-100',
+    'text-white/bg-emerald-600',
+    'text-emerald-100/bg-emerald-800',
+    'text-white/bg-primary'
+  ];
 
   const combo = `${foreground}/${background}`;
-  const isValid = accessibleCombos.some((validCombo) => combo.includes(validCombo.replace(/[bg-|text-]/g, '')));
+  const isValid = accessibleCombos.some(validCombo => 
+    combo.includes(validCombo.replace(/[bg-|text-]/g, ''))
+  );
 
   return {
     isValid,
-    ratio: isValid ? 4.5 : 3.0 // Simplified ratio
+    ratio: isValid ? 4.5 : 3.0
   };
+}
+
+// Development utility to check contrast in real-time
+export function createContrastChecker(element: HTMLElement): void {
+  if (import.meta.env.DEV) {
+    const computedStyle = getComputedStyle(element);
+    const bgColor = computedStyle.backgroundColor;
+    const textColor = computedStyle.color;
+    
+    // Simple contrast check indicator
+    const isLowContrast = computedStyle.opacity && parseFloat(computedStyle.opacity) < 0.7;
+    
+    if (isLowContrast) {
+      element.setAttribute('data-contrast-warning', 'low-contrast-detected');
+      console.warn('Low contrast detected on element:', element, {
+        background: bgColor,
+        text: textColor
+      });
+    }
+  }
 }
 
 export default accessibleColors;

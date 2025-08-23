@@ -28,7 +28,7 @@ class LongTaskMonitor {
     try {
       this.observer = new PerformanceObserver((list) => {
         const entries = list.getEntries() as any[];
-        
+
         entries.forEach((entry) => {
           if (entry.entryType === 'longtask') {
             const longTask: LongTaskEntry = {
@@ -54,7 +54,7 @@ class LongTaskMonitor {
 
       this.observer.observe({ entryTypes: ['longtask'] });
       this.isEnabled = true;
-      
+
       console.log('Long Task monitor enabled');
     } catch (error) {
       console.error('Failed to enable Long Task monitoring:', error);
@@ -71,7 +71,7 @@ class LongTaskMonitor {
 
   onLongTask(callback: (task: LongTaskEntry) => void) {
     this.listeners.push(callback);
-    
+
     // Return cleanup function
     return () => {
       const index = this.listeners.indexOf(callback);
@@ -82,7 +82,7 @@ class LongTaskMonitor {
   }
 
   private notifyListeners(task: LongTaskEntry) {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(task);
       } catch (error) {
@@ -107,7 +107,7 @@ class LongTaskMonitor {
       };
     }
 
-    const durations = tasks.map(t => t.duration);
+    const durations = tasks.map((t) => t.duration);
     const totalDuration = durations.reduce((sum, d) => sum + d, 0);
 
     return {
@@ -137,7 +137,7 @@ import React from 'react';
 
 export const useLongTaskMonitor = () => {
   const [longTasks, setLongTasks] = React.useState<readonly LongTaskEntry[]>([]);
-  
+
   React.useEffect(() => {
     // Get initial tasks
     setLongTasks(longTaskMonitor.getLongTasks());
@@ -161,16 +161,16 @@ export const useLongTaskMonitor = () => {
 };
 
 // Utility to wrap functions with long task detection
-export const withLongTaskDetection = <T extends (...args: any[]) => any>(
-  fn: T,
-  name: string = fn.name || 'anonymous'
-): T => {
+export const withLongTaskDetection = <T extends (...args: any[]) => any,>(
+fn: T,
+name: string = fn.name || 'anonymous')
+: T => {
   return ((...args: Parameters<T>): ReturnType<T> => {
     const start = performance.now();
-    
+
     try {
       const result = fn(...args);
-      
+
       // Handle async functions
       if (result instanceof Promise) {
         return result.finally(() => {
@@ -180,12 +180,12 @@ export const withLongTaskDetection = <T extends (...args: any[]) => any>(
           }
         }) as ReturnType<T>;
       }
-      
+
       const duration = performance.now() - start;
       if (duration > 50) {
         console.warn(`${name} took ${duration.toFixed(2)}ms`);
       }
-      
+
       return result;
     } catch (error) {
       const duration = performance.now() - start;

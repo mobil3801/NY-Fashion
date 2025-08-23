@@ -93,7 +93,9 @@ class IndexedDBWrapper {
           return;
         }
 
-        console.log('[OfflineQueue] IDB ready (v2)');
+        if (import.meta.env.DEV) {
+          console.log('[OfflineQueue] IDB ready (v2)');
+        }
         resolve(true);
       };
 
@@ -197,7 +199,9 @@ class IndexedDBWrapper {
         console.log('[OfflineQueue] Recreated store with proper indexes');
       }
 
-      console.log('[OfflineQueue] Applied v2 migration successfully');
+      if (import.meta.env.DEV) {
+        console.log('[OfflineQueue] Applied v2 migration successfully');
+      }
     }
   }
 
@@ -356,7 +360,9 @@ export class OfflineQueue {
     }
 
     this.isInitialized = true;
-    console.log(`[OfflineQueue] Initialized (${this.useMemoryFallback ? 'memory-only' : 'persistent'} mode)`);
+    if (import.meta.env.DEV) {
+      console.log(`[OfflineQueue] Initialized (${this.useMemoryFallback ? 'memory-only' : 'persistent'} mode)`);
+    }
   }
 
   private async initializeIDB(): Promise<void> {

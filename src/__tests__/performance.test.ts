@@ -19,7 +19,7 @@ beforeEach(() => {
     mark: vi.fn(),
     measure: vi.fn()
   });
-  
+
   mockPerformanceNow.mockImplementation(() => Date.now());
   mockRaf.mockImplementation((callback) => {
     setTimeout(callback, 16); // Simulate 60fps
@@ -52,16 +52,16 @@ describe('Performance Optimizations', () => {
       const errorCallback = vi.fn().mockImplementation(() => {
         throw new Error('Test error');
       });
-      
+
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
-      const { result } = renderHook(() => useRafLoop({ 
+
+      const { result } = renderHook(() => useRafLoop({
         onFrame: errorCallback,
-        autoStart: true 
+        autoStart: true
       }));
 
       // Wait for callback to execute
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(consoleSpy).toHaveBeenCalledWith('RAF loop error:', expect.any(Error));
       consoleSpy.mockRestore();
@@ -69,9 +69,9 @@ describe('Performance Optimizations', () => {
 
     it('should cleanup on unmount', () => {
       const onFrame = vi.fn();
-      const { result, unmount } = renderHook(() => useRafLoop({ 
+      const { result, unmount } = renderHook(() => useRafLoop({
         onFrame,
-        autoStart: true 
+        autoStart: true
       }));
 
       act(() => {
@@ -98,7 +98,7 @@ describe('Performance Optimizations', () => {
 
     it('should throttle events using RAF', async () => {
       const handler = vi.fn();
-      
+
       renderHook(() => useThrottledEvent({
         element: mockElement,
         eventType: 'click',
@@ -116,14 +116,14 @@ describe('Performance Optimizations', () => {
       expect(handler).toHaveBeenCalledTimes(0);
 
       // Wait for RAF to execute
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
       expect(handler).toHaveBeenCalledTimes(1);
     });
 
     it('should use passive listeners by default', () => {
       const addEventListenerSpy = vi.spyOn(mockElement, 'addEventListener');
       const handler = vi.fn();
-      
+
       renderHook(() => useThrottledEvent({
         element: mockElement,
         eventType: 'mousemove',
@@ -141,44 +141,44 @@ describe('Performance Optimizations', () => {
   describe('Main Thread Scheduling', () => {
     it('should schedule tasks with MessageChannel fallback', async () => {
       const callback = vi.fn();
-      
+
       const controller = scheduleTask(callback, { priority: 'user-visible' });
-      
+
       expect(controller).toBeDefined();
       expect(typeof controller.abort).toBe('function');
 
       // Wait for task to execute
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       expect(callback).toHaveBeenCalled();
     });
 
     it('should handle task cancellation', async () => {
       const callback = vi.fn();
-      
+
       const controller = scheduleTask(callback, { delay: 100 });
       controller.abort();
 
       // Wait longer than delay
-      await new Promise(resolve => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 150));
       expect(callback).not.toHaveBeenCalled();
     });
 
     it('should measure main thread time', async () => {
       const operation = vi.fn().mockResolvedValue('result');
-      
+
       const result = await measureMainThreadTime('test-operation', operation);
-      
+
       expect(result).toBe('result');
       expect(operation).toHaveBeenCalled();
     });
 
     it('should warn about long tasks', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
+
       // Mock a long-running operation
-      mockPerformanceNow
-        .mockReturnValueOnce(0)    // Start time
-        .mockReturnValueOnce(50);  // End time (50ms)
+      mockPerformanceNow.
+      mockReturnValueOnce(0) // Start time
+      .mockReturnValueOnce(50); // End time (50ms)
 
       const longOperation = () => {
         // Simulate work
@@ -223,9 +223,9 @@ describe('Performance Optimizations', () => {
         }
 
         terminate() {
+
           // Mock terminate
-        }
-      }
+        }}
 
       const worker = new MockWorker();
       let receivedResult = false;
@@ -284,7 +284,7 @@ describe('Performance Optimizations', () => {
 
     it('should provide task statistics', () => {
       const stats = longTaskMonitor.getStats();
-      
+
       expect(stats).toHaveProperty('count');
       expect(stats).toHaveProperty('totalDuration');
       expect(stats).toHaveProperty('averageDuration');
@@ -295,7 +295,7 @@ describe('Performance Optimizations', () => {
     it('should clear task history', () => {
       longTaskMonitor.clear();
       const stats = longTaskMonitor.getStats();
-      
+
       expect(stats.count).toBe(0);
       expect(stats.totalDuration).toBe(0);
     });
@@ -304,7 +304,7 @@ describe('Performance Optimizations', () => {
   describe('Performance Acceptance Criteria', () => {
     it('should keep input handlers under 50ms', async () => {
       const start = performance.now();
-      
+
       // Simulate optimized event handler
       const optimizedHandler = () => {
         // Lightweight operation
@@ -322,13 +322,13 @@ describe('Performance Optimizations', () => {
       const frameHandler = vi.fn((deltaTime: number) => {
         // Simulate lightweight frame operation
         const start = performance.now();
-        
+
         // Do minimal work
         const data = { frame: true };
-        
+
         const duration = performance.now() - start;
         expect(duration).toBeLessThan(16);
-        
+
         return data;
       });
 
@@ -338,7 +338,7 @@ describe('Performance Optimizations', () => {
       }));
 
       // Let a few frames run
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       act(() => {
         result.current.stop();
@@ -349,18 +349,18 @@ describe('Performance Optimizations', () => {
 
     it('should batch DOM operations efficiently', async () => {
       const domWrites = [
-        () => document.body.style.background = 'red',
-        () => document.body.style.color = 'blue',
-        () => document.body.style.fontSize = '16px'
-      ];
+      () => document.body.style.background = 'red',
+      () => document.body.style.color = 'blue',
+      () => document.body.style.fontSize = '16px'];
+
 
       const start = performance.now();
-      
+
       // Batch DOM writes
-      domWrites.forEach(write => write());
-      
+      domWrites.forEach((write) => write());
+
       const duration = performance.now() - start;
-      
+
       // Should complete quickly when batched
       expect(duration).toBeLessThan(5);
     });

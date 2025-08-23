@@ -34,7 +34,7 @@ export const useRafLoop = ({ onFrame, autoStart = false }: RafLoopOptions) => {
 
   const start = useCallback(() => {
     if (isRunningRef.current) return;
-    
+
     isRunningRef.current = true;
     lastTimeRef.current = performance.now();
     rafIdRef.current = requestAnimationFrame(loop);
@@ -42,7 +42,7 @@ export const useRafLoop = ({ onFrame, autoStart = false }: RafLoopOptions) => {
 
   const stop = useCallback(() => {
     if (!isRunningRef.current) return;
-    
+
     isRunningRef.current = false;
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current);
@@ -63,7 +63,7 @@ export const useRafLoop = ({ onFrame, autoStart = false }: RafLoopOptions) => {
     if (autoStart) {
       start();
     }
-    
+
     // Cleanup on unmount
     return stop;
   }, [autoStart, start, stop]);

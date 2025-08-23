@@ -58,7 +58,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
         await new Promise<void>((resolve) => {
           deferExpensiveWork(() => {
             chartRef.current = new CategoricalChart(containerRef.current!, chartOptions);
-            
+
             // Set up bar click handler
             if (chartRef.current) {
               chartRef.current.onBarClick = (bar: any) => {
@@ -68,7 +68,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
                 });
               };
             }
-            
+
             resolve();
           }, 'user-visible');
         });
@@ -118,16 +118,16 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
+
     // Defer hover detection to avoid blocking
     scheduleTask(() => {
       // Simple hover detection (chart instance will handle the heavy lifting)
       if (chartRef.current?.processedData) {
-        const hoveredBar = chartRef.current.processedData.bars.find((bar: any) => 
-          x >= bar.x && x <= bar.x + bar.width &&
-          y >= bar.y && y <= bar.y + bar.height
+        const hoveredBar = chartRef.current.processedData.bars.find((bar: any) =>
+        x >= bar.x && x <= bar.x + bar.width &&
+        y >= bar.y && y <= bar.y + bar.height
         );
-        
+
         if (hoveredBar !== chartRef.current.hoveredBar) {
           startTransition(() => {
             setHoveredBar(hoveredBar || null);
@@ -138,15 +138,15 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   }, []);
 
   const handleClick = useCallback((event: MouseEvent) => {
+
+
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
-  }, []);
-
-  const handleMouseDown = useCallback((event: MouseEvent) => {
-    // Handle drag initiation if needed
-  }, []);
-
-  // Set up throttled event listeners
+  }, []);const handleMouseDown = useCallback((event: MouseEvent) => {
+      // Handle drag initiation if needed
+    }, []); // Set up throttled event listeners
   useThrottledMouseMove(containerRef.current, handleMouseMove);
   useThrottledClick(containerRef.current, handleClick);
   useThrottledMouseDown(containerRef.current, handleMouseDown);
@@ -155,10 +155,10 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const handleAnimationFrame = useCallback((deltaTime: number, timestamp: number) => {
     // Only run if chart is animating
     if (chartRef.current?.isAnimating) {
-      // Chart handles its own animation, this is just for coordination
-    }
-  }, []);
 
+
+      // Chart handles its own animation, this is just for coordination
+    }}, []);
   const { start: startAnimation, stop: stopAnimation } = useRafLoop({
     onFrame: handleAnimationFrame,
     autoStart: false
@@ -177,56 +177,56 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
   if (error) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4 ${className}`}
-        style={{ width, height }}
-      >
+        style={{ width, height }}>
+
         <div className="text-center">
           <div className="text-red-600 font-medium">Chart Error</div>
           <div className="text-red-500 text-sm mt-1">{error}</div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (isLoading) {
     return (
-      <div 
+      <div
         className={`flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg ${className}`}
-        style={{ width, height }}
-      >
+        style={{ width, height }}>
+
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <div className="text-gray-600 text-sm mt-2">Loading chart...</div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`relative chart-container ${className}`}
       style={{ width, height }}
       role="img"
-      aria-label="Categorical chart"
-    >
+      aria-label="Categorical chart">
+
       {/* Chart canvas will be appended here by the chart instance */}
       
       {/* Optional overlay for hover information */}
-      {hoveredBar && (
-        <div 
-          className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10"
-          style={{
-            left: hoveredBar.x,
-            top: Math.max(0, hoveredBar.y - 30)
-          }}
-        >
+      {hoveredBar &&
+      <div
+        className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10"
+        style={{
+          left: hoveredBar.x,
+          top: Math.max(0, hoveredBar.y - 30)
+        }}>
+
           {hoveredBar.label}: {hoveredBar.value}
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default ChartContainer;
@@ -257,9 +257,9 @@ export const useOptimizedChart = (data: ChartDataPoint[]) => {
                 width: 40,
                 height: d.value * 2
               })),
-              maxValue: Math.max(...data.map(d => d.value))
+              maxValue: Math.max(...data.map((d) => d.value))
             };
-            
+
             setProcessedData(processed);
             resolve();
           }, 'background');

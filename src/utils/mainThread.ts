@@ -32,9 +32,9 @@ class SimpleTaskController implements TaskController {
 const hasNativeScheduler = typeof globalThis.scheduler?.postTask === 'function';
 
 export const scheduleTask = (
-  callback: () => void | Promise<void>,
-  options: PostTaskOptions = {}
-): TaskController => {
+callback: () => void | Promise<void>,
+options: PostTaskOptions = {})
+: TaskController => {
   const { priority = 'user-visible', delay = 0 } = options;
 
   // Use native PostTask if available
@@ -53,10 +53,10 @@ export const scheduleTask = (
   if (delay === 0 && priority !== 'background') {
     const channel = new MessageChannel();
     const controller = new SimpleTaskController();
-    
+
     channel.port2.onmessage = () => {
       if (controller.isAborted) return;
-      
+
       try {
         callback();
       } catch (error) {
@@ -76,7 +76,7 @@ export const scheduleTask = (
   // setTimeout fallback
   const timeoutId = setTimeout(() => {
     if (controller.isAborted) return;
-    
+
     try {
       callback();
     } catch (error) {
@@ -93,9 +93,9 @@ export const scheduleTask = (
 
 // Helper for deferring expensive operations
 export const deferExpensiveWork = (
-  work: () => void,
-  priority: PostTaskOptions['priority'] = 'background'
-): TaskController => {
+work: () => void,
+priority: PostTaskOptions['priority'] = 'background')
+: TaskController => {
   return scheduleTask(work, { priority, delay: 0 });
 };
 
@@ -103,7 +103,7 @@ export const deferExpensiveWork = (
 export const batchDOMWrites = (writes: (() => void)[]): TaskController => {
   return scheduleTask(() => {
     // Batch all DOM writes together
-    writes.forEach(write => {
+    writes.forEach((write) => {
       try {
         write();
       } catch (error) {
@@ -114,23 +114,23 @@ export const batchDOMWrites = (writes: (() => void)[]): TaskController => {
 };
 
 // Performance measurement utilities
-export const measureMainThreadTime = async <T>(
-  name: string,
-  operation: () => T | Promise<T>
-): Promise<T> => {
+export const measureMainThreadTime = async <T,>(
+name: string,
+operation: () => T | Promise<T>)
+: Promise<T> => {
   const start = performance.now();
-  
+
   try {
     const result = await operation();
     const duration = performance.now() - start;
-    
+
     if (duration > 16) {
       console.warn(`Long main-thread task detected: ${name} took ${duration.toFixed(2)}ms`);
     }
-    
+
     performance.mark(`${name}-end`);
     performance.measure(name, { start, end: performance.now() });
-    
+
     return result;
   } catch (error) {
     const duration = performance.now() - start;
@@ -148,7 +148,7 @@ export const isInLongTask = (): boolean => {
 
 // Yield control to browser if we've been running too long
 export const yieldToMain = (): Promise<void> => {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     scheduleTask(resolve, { priority: 'user-visible' });
   });
 };

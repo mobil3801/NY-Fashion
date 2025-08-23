@@ -11,8 +11,12 @@
     --card-foreground: 240 10% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 9%;
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 222 47% 20%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 222 47% 15%;
+    --aa-text-default: 240 10% 9%;
+    --aa-text-strong: 220 42% 11%;
+    --aa-text-muted: 240 7% 35%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 6% 15%;
     --muted: 240 4.8% 95.9%;
@@ -39,8 +43,9 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 160 65% 85%;
+    --primary-foreground: 220 42% 11%;
+    --primary-hover: 160 65% 80%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 95%;
     --muted: 240 3.7% 15.9%;
