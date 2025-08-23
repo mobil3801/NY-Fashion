@@ -38,7 +38,7 @@ class SecurityTester {
    */
   async runSecurityTests(): Promise<SecurityTestResult> {
     this.results = [];
-    
+
     logger.logInfo('Starting comprehensive security tests');
 
     // Test environment security
@@ -180,7 +180,7 @@ class SecurityTester {
 
     // Test for specific headers
     const expectedHeaders = ['Content-Security-Policy', 'X-Frame-Options', 'X-Content-Type-Options'];
-    expectedHeaders.forEach(header => {
+    expectedHeaders.forEach((header) => {
       const hasHeader = headersReport.headersConfigured.includes(header);
       this.addTest(
         'Headers',
@@ -264,9 +264,9 @@ class SecurityTester {
 
     // Test for debug globals
     const hasDebugGlobals = typeof (window as any).__DEBUG__ !== 'undefined' ||
-                           typeof (window as any).__DEV__ !== 'undefined' ||
-                           typeof (window as any).DEBUG !== 'undefined';
-    
+    typeof (window as any).__DEV__ !== 'undefined' ||
+    typeof (window as any).DEBUG !== 'undefined';
+
     this.addTest(
       'Debug',
       'Debug globals removed',
@@ -290,7 +290,7 @@ class SecurityTester {
 
     if (hasCSP && cspMeta) {
       const cspContent = cspMeta.getAttribute('content') || '';
-      
+
       const hasDefaultSrc = cspContent.includes('default-src');
       this.addTest(
         'CSP',
@@ -322,21 +322,21 @@ class SecurityTester {
 
   private calculateSummary() {
     const total = this.results.length;
-    const passed = this.results.filter(r => r.passed).length;
+    const passed = this.results.filter((r) => r.passed).length;
     const failed = total - passed;
-    const critical = this.results.filter(r => !r.passed && r.critical).length;
+    const critical = this.results.filter((r) => !r.passed && r.critical).length;
 
     return { total, passed, failed, critical };
   }
 
-  private calculateSecurityScore(summary: { total: number; passed: number; failed: number; critical: number }): number {
+  private calculateSecurityScore(summary: {total: number;passed: number;failed: number;critical: number;}): number {
     if (summary.total === 0) return 0;
 
-    let score = (summary.passed / summary.total) * 100;
-    
+    let score = summary.passed / summary.total * 100;
+
     // Penalize critical failures more heavily
     score -= summary.critical * 20;
-    
+
     // Ensure score is within bounds
     return Math.max(0, Math.min(100, Math.round(score)));
   }

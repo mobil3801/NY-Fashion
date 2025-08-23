@@ -30,7 +30,7 @@ class EnvironmentValidator {
   /**
    * Validate all environment variables according to rules
    */
-  validateAll(): { isValid: boolean; errors: string[]; warnings: string[] } {
+  validateAll(): {isValid: boolean;errors: string[];warnings: string[];} {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -49,7 +49,7 @@ class EnvironmentValidator {
           errors.push(...validation.errors);
         }
         warnings.push(...validation.warnings);
-        
+
         if (validation.isValid) {
           this.validatedVars.set(varName, validation.value);
         }
@@ -170,12 +170,12 @@ class EnvironmentValidator {
   private validateSensitiveVariable(name: string, value: string, warnings: string[]): void {
     // Check for common insecure values
     const insecurePatterns = [
-      { pattern: /^(password|secret|key)$/i, message: 'appears to be a default placeholder' },
-      { pattern: /^(test|demo|example)/, message: 'appears to contain test/demo values' },
-      { pattern: /localhost|127\.0\.0\.1/, message: 'contains localhost references' },
-      { pattern: /^.{1,5}$/, message: 'is suspiciously short for a sensitive value' },
-      { pattern: /^(admin|root|user)$/i, message: 'uses a common default value' }
-    ];
+    { pattern: /^(password|secret|key)$/i, message: 'appears to be a default placeholder' },
+    { pattern: /^(test|demo|example)/, message: 'appears to contain test/demo values' },
+    { pattern: /localhost|127\.0\.0\.1/, message: 'contains localhost references' },
+    { pattern: /^.{1,5}$/, message: 'is suspiciously short for a sensitive value' },
+    { pattern: /^(admin|root|user)$/i, message: 'uses a common default value' }];
+
 
     insecurePatterns.forEach(({ pattern, message }) => {
       if (pattern.test(value)) {
@@ -215,10 +215,10 @@ class EnvironmentValidator {
   private checkProductionSafety(warnings: string[], errors: string[]): void {
     // Check for development-specific values in production
     const devPatterns = [
-      { env: 'VITE_API_BASE_URL', pattern: /localhost|127\.0\.0\.1/, message: 'API URL points to localhost in production' },
-      { env: 'NODE_ENV', pattern: /^development$/i, message: 'NODE_ENV is set to development in production build' },
-      { env: 'VITE_ENABLE_DEBUG', pattern: /^true$/i, message: 'Debug mode is enabled in production' }
-    ];
+    { env: 'VITE_API_BASE_URL', pattern: /localhost|127\.0\.0\.1/, message: 'API URL points to localhost in production' },
+    { env: 'NODE_ENV', pattern: /^development$/i, message: 'NODE_ENV is set to development in production build' },
+    { env: 'VITE_ENABLE_DEBUG', pattern: /^true$/i, message: 'Debug mode is enabled in production' }];
+
 
     devPatterns.forEach(({ env, pattern, message }) => {
       const value = import.meta.env[env];
@@ -233,11 +233,11 @@ class EnvironmentValidator {
 
     // Check for missing production-required variables
     const productionRequired = [
-      'VITE_API_BASE_URL',
-      'NODE_ENV'
-    ];
+    'VITE_API_BASE_URL',
+    'NODE_ENV'];
 
-    productionRequired.forEach(varName => {
+
+    productionRequired.forEach((varName) => {
       if (!import.meta.env[varName]) {
         errors.push(`Production deployment missing required variable: ${varName}`);
       }
@@ -264,7 +264,7 @@ class EnvironmentValidator {
   getSanitizedEnvForLogging(): Record<string, string> {
     const sanitized: Record<string, string> = {};
 
-    Object.keys(import.meta.env).forEach(key => {
+    Object.keys(import.meta.env).forEach((key) => {
       const rule = this.validationRules[key];
       const value = import.meta.env[key];
 
@@ -284,19 +284,19 @@ class EnvironmentValidator {
    */
   private isSensitiveKey(key: string): boolean {
     const sensitivePatterns = [
-      /password/i,
-      /secret/i,
-      /key/i,
-      /token/i,
-      /credential/i,
-      /private/i,
-      /auth/i,
-      /_key$/i,
-      /_secret$/i,
-      /_token$/i
-    ];
+    /password/i,
+    /secret/i,
+    /key/i,
+    /token/i,
+    /credential/i,
+    /private/i,
+    /auth/i,
+    /_key$/i,
+    /_secret$/i,
+    /_token$/i];
 
-    return sensitivePatterns.some(pattern => pattern.test(key));
+
+    return sensitivePatterns.some((pattern) => pattern.test(key));
   }
 
   /**
@@ -317,7 +317,7 @@ class EnvironmentValidator {
 
     Object.entries(this.validationRules).forEach(([varName, rule]) => {
       const value = import.meta.env[varName];
-      
+
       if (value) {
         configuredVars.push(varName);
       } else if (!rule.required) {

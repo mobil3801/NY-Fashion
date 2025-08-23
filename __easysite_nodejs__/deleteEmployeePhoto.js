@@ -26,21 +26,21 @@ async function deleteEmployeePhoto(photoId) {
 
 
 
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(photo.front_file_id);
-      } catch (error) {console.warn('Could not delete front image from storage:', error.message);}}
-    if (photo.back_file_id) {
-      try {
+      } catch (error) {console.warn('Could not delete front image from storage:', error.message);}}if (photo.back_file_id) {try {
+
+
 
 
 
 
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(photo.back_file_id);
-      } catch (error) {console.warn('Could not delete back image from storage:', error.message);}}
-    // Delete from database
-    const deleteQuery = `DELETE FROM employee_photos WHERE id = $1`;
-    await window.ezsite.db.query(deleteQuery, [parseInt(photoId)]);
+      } catch (error) {console.warn('Could not delete back image from storage:', error.message);}} // Delete from database
+    const deleteQuery = `DELETE FROM employee_photos WHERE id = $1`;await window.ezsite.db.query(deleteQuery, [parseInt(photoId)]);
 
     // If this was a primary photo, set another as primary if available
     if (photo.is_primary) {

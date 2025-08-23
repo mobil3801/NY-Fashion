@@ -69,10 +69,10 @@ export const ProductionSecurityProvider: React.FC<ProductionSecurityProviderProp
 
       // Collect all security issues
       const allIssues = [
-        ...httpsStatus.issues,
-        ...audit.issues,
-        ...(debugMode ? [] : ['Debug mode is not properly disabled in production'])
-      ];
+      ...httpsStatus.issues,
+      ...audit.issues,
+      ...(debugMode ? [] : ['Debug mode is not properly disabled in production'])];
+
 
       setSecurityIssues(allIssues);
       setIsSecure(allIssues.length === 0);
@@ -126,19 +126,19 @@ export const ProductionSecurityProvider: React.FC<ProductionSecurityProviderProp
 
     // Check various debug indicators
     const debugIndicators = [
-      // Environment variables
-      import.meta.env.VITE_ENABLE_DEBUG === 'false',
-      import.meta.env.VITE_ENABLE_CONSOLE_LOGGING === 'false',
-      
-      // Debug components should not exist in production builds
-      !document.querySelector('[data-testid="debug-panel"]'),
-      !document.querySelector('[data-debug-mode="true"]'),
-      
-      // Console should not have debug methods in production
-      typeof console.debug === 'undefined' || console.debug === console.log
-    ];
+    // Environment variables
+    import.meta.env.VITE_ENABLE_DEBUG === 'false',
+    import.meta.env.VITE_ENABLE_CONSOLE_LOGGING === 'false',
 
-    return debugIndicators.every(indicator => indicator === true);
+    // Debug components should not exist in production builds
+    !document.querySelector('[data-testid="debug-panel"]'),
+    !document.querySelector('[data-debug-mode="true"]'),
+
+    // Console should not have debug methods in production
+    typeof console.debug === 'undefined' || console.debug === console.log];
+
+
+    return debugIndicators.every((indicator) => indicator === true);
   };
 
   const performSecurityCheck = () => {
@@ -151,7 +151,7 @@ export const ProductionSecurityProvider: React.FC<ProductionSecurityProviderProp
     if (import.meta.env.NODE_ENV === 'production' && !isSecure) {
       // Implement additional security measures for compromised environments
       console.warn('Security: Running with compromised security state');
-      
+
       // You could disable certain features here
       // For example, disable file uploads, limit API calls, etc.
     }
@@ -192,8 +192,8 @@ export const ProductionSecurityProvider: React.FC<ProductionSecurityProviderProp
   return (
     <SecurityContext.Provider value={contextValue}>
       {children}
-    </SecurityContext.Provider>
-  );
+    </SecurityContext.Provider>);
+
 };
 
 export const useSecurity = (): SecurityContextType => {

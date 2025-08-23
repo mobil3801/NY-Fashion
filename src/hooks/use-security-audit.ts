@@ -35,10 +35,10 @@ export const useSecurityAudit = () => {
 
   const performSecurityAudit = useCallback(async () => {
     setIsLoading(true);
-    
+
     try {
       logger.logSecurityEvent('security_audit_started', 'SYSTEM', 'INFO');
-      
+
       // Gather all security information
       const envReport = environmentValidator.generateProductionReport();
       const headersReport = securityHeadersManager.generateSecurityReport();
@@ -169,7 +169,7 @@ export const useSecurityAudit = () => {
     isLoading,
     lastAuditTime,
     performSecurityAudit,
-    
+
     // Helper methods
     getSecurityGrade: () => {
       if (!auditResults) return 'N/A';
@@ -180,15 +180,15 @@ export const useSecurityAudit = () => {
       if (score >= 60) return 'D';
       return 'F';
     },
-    
+
     hasCriticalIssues: () => {
       return auditResults?.criticalIssues.length > 0;
     },
-    
+
     getIssueCount: () => {
       return (auditResults?.criticalIssues.length || 0) + (auditResults?.warnings.length || 0);
     },
-    
+
     isProductionReady: () => {
       return auditResults?.isSecure && auditResults?.overallScore >= 80;
     }

@@ -23,8 +23,8 @@ export interface SecureAuthConfig {
 
 class SecureAuthManager {
   private config: SecureAuthConfig;
-  private failedAttempts: Map<string, { count: number; lastAttempt: number; lockedUntil?: number }> = new Map();
-  private activeSessions: Map<string, { userId: string; createdAt: number; lastActivity: number }> = new Map();
+  private failedAttempts: Map<string, {count: number;lastAttempt: number;lockedUntil?: number;}> = new Map();
+  private activeSessions: Map<string, {userId: string;createdAt: number;lastActivity: number;}> = new Map();
 
   constructor(config: SecureAuthConfig) {
     this.config = config;
@@ -56,15 +56,15 @@ class SecureAuthManager {
     // Clear any localStorage test tokens
     if (typeof localStorage !== 'undefined') {
       const testKeys = [
-        'test_token',
-        'dev_token', 
-        'bypass_token',
-        'admin_bypass',
-        'test_user',
-        'demo_mode'
-      ];
+      'test_token',
+      'dev_token',
+      'bypass_token',
+      'admin_bypass',
+      'test_user',
+      'demo_mode'];
 
-      testKeys.forEach(key => {
+
+      testKeys.forEach((key) => {
         if (localStorage.getItem(key)) {
           localStorage.removeItem(key);
           logger.logSecurityEvent('test_bypass_removed', 'AUTH', 'HIGH', undefined, { removedKey: key });
@@ -84,17 +84,17 @@ class SecureAuthManager {
   private removeHardcodedCredentials(): void {
     // This function audits for common hardcoded credential patterns
     const suspiciousPatterns = [
-      /test@test\.com/gi,
-      /admin@admin\.com/gi,
-      /demo@demo\.com/gi,
-      /password123/gi,
-      /admin123/gi,
-      /test123/gi
-    ];
+    /test@test\.com/gi,
+    /admin@admin\.com/gi,
+    /demo@demo\.com/gi,
+    /password123/gi,
+    /admin123/gi,
+    /test123/gi];
+
 
     // Log if any suspicious patterns are found in memory
     const memoryDump = JSON.stringify(window);
-    suspiciousPatterns.forEach(pattern => {
+    suspiciousPatterns.forEach((pattern) => {
       if (pattern.test(memoryDump)) {
         logger.logSecurityEvent('suspicious_credential_pattern', 'AUTH', 'HIGH', undefined, {
           pattern: pattern.source
@@ -124,13 +124,13 @@ class SecureAuthManager {
   private auditExistingAuthentication(): void {
     // Check for existing tokens
     if (typeof localStorage !== 'undefined') {
-      const authKeys = Object.keys(localStorage).filter(key => 
-        key.includes('token') || 
-        key.includes('auth') || 
-        key.includes('session')
+      const authKeys = Object.keys(localStorage).filter((key) =>
+      key.includes('token') ||
+      key.includes('auth') ||
+      key.includes('session')
       );
 
-      authKeys.forEach(key => {
+      authKeys.forEach((key) => {
         const value = localStorage.getItem(key);
         if (value) {
           logger.logSecurityEvent('existing_auth_token_found', 'AUTH', 'INFO', undefined, {
@@ -146,7 +146,7 @@ class SecureAuthManager {
   /**
    * Validate login attempt with enhanced security
    */
-  validateLoginAttempt(email: string, ip?: string): { allowed: boolean; reason?: string; waitTime?: number } {
+  validateLoginAttempt(email: string, ip?: string): {allowed: boolean;reason?: string;waitTime?: number;} {
     const identifier = ip || email;
     const attempts = this.failedAttempts.get(identifier);
 
@@ -157,10 +157,10 @@ class SecureAuthManager {
     // Check if locked out
     if (attempts.lockedUntil && Date.now() < attempts.lockedUntil) {
       const waitTime = Math.ceil((attempts.lockedUntil - Date.now()) / 1000);
-      return { 
-        allowed: false, 
-        reason: 'Account temporarily locked due to failed login attempts', 
-        waitTime 
+      return {
+        allowed: false,
+        reason: 'Account temporarily locked due to failed login attempts',
+        waitTime
       };
     }
 
@@ -178,8 +178,8 @@ class SecureAuthManager {
         lockDuration: this.config.lockoutDuration
       });
 
-      return { 
-        allowed: false, 
+      return {
+        allowed: false,
         reason: 'Account locked due to too many failed attempts',
         waitTime: Math.ceil(this.config.lockoutDuration / 1000)
       };
@@ -194,7 +194,7 @@ class SecureAuthManager {
   recordFailedAttempt(email: string, ip?: string): void {
     const identifier = ip || email;
     const existing = this.failedAttempts.get(identifier) || { count: 0, lastAttempt: 0 };
-    
+
     this.failedAttempts.set(identifier, {
       count: existing.count + 1,
       lastAttempt: Date.now(),
@@ -222,7 +222,7 @@ class SecureAuthManager {
   /**
    * Validate password strength
    */
-  validatePasswordStrength(password: string): { isValid: boolean; errors: string[] } {
+  validatePasswordStrength(password: string): {isValid: boolean;errors: string[];} {
     const errors: string[] = [];
     const rules = this.config.passwordStrengthRules;
 
@@ -262,10 +262,10 @@ class SecureAuthManager {
    */
   private isCommonPassword(password: string): boolean {
     const commonPasswords = [
-      'password', 'password123', '123456', '12345678', 'qwerty', 
-      'abc123', 'password1', 'admin', 'letmein', 'welcome',
-      'monkey', '1234567890', 'dragon', 'master', 'login'
-    ];
+    'password', 'password123', '123456', '12345678', 'qwerty',
+    'abc123', 'password1', 'admin', 'letmein', 'welcome',
+    'monkey', '1234567890', 'dragon', 'master', 'login'];
+
 
     return commonPasswords.includes(password.toLowerCase());
   }

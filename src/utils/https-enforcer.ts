@@ -53,10 +53,10 @@ class HttpsEnforcer {
   private enforceHttps(): void {
     if (window.location.protocol !== 'https:' && this.config.redirectToHttps) {
       const httpsUrl = window.location.href.replace('http:', 'https:');
-      
+
       // Log the redirect for audit purposes
       console.warn(`Security: Redirecting to HTTPS: ${httpsUrl}`);
-      
+
       // Perform the redirect
       window.location.replace(httpsUrl);
       return;
@@ -78,16 +78,16 @@ class HttpsEnforcer {
 
     // Override document.cookie to ensure secure flag
     const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
-    
+
     if (originalCookieDescriptor) {
       Object.defineProperty(document, 'cookie', {
         get: originalCookieDescriptor.get,
-        set: function(cookieString: string) {
+        set: function (cookieString: string) {
           // Add secure flag if not present and we're on HTTPS
           if (window.location.protocol === 'https:' && !cookieString.includes('Secure')) {
             cookieString += '; Secure';
           }
-          
+
           // Add SameSite=Strict if not present
           if (!cookieString.includes('SameSite')) {
             cookieString += '; SameSite=Strict';
@@ -170,7 +170,7 @@ class HttpsEnforcer {
   /**
    * Validate the current security state
    */
-  validateSecurityState(): { isSecure: boolean; issues: string[] } {
+  validateSecurityState(): {isSecure: boolean;issues: string[];} {
     const issues: string[] = [];
 
     if (this.config.enforceHttps && this.shouldEnforceHttps()) {

@@ -23,7 +23,7 @@ class ProductionDebugDisabler {
     this.config = config;
     this.isProduction = import.meta.env.NODE_ENV === 'production';
     this.originalConsole = { ...console };
-    
+
     if (this.isProduction && SECURITY_CONFIG.debug.disableInProduction) {
       this.initializeProductionSecurity();
     }
@@ -38,7 +38,7 @@ class ProductionDebugDisabler {
     this.removeDebugGlobals();
     this.secureErrorReporting();
     this.preventDevToolsDetection();
-    
+
     logger.logSecurityEvent('debug_mode_disabled', 'SYSTEM', 'INFO');
   }
 
@@ -97,16 +97,16 @@ class ProductionDebugDisabler {
    */
   private isCriticalError(message: string): boolean {
     const criticalPatterns = [
-      /security/i,
-      /authentication/i,
-      /unauthorized/i,
-      /csrf/i,
-      /xss/i,
-      /injection/i,
-      /malicious/i
-    ];
+    /security/i,
+    /authentication/i,
+    /unauthorized/i,
+    /csrf/i,
+    /xss/i,
+    /injection/i,
+    /malicious/i];
 
-    return criticalPatterns.some(pattern => pattern.test(message));
+
+    return criticalPatterns.some((pattern) => pattern.test(message));
   }
 
   /**
@@ -117,17 +117,17 @@ class ProductionDebugDisabler {
 
     // Remove debug panels from DOM
     const debugSelectors = [
-      '[data-testid*="debug"]',
-      '[data-debug="true"]',
-      '[class*="debug-"]',
-      '[id*="debug"]',
-      '.debug-panel',
-      '.dev-tools'
-    ];
+    '[data-testid*="debug"]',
+    '[data-debug="true"]',
+    '[class*="debug-"]',
+    '[id*="debug"]',
+    '.debug-panel',
+    '.dev-tools'];
 
-    debugSelectors.forEach(selector => {
+
+    debugSelectors.forEach((selector) => {
       const elements = document.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
+      elements.forEach((el) => el.remove());
     });
 
     // Disable React Developer Tools
@@ -145,17 +145,17 @@ class ProductionDebugDisabler {
    */
   private removeDebugGlobals(): void {
     const debugGlobals = [
-      '__DEBUG__',
-      '__DEV__',
-      'DEBUG',
-      'DEVELOPMENT_MODE',
-      '__REDUX_DEVTOOLS_EXTENSION__',
-      '__REDUX_DEVTOOLS_EXTENSION_COMPOSE__',
-      'checkContrast', // Custom debug function
-      '__originalConsole' // Our own debug reference
+    '__DEBUG__',
+    '__DEV__',
+    'DEBUG',
+    'DEVELOPMENT_MODE',
+    '__REDUX_DEVTOOLS_EXTENSION__',
+    '__REDUX_DEVTOOLS_EXTENSION_COMPOSE__',
+    'checkContrast', // Custom debug function
+    '__originalConsole' // Our own debug reference
     ];
 
-    debugGlobals.forEach(globalName => {
+    debugGlobals.forEach((globalName) => {
       if ((window as any)[globalName]) {
         delete (window as any)[globalName];
       }
@@ -172,7 +172,7 @@ class ProductionDebugDisabler {
 
     window.addEventListener('error', (event) => {
       const error = event.error;
-      
+
       // Filter out sensitive errors
       if (this.shouldReportError(error)) {
         logger.logError('Application Error', error);
@@ -181,7 +181,7 @@ class ProductionDebugDisabler {
 
     window.addEventListener('unhandledrejection', (event) => {
       const reason = event.reason;
-      
+
       if (this.shouldReportError(reason)) {
         logger.logError('Unhandled Promise Rejection', reason);
       }
@@ -195,18 +195,18 @@ class ProductionDebugDisabler {
     if (!error) return false;
 
     const errorMessage = error.message || error.toString();
-    
+
     // Don't report errors that might contain sensitive information
     const sensitivePatterns = [
-      /password/i,
-      /token/i,
-      /secret/i,
-      /key/i,
-      /credential/i,
-      /session/i
-    ];
+    /password/i,
+    /token/i,
+    /secret/i,
+    /key/i,
+    /credential/i,
+    /session/i];
 
-    return !sensitivePatterns.some(pattern => pattern.test(errorMessage));
+
+    return !sensitivePatterns.some((pattern) => pattern.test(errorMessage));
   }
 
   /**
@@ -215,15 +215,15 @@ class ProductionDebugDisabler {
   private preventDevToolsDetection(): void {
     // This is not foolproof but adds a layer of obscurity
     let devtools = false;
-    
+
     setInterval(() => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
-      
+
       if ((heightThreshold || widthThreshold) && !devtools) {
         devtools = true;
         this.secureLog('Developer tools potentially opened');
-        
+
         // Could implement additional security measures here
         // For example: log user out, disable sensitive features, etc.
       } else if (!(heightThreshold || widthThreshold) && devtools) {
@@ -279,7 +279,7 @@ class ProductionDebugDisabler {
       devToolsBlocked: true // Assume dev tools blocking is working
     };
 
-    return Object.values(checks).every(check => check === true);
+    return Object.values(checks).every((check) => check === true);
   }
 
   /**
@@ -287,15 +287,15 @@ class ProductionDebugDisabler {
    */
   private isConsoleDisabled(): boolean {
     if (!this.isProduction) return true; // Not expected to be disabled in development
-    
+
     // Test if console methods are no-ops
     const originalLog = console.log;
     let logged = false;
-    
-    console.log = (...args) => { logged = true; };
+
+    console.log = (...args) => {logged = true;};
     console.log('test');
     console.log = originalLog;
-    
+
     return !logged;
   }
 
@@ -312,7 +312,7 @@ class ProductionDebugDisabler {
    */
   private areDebugGlobalsRemoved(): boolean {
     const debugGlobals = ['__DEBUG__', '__DEV__', 'DEBUG', 'DEVELOPMENT_MODE'];
-    return debugGlobals.every(global => !(window as any)[global]);
+    return debugGlobals.every((global) => !(window as any)[global]);
   }
 
   /**

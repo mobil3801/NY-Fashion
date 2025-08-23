@@ -59,34 +59,34 @@ export const SECURITY_CONFIG: SecurityConfig = {
     cspDirectives: {
       'default-src': ["'self'"],
       'script-src': [
-        "'self'",
-        "'unsafe-inline'", // Required for React
-        "'unsafe-eval'", // Required for React DevTools in development
-        'https://cdn.ezsite.ai',
-        ...(import.meta.env.NODE_ENV === 'development' ? ["'unsafe-eval'"] : [])
-      ],
+      "'self'",
+      "'unsafe-inline'", // Required for React
+      "'unsafe-eval'", // Required for React DevTools in development
+      'https://cdn.ezsite.ai',
+      ...(import.meta.env.NODE_ENV === 'development' ? ["'unsafe-eval'"] : [])],
+
       'style-src': [
-        "'self'",
-        "'unsafe-inline'", // Required for styled components
-        'https://fonts.googleapis.com'
-      ],
+      "'self'",
+      "'unsafe-inline'", // Required for styled components
+      'https://fonts.googleapis.com'],
+
       'img-src': [
-        "'self'",
-        'data:',
-        'https:',
-        'blob:'
-      ],
+      "'self'",
+      'data:',
+      'https:',
+      'blob:'],
+
       'connect-src': [
-        "'self'",
-        'https://api.ezsite.ai',
-        'wss://api.ezsite.ai',
-        ...(import.meta.env.NODE_ENV === 'development' ? ['ws://localhost:*', 'http://localhost:*'] : [])
-      ],
+      "'self'",
+      'https://api.ezsite.ai',
+      'wss://api.ezsite.ai',
+      ...(import.meta.env.NODE_ENV === 'development' ? ['ws://localhost:*', 'http://localhost:*'] : [])],
+
       'font-src': [
-        "'self'",
-        'data:',
-        'https://fonts.gstatic.com'
-      ],
+      "'self'",
+      'data:',
+      'https://fonts.gstatic.com'],
+
       'object-src': ["'none'"],
       'media-src': ["'self'"],
       'frame-src': ["'none'"],
@@ -111,14 +111,14 @@ export const SECURITY_CONFIG: SecurityConfig = {
   },
   environment: {
     requiredVars: [
-      // Add required environment variables here
-      'NODE_ENV'
-    ],
+    // Add required environment variables here
+    'NODE_ENV'],
+
     sensitiveVars: [
-      'VITE_API_KEY',
-      'VITE_DATABASE_URL',
-      'VITE_SECRET_KEY'
-    ],
+    'VITE_API_KEY',
+    'VITE_DATABASE_URL',
+    'VITE_SECRET_KEY'],
+
     validationRules: {
       NODE_ENV: (value: string) => ['development', 'production', 'test'].includes(value),
       VITE_API_TIMEOUT: (value: string) => !isNaN(Number(value)) && Number(value) > 0,
@@ -130,7 +130,7 @@ export const SECURITY_CONFIG: SecurityConfig = {
 /**
  * Validates environment variables according to security requirements
  */
-export const validateEnvironmentVariables = (): { isValid: boolean; errors: string[]; warnings: string[] } => {
+export const validateEnvironmentVariables = (): {isValid: boolean;errors: string[];warnings: string[];} => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -186,7 +186,7 @@ export const generateCSPHeader = (): string => {
 /**
  * Security audit function to check for common vulnerabilities
  */
-export const performSecurityAudit = (): { passed: boolean; issues: string[]; recommendations: string[] } => {
+export const performSecurityAudit = (): {passed: boolean;issues: string[];recommendations: string[];} => {
   const issues: string[] = [];
   const recommendations: string[] = [];
 
@@ -228,7 +228,7 @@ export const performSecurityAudit = (): { passed: boolean; issues: string[]; rec
 export const initializeSecurity = (): void => {
   // Validate environment variables on startup
   const envValidation = validateEnvironmentVariables();
-  
+
   if (!envValidation.isValid) {
     console.error('Security: Environment validation failed:', envValidation.errors);
     if (import.meta.env.NODE_ENV === 'production') {

@@ -31,7 +31,7 @@ class SecurityHeadersManager {
     this.setupClientSideHeaders();
     this.setupViolationReporting();
     this.auditExistingHeaders();
-    
+
     logger.logSecurityEvent('security_headers_initialized', 'SYSTEM', 'INFO');
   }
 
@@ -73,7 +73,7 @@ class SecurityHeadersManager {
    */
   private setMetaHeader(name: string, content: string): void {
     const existingMeta = document.querySelector(`meta[http-equiv="${name}"]`);
-    
+
     if (existingMeta) {
       existingMeta.setAttribute('content', content);
     } else {
@@ -91,20 +91,20 @@ class SecurityHeadersManager {
    */
   private generatePermissionsPolicy(): string {
     const policies = [
-      'camera=()',
-      'microphone=()',
-      'geolocation=()',
-      'payment=()',
-      'usb=()',
-      'magnetometer=()',
-      'gyroscope=()',
-      'accelerometer=()',
-      'ambient-light-sensor=()',
-      'autoplay=(self)',
-      'encrypted-media=(self)',
-      'fullscreen=(self)',
-      'picture-in-picture=()'
-    ];
+    'camera=()',
+    'microphone=()',
+    'geolocation=()',
+    'payment=()',
+    'usb=()',
+    'magnetometer=()',
+    'gyroscope=()',
+    'accelerometer=()',
+    'ambient-light-sensor=()',
+    'autoplay=(self)',
+    'encrypted-media=(self)',
+    'fullscreen=(self)',
+    'picture-in-picture=()'];
+
 
     return policies.join(', ');
   }
@@ -171,20 +171,20 @@ class SecurityHeadersManager {
     if (!error || !error.message) return false;
 
     const securityKeywords = [
-      'script',
-      'eval',
-      'unsafe-inline',
-      'unsafe-eval',
-      'blocked',
-      'refused',
-      'security',
-      'content security policy',
-      'csp',
-      'cors'
-    ];
+    'script',
+    'eval',
+    'unsafe-inline',
+    'unsafe-eval',
+    'blocked',
+    'refused',
+    'security',
+    'content security policy',
+    'csp',
+    'cors'];
+
 
     const message = error.message.toLowerCase();
-    return securityKeywords.some(keyword => message.includes(keyword));
+    return securityKeywords.some((keyword) => message.includes(keyword));
   }
 
   /**
@@ -206,10 +206,10 @@ class SecurityHeadersManager {
    */
   private respondToViolation(violation: any): void {
     // Implement automated response to violations
-    
+
     // Count violations by type
     const violationType = violation.effectiveDirective || violation.violatedDirective;
-    
+
     // If too many violations, consider additional measures
     if (this.violationCount > 10) {
       logger.logSecurityEvent('excessive_violations', 'SYSTEM', 'HIGH', undefined, {
@@ -232,18 +232,18 @@ class SecurityHeadersManager {
    */
   private handleScriptViolation(violation: any): void {
     const blockedURI = violation.blockedURI;
-    
+
     // Check if it's from a known problematic source
     const problematicSources = [
-      'eval',
-      'inline',
-      'chrome-extension://',
-      'moz-extension://',
-      'data:'
-    ];
+    'eval',
+    'inline',
+    'chrome-extension://',
+    'moz-extension://',
+    'data:'];
 
-    const isProblemSource = problematicSources.some(source => 
-      blockedURI.includes(source)
+
+    const isProblemSource = problematicSources.some((source) =>
+    blockedURI.includes(source)
     );
 
     if (isProblemSource) {
@@ -260,20 +260,20 @@ class SecurityHeadersManager {
    */
   private auditExistingHeaders(): void {
     const securityHeaders = [
-      'Content-Security-Policy',
-      'X-Frame-Options',
-      'X-Content-Type-Options',
-      'X-XSS-Protection',
-      'Referrer-Policy',
-      'Permissions-Policy'
-    ];
+    'Content-Security-Policy',
+    'X-Frame-Options',
+    'X-Content-Type-Options',
+    'X-XSS-Protection',
+    'Referrer-Policy',
+    'Permissions-Policy'];
+
 
     const headerStatus: Record<string, boolean> = {};
 
-    securityHeaders.forEach(header => {
+    securityHeaders.forEach((header) => {
       const meta = document.querySelector(`meta[http-equiv="${header}"]`);
       headerStatus[header] = !!meta;
-      
+
       if (!meta) {
         logger.logWarn(`Security header missing: ${header}`);
       }
@@ -285,19 +285,19 @@ class SecurityHeadersManager {
   /**
    * Validate current CSP
    */
-  validateCSP(): { isValid: boolean; issues: string[]; recommendations: string[] } {
+  validateCSP(): {isValid: boolean;issues: string[];recommendations: string[];} {
     const issues: string[] = [];
     const recommendations: string[] = [];
-    
+
     const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-    
+
     if (!cspMeta) {
       issues.push('No Content Security Policy found');
       return { isValid: false, issues, recommendations };
     }
 
     const cspContent = cspMeta.getAttribute('content') || '';
-    
+
     // Check for unsafe practices
     if (cspContent.includes("'unsafe-eval'")) {
       if (import.meta.env.NODE_ENV === 'production') {
@@ -353,18 +353,18 @@ class SecurityHeadersManager {
     recommendations: string[];
   } {
     const expectedHeaders = [
-      'Content-Security-Policy',
-      'X-Frame-Options',
-      'X-Content-Type-Options',
-      'X-XSS-Protection',
-      'Referrer-Policy'
-    ];
+    'Content-Security-Policy',
+    'X-Frame-Options',
+    'X-Content-Type-Options',
+    'X-XSS-Protection',
+    'Referrer-Policy'];
+
 
     const headersConfigured: string[] = [];
     const missingHeaders: string[] = [];
     const recommendations: string[] = [];
 
-    expectedHeaders.forEach(header => {
+    expectedHeaders.forEach((header) => {
       const meta = document.querySelector(`meta[http-equiv="${header}"]`);
       if (meta) {
         headersConfigured.push(header);
