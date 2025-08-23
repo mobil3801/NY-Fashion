@@ -114,16 +114,16 @@ describe('Enhanced Offline Queue Tests', () => {
 
       // Add operations concurrently
       const addPromises = [
-        queue.enqueue('POST', '/api/order1', { priority: 'high' }),
-        queue.enqueue('POST', '/api/order2', { priority: 'medium' }),
-        queue.enqueue('POST', '/api/order3', { priority: 'low' })
-      ];
+      queue.enqueue('POST', '/api/order1', { priority: 'high' }),
+      queue.enqueue('POST', '/api/order2', { priority: 'medium' }),
+      queue.enqueue('POST', '/api/order3', { priority: 'low' })];
+
 
       const ids = await Promise.all(addPromises);
-      
+
       const operations = queue.getAll();
-      expect(operations.map(op => op.id)).toEqual(ids);
-      expect(operations.map(op => op.url)).toEqual(['/api/order1', '/api/order2', '/api/order3']);
+      expect(operations.map((op) => op.id)).toEqual(ids);
+      expect(operations.map((op) => op.url)).toEqual(['/api/order1', '/api/order2', '/api/order3']);
     });
 
     it('should reject duplicate idempotency keys immediately', async () => {
@@ -136,21 +136,21 @@ describe('Enhanced Offline Queue Tests', () => {
       });
 
       const headers = { 'Idempotency-Key': 'duplicate-key-test' };
-      
+
       await queue.enqueue('POST', '/api/test', { data: 1 }, headers);
-      
+
       // Second enqueue with same key should fail immediately
       await expect(
         queue.enqueue('POST', '/api/test', { data: 2 }, headers)
       ).rejects.toThrow('Operation already queued with idempotency key: duplicate-key-test');
-      
+
       expect(queue.size()).toBe(1);
     });
 
     it('should handle idempotency key collisions across restarts', async () => {
       // First queue instance
       await queue.init();
-      
+
       mockObjectStore.add.mockImplementation(() => {
         const request = createMockIDBRequest();
         setTimeout(() => request.onsuccess?.({}), 0);
@@ -181,8 +181,8 @@ describe('Enhanced Offline Queue Tests', () => {
 
       // Try to add operation with same idempotency key
       await expect(
-        newQueue.enqueue('POST', '/api/test', { data: 2 }, 
-          { 'Idempotency-Key': 'persistent-key' })
+        newQueue.enqueue('POST', '/api/test', { data: 2 },
+        { 'Idempotency-Key': 'persistent-key' })
       ).rejects.toThrow('Operation already queued with idempotency key: persistent-key');
     });
 
@@ -202,20 +202,20 @@ describe('Enhanced Offline Queue Tests', () => {
       });
 
       const headers = { 'Idempotency-Key': 'reusable-key' };
-      
+
       // Add operation
       const id = await queue.enqueue('POST', '/api/test', { data: 1 }, headers);
       expect(queue.size()).toBe(1);
-      
+
       // Remove operation (simulate completion)
       await queue.remove(id);
       expect(queue.size()).toBe(0);
-      
+
       // Should now allow same idempotency key
       await expect(
         queue.enqueue('POST', '/api/test', { data: 2 }, headers)
       ).resolves.toBeDefined();
-      
+
       expect(queue.size()).toBe(1);
     });
   });
@@ -245,11 +245,11 @@ describe('Enhanced Offline Queue Tests', () => {
       }
 
       expect(limitedQueue.size()).toBe(3);
-      
+
       const operations = limitedQueue.getAll();
       // Should have the last 3 items (FIFO eviction)
-      expect(operations.map(op => op.url)).toEqual(['/api/test3', '/api/test4', '/api/test5']);
-      expect(operations.map(op => op.id)).toEqual([ids[2], ids[3], ids[4]]);
+      expect(operations.map((op) => op.url)).toEqual(['/api/test3', '/api/test4', '/api/test5']);
+      expect(operations.map((op) => op.id)).toEqual([ids[2], ids[3], ids[4]]);
     });
 
     it('should handle queue overflow during concurrent adds', async () => {
@@ -264,15 +264,15 @@ describe('Enhanced Offline Queue Tests', () => {
 
       // Start multiple concurrent adds
       const addPromises = [
-        limitedQueue.enqueue('POST', '/api/concurrent1', { data: 1 }),
-        limitedQueue.enqueue('POST', '/api/concurrent2', { data: 2 }),
-        limitedQueue.enqueue('POST', '/api/concurrent3', { data: 3 })
-      ];
+      limitedQueue.enqueue('POST', '/api/concurrent1', { data: 1 }),
+      limitedQueue.enqueue('POST', '/api/concurrent2', { data: 2 }),
+      limitedQueue.enqueue('POST', '/api/concurrent3', { data: 3 })];
+
 
       await Promise.all(addPromises);
-      
+
       expect(limitedQueue.size()).toBe(2);
-      
+
       const operations = limitedQueue.getAll();
       expect(operations.length).toBe(2);
     });
@@ -293,7 +293,7 @@ describe('Enhanced Offline Queue Tests', () => {
 
       // Operation should still be added to memory queue
       const id = await queue.enqueue('POST', '/api/test', { data: 1 });
-      
+
       expect(queue.size()).toBe(1);
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         'Failed to persist operation to IndexedDB:',
@@ -324,10 +324,10 @@ describe('Enhanced Offline Queue Tests', () => {
 
       // Mock corrupted data
       const corruptedData = [
-        { id: 'valid-op', type: 'POST', url: '/api/test' }, // Missing required fields
-        null, // Null entry
-        { id: 'invalid-op', type: 'INVALID' }, // Invalid type
-        'invalid-entry' // Wrong data type
+      { id: 'valid-op', type: 'POST', url: '/api/test' }, // Missing required fields
+      null, // Null entry
+      { id: 'invalid-op', type: 'INVALID' }, // Invalid type
+      'invalid-entry' // Wrong data type
       ];
 
       mockObjectStore.index().getAll.mockImplementation(() => {
@@ -363,9 +363,9 @@ describe('Enhanced Offline Queue Tests', () => {
       await queue.enqueue('POST', '/api/initial1', { data: 1 });
       await queue.enqueue('POST', '/api/initial2', { data: 2 });
 
-      const executor = vi.fn()
-        .mockResolvedValueOnce(true)  // First operation succeeds
-        .mockResolvedValueOnce(false); // Second operation fails
+      const executor = vi.fn().
+      mockResolvedValueOnce(true) // First operation succeeds
+      .mockResolvedValueOnce(false); // Second operation fails
 
       // Start flush and enqueue simultaneously
       const flushPromise = queue.flush(executor);
@@ -421,10 +421,10 @@ describe('Enhanced Offline Queue Tests', () => {
 
       await queue.enqueue('POST', '/api/test', { data: 1 });
 
-      const executor = vi.fn()
-        .mockResolvedValueOnce(false) // First attempt fails
-        .mockResolvedValueOnce(false) // Second attempt fails
-        .mockResolvedValueOnce(true); // Third attempt succeeds
+      const executor = vi.fn().
+      mockResolvedValueOnce(false) // First attempt fails
+      .mockResolvedValueOnce(false) // Second attempt fails
+      .mockResolvedValueOnce(true); // Third attempt succeeds
 
       // First flush
       await queue.flush(executor);
@@ -498,11 +498,11 @@ describe('Enhanced Offline Queue Tests', () => {
 
       const id = await queue.enqueue('POST', '/api/bulk', largeData);
       const operations = queue.getAll();
-      
+
       // Should return deep copy, not reference
       expect(operations[0].data).toEqual(largeData);
       expect(operations[0].data).not.toBe(largeData);
-      
+
       // Modifying returned data shouldn't affect queue
       operations[0].data.items[0].modified = true;
       const freshOperations = queue.getAll();
@@ -523,16 +523,16 @@ describe('Enhanced Offline Queue Tests', () => {
 
       const listener1 = vi.fn();
       const listener2 = vi.fn();
-      
+
       const remove1 = addListener(listener1);
       const remove2 = addListener(listener2);
-      
+
       expect(listeners.length).toBe(2);
-      
+
       // Cleanup
       remove1();
       remove2();
-      
+
       expect(listeners.length).toBe(0);
     });
   });
@@ -567,18 +567,18 @@ describe('Enhanced Offline Queue Tests', () => {
       });
 
       const startTime = Date.now();
-      
+
       // Add many operations
       const addPromises = [];
       for (let i = 0; i < 1000; i++) {
         addPromises.push(largeQueue.enqueue('POST', `/api/test${i}`, { data: i }));
       }
-      
+
       await Promise.all(addPromises);
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // Should complete within reasonable time (adjust threshold as needed)
       expect(duration).toBeLessThan(5000); // 5 seconds max
       expect(largeQueue.size()).toBe(1000);
@@ -599,9 +599,9 @@ describe('Enhanced Offline Queue Tests', () => {
       await queue.enqueue('POST', '/api/test3', { data: 3 }, { 'Invalid-Key': null });
 
       expect(queue.size()).toBe(3);
-      
+
       const operations = queue.getAll();
-      operations.forEach(op => {
+      operations.forEach((op) => {
         expect(op).toHaveProperty('idempotencyKey');
         expect(typeof op.idempotencyKey).toBe('string');
       });

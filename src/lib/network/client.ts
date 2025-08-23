@@ -73,10 +73,10 @@ class NetworkRetryScheduler implements RetryScheduler {
     if (this.paused) {
       this.resume();
     }
-    
+
     // Execute all pending retries immediately
     const retryPromises: Promise<void>[] = [];
-    
+
     this.pendingRetries.forEach((timerId, retryId) => {
       clearTimeout(timerId);
       this.pendingRetries.delete(retryId);
@@ -87,7 +87,7 @@ class NetworkRetryScheduler implements RetryScheduler {
     });
 
     this.pausedRetries.clear();
-    
+
     await Promise.allSettled(retryPromises);
   }
 
@@ -220,10 +220,10 @@ export class ApiClient {
         console.warn('crypto.randomUUID() failed, using fallback:', error);
       }
     }
-    
+
     return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      const v = c === 'x' ? r : r & 0x3 | 0x8;
       return v.toString(16);
     });
   }
@@ -241,10 +241,10 @@ export class ApiClient {
 
     // Handle TimeoutError
     if (error instanceof Error && (
-      error.name === 'TimeoutError' ||
-      error.message.toLowerCase().includes('timeout') ||
-      error.message.includes('signal timed out')
-    )) {
+    error.name === 'TimeoutError' ||
+    error.message.toLowerCase().includes('timeout') ||
+    error.message.includes('signal timed out')))
+    {
       return new ApiError(
         'Request timed out',
         'TIMEOUT',
@@ -255,22 +255,22 @@ export class ApiClient {
 
     // Handle TypeError and network errors (comprehensive detection)
     if (error instanceof TypeError ||
-        error instanceof Error && (
-          error.message.includes('fetch') ||
-          error.message.includes('ERR_NETWORK') ||
-          error.message.includes('NetworkError') ||
-          error.message.includes('Failed to fetch') ||
-          error.message.includes('ERR_INTERNET_DISCONNECTED') ||
-          error.message.includes('ERR_NAME_NOT_RESOLVED') ||
-          error.message.includes('ERR_CONNECTION_REFUSED') ||
-          error.message.includes('ERR_CONNECTION_TIMED_OUT') ||
-          error.message.includes('ERR_CONNECTION_RESET') ||
-          error.message.includes('net::') ||
-          error.name === 'NetworkError'
-        )) {
-      
+    error instanceof Error && (
+    error.message.includes('fetch') ||
+    error.message.includes('ERR_NETWORK') ||
+    error.message.includes('NetworkError') ||
+    error.message.includes('Failed to fetch') ||
+    error.message.includes('ERR_INTERNET_DISCONNECTED') ||
+    error.message.includes('ERR_NAME_NOT_RESOLVED') ||
+    error.message.includes('ERR_CONNECTION_REFUSED') ||
+    error.message.includes('ERR_CONNECTION_TIMED_OUT') ||
+    error.message.includes('ERR_CONNECTION_RESET') ||
+    error.message.includes('net::') ||
+    error.name === 'NetworkError'))
+    {
+
       const message = error instanceof Error ? error.message : String(error);
-      
+
       // Classify specific network error types
       if (message.includes('ERR_NAME_NOT_RESOLVED') || message.includes('ENOTFOUND')) {
         return new ApiError(
@@ -280,7 +280,7 @@ export class ApiClient {
           { operation, originalError: message, errorType: 'dns' }
         );
       }
-      
+
       if (message.includes('ERR_CONNECTION_REFUSED') || message.includes('ECONNREFUSED')) {
         return new ApiError(
           'Connection refused by server',
@@ -289,7 +289,7 @@ export class ApiClient {
           { operation, originalError: message, errorType: 'connection' }
         );
       }
-      
+
       if (message.includes('ERR_CONNECTION_RESET') || message.includes('ECONNRESET')) {
         return new ApiError(
           'Connection reset by server',
@@ -298,7 +298,7 @@ export class ApiClient {
           { operation, originalError: message, errorType: 'connection' }
         );
       }
-      
+
       return new ApiError(
         'Network connection issue',
         'NETWORK_OFFLINE',
@@ -311,11 +311,11 @@ export class ApiClient {
     if (error && typeof error === 'object' && 'status' in error) {
       const response = error as any;
       const statusCode = response.status;
-      
+
       // More granular status code handling
       let code: string;
       let retryable: boolean;
-      
+
       if (statusCode >= 400 && statusCode < 500) {
         // Client errors
         code = 'CLIENT_ERROR';
@@ -333,11 +333,11 @@ export class ApiClient {
         `HTTP ${statusCode}: ${response.statusText || 'Unknown error'}`,
         code,
         retryable,
-        { 
-          operation, 
-          statusCode, 
+        {
+          operation,
+          statusCode,
           statusText: response.statusText,
-          responseBody: response.body 
+          responseBody: response.body
         }
       );
     }
@@ -379,9 +379,9 @@ export class ApiClient {
   }
 
   private async executeRequest<T = any>(
-    url: string,
-    options: ApiClientOptions = {}
-  ): Promise<T> {
+  url: string,
+  options: ApiClientOptions = {})
+  : Promise<T> {
     const {
       timeout = this.config.timeout,
       skipRetry = false,
@@ -442,11 +442,11 @@ export class ApiClient {
 
       // Use enhanced error normalization
       const normalizedError = this.enhancedErrorNormalization(error, url);
-      
+
       // Update network status when we detect offline
-      if (normalizedError.code === 'NETWORK_OFFLINE' || 
-          normalizedError.code === 'DNS_ERROR' ||
-          normalizedError.code === 'CONNECTION_REFUSED') {
+      if (normalizedError.code === 'NETWORK_OFFLINE' ||
+      normalizedError.code === 'DNS_ERROR' ||
+      normalizedError.code === 'CONNECTION_REFUSED') {
         this.setOnlineStatus(false);
       }
 
@@ -455,13 +455,13 @@ export class ApiClient {
   }
 
   private async requestWithRetry<T = any>(
-    url: string,
-    options: ApiClientOptions = {}
-  ): Promise<T> {
-    const { 
-      skipRetry = false, 
+  url: string,
+  options: ApiClientOptions = {})
+  : Promise<T> {
+    const {
+      skipRetry = false,
       retry = {},
-      ...requestOptions 
+      ...requestOptions
     } = options;
 
     // Use custom retry options or fall back to config defaults
@@ -485,7 +485,7 @@ export class ApiClient {
 
         // Don't retry on client errors or if we've exhausted attempts
         if (attempt === retryOptions.attempts ||
-            error instanceof ApiError && !error.retryable) {
+        error instanceof ApiError && !error.retryable) {
           break;
         }
 
@@ -505,13 +505,13 @@ export class ApiClient {
   }
 
   async request<T = any>(
-    path: string, 
-    init: ApiClientOptions = {}
-  ): Promise<T> {
-    const { 
+  path: string,
+  init: ApiClientOptions = {})
+  : Promise<T> {
+    const {
       idempotencyKey = this.generateIdempotencyKey(),
       signal,
-      ...options 
+      ...options
     } = init;
 
     // Check for duplicate requests using idempotency key
@@ -560,7 +560,7 @@ export class ApiClient {
     // Queue write operations when offline
     if (!this.isOnline && !skipOfflineQueue) {
       await this.offlineQueue.enqueue('POST', url, data, {
-        ...options.headers as Record<string, string>,
+        ...(options.headers as Record<string, string>),
         'Idempotency-Key': idempotencyKey
       });
       throw new ApiError(
@@ -584,7 +584,7 @@ export class ApiClient {
 
     if (!this.isOnline && !skipOfflineQueue) {
       await this.offlineQueue.enqueue('PUT', url, data, {
-        ...options.headers as Record<string, string>,
+        ...(options.headers as Record<string, string>),
         'Idempotency-Key': idempotencyKey
       });
       throw new ApiError(
@@ -608,7 +608,7 @@ export class ApiClient {
 
     if (!this.isOnline && !skipOfflineQueue) {
       await this.offlineQueue.enqueue('DELETE', url, undefined, {
-        ...options.headers as Record<string, string>,
+        ...(options.headers as Record<string, string>),
         'Idempotency-Key': idempotencyKey
       });
       throw new ApiError(
@@ -672,10 +672,10 @@ export const apiClient = new ApiClient({
 
 // Utility function to create typed API error
 export function createApiError(
-  message: string,
-  code: string = 'UNKNOWN_ERROR',
-  retryable: boolean = false,
-  details?: any
-): ApiError {
+message: string,
+code: string = 'UNKNOWN_ERROR',
+retryable: boolean = false,
+details?: any)
+: ApiError {
   return new ApiError(message, code, retryable, details);
 }

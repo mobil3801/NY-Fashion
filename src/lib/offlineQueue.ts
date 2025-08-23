@@ -1,5 +1,14 @@
 
 
+// Schema versioning constants
+const DB_VERSION = 2;
+const STORE_NAME = 'operations';
+const DB_NAME = 'offline-queue';
+
+// Retry constants
+const MAX_IDB_RETRIES = 1;
+const IDB_RETRY_DELAY = 100;
+
 export interface QueuedOperation {
   id: string;
   url: string;
@@ -31,115 +40,230 @@ const generateIdempotencyKey = (): string => {
       console.warn('crypto.randomUUID() failed, using fallback:', error);
     }
   }
-  
+
   // Fallback implementation
   return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, (c) => {
     const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    const v = c === 'x' ? r : r & 0x3 | 0x8;
     return v.toString(16);
   });
 };
 
 class IndexedDBWrapper {
-  private dbName = 'offline-queue';
-  private storeName = 'operations';
-  private version = 1;
+  private dbName = DB_NAME;
+  private storeName = STORE_NAME;
+  private version = DB_VERSION;
   private db: IDBDatabase | null = null;
+  private isAvailable = false;
 
   async init(): Promise<boolean> {
     if (!('indexedDB' in window)) {
+      console.warn('[OfflineQueue] IndexedDB not available');
       return false;
     }
 
+    try {
+      return await this.openDatabase();
+    } catch (error) {
+      console.error('[OfflineQueue] Failed to initialize IndexedDB:', error);
+      return false;
+    }
+  }
+
+  private async openDatabase(retryCount = 0): Promise<boolean> {
     return new Promise((resolve) => {
       const request = indexedDB.open(this.dbName, this.version);
 
-      request.onerror = () => resolve(false);
+      request.onerror = () => {
+        console.error('[OfflineQueue] Database open error:', request.error);
+        resolve(false);
+      };
 
       request.onsuccess = () => {
         this.db = request.result;
+        this.isAvailable = true;
+        
+        // Verify store and indexes exist
+        if (!this.db.objectStoreNames.contains(this.storeName)) {
+          console.error('[OfflineQueue] Store missing after open');
+          this.db.close();
+          this.db = null;
+          this.isAvailable = false;
+          resolve(false);
+          return;
+        }
+        
+        console.log('[OfflineQueue] IndexedDB initialized successfully');
         resolve(true);
       };
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-          store.createIndex('createdAt', 'createdAt', { unique: false });
-          store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+        
+        try {
+          // Handle schema migrations
+          this.performSchemaUpgrade(db, event.oldVersion, event.newVersion || this.version);
+        } catch (error) {
+          console.error('[OfflineQueue] Schema upgrade failed:', error);
+          resolve(false);
         }
+      };
+
+      request.onblocked = () => {
+        console.warn('[OfflineQueue] Database upgrade blocked');
+        resolve(false);
       };
     });
   }
 
+  private performSchemaUpgrade(db: IDBDatabase, oldVersion: number, newVersion: number): void {
+    console.log(`[OfflineQueue] Upgrading schema from ${oldVersion} to ${newVersion}`);
+
+    // Handle initial creation (oldVersion 0)
+    if (oldVersion === 0) {
+      const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+      store.createIndex('createdAt', 'createdAt', { unique: false });
+      store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+      console.log('[OfflineQueue] Created initial schema');
+      return;
+    }
+
+    // Handle version 1 to 2 migration (if needed)
+    if (oldVersion < 2 && newVersion >= 2) {
+      // Migration logic for future schema changes
+      console.log('[OfflineQueue] Applied v2 migration');
+    }
+  }
+
   async getAll(): Promise<QueuedOperation[]> {
-    if (!this.db) return [];
+    if (!this.isAvailable || !this.db) {
+      throw new Error('IndexedDB not available');
+    }
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
-      const index = store.index('createdAt');
-      const request = index.getAll();
+      try {
+        const transaction = this.db!.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        
+        // Safe index access with fallback
+        let request: IDBRequest;
+        try {
+          const index = store.index('createdAt');
+          request = index.getAll();
+        } catch (indexError) {
+          console.warn('[OfflineQueue] createdAt index not found, falling back to store.getAll()', indexError);
+          request = store.getAll();
+        }
 
-      request.onsuccess = () => {
-        // Ensure FIFO ordering by sorting by createdAt
-        const results = (request.result || []).sort((a, b) => a.createdAt - b.createdAt);
-        resolve(results);
-      };
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          // Ensure FIFO ordering by sorting by createdAt
+          const results = (request.result || []).sort((a: QueuedOperation, b: QueuedOperation) => a.createdAt - b.createdAt);
+          resolve(results);
+        };
+        
+        request.onerror = () => {
+          console.error('[OfflineQueue] getAll error:', request.error);
+          reject(request.error);
+        };
+      } catch (error) {
+        console.error('[OfflineQueue] getAll transaction error:', error);
+        reject(error);
+      }
     });
   }
 
   async add(operation: QueuedOperation): Promise<void> {
-    if (!this.db) throw new Error('IndexedDB not initialized');
+    if (!this.isAvailable || !this.db) {
+      throw new Error('IndexedDB not available');
+    }
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.add(operation);
+      try {
+        const transaction = this.db!.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.add(operation);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+        request.onerror = () => {
+          console.error('[OfflineQueue] add error:', request.error);
+          reject(request.error);
+        };
+      } catch (error) {
+        console.error('[OfflineQueue] add transaction error:', error);
+        reject(error);
+      }
     });
   }
 
   async remove(id: string): Promise<void> {
-    if (!this.db) return;
+    if (!this.isAvailable || !this.db) return;
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.delete(id);
+      try {
+        const transaction = this.db!.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.delete(id);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+        request.onerror = () => {
+          console.error('[OfflineQueue] remove error:', request.error);
+          reject(request.error);
+        };
+      } catch (error) {
+        console.error('[OfflineQueue] remove transaction error:', error);
+        reject(error);
+      }
     });
   }
 
   async clear(): Promise<void> {
-    if (!this.db) return;
+    if (!this.isAvailable || !this.db) return;
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.clear();
+      try {
+        const transaction = this.db!.transaction([this.storeName], 'readwrite');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.clear();
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+        request.onerror = () => {
+          console.error('[OfflineQueue] clear error:', request.error);
+          reject(request.error);
+        };
+      } catch (error) {
+        console.error('[OfflineQueue] clear transaction error:', error);
+        reject(error);
+      }
     });
   }
 
   async count(): Promise<number> {
-    if (!this.db) return 0;
+    if (!this.isAvailable || !this.db) return 0;
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
-      const request = store.count();
+      try {
+        const transaction = this.db!.transaction([this.storeName], 'readonly');
+        const store = transaction.objectStore(this.storeName);
+        const request = store.count();
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => {
+          console.error('[OfflineQueue] count error:', request.error);
+          reject(request.error);
+        };
+      } catch (error) {
+        console.error('[OfflineQueue] count transaction error:', error);
+        reject(error);
+      }
     });
+  }
+
+  close(): void {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+      this.isAvailable = false;
+    }
   }
 }
 
@@ -149,6 +273,8 @@ export class OfflineQueue {
   private memoryQueue: QueuedOperation[] = [];
   private isInitialized = false;
   private listeners: Set<() => void> = new Set();
+  private useMemoryFallback = false;
+  private idbRetryAttempts = 0;
 
   constructor(config: Partial<OfflineQueueConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -157,10 +283,20 @@ export class OfflineQueue {
   async init(): Promise<void> {
     if (this.isInitialized) return;
 
-    if (this.config.persistentStorage) {
-      this.idb = new IndexedDBWrapper();
-      const success = await this.idb.init();
+    if (this.config.persistentStorage && !this.useMemoryFallback) {
+      await this.initializeIDB();
+    }
 
+    this.isInitialized = true;
+    console.log(`[OfflineQueue] Initialized (${this.useMemoryFallback ? 'memory-only' : 'persistent'} mode)`);
+  }
+
+  private async initializeIDB(): Promise<void> {
+    this.idb = new IndexedDBWrapper();
+    
+    try {
+      const success = await this.idb.init();
+      
       if (success) {
         // Load existing operations from IndexedDB and ensure FIFO ordering
         try {
@@ -168,15 +304,44 @@ export class OfflineQueue {
           // Sort by createdAt to ensure FIFO ordering
           this.memoryQueue.sort((a, b) => a.createdAt - b.createdAt);
         } catch (error) {
-          console.warn('Failed to load offline queue from IndexedDB:', error);
-          this.idb = null;
+          console.warn('[OfflineQueue] Failed to load from IndexedDB, retrying once...', error);
+          
+          // Retry once on NotFoundError or similar issues
+          if (this.idbRetryAttempts < MAX_IDB_RETRIES) {
+            this.idbRetryAttempts++;
+            await new Promise(resolve => setTimeout(resolve, IDB_RETRY_DELAY));
+            
+            // Try to reopen database
+            const retrySuccess = await this.idb.init();
+            if (retrySuccess) {
+              try {
+                this.memoryQueue = await this.idb.getAll();
+                this.memoryQueue.sort((a, b) => a.createdAt - b.createdAt);
+                console.log('[OfflineQueue] Recovery successful on retry');
+                return;
+              } catch (retryError) {
+                console.error('[OfflineQueue] Retry also failed:', retryError);
+              }
+            }
+          }
+          
+          // Fall back to memory-only mode
+          this.fallbackToMemory();
         }
       } else {
-        this.idb = null;
+        this.fallbackToMemory();
       }
+    } catch (error) {
+      console.error('[OfflineQueue] IDB initialization failed:', error);
+      this.fallbackToMemory();
     }
+  }
 
-    this.isInitialized = true;
+  private fallbackToMemory(): void {
+    console.warn('[OfflineQueue] Falling back to memory-only mode');
+    this.useMemoryFallback = true;
+    this.idb?.close();
+    this.idb = null;
   }
 
   async enqueue(type: 'POST' | 'PUT' | 'DELETE', url: string, data?: any, headers?: Record<string, string>): Promise<void> {
@@ -208,20 +373,25 @@ export class OfflineQueue {
     // Enforce queue size limit (remove oldest to maintain FIFO)
     if (this.memoryQueue.length >= this.config.maxItems) {
       const oldest = this.memoryQueue.shift();
-      if (oldest && this.idb) {
-        await this.idb.remove(oldest.id);
+      if (oldest && this.idb && !this.useMemoryFallback) {
+        try {
+          await this.idb.remove(oldest.id);
+        } catch (error) {
+          console.warn('[OfflineQueue] Failed to remove oldest from IDB:', error);
+        }
       }
     }
 
     // Add to end of queue (FIFO)
     this.memoryQueue.push(operation);
 
-    // Persist to IndexedDB if available
-    if (this.idb) {
+    // Persist to IndexedDB if available and not in memory fallback mode
+    if (this.idb && !this.useMemoryFallback) {
       try {
         await this.idb.add(operation);
       } catch (error) {
-        console.warn('Failed to persist operation to IndexedDB:', error);
+        console.warn('[OfflineQueue] Failed to persist operation to IndexedDB:', error);
+        // Don't fall back to memory mode here, just log the error
       }
     }
 
@@ -244,7 +414,7 @@ export class OfflineQueue {
           processedCount++;
         }
       } catch (error) {
-        console.error('Error processing queued operation:', error);
+        console.error('[OfflineQueue] Error processing queued operation:', error);
         // Keep the operation in queue for potential retry
       }
     }
@@ -258,11 +428,11 @@ export class OfflineQueue {
       this.memoryQueue.splice(index, 1);
     }
 
-    if (this.idb) {
+    if (this.idb && !this.useMemoryFallback) {
       try {
         await this.idb.remove(id);
       } catch (error) {
-        console.warn('Failed to remove operation from IndexedDB:', error);
+        console.warn('[OfflineQueue] Failed to remove operation from IndexedDB:', error);
       }
     }
 
@@ -281,11 +451,11 @@ export class OfflineQueue {
   async clear(): Promise<void> {
     this.memoryQueue = [];
 
-    if (this.idb) {
+    if (this.idb && !this.useMemoryFallback) {
       try {
         await this.idb.clear();
       } catch (error) {
-        console.warn('Failed to clear IndexedDB:', error);
+        console.warn('[OfflineQueue] Failed to clear IndexedDB:', error);
       }
     }
 
@@ -311,9 +481,24 @@ export class OfflineQueue {
       try {
         listener();
       } catch (error) {
-        console.error('Error in queue listener:', error);
+        console.error('[OfflineQueue] Error in queue listener:', error);
       }
     });
+  }
+
+  // Development safeguards
+  getDebugInfo(): { 
+    isInitialized: boolean; 
+    useMemoryFallback: boolean; 
+    queueSize: number;
+    idbRetryAttempts: number;
+  } {
+    return {
+      isInitialized: this.isInitialized,
+      useMemoryFallback: this.useMemoryFallback,
+      queueSize: this.memoryQueue.length,
+      idbRetryAttempts: this.idbRetryAttempts
+    };
   }
 }
 

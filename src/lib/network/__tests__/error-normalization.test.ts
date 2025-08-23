@@ -1,15 +1,15 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { 
-  normalizeError, 
-  isApiError, 
-  isRetryable, 
+import {
+  normalizeError,
+  isApiError,
+  isRetryable,
   getUserFriendlyMessage,
   createErrorReport,
   createEnhancedErrorReport,
   ERROR_CODES,
-  logApiEvent
-} from '../../errors';
+  logApiEvent } from
+'../../errors';
 import { createApiError } from '../client';
 
 describe('Error Normalization and Classification Tests', () => {
@@ -75,11 +75,11 @@ describe('Error Normalization and Classification Tests', () => {
 
     it('should handle mixed error types in sequence', () => {
       const errors = [
-        new TypeError('Failed to fetch'),
-        { status: 404, statusText: 'Not Found' },
-        new Error('Rate limit exceeded'),
-        'String error message'
-      ];
+      new TypeError('Failed to fetch'),
+      { status: 404, statusText: 'Not Found' },
+      new Error('Rate limit exceeded'),
+      'String error message'];
+
 
       const normalized = errors.map(normalizeError);
 
@@ -92,26 +92,26 @@ describe('Error Normalization and Classification Tests', () => {
 
   describe('HTTP Status Code Classification', () => {
     const statusCodes = [
-      // Success
-      { status: 200, expectedCode: null, retryable: false },
-      { status: 201, expectedCode: null, retryable: false },
-      
-      // Client errors (4xx) - mostly non-retryable
-      { status: 400, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
-      { status: 401, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
-      { status: 403, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
-      { status: 404, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
-      
-      // Retryable client errors
-      { status: 408, expectedCode: ERROR_CODES.TIMEOUT, retryable: true },
-      { status: 429, expectedCode: ERROR_CODES.RATE_LIMITED, retryable: true },
-      
-      // Server errors (5xx) - retryable
-      { status: 500, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
-      { status: 502, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
-      { status: 503, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
-      { status: 504, expectedCode: ERROR_CODES.TIMEOUT, retryable: true }
-    ];
+    // Success
+    { status: 200, expectedCode: null, retryable: false },
+    { status: 201, expectedCode: null, retryable: false },
+
+    // Client errors (4xx) - mostly non-retryable
+    { status: 400, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
+    { status: 401, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
+    { status: 403, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
+    { status: 404, expectedCode: ERROR_CODES.CLIENT_ERROR, retryable: false },
+
+    // Retryable client errors
+    { status: 408, expectedCode: ERROR_CODES.TIMEOUT, retryable: true },
+    { status: 429, expectedCode: ERROR_CODES.RATE_LIMITED, retryable: true },
+
+    // Server errors (5xx) - retryable
+    { status: 500, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
+    { status: 502, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
+    { status: 503, expectedCode: ERROR_CODES.SERVER_ERROR, retryable: true },
+    { status: 504, expectedCode: ERROR_CODES.TIMEOUT, retryable: true }];
+
 
     statusCodes.forEach(({ status, expectedCode, retryable }) => {
       if (expectedCode) {
@@ -136,9 +136,9 @@ describe('Error Normalization and Classification Tests', () => {
 
       expect(normalized.code).toBe(ERROR_CODES.NETWORK_OFFLINE);
       expect(normalized.retryable).toBe(true);
-      expect(normalized.details).toEqual({ 
+      expect(normalized.details).toEqual({
         originalError: wrapperError.message,
-        cause: rootCause.message 
+        cause: rootCause.message
       });
     });
 
@@ -149,7 +149,7 @@ describe('Error Normalization and Classification Tests', () => {
       error2.cause = error1; // Circular reference
 
       expect(() => normalizeError(error1)).not.toThrow();
-      
+
       const normalized = normalizeError(error1);
       expect(normalized.code).toBe(ERROR_CODES.UNKNOWN_ERROR);
     });
@@ -171,26 +171,26 @@ describe('Error Normalization and Classification Tests', () => {
   describe('Retry Decision Logic', () => {
     it('should correctly identify retryable vs non-retryable errors', () => {
       const retryableErrors = [
-        normalizeError(new TypeError('Network error')),
-        normalizeError({ status: 500 }),
-        normalizeError({ status: 502 }),
-        normalizeError({ status: 429 }),
-        normalizeError({ status: 408 })
-      ];
+      normalizeError(new TypeError('Network error')),
+      normalizeError({ status: 500 }),
+      normalizeError({ status: 502 }),
+      normalizeError({ status: 429 }),
+      normalizeError({ status: 408 })];
+
 
       const nonRetryableErrors = [
-        normalizeError({ status: 400 }),
-        normalizeError({ status: 401 }),
-        normalizeError({ status: 403 }),
-        normalizeError({ status: 404 }),
-        normalizeError(new Error('Authentication failed'))
-      ];
+      normalizeError({ status: 400 }),
+      normalizeError({ status: 401 }),
+      normalizeError({ status: 403 }),
+      normalizeError({ status: 404 }),
+      normalizeError(new Error('Authentication failed'))];
 
-      retryableErrors.forEach(error => {
+
+      retryableErrors.forEach((error) => {
         expect(isRetryable(error)).toBe(true);
       });
 
-      nonRetryableErrors.forEach(error => {
+      nonRetryableErrors.forEach((error) => {
         expect(isRetryable(error)).toBe(false);
       });
     });
@@ -214,27 +214,27 @@ describe('Error Normalization and Classification Tests', () => {
   describe('User-Friendly Error Messages', () => {
     it('should provide appropriate user messages for common errors', () => {
       const testCases = [
-        {
-          error: normalizeError(new TypeError('Failed to fetch')),
-          expectedMessage: /network connection/i
-        },
-        {
-          error: normalizeError({ status: 404 }),
-          expectedMessage: /not found/i
-        },
-        {
-          error: normalizeError({ status: 401 }),
-          expectedMessage: /unauthorized/i
-        },
-        {
-          error: normalizeError({ status: 500 }),
-          expectedMessage: /server error/i
-        },
-        {
-          error: normalizeError({ status: 429 }),
-          expectedMessage: /too many requests/i
-        }
-      ];
+      {
+        error: normalizeError(new TypeError('Failed to fetch')),
+        expectedMessage: /network connection/i
+      },
+      {
+        error: normalizeError({ status: 404 }),
+        expectedMessage: /not found/i
+      },
+      {
+        error: normalizeError({ status: 401 }),
+        expectedMessage: /unauthorized/i
+      },
+      {
+        error: normalizeError({ status: 500 }),
+        expectedMessage: /server error/i
+      },
+      {
+        error: normalizeError({ status: 429 }),
+        expectedMessage: /too many requests/i
+      }];
+
 
       testCases.forEach(({ error, expectedMessage }) => {
         const message = getUserFriendlyMessage(error);
@@ -244,11 +244,11 @@ describe('Error Normalization and Classification Tests', () => {
 
     it('should handle localization context in error messages', () => {
       const error = normalizeError({ status: 500 });
-      
+
       // Test with different contexts
       const defaultMessage = getUserFriendlyMessage(error);
-      const contextualMessage = getUserFriendlyMessage(error, { 
-        operation: 'saving your data' 
+      const contextualMessage = getUserFriendlyMessage(error, {
+        operation: 'saving your data'
       });
 
       expect(defaultMessage).toBeTruthy();
@@ -313,16 +313,16 @@ describe('Error Normalization and Classification Tests', () => {
 
     it('should log API events with proper categorization', () => {
       logApiEvent('REQUEST_START', { url: '/api/test', method: 'GET' });
-      logApiEvent('REQUEST_ERROR', { 
-        url: '/api/test', 
+      logApiEvent('REQUEST_ERROR', {
+        url: '/api/test',
         error: normalizeError(new TypeError('Network error')),
         duration: 1500
       });
-      logApiEvent('REQUEST_SUCCESS', { 
-        url: '/api/test', 
-        method: 'GET', 
-        status: 200, 
-        duration: 250 
+      logApiEvent('REQUEST_SUCCESS', {
+        url: '/api/test',
+        method: 'GET',
+        status: 200,
+        duration: 250
       });
 
       expect(consoleLogSpy).toHaveBeenCalledTimes(2); // START and SUCCESS
@@ -358,7 +358,7 @@ describe('Error Normalization and Classification Tests', () => {
       expect(isApiError('string')).toBe(false);
       expect(isApiError(123)).toBe(false);
       expect(isApiError({})).toBe(false);
-      
+
       // Object with some API error properties
       expect(isApiError({ code: 'TEST', message: 'Test' })).toBe(false);
       expect(isApiError({ code: 'TEST', message: 'Test', retryable: true })).toBe(true);
@@ -368,16 +368,16 @@ describe('Error Normalization and Classification Tests', () => {
   describe('Error Code Constants', () => {
     it('should have all required error codes defined', () => {
       const requiredCodes = [
-        'NETWORK_OFFLINE',
-        'TIMEOUT',
-        'SERVER_ERROR',
-        'CLIENT_ERROR',
-        'RATE_LIMITED',
-        'UNKNOWN_ERROR',
-        'QUEUED_OFFLINE'
-      ];
+      'NETWORK_OFFLINE',
+      'TIMEOUT',
+      'SERVER_ERROR',
+      'CLIENT_ERROR',
+      'RATE_LIMITED',
+      'UNKNOWN_ERROR',
+      'QUEUED_OFFLINE'];
 
-      requiredCodes.forEach(code => {
+
+      requiredCodes.forEach((code) => {
         expect(ERROR_CODES).toHaveProperty(code);
         expect(typeof ERROR_CODES[code]).toBe('string');
       });
@@ -386,15 +386,15 @@ describe('Error Normalization and Classification Tests', () => {
     it('should have unique error code values', () => {
       const codes = Object.values(ERROR_CODES);
       const uniqueCodes = new Set(codes);
-      
+
       expect(codes.length).toBe(uniqueCodes.size);
     });
   });
 
   describe('Complex Error Scenarios', () => {
     it('should handle error normalization in rapid succession', () => {
-      const errors = Array.from({ length: 100 }, (_, i) => 
-        new Error(`Error ${i}`)
+      const errors = Array.from({ length: 100 }, (_, i) =>
+      new Error(`Error ${i}`)
       );
 
       const normalized = errors.map(normalizeError);

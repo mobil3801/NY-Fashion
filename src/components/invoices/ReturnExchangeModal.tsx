@@ -302,6 +302,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -411,9 +413,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <CardDescription>Choose quantities and conditions for returned items</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ?
-            <div className="text-center py-8">Loading items...</div> :
-
+              {loading ? <div className="text-center py-8">Loading items...</div> :
             <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>

@@ -45,14 +45,14 @@ const mockIndexedDB = {
       transaction: vi.fn().mockReturnValue({
         objectStore: vi.fn().mockReturnValue({
           add: vi.fn().mockReturnValue({ onsuccess: null }),
-          getAll: vi.fn().mockReturnValue({ 
-            result: [], 
-            onsuccess: null 
+          getAll: vi.fn().mockReturnValue({
+            result: [],
+            onsuccess: null
           }),
           index: vi.fn().mockReturnValue({
-            getAll: vi.fn().mockReturnValue({ 
-              result: [], 
-              onsuccess: null 
+            getAll: vi.fn().mockReturnValue({
+              result: [],
+              onsuccess: null
             })
           })
         })
@@ -87,10 +87,10 @@ describe('Cleanup and Memory Management Tests', () => {
   describe('ApiClient Cleanup', () => {
     it('should clean up all resources on destroy', () => {
       client = new ApiClient();
-      
+
       const statusCallback = vi.fn();
       const unsubscribe = client.subscribeToNetworkStatus(statusCallback);
-      
+
       const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
 
@@ -98,27 +98,27 @@ describe('Cleanup and Memory Management Tests', () => {
 
       // Should not be able to make requests after destroy
       expect(() => client.get('/api/test')).not.toThrow(); // May return rejected promise
-      
+
       // Network status callbacks should not work
       client.setOnlineStatus(false);
       expect(statusCallback).not.toHaveBeenCalled();
-      
+
       // Should have cleared timers
       expect(clearTimeoutSpy).toHaveBeenCalled();
     });
 
     it('should abort ongoing requests on destroy', async () => {
       client = new ApiClient();
-      
+
       const abortSpy = vi.fn();
       vi.spyOn(window, 'AbortController').mockImplementation(() => ({
         signal: { aborted: false },
         abort: abortSpy
-      } as any));
+      }) as any);
 
       // Start a long-running request
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 10000))
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) => setTimeout(resolve, 10000))
       );
 
       const requestPromise = client.get('/api/test');
@@ -127,7 +127,7 @@ describe('Cleanup and Memory Management Tests', () => {
       client.destroy();
 
       expect(abortSpy).toHaveBeenCalled();
-      
+
       // Request should be rejected
       await expect(requestPromise).rejects.toThrow();
     });
@@ -147,10 +147,10 @@ describe('Cleanup and Memory Management Tests', () => {
       client.setOnlineStatus(false);
 
       // Add items to offline queue
-      await expect(client.post('/api/item1', { data: 1 }))
-        .rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
-      await expect(client.post('/api/item2', { data: 2 }))
-        .rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
+      await expect(client.post('/api/item1', { data: 1 })).
+      rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
+      await expect(client.post('/api/item2', { data: 2 })).
+      rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
 
       expect(client.getQueueStatus().size).toBe(2);
 
@@ -164,7 +164,7 @@ describe('Cleanup and Memory Management Tests', () => {
   describe('ConnectivityMonitor Cleanup', () => {
     it('should remove event listeners on destroy', () => {
       const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-      
+
       monitor = new ConnectivityMonitor();
       monitor.destroy();
 
@@ -174,7 +174,7 @@ describe('Cleanup and Memory Management Tests', () => {
 
     it('should clear heartbeat timer on destroy', () => {
       const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-      
+
       monitor = new ConnectivityMonitor({ heartbeatInterval: 1000 });
       monitor.destroy();
 
@@ -186,12 +186,12 @@ describe('Cleanup and Memory Management Tests', () => {
       vi.spyOn(window, 'AbortController').mockImplementation(() => ({
         signal: { aborted: false },
         abort: abortSpy
-      } as any));
+      }) as any);
 
       monitor = new ConnectivityMonitor();
-      
-      mockFetch.mockImplementation(() => 
-        new Promise(() => {}) // Never resolves
+
+      mockFetch.mockImplementation(() =>
+      new Promise(() => {}) // Never resolves
       );
 
       monitor.checkNow();
@@ -202,37 +202,37 @@ describe('Cleanup and Memory Management Tests', () => {
 
     it('should not notify listeners after destroy', async () => {
       monitor = new ConnectivityMonitor();
-      
+
       const listener = vi.fn();
       monitor.addListener(listener);
-      
+
       monitor.destroy();
 
       // Try to trigger status change (should not call listener)
       mockFetch.mockRejectedValueOnce(new TypeError('Network error'));
-      
+
       // This shouldn't work after destroy, but even if it does, 
       // listeners shouldn't be called
       const listenerCallsBefore = listener.mock.calls.length;
-      
+
       try {
         await monitor.checkNow();
       } catch {
+
         // Expected to fail after destroy
       }
-      
       expect(listener.mock.calls.length).toBe(listenerCallsBefore);
     });
 
     it('should handle listener removal during destroy', () => {
       monitor = new ConnectivityMonitor();
-      
+
       const listeners: (() => void)[] = [];
       for (let i = 0; i < 5; i++) {
         const removeListener = monitor.addListener(vi.fn(() => {
           // Try to remove other listeners during callback
-          listeners.forEach(remove => {
-            try { remove(); } catch {} // Ignore errors
+          listeners.forEach((remove) => {
+            try {remove();} catch {} // Ignore errors
           });
         }));
         listeners.push(removeListener);
@@ -245,24 +245,24 @@ describe('Cleanup and Memory Management Tests', () => {
   describe('Memory Leak Prevention', () => {
     it('should not retain references to destroyed components', () => {
       const clients: ApiClient[] = [];
-      
+
       // Create multiple clients
       for (let i = 0; i < 10; i++) {
         const c = new ApiClient();
         c.subscribeToNetworkStatus(vi.fn());
         clients.push(c);
       }
-      
+
       // Destroy all clients
-      clients.forEach(c => c.destroy());
-      
+      clients.forEach((c) => c.destroy());
+
       // Force garbage collection hint
       if (global.gc) {
         global.gc();
       }
-      
+
       // Verify no lingering effects
-      clients.forEach(c => {
+      clients.forEach((c) => {
         expect(() => c.get('/test')).not.toThrow();
         // The requests may return rejected promises, but shouldn't cause errors
       });
@@ -272,14 +272,14 @@ describe('Cleanup and Memory Management Tests', () => {
       for (let i = 0; i < 50; i++) {
         const c = new ApiClient();
         const m = new ConnectivityMonitor({ heartbeatInterval: 100 });
-        
+
         c.subscribeToNetworkStatus(vi.fn());
         m.addListener(vi.fn());
-        
+
         c.destroy();
         m.destroy();
       }
-      
+
       // Should not cause memory issues or errors
       expect(true).toBe(true);
     });
@@ -297,8 +297,8 @@ describe('Cleanup and Memory Management Tests', () => {
       };
 
       for (let i = 0; i < 10; i++) {
-        await expect(client.post(`/api/bulk${i}`, largeData))
-          .rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
+        await expect(client.post(`/api/bulk${i}`, largeData)).
+        rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
       }
 
       expect(client.getQueueStatus().size).toBe(10);
@@ -313,15 +313,15 @@ describe('Cleanup and Memory Management Tests', () => {
   describe('setState After Unmount Prevention', () => {
     it('should not update state after component destruction', async () => {
       client = new ApiClient();
-      
+
       const statusCallback = vi.fn();
       client.subscribeToNetworkStatus(statusCallback);
 
       // Start async operations
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve(new Response('OK')), 1000)
-        )
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) =>
+      setTimeout(() => resolve(new Response('OK')), 1000)
+      )
       );
 
       const requestPromise = client.get('/api/test');
@@ -332,25 +332,25 @@ describe('Cleanup and Memory Management Tests', () => {
 
       // Complete the async operation
       vi.advanceTimersByTime(1000);
-      
+
       // Should not cause state updates or call callbacks
       const callsBefore = statusCallback.mock.calls.length;
       await requestPromise.catch(() => {}); // Ignore rejection
-      
+
       expect(statusCallback.mock.calls.length).toBe(callsBefore);
     });
 
     it('should handle connectivity status changes after destroy', async () => {
       monitor = new ConnectivityMonitor({ heartbeatInterval: 1000 });
-      
+
       const listener = vi.fn();
       monitor.addListener(listener);
 
       // Start heartbeat
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => 
-          setTimeout(() => resolve(new Response('OK')), 500)
-        )
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) =>
+      setTimeout(() => resolve(new Response('OK')), 500)
+      )
       );
 
       vi.advanceTimersByTime(100);
@@ -367,7 +367,7 @@ describe('Cleanup and Memory Management Tests', () => {
 
       // Simulate rapid operations during cleanup
       const operations = [];
-      
+
       for (let i = 0; i < 20; i++) {
         operations.push(async () => {
           try {
@@ -377,7 +377,7 @@ describe('Cleanup and Memory Management Tests', () => {
       }
 
       // Start operations
-      operations.forEach(op => op());
+      operations.forEach((op) => op());
 
       // Destroy while operations are running
       setTimeout(() => {
@@ -402,8 +402,8 @@ describe('Cleanup and Memory Management Tests', () => {
       mockFetch.mockImplementation(() => {
         activeRequests++;
         maxConcurrent.value = Math.max(maxConcurrent.value, activeRequests);
-        
-        return new Promise(resolve => {
+
+        return new Promise((resolve) => {
           setTimeout(() => {
             activeRequests--;
             resolve(new Response('OK'));
@@ -412,8 +412,8 @@ describe('Cleanup and Memory Management Tests', () => {
       });
 
       // Start many requests
-      const requests = Array.from({ length: 10 }, (_, i) => 
-        client.get(`/api/test${i}`)
+      const requests = Array.from({ length: 10 }, (_, i) =>
+      client.get(`/api/test${i}`)
       );
 
       vi.advanceTimersByTime(300);
@@ -454,7 +454,7 @@ describe('Cleanup and Memory Management Tests', () => {
   describe('Error Boundary Integration', () => {
     it('should not throw unhandled errors during cleanup', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       client = new ApiClient();
       monitor = new ConnectivityMonitor();
 
@@ -488,14 +488,14 @@ describe('Cleanup and Memory Management Tests', () => {
 
       // Cleanup all components
       const cleanupPromises = [
-        ...clients.map(c => Promise.resolve().then(() => c.destroy())),
-        ...monitors.map(m => Promise.resolve().then(() => m.destroy()))
-      ];
+      ...clients.map((c) => Promise.resolve().then(() => c.destroy())),
+      ...monitors.map((m) => Promise.resolve().then(() => m.destroy()))];
+
 
       // Should handle individual failures without affecting others
       const results = await Promise.allSettled(cleanupPromises);
-      
-      const failures = results.filter(r => r.status === 'rejected');
+
+      const failures = results.filter((r) => r.status === 'rejected');
       expect(failures.length).toBeLessThanOrEqual(1); // Only the faulty one should fail
     });
   });

@@ -70,39 +70,39 @@ describe('Enhanced Connectivity Tests', () => {
 
       // Simulate rapid network flapping
       mockFetch.mockRejectedValueOnce(new TypeError('Network error'));
-      
+
       // Go offline
       await monitor.checkNow();
       await monitor.checkNow(); // Second failure triggers offline
       expect(monitor.getStatus().online).toBe(false);
-      
+
       // Rapid recovery and failure
       mockFetch.mockResolvedValueOnce(new Response('OK', { status: 200 }));
       await monitor.checkNow();
       expect(monitor.getStatus().online).toBe(true);
-      
+
       // Immediate failure again
       mockFetch.mockRejectedValueOnce(new TypeError('Network error'));
       await monitor.checkNow();
       await monitor.checkNow();
       expect(monitor.getStatus().online).toBe(false);
-      
+
       // Should have been called for each state change
       expect(statusCallback).toHaveBeenCalledTimes(3); // offline, online, offline
     });
 
     it('should debounce rapid status changes', async () => {
-      monitor = new ConnectivityMonitor({ 
+      monitor = new ConnectivityMonitor({
         heartbeatInterval: 100,
         consecutiveFailureThreshold: 1 // More sensitive for testing
       });
       monitor.addListener(statusCallback);
 
       // Simulate multiple rapid failures
-      mockFetch
-        .mockRejectedValueOnce(new TypeError('Network error'))
-        .mockRejectedValueOnce(new TypeError('Network error'))
-        .mockRejectedValueOnce(new TypeError('Network error'));
+      mockFetch.
+      mockRejectedValueOnce(new TypeError('Network error')).
+      mockRejectedValueOnce(new TypeError('Network error')).
+      mockRejectedValueOnce(new TypeError('Network error'));
 
       await monitor.checkNow();
       await monitor.checkNow();
@@ -120,8 +120,8 @@ describe('Enhanced Connectivity Tests', () => {
       monitor.addListener(statusCallback);
 
       // Start a heartbeat check that will fail
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(new Response('OK', { status: 200 })), 2000))
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) => setTimeout(() => resolve(new Response('OK', { status: 200 })), 2000))
       );
 
       const checkPromise = monitor.checkNow();
@@ -180,15 +180,15 @@ describe('Enhanced Connectivity Tests', () => {
   describe('Endpoint Fallback Strategy', () => {
     it('should try all configured endpoints before marking offline', async () => {
       const endpoints = ['/health', '/favicon.ico', '/robots.txt'];
-      monitor = new ConnectivityMonitor({ 
-        endpoints: endpoints.map(path => ({ path, timeout: 1000 }))
+      monitor = new ConnectivityMonitor({
+        endpoints: endpoints.map((path) => ({ path, timeout: 1000 }))
       });
 
       // Make all endpoints fail except the last one
-      mockFetch
-        .mockRejectedValueOnce(new Error('Health endpoint failed'))
-        .mockRejectedValueOnce(new Error('Favicon failed'))
-        .mockResolvedValueOnce(new Response('OK', { status: 200 }));
+      mockFetch.
+      mockRejectedValueOnce(new Error('Health endpoint failed')).
+      mockRejectedValueOnce(new Error('Favicon failed')).
+      mockResolvedValueOnce(new Response('OK', { status: 200 }));
 
       await monitor.checkNow();
 
@@ -198,11 +198,11 @@ describe('Enhanced Connectivity Tests', () => {
 
     it('should track per-endpoint failure rates', async () => {
       monitor = new ConnectivityMonitor();
-      
+
       // Fail health endpoint, succeed with favicon
-      mockFetch
-        .mockRejectedValueOnce(new Error('Health endpoint failed'))
-        .mockResolvedValueOnce(new Response('OK', { status: 200 }));
+      mockFetch.
+      mockRejectedValueOnce(new Error('Health endpoint failed')).
+      mockResolvedValueOnce(new Response('OK', { status: 200 }));
 
       await monitor.checkNow();
 
@@ -215,7 +215,7 @@ describe('Enhanced Connectivity Tests', () => {
   describe('Memory Management and Cleanup', () => {
     it('should not leak memory after multiple destroy/recreate cycles', () => {
       const monitors: ConnectivityMonitor[] = [];
-      
+
       // Create and destroy multiple monitors
       for (let i = 0; i < 10; i++) {
         const m = new ConnectivityMonitor({ heartbeatInterval: 100 });
@@ -225,14 +225,14 @@ describe('Enhanced Connectivity Tests', () => {
       }
 
       // All should be destroyed properly
-      monitors.forEach(m => {
+      monitors.forEach((m) => {
         expect(() => m.checkNow()).not.toThrow();
       });
     });
 
     it('should handle listener removal during status updates', async () => {
       monitor = new ConnectivityMonitor();
-      
+
       let removalCallback: (() => void) | null = null;
       const removingListener = vi.fn(() => {
         if (removalCallback) {
@@ -264,10 +264,10 @@ describe('Enhanced Connectivity Tests', () => {
       vi.spyOn(window, 'AbortController').mockReturnValue(mockController as any);
 
       monitor = new ConnectivityMonitor();
-      
+
       // Start a long request
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 10000))
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) => setTimeout(resolve, 10000))
       );
 
       monitor.checkNow();
@@ -280,9 +280,9 @@ describe('Enhanced Connectivity Tests', () => {
   describe('Latency Tracking', () => {
     it('should track response latencies accurately', async () => {
       let responseTime = 0;
-      vi.spyOn(window.performance, 'now')
-        .mockReturnValueOnce(1000) // Start time
-        .mockReturnValueOnce(1250); // End time (250ms later)
+      vi.spyOn(window.performance, 'now').
+      mockReturnValueOnce(1000) // Start time
+      .mockReturnValueOnce(1250); // End time (250ms later)
 
       mockFetch.mockResolvedValueOnce(new Response('OK', { status: 200 }));
 
@@ -299,9 +299,9 @@ describe('Enhanced Connectivity Tests', () => {
 
       // Generate multiple responses with different latencies
       for (let i = 0; i < 15; i++) {
-        vi.spyOn(window.performance, 'now')
-          .mockReturnValueOnce(1000)
-          .mockReturnValueOnce(1000 + (i * 10));
+        vi.spyOn(window.performance, 'now').
+        mockReturnValueOnce(1000).
+        mockReturnValueOnce(1000 + i * 10);
 
         mockFetch.mockResolvedValueOnce(new Response('OK', { status: 200 }));
         await monitor.checkNow();
@@ -323,12 +323,12 @@ describe('Enhanced Connectivity Tests', () => {
     it('should handle very short timeouts', async () => {
       monitor = new ConnectivityMonitor({ heartbeatTimeout: 1 });
 
-      mockFetch.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(new Response('OK')), 100))
+      mockFetch.mockImplementation(() =>
+      new Promise((resolve) => setTimeout(() => resolve(new Response('OK')), 100))
       );
 
       await monitor.checkNow();
-      
+
       // Should timeout and be marked as offline
       expect(monitor.getStatus().online).toBe(false);
     });
@@ -343,7 +343,7 @@ describe('Enhanced Connectivity Tests', () => {
   describe('Concurrent Operations', () => {
     it('should handle multiple simultaneous checkNow() calls', async () => {
       monitor = new ConnectivityMonitor();
-      
+
       mockFetch.mockResolvedValue(new Response('OK', { status: 200 }));
 
       // Start multiple checks simultaneously
@@ -360,7 +360,7 @@ describe('Enhanced Connectivity Tests', () => {
       monitor.addListener(statusCallback);
 
       const lateListener = vi.fn();
-      
+
       // Add listener during status change callback
       statusCallback.mockImplementation(() => {
         monitor.addListener(lateListener);

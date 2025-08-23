@@ -100,7 +100,7 @@ export function EnhancedInvoiceOperations() {
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await networkAPI.readWithRetry(
         () => window.ezsite.apis.tablePage(36856, {
           PageNo: 1,
@@ -112,11 +112,11 @@ export function EnhancedInvoiceOperations() {
       );
 
       if (error) throw error;
-      
+
       setInvoices(data?.List || []);
     } catch (error) {
       console.error('Error loading invoices:', error);
-      
+
       if (error instanceof ApiError && error.code !== ERROR_CODES.NETWORK_OFFLINE) {
         toast({
           title: "Error",
@@ -156,13 +156,13 @@ export function EnhancedInvoiceOperations() {
   const executeEmailSend = async (invoiceId: string, emailData: any, idempotencyKey: string) => {
     // In a real implementation, this would call an email service
     // For now, we'll simulate it
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log('Email sent for invoice:', invoiceId, emailData);
   };
 
   const executePrintRequest = async (invoiceId: string, printData: any, idempotencyKey: string) => {
     // In a real implementation, this would send to printer service
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     console.log('Print requested for invoice:', invoiceId, printData);
   };
 
@@ -172,13 +172,13 @@ export function EnhancedInvoiceOperations() {
     setIsSyncing(true);
     setLastSyncAttempt(Date.now());
 
-    const operationsToProcess = queuedOperations.filter(op => op.status === 'pending');
+    const operationsToProcess = queuedOperations.filter((op) => op.status === 'pending');
     let processedCount = 0;
     let failedCount = 0;
 
     // Update all pending operations to syncing status
-    const updatedOperations = queuedOperations.map(op => 
-      op.status === 'pending' ? { ...op, status: 'syncing' as const } : op
+    const updatedOperations = queuedOperations.map((op) =>
+    op.status === 'pending' ? { ...op, status: 'syncing' as const } : op
     );
     saveQueuedOperations(updatedOperations);
 
@@ -200,17 +200,17 @@ export function EnhancedInvoiceOperations() {
         }
 
         // Remove successfully processed operation
-        const remainingOperations = queuedOperations.filter(op => op.id !== operation.id);
+        const remainingOperations = queuedOperations.filter((op) => op.id !== operation.id);
         saveQueuedOperations(remainingOperations);
         processedCount++;
       } catch (error) {
         console.error('Failed to process queued operation:', error);
-        
+
         // Mark as failed
-        const failedOperations = queuedOperations.map(op => 
-          op.id === operation.id 
-            ? { ...op, status: 'failed' as const } 
-            : op
+        const failedOperations = queuedOperations.map((op) =>
+        op.id === operation.id ?
+        { ...op, status: 'failed' as const } :
+        op
         );
         saveQueuedOperations(failedOperations);
         failedCount++;
@@ -225,7 +225,7 @@ export function EnhancedInvoiceOperations() {
         description: `${processedCount} offline operation(s) synced successfully`,
         variant: "default"
       });
-      
+
       // Reload invoices to show updated data
       await loadInvoices();
     }
@@ -261,12 +261,12 @@ export function EnhancedInvoiceOperations() {
           () => executeStatusUpdate(invoice.id.toString(), newStatus, idempotencyKey),
           'Invoice status'
         );
-        
+
         // Update local state
-        setInvoices(prev => prev.map(inv => 
-          inv.id === invoice.id 
-            ? { ...inv, status: newStatus.newStatus, paid_amount: newStatus.paymentAmount || inv.paid_amount }
-            : inv
+        setInvoices((prev) => prev.map((inv) =>
+        inv.id === invoice.id ?
+        { ...inv, status: newStatus.newStatus, paid_amount: newStatus.paymentAmount || inv.paid_amount } :
+        inv
         ));
       } else {
         // Queue for offline processing
@@ -380,22 +380,22 @@ export function EnhancedInvoiceOperations() {
   const handleRetryNow = async () => {
     setLastSyncAttempt(Date.now());
     await retryNow();
-    
+
     if (queuedOperations.length > 0) {
       await processQueuedOperations();
     }
-    
+
     // Also try to reload invoices
     await loadInvoices();
   };
 
   const handleRetryOperation = async (operationId: string) => {
-    const operation = queuedOperations.find(op => op.id === operationId);
+    const operation = queuedOperations.find((op) => op.id === operationId);
     if (!operation) return;
 
     try {
       setIsSyncing(true);
-      
+
       switch (operation.type) {
         case 'status_update':
           await executeStatusUpdate(operation.invoiceId, operation.payload, operation.idempotencyKey);
@@ -407,16 +407,16 @@ export function EnhancedInvoiceOperations() {
           await executePrintRequest(operation.invoiceId, operation.payload, operation.idempotencyKey);
           break;
       }
-      
-      const remainingOperations = queuedOperations.filter(op => op.id !== operationId);
+
+      const remainingOperations = queuedOperations.filter((op) => op.id !== operationId);
       saveQueuedOperations(remainingOperations);
-      
+
       toast({
         title: "Retry Successful",
         description: "Operation completed successfully",
         variant: "default"
       });
-      
+
       await loadInvoices();
     } catch (error) {
       toast({
@@ -431,21 +431,21 @@ export function EnhancedInvoiceOperations() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'partial': return 'bg-blue-100 text-blue-800';
-      case 'voided': return 'bg-red-100 text-red-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid':return 'bg-green-100 text-green-800';
+      case 'pending':return 'bg-yellow-100 text-yellow-800';
+      case 'partial':return 'bg-blue-100 text-blue-800';
+      case 'voided':return 'bg-red-100 text-red-800';
+      case 'overdue':return 'bg-red-100 text-red-800';
+      default:return 'bg-gray-100 text-gray-800';
     }
   };
 
   const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
   const formatDate = (dateString: string) => format(new Date(dateString), 'MMM dd, yyyy');
 
-  const pendingOperations = queuedOperations.filter(op => op.status === 'pending');
-  const failedOperations = queuedOperations.filter(op => op.status === 'failed');
-  const syncingOperations = queuedOperations.filter(op => op.status === 'syncing');
+  const pendingOperations = queuedOperations.filter((op) => op.status === 'pending');
+  const failedOperations = queuedOperations.filter((op) => op.status === 'failed');
+  const syncingOperations = queuedOperations.filter((op) => op.status === 'syncing');
 
   if (loading) {
     return (
@@ -455,13 +455,13 @@ export function EnhancedInvoiceOperations() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse h-16 bg-gray-200 rounded" />
-            ))}
+            {[1, 2, 3].map((i) =>
+            <div key={i} className="animate-pulse h-16 bg-gray-200 rounded" />
+            )}
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -470,37 +470,37 @@ export function EnhancedInvoiceOperations() {
         <CardTitle className="flex items-center justify-between">
           <span>Invoice Operations</span>
           <div className="flex items-center gap-2">
-            {!online && (
-              <Badge variant="secondary" className="flex items-center gap-1">
+            {!online &&
+            <Badge variant="secondary" className="flex items-center gap-1">
                 <WifiOff className="h-3 w-3" />
                 Offline
               </Badge>
-            )}
-            {pendingOperations.length > 0 && (
-              <Badge variant="outline" className="flex items-center gap-1">
+            }
+            {pendingOperations.length > 0 &&
+            <Badge variant="outline" className="flex items-center gap-1">
                 <CloudOff className="h-3 w-3" />
                 {pendingOperations.length} queued
               </Badge>
-            )}
-            {syncingOperations.length > 0 && (
-              <Badge variant="default" className="flex items-center gap-1">
+            }
+            {syncingOperations.length > 0 &&
+            <Badge variant="default" className="flex items-center gap-1">
                 <RefreshCw className="h-3 w-3 animate-spin" />
                 {syncingOperations.length} syncing
               </Badge>
-            )}
-            {failedOperations.length > 0 && (
-              <Badge variant="destructive" className="flex items-center gap-1">
+            }
+            {failedOperations.length > 0 &&
+            <Badge variant="destructive" className="flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
                 {failedOperations.length} failed
               </Badge>
-            )}
+            }
             <Button
               variant="outline"
               size="sm"
               onClick={handleRetryNow}
               disabled={isSyncing}
-              className="flex items-center gap-2"
-            >
+              className="flex items-center gap-2">
+
               <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
               {isSyncing ? 'Syncing...' : 'Refresh'}
             </Button>
@@ -512,11 +512,11 @@ export function EnhancedInvoiceOperations() {
         <div className="space-y-4">
           {/* Recent Invoices */}
           <div className="grid gap-4">
-            {invoices.slice(0, 10).map((invoice) => (
-              <div
-                key={invoice.id}
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-              >
+            {invoices.slice(0, 10).map((invoice) =>
+            <div
+              key={invoice.id}
+              className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
@@ -532,67 +532,67 @@ export function EnhancedInvoiceOperations() {
 
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePrintInvoice(invoice)}
-                      disabled={!online && pendingOperations.length >= 10}
-                      aria-disabled={!online && pendingOperations.length >= 10}
-                      className="flex items-center gap-2"
-                    >
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePrintInvoice(invoice)}
+                    disabled={!online && pendingOperations.length >= 10}
+                    aria-disabled={!online && pendingOperations.length >= 10}
+                    className="flex items-center gap-2">
+
                       <Printer className="h-4 w-4" />
                       Print
                     </Button>
 
-                    {invoice.customer_email && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEmailInvoice(invoice)}
-                        disabled={!online && pendingOperations.length >= 10}
-                        aria-disabled={!online && pendingOperations.length >= 10}
-                        className="flex items-center gap-2"
-                      >
+                    {invoice.customer_email &&
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEmailInvoice(invoice)}
+                    disabled={!online && pendingOperations.length >= 10}
+                    aria-disabled={!online && pendingOperations.length >= 10}
+                    className="flex items-center gap-2">
+
                         <Mail className="h-4 w-4" />
                         Email
                       </Button>
-                    )}
+                  }
 
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedInvoice(invoice);
-                        setStatusUpdateData({
-                          newStatus: invoice.status === 'pending' ? 'paid' : 'pending',
-                          paymentAmount: invoice.total_amount
-                        });
-                        setStatusUpdateDialog(true);
-                      }}
-                      disabled={!online && pendingOperations.length >= 10}
-                      aria-disabled={!online && pendingOperations.length >= 10}
-                      className="flex items-center gap-2"
-                    >
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedInvoice(invoice);
+                      setStatusUpdateData({
+                        newStatus: invoice.status === 'pending' ? 'paid' : 'pending',
+                        paymentAmount: invoice.total_amount
+                      });
+                      setStatusUpdateDialog(true);
+                    }}
+                    disabled={!online && pendingOperations.length >= 10}
+                    aria-disabled={!online && pendingOperations.length >= 10}
+                    className="flex items-center gap-2">
+
                       <Edit className="h-4 w-4" />
                       Update Status
                     </Button>
                   </div>
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Status Messages */}
-          {!online && (
-            <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-md">
+          {!online &&
+          <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-md">
               <div className="flex items-center gap-2">
                 <WifiOff className="h-4 w-4" />
                 <span>You're offline. Invoice operations will be saved locally and synced when connection is restored.</span>
               </div>
             </div>
-          )}
+          }
 
-          {queuedOperations.length > 0 && (
-            <div className="text-sm bg-blue-50 border border-blue-200 p-3 rounded-md">
+          {queuedOperations.length > 0 &&
+          <div className="text-sm bg-blue-50 border border-blue-200 p-3 rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <CloudOff className="h-4 w-4 text-blue-700" />
@@ -600,49 +600,49 @@ export function EnhancedInvoiceOperations() {
                     {queuedOperations.length} offline operation(s) waiting to sync
                   </span>
                 </div>
-                {online && !isSyncing && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={processQueuedOperations}
-                    className="text-blue-700 border-blue-300"
-                  >
+                {online && !isSyncing &&
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={processQueuedOperations}
+                className="text-blue-700 border-blue-300">
+
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Sync Now
                   </Button>
-                )}
+              }
               </div>
 
-              {failedOperations.length > 0 && (
-                <div className="space-y-1">
-                  {failedOperations.slice(0, 3).map(operation => (
-                    <div key={operation.id} className="flex items-center justify-between text-xs">
+              {failedOperations.length > 0 &&
+            <div className="space-y-1">
+                  {failedOperations.slice(0, 3).map((operation) =>
+              <div key={operation.id} className="flex items-center justify-between text-xs">
                       <span>{operation.type} for {operation.invoiceNumber}</span>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRetryOperation(operation.id)}
-                        className="h-6 px-2 text-red-600"
-                      >
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRetryOperation(operation.id)}
+                  className="h-6 px-2 text-red-600">
+
                         Retry
                       </Button>
                     </div>
-                  ))}
-                  {failedOperations.length > 3 && (
-                    <div className="text-xs text-gray-600">
+              )}
+                  {failedOperations.length > 3 &&
+              <div className="text-xs text-gray-600">
                       ...and {failedOperations.length - 3} more
                     </div>
-                  )}
+              }
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
 
-          {lastSyncAttempt && (
-            <div className="text-xs text-gray-500 text-center">
+          {lastSyncAttempt &&
+          <div className="text-xs text-gray-500 text-center">
               Last sync attempt: {new Date(lastSyncAttempt).toLocaleTimeString()}
             </div>
-          )}
+          }
         </div>
       </CardContent>
 
@@ -653,8 +653,8 @@ export function EnhancedInvoiceOperations() {
             <DialogTitle>Update Invoice Status</DialogTitle>
           </DialogHeader>
           
-          {selectedInvoice && (
-            <div className="space-y-4">
+          {selectedInvoice &&
+          <div className="space-y-4">
               <div className="p-3 bg-gray-50 rounded">
                 <div className="font-medium">{selectedInvoice.invoice_number}</div>
                 <div className="text-sm text-gray-600">
@@ -666,11 +666,11 @@ export function EnhancedInvoiceOperations() {
                 <div>
                   <Label htmlFor="newStatus">New Status</Label>
                   <Select
-                    value={statusUpdateData.newStatus}
-                    onValueChange={(value: any) => 
-                      setStatusUpdateData(prev => ({ ...prev, newStatus: value }))
-                    }
-                  >
+                  value={statusUpdateData.newStatus}
+                  onValueChange={(value: any) =>
+                  setStatusUpdateData((prev) => ({ ...prev, newStatus: value }))
+                  }>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -683,32 +683,32 @@ export function EnhancedInvoiceOperations() {
                   </Select>
                 </div>
 
-                {statusUpdateData.newStatus === 'paid' && (
-                  <div className="grid grid-cols-2 gap-3">
+                {statusUpdateData.newStatus === 'paid' &&
+              <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label htmlFor="paymentAmount">Payment Amount</Label>
                       <Input
-                        id="paymentAmount"
-                        type="number"
-                        step="0.01"
-                        value={statusUpdateData.paymentAmount || ''}
-                        onChange={(e) => 
-                          setStatusUpdateData(prev => ({ 
-                            ...prev, 
-                            paymentAmount: parseFloat(e.target.value) 
-                          }))
-                        }
-                        placeholder="0.00"
-                      />
+                    id="paymentAmount"
+                    type="number"
+                    step="0.01"
+                    value={statusUpdateData.paymentAmount || ''}
+                    onChange={(e) =>
+                    setStatusUpdateData((prev) => ({
+                      ...prev,
+                      paymentAmount: parseFloat(e.target.value)
+                    }))
+                    }
+                    placeholder="0.00" />
+
                     </div>
                     <div>
                       <Label htmlFor="paymentMethod">Payment Method</Label>
                       <Select
-                        value={statusUpdateData.paymentMethod || 'cash'}
-                        onValueChange={(value) => 
-                          setStatusUpdateData(prev => ({ ...prev, paymentMethod: value }))
-                        }
-                      >
+                    value={statusUpdateData.paymentMethod || 'cash'}
+                    onValueChange={(value) =>
+                    setStatusUpdateData((prev) => ({ ...prev, paymentMethod: value }))
+                    }>
+
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -720,40 +720,40 @@ export function EnhancedInvoiceOperations() {
                       </Select>
                     </div>
                   </div>
-                )}
+              }
 
                 <div>
                   <Label htmlFor="notes">Notes (Optional)</Label>
                   <Input
-                    id="notes"
-                    value={statusUpdateData.notes || ''}
-                    onChange={(e) => 
-                      setStatusUpdateData(prev => ({ ...prev, notes: e.target.value }))
-                    }
-                    placeholder="Additional notes"
-                  />
+                  id="notes"
+                  value={statusUpdateData.notes || ''}
+                  onChange={(e) =>
+                  setStatusUpdateData((prev) => ({ ...prev, notes: e.target.value }))
+                  }
+                  placeholder="Additional notes" />
+
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
-                  variant="outline"
-                  onClick={() => setStatusUpdateDialog(false)}
-                >
+                variant="outline"
+                onClick={() => setStatusUpdateDialog(false)}>
+
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => handleStatusUpdate(selectedInvoice, statusUpdateData)}
-                  disabled={!online && pendingOperations.length >= 10}
-                  aria-disabled={!online && pendingOperations.length >= 10}
-                >
+                onClick={() => handleStatusUpdate(selectedInvoice, statusUpdateData)}
+                disabled={!online && pendingOperations.length >= 10}
+                aria-disabled={!online && pendingOperations.length >= 10}>
+
                   {online ? 'Update Status' : 'Save Offline'}
                 </Button>
               </div>
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
-    </Card>
-  );
+    </Card>);
+
 }

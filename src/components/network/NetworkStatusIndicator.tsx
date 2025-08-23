@@ -13,21 +13,28 @@ export function NetworkStatusIndicator() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [diagnostics, setDiagnostics] = useState<any>(null);
 
+  // Safe access to status properties with defaults
+  const consecutiveFailures = status?.consecutiveFailures ?? 0;
+  const lastCheck = status?.lastCheck ?? new Date();
+  const lastError = status?.lastError;
+
   const loadDiagnostics = () => {
-    setDiagnostics(getDiagnostics());
+    if (getDiagnostics) {
+      setDiagnostics(getDiagnostics());
+    }
     setShowDiagnostics(true);
   };
 
   const getStatusColor = () => {
     if (online) {
-      return status.consecutiveFailures === 0 ? 'success' : 'warning';
+      return consecutiveFailures === 0 ? 'default' : 'secondary';
     }
     return 'destructive';
   };
 
   const getStatusIcon = () => {
     if (online) {
-      return status.consecutiveFailures === 0 ?
+      return consecutiveFailures === 0 ?
       <CheckCircle className="h-3 w-3" /> :
       <AlertCircle className="h-3 w-3" />;
     }
@@ -36,10 +43,10 @@ export function NetworkStatusIndicator() {
 
   const getStatusText = () => {
     if (online) {
-      if (status.consecutiveFailures === 0) {
+      if (consecutiveFailures === 0) {
         return 'Online';
       }
-      return `Unstable (${status.consecutiveFailures} failures)`;
+      return `Unstable (${consecutiveFailures} failures)`;
     }
     return 'Offline';
   };
@@ -82,13 +89,13 @@ export function NetworkStatusIndicator() {
                     <div>Status: <Badge variant={online ? 'default' : 'destructive'} className="text-xs">
                       {online ? 'Online' : 'Offline'}
                     </Badge></div>
-                    <div>Failures: {status.consecutiveFailures}</div>
+                    <div>Failures: {consecutiveFailures}</div>
                     <div className="col-span-2">
-                      Last Check: {formatDistanceToNow(status.lastCheck, { addSuffix: true })}
+                      Last Check: {formatDistanceToNow(lastCheck, { addSuffix: true })}
                     </div>
-                    {status.lastError &&
+                    {lastError &&
                   <div className="col-span-2 text-red-600">
-                        Error: {status.lastError}
+                        Error: {lastError}
                       </div>
                   }
                   </div>
@@ -101,8 +108,8 @@ export function NetworkStatusIndicator() {
                       Heartbeat
                     </h5>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>Success Rate: {Math.round(diagnostics.connectivity.successfulAttempts / diagnostics.connectivity.totalAttempts * 100) || 0}%</div>
-                      <div>Avg Latency: {Math.round(diagnostics.connectivity.averageLatency) || 0}ms</div>
+                      <div>Success Rate: {Math.round((diagnostics.connectivity.successfulAttempts || 0) / (diagnostics.connectivity.totalAttempts || 1) * 100)}%</div>
+                      <div>Avg Latency: {Math.round(diagnostics.connectivity.averageLatency || 0)}ms</div>
                       <div className="col-span-2">
                         Endpoint: <code className="text-xs bg-gray-100 px-1 rounded">
                           {diagnostics.connectivity.lastSuccessfulEndpoint || 'None'}
@@ -119,7 +126,7 @@ export function NetworkStatusIndicator() {
                       API Client
                     </h5>
                     <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>Queue Size: {diagnostics.apiClient.queueStatus.size}</div>
+                      <div>Queue Size: {diagnostics.apiClient.queueStatus?.size || 0}</div>
                       <div>Retry Paused: {diagnostics.apiClient.retrySchedulerPaused ? 'Yes' : 'No'}</div>
                     </div>
                   </div>

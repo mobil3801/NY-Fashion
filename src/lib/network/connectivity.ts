@@ -57,7 +57,7 @@ class ConnectivityMonitor {
     this.status = {
       online: navigator.onLine,
       lastCheck: new Date(),
-      consecutiveFailures: 0
+      consecutiveFailures: 0 // Ensure this is always initialized
     };
 
     this.setupBrowserListeners();
@@ -100,7 +100,7 @@ class ConnectivityMonitor {
       clearTimeout(this.heartbeatTimer);
       this.heartbeatTimer = undefined;
     }
-    
+
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = undefined;
@@ -131,11 +131,11 @@ class ConnectivityMonitor {
       // Health check endpoint with fallbacks - using VITE_ prefix
       const healthEndpoint = import.meta.env.VITE_API_HEALTH_URL || '/v1/health';
       const endpoints = [
-        `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
-        `${window.location.origin}/favicon.ico`, // Static resource fallback
-        `${window.location.origin}/`, // Home page fallback
-        'https://httpbin.org/status/200', // External fallback
-        'https://www.google.com/favicon.ico' // Ultimate fallback
+      `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
+      `${window.location.origin}/favicon.ico`, // Static resource fallback
+      `${window.location.origin}/`, // Home page fallback
+      'https://httpbin.org/status/200', // External fallback
+      'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;
@@ -204,7 +204,7 @@ class ConnectivityMonitor {
   }
 
   private handleHeartbeatFailure(error: string): void {
-    const failures = this.status.consecutiveFailures + 1;
+    const failures = (this.status.consecutiveFailures || 0) + 1;
     const shouldMarkOffline = failures >= 2; // Mark offline after 2 consecutive failures
 
     this.debouncedUpdateStatus({
@@ -217,11 +217,13 @@ class ConnectivityMonitor {
   private debouncedUpdateStatus(updates: Partial<NetStatus>): void {
     if (this.isDestroyed) return;
 
-    // Store the pending update
+    // Store the pending update - ensure consecutiveFailures is always defined
     this.pendingStatusUpdate = {
-      ...this.status,
-      ...updates,
-      lastCheck: new Date()
+      online: this.status.online,
+      lastCheck: new Date(),
+      consecutiveFailures: this.status.consecutiveFailures || 0,
+      lastError: this.status.lastError,
+      ...updates
     };
 
     // Clear existing debounce timer
@@ -259,7 +261,11 @@ class ConnectivityMonitor {
   }
 
   public getStatus(): NetStatus {
-    return { ...this.status };
+    // Ensure consecutiveFailures is always defined in returned status
+    return { 
+      ...this.status,
+      consecutiveFailures: this.status.consecutiveFailures || 0
+    };
   }
 
   public addListener(listener: ConnectivityListener): () => void {
@@ -273,7 +279,12 @@ class ConnectivityMonitor {
   }
 
   public getDiagnostics() {
-    return { ...this.diagnostics, lastSuccessfulEndpoint: this.lastSuccessfulEndpoint };
+    return { 
+      connectivity: {
+        ...this.diagnostics, 
+        lastSuccessfulEndpoint: this.lastSuccessfulEndpoint
+      }
+    };
   }
 
   public destroy(): void {
@@ -313,11 +324,11 @@ export function isOfflineError(error: unknown): boolean {
 
 // Exponential backoff with full jitter
 export function calculateBackoffDelay(
-  attempt: number,
-  baseDelay: number = 300,
-  maxDelay: number = 10000,
-  factor: number = 2
-): number {
+attempt: number,
+baseDelay: number = 300,
+maxDelay: number = 10000,
+factor: number = 2)
+: number {
   // Full jitter exponential backoff: delay = Math.min(maxDelay, base * 2^(attempt-1))
   const exponentialDelay = baseDelay * Math.pow(factor, attempt - 1);
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
@@ -335,6 +346,7 @@ export function createConnectivity(config?: Partial<ConnectivityConfig>) {
     get: () => monitor.getStatus(),
     start: () => monitor.start(),
     stop: () => monitor.stop(),
-    pingNow: () => monitor.checkNow()
+    pingNow: () => monitor.checkNow(),
+    getDiagnostics: () => monitor.getDiagnostics()
   };
 }
