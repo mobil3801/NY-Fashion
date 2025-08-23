@@ -12,8 +12,8 @@ import ProductionApp from './ProductionApp';
 
 // Environment detection
 const isProductionEnv = () => {
-  return import.meta.env.PROD || import.meta.env.MODE === 'production' || 
-         process.env.NODE_ENV === 'production';
+  return import.meta.env.PROD || import.meta.env.MODE === 'production' ||
+  process.env.NODE_ENV === 'production';
 };
 
 // Create QueryClient with production-optimized settings
@@ -25,12 +25,12 @@ const queryClient = new QueryClient({
       gcTime: 30 * 60 * 1000, // 30 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
-      refetchOnMount: true,
+      refetchOnMount: true
     },
     mutations: {
-      retry: 2,
-    },
-  },
+      retry: 2
+    }
+  }
 });
 
 // Start the application immediately

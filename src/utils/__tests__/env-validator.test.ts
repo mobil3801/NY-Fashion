@@ -6,8 +6,8 @@ import {
   isDevelopment,
   isProduction,
   getEnvVar,
-  getEnvironmentConfig
-} from '../env-validator';
+  getEnvironmentConfig } from
+'../env-validator';
 
 // Mock import.meta.env
 const mockEnv = {
@@ -26,7 +26,7 @@ vi.mock('import.meta', () => ({
 describe('Environment Validator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Reset mock environment
     Object.assign(mockEnv, {
       NODE_ENV: 'test',
@@ -49,7 +49,7 @@ describe('Environment Validator', () => {
     it('should detect development environment', () => {
       mockEnv.NODE_ENV = 'development';
       mockEnv.DEV = true;
-      
+
       expect(isDevelopment()).toBe(true);
       expect(isProduction()).toBe(false);
       expect(getEnvironment()).toBe('development');
@@ -58,7 +58,7 @@ describe('Environment Validator', () => {
     it('should detect production environment', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       expect(isProduction()).toBe(true);
       expect(isDevelopment()).toBe(false);
       expect(getEnvironment()).toBe('production');
@@ -69,7 +69,7 @@ describe('Environment Validator', () => {
       delete mockEnv.MODE;
       mockEnv.DEV = false;
       mockEnv.PROD = false;
-      
+
       expect(getEnvironment()).toBe('production');
       expect(isProduction()).toBe(true);
     });
@@ -79,9 +79,9 @@ describe('Environment Validator', () => {
         value: 'development',
         writable: true
       });
-      
+
       expect(getEnvironment()).toBe('development');
-      
+
       delete (window as any).__NODE_ENV__;
     });
   });
@@ -89,9 +89,9 @@ describe('Environment Validator', () => {
   describe('environment validation', () => {
     it('should validate successfully with proper configuration', () => {
       mockEnv.NODE_ENV = 'development';
-      
+
       const validation = environmentValidator.validateAll();
-      
+
       expect(validation.isValid).toBe(true);
       expect(validation.errors).toHaveLength(0);
       expect(validation.environment).toBe('development');
@@ -103,12 +103,12 @@ describe('Environment Validator', () => {
       Object.defineProperty = vi.fn(() => {
         throw new Error('Cannot define property');
       });
-      
+
       const validation = environmentValidator.validateAll();
-      
+
       expect(validation.isValid).toBe(true); // Should still be valid due to error handling
       expect(validation.warnings.length).toBeGreaterThan(0);
-      
+
       // Restore
       Object.defineProperty = originalDefineProperty;
     });
@@ -116,7 +116,7 @@ describe('Environment Validator', () => {
     it('should warn about HTTPS in production', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       // Mock location to simulate HTTP in production
       Object.defineProperty(window, 'location', {
         value: {
@@ -125,16 +125,16 @@ describe('Environment Validator', () => {
         },
         writable: true
       });
-      
+
       const validation = environmentValidator.validateAll();
-      
+
       expect(validation.warnings).toContain('Production should use HTTPS');
     });
 
     it('should not warn about HTTP on localhost', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       Object.defineProperty(window, 'location', {
         value: {
           protocol: 'http:',
@@ -142,10 +142,10 @@ describe('Environment Validator', () => {
         },
         writable: true
       });
-      
+
       const validation = environmentValidator.validateAll();
-      
-      expect(validation.warnings.find(w => w.includes('HTTPS'))).toBeUndefined();
+
+      expect(validation.warnings.find((w) => w.includes('HTTPS'))).toBeUndefined();
     });
   });
 
@@ -154,9 +154,9 @@ describe('Environment Validator', () => {
       mockEnv.NODE_ENV = 'development';
       mockEnv.VITE_API_BASE_URL = 'http://localhost:8080';
       mockEnv.VITE_API_TIMEOUT = '5000';
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config).toHaveProperty('NODE_ENV', 'development');
       expect(config).toHaveProperty('API_BASE_URL', 'http://localhost:8080');
       expect(config).toHaveProperty('API_TIMEOUT', 5000);
@@ -167,9 +167,9 @@ describe('Environment Validator', () => {
       mockEnv.NODE_ENV = 'production';
       delete mockEnv.VITE_API_BASE_URL;
       delete mockEnv.VITE_API_TIMEOUT;
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.API_BASE_URL).toBe(window.location.origin);
       expect(config.API_TIMEOUT).toBe(30000);
       expect(config.ENABLE_DEBUG).toBe(false);
@@ -179,9 +179,9 @@ describe('Environment Validator', () => {
       mockEnv.VITE_API_TIMEOUT = '15000';
       mockEnv.VITE_API_RETRY_COUNT = '5';
       mockEnv.VITE_MAX_LOGIN_ATTEMPTS = '3';
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.API_TIMEOUT).toBe(15000);
       expect(config.API_RETRY_COUNT).toBe(5);
       expect(config.MAX_LOGIN_ATTEMPTS).toBe(3);
@@ -191,9 +191,9 @@ describe('Environment Validator', () => {
       mockEnv.VITE_ENABLE_DEBUG = 'true';
       mockEnv.VITE_ENABLE_CONSOLE_LOGGING = 'false';
       mockEnv.VITE_DISABLE_DEBUG_ROUTES = 'true';
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.ENABLE_DEBUG).toBe(true);
       expect(config.ENABLE_CONSOLE_LOGGING).toBe(false);
       expect(config.DISABLE_DEBUG_ROUTES).toBe(true);
@@ -203,7 +203,7 @@ describe('Environment Validator', () => {
   describe('environment variable getter', () => {
     it('should get environment variable with fallback', () => {
       mockEnv.VITE_CUSTOM_VALUE = 'test-value';
-      
+
       expect(getEnvVar('CUSTOM_VALUE')).toBe('test-value');
       expect(getEnvVar('VITE_CUSTOM_VALUE')).toBe('test-value');
       expect(getEnvVar('NON_EXISTENT', 'fallback')).toBe('fallback');
@@ -215,9 +215,9 @@ describe('Environment Validator', () => {
     it('should disable debug features in production', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.ENABLE_DEBUG).toBe(false);
       expect(config.ENABLE_CONSOLE_LOGGING).toBe(false);
       expect(config.DISABLE_DEBUG_ROUTES).toBe(true);
@@ -227,9 +227,9 @@ describe('Environment Validator', () => {
     it('should enable debug features in development', () => {
       mockEnv.NODE_ENV = 'development';
       mockEnv.DEV = true;
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.ENABLE_DEBUG).toBe(true);
       expect(config.ENABLE_CONSOLE_LOGGING).toBe(true);
       expect(config.DISABLE_DEBUG_ROUTES).toBe(false);
@@ -239,9 +239,9 @@ describe('Environment Validator', () => {
     it('should use stricter security settings in production', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.MAX_LOGIN_ATTEMPTS).toBe(5);
       expect(config.SESSION_TIMEOUT).toBe(3600000); // 1 hour
       expect(config.ENABLE_SECURITY_HEADERS).toBe(true);
@@ -250,9 +250,9 @@ describe('Environment Validator', () => {
     it('should use relaxed settings in development', () => {
       mockEnv.NODE_ENV = 'development';
       mockEnv.DEV = true;
-      
+
       const config = getEnvironmentConfig();
-      
+
       expect(config.MAX_LOGIN_ATTEMPTS).toBe(10);
       expect(config.SESSION_TIMEOUT).toBe(7200000); // 2 hours
     });
@@ -266,7 +266,7 @@ describe('Environment Validator', () => {
         writable: false,
         configurable: false
       });
-      
+
       expect(() => {
         environmentValidator.validateAll();
       }).not.toThrow();
@@ -278,11 +278,11 @@ describe('Environment Validator', () => {
       environmentValidator.validateAll = vi.fn(() => {
         throw new Error('Validation failed');
       });
-      
+
       const validation = environmentValidator.validateAll();
       expect(validation.isValid).toBe(true);
       expect(validation.warnings.length).toBeGreaterThan(0);
-      
+
       // Restore
       environmentValidator.validateAll = original;
     });
@@ -290,18 +290,18 @@ describe('Environment Validator', () => {
     it('should not log in production unless there are warnings', () => {
       mockEnv.NODE_ENV = 'production';
       mockEnv.PROD = true;
-      
+
       environmentValidator.validateAll();
-      
+
       expect(console.log).not.toHaveBeenCalled();
     });
 
     it('should log configuration in development', () => {
       mockEnv.NODE_ENV = 'development';
       mockEnv.DEV = true;
-      
+
       environmentValidator.validateAll();
-      
+
       expect(console.log).toHaveBeenCalledWith(
         'Environment Configuration:',
         expect.any(Object)

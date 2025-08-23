@@ -64,12 +64,12 @@ function ProductionApp() {
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={
-                <PublicRoute>
+              <PublicRoute>
                   <LoginPage />
                 </PublicRoute>
               } />
               <Route path="/register" element={
-                <PublicRoute>
+              <PublicRoute>
                   <RegisterPage />
                 </PublicRoute>
               } />
@@ -77,52 +77,52 @@ function ProductionApp() {
               {/* Protected Routes with Main Layout */}
               <Route element={<MainLayout />}>  
                 <Route path="/dashboard" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <DashboardPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/sales" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <SalesPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/invoices" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <InvoicesPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/inventory" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <InventoryPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/employees" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <EmployeesPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/payroll" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <SalaryPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <AdminPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/settings" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <SettingsPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/pos" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <POSPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/purchase" element={
-                  <ProtectedRoute>
+                <ProtectedRoute>
                     <PurchasePage />
                   </ProtectedRoute>
                 } />
@@ -137,8 +137,8 @@ function ProductionApp() {
           <Toaster />
         </div>
       </Router>
-    </ErrorBoundary>
-  );
+    </ErrorBoundary>);
+
 }
 
 export default ProductionApp;

@@ -9,13 +9,13 @@ import { SECURITY_CONFIG } from './security';
 
 export const PRODUCTION_READY_CONFIG = {
   ...PRODUCTION_CONFIG,
-  
+
   // Enhanced Production Settings
   api: {
     ...PRODUCTION_CONFIG.api,
     enableCaching: true,
     enableCompression: true,
-    enableRequestDeduplication: true,
+    enableRequestDeduplication: true
   },
 
   // Performance Optimizations
@@ -26,7 +26,7 @@ export const PRODUCTION_READY_CONFIG = {
     enablePreloading: true,
     enableMinification: true,
     enableTreeShaking: true,
-    bundleAnalyzer: false, // Disabled in production
+    bundleAnalyzer: false // Disabled in production
   },
 
   // Security Hardening
@@ -37,7 +37,7 @@ export const PRODUCTION_READY_CONFIG = {
     enableHSTS: true,
     enableXSSProtection: true,
     enableFrameOptions: true,
-    enableReferrerPolicy: true,
+    enableReferrerPolicy: true
   },
 
   // Debug and Development Features - DISABLED
@@ -48,7 +48,7 @@ export const PRODUCTION_READY_CONFIG = {
     enableConsoleLogging: false,
     enableSourceMaps: false,
     enableDevTools: false,
-    enableHotReload: false,
+    enableHotReload: false
   },
 
   // Feature Flags for Production
@@ -58,7 +58,7 @@ export const PRODUCTION_READY_CONFIG = {
     enableTestingPages: false,
     enablePerformanceMonitoring: true,
     enableErrorTracking: true,
-    enableSecurityMonitoring: true,
+    enableSecurityMonitoring: true
   },
 
   // Build Configuration
@@ -70,7 +70,7 @@ export const PRODUCTION_READY_CONFIG = {
     removeConsoleLog: true,
     removeDebugger: true,
     optimizeDependencies: true,
-    generateSourceMap: false,
+    generateSourceMap: false
   },
 
   // Monitoring Configuration
@@ -80,16 +80,16 @@ export const PRODUCTION_READY_CONFIG = {
     enableAutomaticReporting: true,
     enablePerformanceTracking: true,
     enableUserExperienceTracking: false, // Privacy-focused
-    enableDetailedErrorReporting: true,
+    enableDetailedErrorReporting: true
   }
 } as const;
 
 // Export configuration based on environment
 export const getConfig = () => {
-  const isProd = process.env.NODE_ENV === 'production' || 
-                 import.meta.env.PROD || 
-                 import.meta.env.NODE_ENV === 'production';
-  
+  const isProd = process.env.NODE_ENV === 'production' ||
+  import.meta.env.PROD ||
+  import.meta.env.NODE_ENV === 'production';
+
   if (isProd) {
     return PRODUCTION_READY_CONFIG;
   }
@@ -100,7 +100,7 @@ export const getConfig = () => {
     development: {
       ...PRODUCTION_READY_CONFIG.development,
       enableConsoleLogging: true,
-      enableSourceMaps: true,
+      enableSourceMaps: true
     }
   };
 };

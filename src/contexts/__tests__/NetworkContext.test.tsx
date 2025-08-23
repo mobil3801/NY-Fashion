@@ -85,7 +85,7 @@ Object.defineProperty(window, 'removeEventListener', {
 const TestComponent = () => {
   const network = useNetwork();
   const isOnline = useOnlineStatus();
-  
+
   return (
     <div>
       <div data-testid="is-online">{isOnline ? 'online' : 'offline'}</div>
@@ -96,26 +96,26 @@ const TestComponent = () => {
       <div data-testid="pending-requests">{network.pendingRequests}</div>
       <div data-testid="failed-requests">{network.failedRequests}</div>
       <div data-testid="queued-operations">{network.queuedOperations}</div>
-      <button 
-        data-testid="check-connection" 
-        onClick={() => network.checkConnection()}
-      >
+      <button
+        data-testid="check-connection"
+        onClick={() => network.checkConnection()}>
+
         Check Connection
       </button>
-      <button 
-        data-testid="clear-errors" 
-        onClick={() => network.clearErrors()}
-      >
+      <button
+        data-testid="clear-errors"
+        onClick={() => network.clearErrors()}>
+
         Clear Errors
       </button>
-      <button 
-        data-testid="retry-requests" 
-        onClick={() => network.retryFailedRequests()}
-      >
+      <button
+        data-testid="retry-requests"
+        onClick={() => network.retryFailedRequests()}>
+
         Retry Requests
       </button>
-    </div>
-  );
+    </div>);
+
 };
 
 describe('NetworkContext', () => {
@@ -185,12 +185,12 @@ describe('NetworkContext', () => {
 
       // Simulate offline first
       Object.defineProperty(navigator, 'onLine', { value: false });
-      
+
       // Trigger offline event
       const offlineHandler = mockAddEventListener.mock.calls.find(
-        call => call[0] === 'offline'
+        (call) => call[0] === 'offline'
       )?.[1];
-      
+
       if (offlineHandler) {
         act(() => {
           offlineHandler();
@@ -203,11 +203,11 @@ describe('NetworkContext', () => {
 
       // Now go back online
       Object.defineProperty(navigator, 'onLine', { value: true });
-      
+
       const onlineHandler = mockAddEventListener.mock.calls.find(
-        call => call[0] === 'online'
+        (call) => call[0] === 'online'
       )?.[1];
-      
+
       if (onlineHandler) {
         act(() => {
           onlineHandler();
@@ -239,7 +239,7 @@ describe('NetworkContext', () => {
 
       // Simulate connection change
       const changeHandler = mockConnection.addEventListener.mock.calls.find(
-        call => call[0] === 'change'
+        (call) => call[0] === 'change'
       )?.[1];
 
       if (changeHandler) {
@@ -301,10 +301,10 @@ describe('NetworkContext', () => {
         try {
           await fetch('/api/test');
         } catch (error) {
-          // Expected to fail
-        }
-      });
 
+
+          // Expected to fail
+        }});
       await waitFor(() => {
         expect(screen.getByTestId('failed-requests')).toHaveTextContent('1');
         expect(screen.getByTestId('is-connected')).toHaveTextContent('disconnected');
@@ -313,10 +313,10 @@ describe('NetworkContext', () => {
 
     it('should track pending requests correctly', async () => {
       let resolveRequest: () => void;
-      const mockFetch = vi.fn(() => 
-        new Promise((resolve) => {
-          resolveRequest = () => resolve(new Response('OK', { status: 200 }));
-        })
+      const mockFetch = vi.fn(() =>
+      new Promise((resolve) => {
+        resolveRequest = () => resolve(new Response('OK', { status: 200 }));
+      })
       );
       global.fetch = mockFetch;
 
@@ -361,7 +361,7 @@ describe('NetworkContext', () => {
       );
 
       const checkButton = screen.getByTestId('check-connection');
-      
+
       await act(async () => {
         checkButton.click();
       });
@@ -385,7 +385,7 @@ describe('NetworkContext', () => {
       );
 
       const checkButton = screen.getByTestId('check-connection');
-      
+
       await act(async () => {
         checkButton.click();
       });
@@ -436,10 +436,10 @@ describe('NetworkContext', () => {
         try {
           await fetch('/api/test');
         } catch (error) {
-          // Expected
-        }
-      });
 
+
+          // Expected
+        }});
       await waitFor(() => {
         expect(screen.getByTestId('failed-requests')).toHaveTextContent('1');
       });
@@ -471,10 +471,10 @@ describe('NetworkContext', () => {
           try {
             await fetch('/api/test');
           } catch (error) {
+
+
             // Expected
-          }
-        });
-      }
+          }});}
 
       await waitFor(() => {
         expect(screen.getByTestId('failed-requests')).toHaveTextContent('4');
@@ -539,10 +539,10 @@ describe('NetworkContext', () => {
       );
 
       const network = useNetwork();
-      
+
       await act(async () => {
         const diagnostics = await network.getConnectionDiagnostics();
-        
+
         expect(diagnostics).toHaveProperty('isOnline');
         expect(diagnostics).toHaveProperty('isConnected');
         expect(diagnostics).toHaveProperty('networkStatus');
@@ -575,7 +575,7 @@ describe('NetworkContext', () => {
 
     it('should clean up timers on unmount', () => {
       const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
-      
+
       const { unmount } = render(
         <NetworkProvider>
           <TestComponent />
@@ -606,7 +606,7 @@ describe('NetworkContext', () => {
     it('should use production connectivity in production mode', async () => {
       const { isProduction } = await import('@/utils/env-validator');
       const { createProductionConnectivity } = await import('@/lib/network/production-connectivity');
-      
+
       (isProduction as any).mockReturnValue(true);
 
       render(

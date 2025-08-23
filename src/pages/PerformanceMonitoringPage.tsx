@@ -94,8 +94,8 @@ const PerformanceMonitoringPage: React.FC = () => {
           <PerformanceThresholdManager />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PerformanceMonitoringPage;

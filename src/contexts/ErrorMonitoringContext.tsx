@@ -133,7 +133,7 @@ export const ErrorMonitoringProvider: React.FC<ErrorMonitoringProviderProps> = (
   }, []);
 
   const errorCount = recentErrors.length;
-  const criticalErrorCount = recentErrors.filter(e => e.severity_level <= 2 && !e.is_resolved).length;
+  const criticalErrorCount = recentErrors.filter((e) => e.severity_level <= 2 && !e.is_resolved).length;
 
   const contextValue: ErrorMonitoringContextType = {
     isInitialized,
@@ -149,8 +149,8 @@ export const ErrorMonitoringProvider: React.FC<ErrorMonitoringProviderProps> = (
   return (
     <ErrorMonitoringContext.Provider value={contextValue}>
       {children}
-    </ErrorMonitoringContext.Provider>
-  );
+    </ErrorMonitoringContext.Provider>);
+
 };
 
 export const useErrorMonitoring = () => {

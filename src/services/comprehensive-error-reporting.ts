@@ -8,30 +8,30 @@ export interface ErrorContext {
   sessionId: string;
   userAgent: string;
   timestamp: string;
-  
+
   // Application context
   route: string;
   component: string;
   action: string;
-  
+
   // System context
   browserInfo: BrowserInfo;
   performanceMetrics: PerformanceMetrics;
   networkStatus: NetworkStatus;
   memoryUsage?: MemoryInfo;
-  
+
   // Error context
   errorId: string;
   errorType: ErrorType;
   severity: ErrorSeverity;
   category: ErrorCategory;
-  
+
   // Additional context
   breadcrumbs: ErrorBreadcrumb[];
   customData?: Record<string, any>;
   stackTrace?: string;
   componentTree?: string[];
-  
+
   // Recovery context
   recoveryAttempts: number;
   lastRecoveryAction?: string;
@@ -187,9 +187,9 @@ class ComprehensiveErrorReportingService {
         });
         observer.observe({ entryTypes: ['measure', 'navigation'] });
       } catch (e) {
+
         // PerformanceObserver not fully supported
-      }
-    }
+      }}
   }
 
   private async loadRecoveryEngine() {
@@ -209,22 +209,22 @@ class ComprehensiveErrorReportingService {
     };
 
     this.breadcrumbs.push(timestampedBreadcrumb);
-    
+
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
       this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
     }
   }
 
   public async captureError(
-    error: Error,
-    context: {
-      component?: string;
-      action?: string;
-      userId?: string;
-      severity?: ErrorSeverity;
-      additionalData?: Record<string, any>;
-    } = {}
-  ): Promise<string> {
+  error: Error,
+  context: {
+    component?: string;
+    action?: string;
+    userId?: string;
+    severity?: ErrorSeverity;
+    additionalData?: Record<string, any>;
+  } = {})
+  : Promise<string> {
     const errorId = `error_${++this.errorId}_${Date.now()}`;
 
     try {
@@ -233,30 +233,30 @@ class ComprehensiveErrorReportingService {
         sessionId: this.sessionId,
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
-        
+
         // Application context
         route: window.location.pathname,
         component: context.component || 'unknown',
         action: context.action || 'unknown',
-        
+
         // System context
         browserInfo: this.getBrowserInfo(),
         performanceMetrics: await this.getPerformanceMetrics(),
         networkStatus: this.getNetworkStatus(),
         memoryUsage: this.getMemoryInfo(),
-        
+
         // Error context
         errorType: this.categorizeErrorType(error),
         severity: context.severity || this.determineSeverity(error),
         category: this.categorizeError(error),
         stackTrace: error.stack,
         componentTree: this.getComponentTree(),
-        
+
         // Additional context
         breadcrumbs: [...this.breadcrumbs],
         customData: context.additionalData,
         recoveryAttempts: 0,
-        
+
         userId: context.userId
       };
 
@@ -290,7 +290,7 @@ class ComprehensiveErrorReportingService {
 
   private getBrowserInfo(): BrowserInfo {
     const nav = navigator as any;
-    
+
     return {
       name: this.getBrowserName(),
       version: this.getBrowserVersion(),
@@ -306,13 +306,13 @@ class ComprehensiveErrorReportingService {
 
   private getBrowserName(): string {
     const userAgent = navigator.userAgent;
-    
+
     if (userAgent.includes('Chrome')) return 'Chrome';
     if (userAgent.includes('Firefox')) return 'Firefox';
     if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
     if (userAgent.includes('Edge')) return 'Edge';
     if (userAgent.includes('Opera')) return 'Opera';
-    
+
     return 'Unknown';
   }
 
@@ -365,9 +365,9 @@ class ComprehensiveErrorReportingService {
         status.rtt = connection.rtt;
       }
     } catch (error) {
+
       // Network API not fully supported
     }
-
     return status;
   }
 
@@ -377,21 +377,21 @@ class ComprehensiveErrorReportingService {
         return (performance as any).memory;
       }
     } catch (error) {
+
       // Memory API not available
-    }
-    return undefined;
+    }return undefined;
   }
 
   private getComponentTree(): string[] {
     // This would ideally integrate with React DevTools or similar
     // For now, we'll return a basic implementation
     const tree: string[] = [];
-    
+
     try {
       // Get current route components (if using React Router)
       const path = window.location.pathname;
       tree.push(`Route: ${path}`);
-      
+
       // Add any available component information from React DevTools
       if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
         tree.push('React DevTools Available');
@@ -410,76 +410,76 @@ class ComprehensiveErrorReportingService {
     if (message.includes('network') || message.includes('fetch') || message.includes('xmlhttprequest')) {
       return 'network';
     }
-    
+
     if (message.includes('unauthorized') || message.includes('authentication') || message.includes('login')) {
       return 'authentication';
     }
-    
+
     if (message.includes('permission') || message.includes('forbidden') || message.includes('access denied')) {
       return 'permission';
     }
-    
+
     if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
       return 'validation';
     }
-    
+
     if (message.includes('api') || message.includes('server') || message.includes('endpoint')) {
       return 'api';
     }
-    
+
     if (stack.includes('businesslogic') || stack.includes('service')) {
       return 'business_logic';
     }
-    
+
     return 'javascript';
   }
 
   private determineSeverity(error: Error): ErrorSeverity {
     const message = error.message.toLowerCase();
-    
+
     // Critical errors
     if (message.includes('cannot read property') || message.includes('undefined is not a function')) {
       return 'critical';
     }
-    
+
     // High severity
     if (message.includes('network') || message.includes('server error') || message.includes('authentication')) {
       return 'high';
     }
-    
+
     // Medium severity
     if (message.includes('validation') || message.includes('permission')) {
       return 'medium';
     }
-    
+
     return 'low';
   }
 
   private categorizeError(error: Error): ErrorCategory {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('validation') || message.includes('invalid input')) {
       return 'user_error';
     }
-    
+
     if (message.includes('network') || message.includes('connection')) {
       return 'network_error';
     }
-    
+
     if (message.includes('configuration') || message.includes('environment')) {
       return 'configuration_error';
     }
-    
+
     if (message.includes('data') || message.includes('database')) {
       return 'data_error';
     }
-    
+
     return 'system_error';
   }
 
   private queueErrorReport(errorContext: ErrorContext) {
     this.errorQueue.push(errorContext);
-    
+
     // Process queue periodically or when it reaches a certain size
     if (this.errorQueue.length >= 5) {
       this.processErrorQueue();
@@ -539,7 +539,7 @@ class ComprehensiveErrorReportingService {
         action: {
           type: 'retry',
           handler: async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             return navigator.onLine;
           }
         }
@@ -642,7 +642,7 @@ class ComprehensiveErrorReportingService {
       });
 
       if (error) throw new Error(error);
-      
+
       logger.logInfo('User feedback recorded', { errorId, feedback });
     } catch (error) {
       logger.logError('Failed to record user feedback', error);

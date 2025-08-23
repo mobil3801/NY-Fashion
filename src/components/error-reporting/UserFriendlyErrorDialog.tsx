@@ -29,14 +29,14 @@ import {
   Copy,
   Bug,
   Lightbulb,
-  Mail
-} from 'lucide-react';
-import { 
+  Mail } from
+'lucide-react';
+import {
   comprehensiveErrorReporting,
   type ErrorContext,
   type ErrorRecoverySuggestion,
-  type UserErrorFeedback
-} from '@/services/comprehensive-error-reporting';
+  type UserErrorFeedback } from
+'@/services/comprehensive-error-reporting';
 import { useEnhancedToast } from '@/utils/enhanced-toast';
 import { cn } from '@/lib/utils';
 
@@ -72,7 +72,7 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
     rating: 3,
     contactAllowed: false
   });
-  
+
   const { showSuccess, showError } = useEnhancedToast();
   const recoverySuggestions = comprehensiveErrorReporting.getRecoverySuggestions(errorContext);
 
@@ -133,7 +133,7 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
     try {
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
-        setRecoveryState(prev => ({
+        setRecoveryState((prev) => ({
           ...prev,
           progress: Math.min(prev.progress + 20, 90)
         }));
@@ -151,7 +151,7 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
         // Clear cache and reload
         if ('caches' in window) {
           const names = await caches.keys();
-          await Promise.all(names.map(name => caches.delete(name)));
+          await Promise.all(names.map((name) => caches.delete(name)));
         }
         window.location.reload();
         return;
@@ -172,7 +172,7 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
       }
 
       clearInterval(progressInterval);
-      setRecoveryState(prev => ({ ...prev, progress: 100 }));
+      setRecoveryState((prev) => ({ ...prev, progress: 100 }));
 
       // Record recovery attempt
       await comprehensiveErrorReporting.updateErrorWithRecoveryAttempt(
@@ -281,19 +281,19 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
               <MessageSquare className="h-4 w-4" />
               Feedback
             </TabsTrigger>
-            {showTechnicalDetails && (
-              <TabsTrigger value="details" className="flex items-center gap-2">
+            {showTechnicalDetails &&
+            <TabsTrigger value="details" className="flex items-center gap-2">
                 <Bug className="h-4 w-4" />
                 Details
               </TabsTrigger>
-            )}
+            }
           </TabsList>
 
           <TabsContent value="error" className="space-y-4">
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {recoverySuggestions.length > 0 ? (
-                recoverySuggestions.map((suggestion, index) => (
-                  <Card key={suggestion.id} className="hover:shadow-md transition-shadow">
+              {recoverySuggestions.length > 0 ?
+              recoverySuggestions.map((suggestion, index) =>
+              <Card key={suggestion.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="flex-1 space-y-2">
@@ -306,40 +306,40 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                           <p className="text-sm text-gray-600">{suggestion.userMessage}</p>
                         </div>
                         <Button
-                          onClick={() => handleRecoveryAttempt(suggestion)}
-                          disabled={recoveryState.attempting}
-                          variant={index === 0 ? 'default' : 'outline'}
-                          size="sm"
-                        >
-                          {recoveryState.attempting && recoveryState.suggestion?.id === suggestion.id ? (
-                            <>
+                      onClick={() => handleRecoveryAttempt(suggestion)}
+                      disabled={recoveryState.attempting}
+                      variant={index === 0 ? 'default' : 'outline'}
+                      size="sm">
+
+                          {recoveryState.attempting && recoveryState.suggestion?.id === suggestion.id ?
+                      <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                               Trying...
-                            </>
-                          ) : (
-                            <>
+                            </> :
+
+                      <>
                               {suggestion.action.type === 'retry' && <RefreshCw className="h-4 w-4 mr-2" />}
                               {suggestion.action.type === 'reload' && <RefreshCw className="h-4 w-4 mr-2" />}
                               {suggestion.action.type === 'navigate' && <ExternalLink className="h-4 w-4 mr-2" />}
                               Try This
                             </>
-                          )}
+                      }
                         </Button>
                       </div>
                       
-                      {recoveryState.attempting && recoveryState.suggestion?.id === suggestion.id && (
-                        <div className="mt-3">
+                      {recoveryState.attempting && recoveryState.suggestion?.id === suggestion.id &&
+                  <div className="mt-3">
                           <Progress value={recoveryState.progress} className="h-2" />
                           <p className="text-xs text-gray-500 mt-1">
                             Attempting recovery... {recoveryState.progress}%
                           </p>
                         </div>
-                      )}
+                  }
                     </CardContent>
                   </Card>
-                ))
-              ) : (
-                <Card>
+              ) :
+
+              <Card>
                   <CardContent className="p-6 text-center">
                     <Shield className="h-8 w-8 mx-auto mb-3 text-gray-400" />
                     <p className="text-gray-600">
@@ -358,7 +358,7 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              }
             </div>
 
             <Separator />
@@ -370,31 +370,31 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={copyErrorId}
-                  className="font-mono text-xs"
-                >
+                  className="font-mono text-xs">
+
                   {errorContext.errorId}
                   <Copy className="h-3 w-3 ml-1" />
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                {navigator.onLine ? (
-                  <div className="flex items-center gap-1 text-green-600">
+                {navigator.onLine ?
+                <div className="flex items-center gap-1 text-green-600">
                     <Wifi className="h-4 w-4" />
                     Online
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-red-600">
+                  </div> :
+
+                <div className="flex items-center gap-1 text-red-600">
                     <WifiOff className="h-4 w-4" />
                     Offline
                   </div>
-                )}
+                }
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-4">
-            {feedbackSubmitted ? (
-              <Card>
+            {feedbackSubmitted ?
+            <Card>
                 <CardContent className="p-6 text-center">
                   <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
                   <h3 className="text-lg font-medium mb-2">Thank You!</h3>
@@ -403,67 +403,67 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                     Our development team will review your report.
                   </p>
                 </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              </Card> :
+
+            <div className="space-y-4 max-h-96 overflow-y-auto">
                 <div className="space-y-3">
                   <div>
                     <Label htmlFor="rating">How would you rate this error experience?</Label>
                     <RadioGroup
-                      value={feedback.rating?.toString()}
-                      onValueChange={(value) => setFeedback(prev => ({ ...prev, rating: parseInt(value) }))}
-                      className="flex gap-4 mt-2"
-                    >
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <div key={rating} className="flex items-center space-x-2">
+                    value={feedback.rating?.toString()}
+                    onValueChange={(value) => setFeedback((prev) => ({ ...prev, rating: parseInt(value) }))}
+                    className="flex gap-4 mt-2">
+
+                      {[1, 2, 3, 4, 5].map((rating) =>
+                    <div key={rating} className="flex items-center space-x-2">
                           <RadioGroupItem value={rating.toString()} id={`rating-${rating}`} />
                           <Label htmlFor={`rating-${rating}`} className="text-sm">
                             {rating === 1 ? '😟' : rating === 2 ? '😕' : rating === 3 ? '😐' : rating === 4 ? '🙂' : '😊'}
                           </Label>
                         </div>
-                      ))}
+                    )}
                     </RadioGroup>
                   </div>
 
                   <div>
                     <Label htmlFor="expectation">What were you trying to do?</Label>
                     <Textarea
-                      id="expectation"
-                      placeholder="Describe what you were trying to accomplish when this error occurred..."
-                      value={feedback.expectation || ''}
-                      onChange={(e) => setFeedback(prev => ({ ...prev, expectation: e.target.value }))}
-                      className="mt-1"
-                    />
+                    id="expectation"
+                    placeholder="Describe what you were trying to accomplish when this error occurred..."
+                    value={feedback.expectation || ''}
+                    onChange={(e) => setFeedback((prev) => ({ ...prev, expectation: e.target.value }))}
+                    className="mt-1" />
+
                   </div>
 
                   <div>
                     <Label htmlFor="description">Additional details (optional)</Label>
                     <Textarea
-                      id="description"
-                      placeholder="Any additional information that might be helpful..."
-                      value={feedback.description || ''}
-                      onChange={(e) => setFeedback(prev => ({ ...prev, description: e.target.value }))}
-                      className="mt-1"
-                    />
+                    id="description"
+                    placeholder="Any additional information that might be helpful..."
+                    value={feedback.description || ''}
+                    onChange={(e) => setFeedback((prev) => ({ ...prev, description: e.target.value }))}
+                    className="mt-1" />
+
                   </div>
 
                   <div>
                     <Label htmlFor="reproduction">How can we reproduce this? (optional)</Label>
                     <Textarea
-                      id="reproduction"
-                      placeholder="Step by step instructions to reproduce this error..."
-                      value={feedback.reproductionSteps || ''}
-                      onChange={(e) => setFeedback(prev => ({ ...prev, reproductionSteps: e.target.value }))}
-                      className="mt-1"
-                    />
+                    id="reproduction"
+                    placeholder="Step by step instructions to reproduce this error..."
+                    value={feedback.reproductionSteps || ''}
+                    onChange={(e) => setFeedback((prev) => ({ ...prev, reproductionSteps: e.target.value }))}
+                    className="mt-1" />
+
                   </div>
 
                   <div className="flex items-start space-x-2">
                     <Checkbox
-                      id="contact"
-                      checked={feedback.contactAllowed}
-                      onCheckedChange={(checked) => setFeedback(prev => ({ ...prev, contactAllowed: !!checked }))}
-                    />
+                    id="contact"
+                    checked={feedback.contactAllowed}
+                    onCheckedChange={(checked) => setFeedback((prev) => ({ ...prev, contactAllowed: !!checked }))} />
+
                     <div className="grid gap-1.5 leading-none">
                       <Label htmlFor="contact" className="text-sm font-normal">
                         Allow our team to contact me about this issue
@@ -474,19 +474,19 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                     </div>
                   </div>
 
-                  {feedback.contactAllowed && (
-                    <div>
+                  {feedback.contactAllowed &&
+                <div>
                       <Label htmlFor="contact-info">Contact information</Label>
                       <Input
-                        id="contact-info"
-                        type="email"
-                        placeholder="your.email@example.com"
-                        value={feedback.contactInfo || ''}
-                        onChange={(e) => setFeedback(prev => ({ ...prev, contactInfo: e.target.value }))}
-                        className="mt-1"
-                      />
+                    id="contact-info"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={feedback.contactInfo || ''}
+                    onChange={(e) => setFeedback((prev) => ({ ...prev, contactInfo: e.target.value }))}
+                    className="mt-1" />
+
                     </div>
-                  )}
+                }
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t">
@@ -499,11 +499,11 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                   </Button>
                 </div>
               </div>
-            )}
+            }
           </TabsContent>
 
-          {showTechnicalDetails && (
-            <TabsContent value="details" className="space-y-4">
+          {showTechnicalDetails &&
+          <TabsContent value="details" className="space-y-4">
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 <Card>
                   <CardContent className="p-4">
@@ -567,8 +567,8 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                   </CardContent>
                 </Card>
 
-                {errorContext.stackTrace && (
-                  <Card>
+                {errorContext.stackTrace &&
+              <Card>
                     <CardContent className="p-4">
                       <h4 className="font-medium mb-3">Stack Trace</h4>
                       <pre className="text-xs bg-gray-100 p-3 rounded overflow-x-auto whitespace-pre-wrap">
@@ -576,15 +576,15 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                       </pre>
                     </CardContent>
                   </Card>
-                )}
+              }
 
-                {errorContext.breadcrumbs.length > 0 && (
-                  <Card>
+                {errorContext.breadcrumbs.length > 0 &&
+              <Card>
                     <CardContent className="p-4">
                       <h4 className="font-medium mb-3">Recent Activity</h4>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {errorContext.breadcrumbs.slice(-10).map((breadcrumb, index) => (
-                          <div key={index} className="flex items-start gap-2 text-xs">
+                        {errorContext.breadcrumbs.slice(-10).map((breadcrumb, index) =>
+                    <div key={index} className="flex items-start gap-2 text-xs">
                             <span className="text-gray-500 min-w-16">
                               {new Date(breadcrumb.timestamp).toLocaleTimeString()}
                             </span>
@@ -593,30 +593,30 @@ const UserFriendlyErrorDialog: React.FC<UserFriendlyErrorDialogProps> = ({
                             </Badge>
                             <span className="flex-1">{breadcrumb.message}</span>
                           </div>
-                        ))}
+                    )}
                       </div>
                     </CardContent>
                   </Card>
-                )}
+              }
               </div>
             </TabsContent>
-          )}
+          }
         </Tabs>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-          {!feedbackSubmitted && activeTab !== 'feedback' && (
-            <Button variant="outline" onClick={() => setActiveTab('feedback')}>
+          {!feedbackSubmitted && activeTab !== 'feedback' &&
+          <Button variant="outline" onClick={() => setActiveTab('feedback')}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Provide Feedback
             </Button>
-          )}
+          }
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default UserFriendlyErrorDialog;

@@ -40,6 +40,6 @@ export default function NetworkValidationPage() {
           <MemoryLeakDetector />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }

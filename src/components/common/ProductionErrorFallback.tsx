@@ -26,11 +26,11 @@ const ProductionErrorFallback: React.FC<ProductionErrorFallbackProps> = ({
     // Clear all storage
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // Clear cache if available
     if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
           caches.delete(name);
         });
         window.location.reload();
@@ -57,38 +57,38 @@ const ProductionErrorFallback: React.FC<ProductionErrorFallbackProps> = ({
         
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Button 
+            <Button
               onClick={resetError || reloadPage}
               className="w-full"
-              variant="default"
-            >
+              variant="default">
+
               <RefreshCw className="w-4 h-4 mr-2" />
               Try Again
             </Button>
             
-            <Button 
+            <Button
               onClick={goHome}
               className="w-full"
-              variant="outline"
-            >
+              variant="outline">
+
               <Home className="w-4 h-4 mr-2" />
               Go to Homepage
             </Button>
             
-            <Button 
+            <Button
               onClick={clearCacheAndReload}
               className="w-full"
-              variant="outline"
-            >
+              variant="outline">
+
               Clear Cache & Reload
             </Button>
           </div>
 
-          {errorId && (
-            <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600 text-center">
+          {errorId &&
+          <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600 text-center">
               <div className="font-mono">Error ID: {errorId}</div>
             </div>
-          )}
+          }
 
           <details className="mt-4">
             <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
@@ -102,14 +102,14 @@ const ProductionErrorFallback: React.FC<ProductionErrorFallbackProps> = ({
                 <div>
                   <strong>Timestamp:</strong> {new Date().toLocaleString()}
                 </div>
-                {error && (
-                  <div>
+                {error &&
+                <div>
                     <strong>Error:</strong>
                     <pre className="mt-1 text-xs text-red-600 whitespace-pre-wrap overflow-x-auto">
                       {error.message}
                     </pre>
                   </div>
-                )}
+                }
               </div>
             </div>
           </details>
@@ -119,8 +119,8 @@ const ProductionErrorFallback: React.FC<ProductionErrorFallbackProps> = ({
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ProductionErrorFallback;

@@ -28,6 +28,7 @@ const SalesPage = React.lazy(() => import('@/pages/SalesPage'));
 const InvoicesPage = React.lazy(() => import('@/pages/InvoicesPage'));
 const AdminPage = React.lazy(() => import('@/pages/AdminPage'));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage'));
+const DeploymentControlPage = React.lazy(() => import('@/pages/DeploymentControlPage'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
 // Protected Route Component
@@ -64,7 +65,7 @@ const PublicRoute: React.FC<{children: React.ReactNode;}> = ({ children }) => {
 const ProductionErrorFallback = React.lazy(() => import('@/components/common/ProductionErrorFallback'));
 
 // Error Fallback Component - Production optimized
-const AppErrorFallback: React.FC<{error: Error; errorId: string; retry: () => void;}> = ({
+const AppErrorFallback: React.FC<{error: Error;errorId: string;retry: () => void;}> = ({
   error,
   errorId,
   retry
@@ -72,17 +73,17 @@ const AppErrorFallback: React.FC<{error: Error; errorId: string; retry: () => vo
   if (isProduction()) {
     return (
       <React.Suspense fallback={
-        <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">Loading error handler...</div>
         </div>
       }>
-        <ProductionErrorFallback 
-          error={error} 
-          errorId={errorId} 
-          resetError={retry}
-        />
-      </React.Suspense>
-    );
+        <ProductionErrorFallback
+          error={error}
+          errorId={errorId}
+          resetError={retry} />
+
+      </React.Suspense>);
+
   }
 
   // Development fallback (lightweight)
@@ -93,7 +94,7 @@ const AppErrorFallback: React.FC<{error: Error; errorId: string; retry: () => vo
           <div className="text-red-500 mb-4">
             <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -119,8 +120,8 @@ const AppErrorFallback: React.FC<{error: Error; errorId: string; retry: () => vo
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 function App() {
@@ -132,11 +133,11 @@ function App() {
   }, []);
 
   return (
-    <EnhancedErrorBoundary 
+    <EnhancedErrorBoundary
       componentName="App"
       category="application"
-      maxRetries={3}
-    >
+      maxRetries={3}>
+
       <ErrorTrackingProvider>
         <ProductionErrorMonitor fallback={AppErrorFallback}>
           <Router>
@@ -145,19 +146,19 @@ function App() {
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={
-                    <EnhancedErrorBoundary componentName="HomePage">
+                  <EnhancedErrorBoundary componentName="HomePage">
                       <HomePage />
                     </EnhancedErrorBoundary>
                   } />
                   <Route path="/login" element={
-                    <PublicRoute>
+                  <PublicRoute>
                       <EnhancedErrorBoundary componentName="LoginPage">
                         <LoginPage />
                       </EnhancedErrorBoundary>
                     </PublicRoute>
                   } />
                   <Route path="/register" element={
-                    <PublicRoute>
+                  <PublicRoute>
                       <EnhancedErrorBoundary componentName="RegisterPage">
                         <RegisterPage />
                       </EnhancedErrorBoundary>
@@ -167,72 +168,79 @@ function App() {
                   {/* Protected Routes with Main Layout */}
                   <Route element={<MainLayout />}>  
                     <Route path="/dashboard" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="DashboardPage">
                           <DashboardPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/sales" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="SalesPage">
                           <SalesPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/invoices" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="InvoicesPage">
                           <InvoicesPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/inventory" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="InventoryPage">
                           <InventoryPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/employees" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="EmployeesPage">
                           <EmployeesPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/payroll" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="SalaryPage">
                           <SalaryPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/admin" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="AdminPage">
                           <AdminPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/settings" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="SettingsPage">
                           <SettingsPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/pos" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="POSPage">
                           <POSPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
                     <Route path="/purchase" element={
-                      <ProtectedRoute>
+                    <ProtectedRoute>
                         <EnhancedErrorBoundary componentName="PurchasePage">
                           <PurchasePage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/deployment-control" element={
+                    <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="DeploymentControlPage">
+                          <DeploymentControlPage />
                         </EnhancedErrorBoundary>
                       </ProtectedRoute>
                     } />
@@ -240,7 +248,7 @@ function App() {
 
                   {/* 404 Route */}
                   <Route path="*" element={
-                    <EnhancedErrorBoundary componentName="NotFound">
+                  <EnhancedErrorBoundary componentName="NotFound">
                       <NotFound />
                     </EnhancedErrorBoundary>
                   } />
@@ -253,8 +261,8 @@ function App() {
           </Router>
         </ProductionErrorMonitor>
       </ErrorTrackingProvider>
-    </EnhancedErrorBoundary>
-  );
+    </EnhancedErrorBoundary>);
+
 }
 
 export default App;

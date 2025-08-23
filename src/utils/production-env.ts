@@ -52,9 +52,9 @@ export const getEnvVar = (name: string, defaultValue: any = undefined): any => {
     }
   } catch (error) {
 
+
     // Ignore errors in production
-  }return defaultValue;
-};
+  }return defaultValue;};
 
 // Production-safe configuration
 export const PRODUCTION_ENV_CONFIG = {

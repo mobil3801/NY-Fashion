@@ -33,23 +33,23 @@ const COLORS = {
 
 const getSeverityColor = (level: number): string => {
   switch (level) {
-    case 1: return COLORS.critical;
-    case 2: return COLORS.high;
-    case 3: return COLORS.medium;
-    case 4: return COLORS.low;
-    case 5: return COLORS.info;
-    default: return COLORS.medium;
+    case 1:return COLORS.critical;
+    case 2:return COLORS.high;
+    case 3:return COLORS.medium;
+    case 4:return COLORS.low;
+    case 5:return COLORS.info;
+    default:return COLORS.medium;
   }
 };
 
 const getSeverityLabel = (level: number): string => {
   switch (level) {
-    case 1: return 'Critical';
-    case 2: return 'High';
-    case 3: return 'Medium';
-    case 4: return 'Low';
-    case 5: return 'Info';
-    default: return 'Medium';
+    case 1:return 'Critical';
+    case 2:return 'High';
+    case 3:return 'Medium';
+    case 4:return 'Low';
+    case 5:return 'Info';
+    default:return 'Medium';
   }
 };
 
@@ -69,14 +69,14 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true);
-      
+
       const [errors, stats] = await Promise.all([
-        errorTrackingService.getRecentErrors(100),
-        errorTrackingService.getErrorStatistics({
-          from: dateRange?.from || subDays(new Date(), 7),
-          to: dateRange?.to || new Date()
-        })
-      ]);
+      errorTrackingService.getRecentErrors(100),
+      errorTrackingService.getErrorStatistics({
+        from: dateRange?.from || subDays(new Date(), 7),
+        to: dateRange?.to || new Date()
+      })]
+      );
 
       setRecentErrors(errors);
       setStatistics(stats);
@@ -125,33 +125,33 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
   // Calculate dashboard metrics
   const totalErrors = recentErrors.reduce((sum, error) => sum + error.occurrence_count, 0);
   const uniqueErrors = recentErrors.length;
-  const criticalErrors = recentErrors.filter(e => e.severity_level === 1).length;
-  const resolvedErrors = recentErrors.filter(e => e.is_resolved).length;
-  const resolutionRate = uniqueErrors > 0 ? (resolvedErrors / uniqueErrors) * 100 : 0;
+  const criticalErrors = recentErrors.filter((e) => e.severity_level === 1).length;
+  const resolvedErrors = recentErrors.filter((e) => e.is_resolved).length;
+  const resolutionRate = uniqueErrors > 0 ? resolvedErrors / uniqueErrors * 100 : 0;
 
   // Prepare chart data
-  const errorTrendData = statistics
-    .reduce((acc, stat) => {
-      const dateTime = `${stat.date_key} ${stat.hour_key}:00`;
-      const existing = acc.find(item => item.dateTime === dateTime);
-      
-      if (existing) {
-        existing.count += stat.error_count;
-      } else {
-        acc.push({
-          dateTime,
-          date: stat.date_key,
-          hour: stat.hour_key,
-          count: stat.error_count
-        });
-      }
-      
-      return acc;
-    }, [] as any[])
-    .sort((a, b) => a.dateTime.localeCompare(b.dateTime));
+  const errorTrendData = statistics.
+  reduce((acc, stat) => {
+    const dateTime = `${stat.date_key} ${stat.hour_key}:00`;
+    const existing = acc.find((item) => item.dateTime === dateTime);
+
+    if (existing) {
+      existing.count += stat.error_count;
+    } else {
+      acc.push({
+        dateTime,
+        date: stat.date_key,
+        hour: stat.hour_key,
+        count: stat.error_count
+      });
+    }
+
+    return acc;
+  }, [] as any[]).
+  sort((a, b) => a.dateTime.localeCompare(b.dateTime));
 
   const errorTypeData = recentErrors.reduce((acc, error) => {
-    const existing = acc.find(item => item.type === error.error_type);
+    const existing = acc.find((item) => item.type === error.error_type);
     if (existing) {
       existing.count += error.occurrence_count;
     } else {
@@ -165,7 +165,7 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
 
   const severityDistribution = recentErrors.reduce((acc, error) => {
     const severity = getSeverityLabel(error.severity_level);
-    const existing = acc.find(item => item.severity === severity);
+    const existing = acc.find((item) => item.severity === severity);
     if (existing) {
       existing.count += error.occurrence_count;
     } else {
@@ -182,8 +182,8 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
     return (
       <div className="flex items-center justify-center h-96">
         <RefreshCw className="h-8 w-8 animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -201,18 +201,18 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-[280px] justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
+                {dateRange?.from ?
+                dateRange.to ?
+                <>
                       {format(dateRange.from, 'LLL dd, y')} -{' '}
                       {format(dateRange.to, 'LLL dd, y')}
-                    </>
-                  ) : (
-                    format(dateRange.from, 'LLL dd, y')
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
+                    </> :
+
+                format(dateRange.from, 'LLL dd, y') :
+
+
+                <span>Pick a date range</span>
+                }
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -222,8 +222,8 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                 defaultMonth={dateRange?.from}
                 selected={dateRange}
                 onSelect={setDateRange}
-                numberOfMonths={2}
-              />
+                numberOfMonths={2} />
+
             </PopoverContent>
           </Popover>
           <Button
@@ -232,23 +232,23 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
             onClick={() => {
               setAutoRefresh(!autoRefresh);
               if (!autoRefresh) loadDashboardData();
-            }}
-          >
+            }}>
+
             <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
       {/* Critical Alerts */}
-      {criticalErrors > 0 && (
-        <Alert className="border-red-200 bg-red-50">
+      {criticalErrors > 0 &&
+      <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertTitle className="text-red-800">Critical Errors Detected</AlertTitle>
           <AlertDescription className="text-red-700">
             {criticalErrors} critical error{criticalErrors !== 1 ? 's' : ''} require{criticalErrors === 1 ? 's' : ''} immediate attention.
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -325,21 +325,21 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                 <ResponsiveContainer width="100%" height={300}>
                   <AreaChart data={errorTrendData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="dateTime" 
-                      tickFormatter={(value) => format(new Date(value), 'MM/dd HH:mm')}
-                    />
+                    <XAxis
+                      dataKey="dateTime"
+                      tickFormatter={(value) => format(new Date(value), 'MM/dd HH:mm')} />
+
                     <YAxis />
-                    <Tooltip 
-                      labelFormatter={(value) => format(new Date(value), 'PPP HH:mm')}
-                    />
+                    <Tooltip
+                      labelFormatter={(value) => format(new Date(value), 'PPP HH:mm')} />
+
                     <Area
                       type="monotone"
                       dataKey="count"
                       stroke="#8884d8"
                       fill="#8884d8"
-                      fillOpacity={0.6}
-                    />
+                      fillOpacity={0.6} />
+
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -385,11 +385,11 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                       labelLine={false}
                       label={({ severity, percent }) => `${severity} ${(percent * 100).toFixed(0)}%`}
                       outerRadius={80}
-                      fill="#8884d8"
-                    >
-                      {severityDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
+                      fill="#8884d8">
+
+                      {severityDistribution.map((entry, index) =>
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      )}
                     </Pie>
                     <Tooltip />
                   </PieChart>
@@ -410,44 +410,44 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
             <CardContent>
               <ScrollArea className="h-[600px]">
                 <div className="space-y-4">
-                  {recentErrors.map((error) => (
-                    <div
-                      key={error.id}
-                      className="flex items-center space-x-4 rounded-lg border p-4"
-                    >
+                  {recentErrors.map((error) =>
+                  <div
+                    key={error.id}
+                    className="flex items-center space-x-4 rounded-lg border p-4">
+
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
                           <Badge
-                            variant={error.is_resolved ? 'secondary' : 'destructive'}
-                            style={{
-                              backgroundColor: error.is_resolved 
-                                ? '#f1f5f9' 
-                                : getSeverityColor(error.severity_level)
-                            }}
-                          >
+                          variant={error.is_resolved ? 'secondary' : 'destructive'}
+                          style={{
+                            backgroundColor: error.is_resolved ?
+                            '#f1f5f9' :
+                            getSeverityColor(error.severity_level)
+                          }}>
+
                             {getSeverityLabel(error.severity_level)}
                           </Badge>
                           <Badge variant="outline">
                             {error.occurrence_count}x
                           </Badge>
-                          {error.is_resolved && (
-                            <Badge variant="secondary" className="text-green-700">
+                          {error.is_resolved &&
+                        <Badge variant="secondary" className="text-green-700">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               Resolved
                             </Badge>
-                          )}
+                        }
                         </div>
                         <p className="text-sm font-medium leading-none">
                           {error.error_message}
                         </p>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <span>{error.error_type}</span>
-                          {error.component_name && (
-                            <>
+                          {error.component_name &&
+                        <>
                               <Separator orientation="vertical" className="mx-2 h-4" />
                               <span>{error.component_name}</span>
                             </>
-                          )}
+                        }
                           <Separator orientation="vertical" className="mx-2 h-4" />
                           <span>{format(new Date(error.last_seen), 'PPp')}</span>
                         </div>
@@ -455,10 +455,10 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedError(error)}
-                          >
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedError(error)}>
+
                             <Eye className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
@@ -473,14 +473,14 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                                 {error.error_message}
                               </p>
                             </div>
-                            {error.error_stack && (
-                              <div>
+                            {error.error_stack &&
+                          <div>
                                 <Label>Stack Trace</Label>
                                 <pre className="text-xs bg-muted p-3 rounded mt-1 overflow-x-auto">
                                   {error.error_stack}
                                 </pre>
                               </div>
-                            )}
+                          }
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label>Type</Label>
@@ -499,36 +499,36 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
                                 <p className="text-sm mt-1">{error.environment}</p>
                               </div>
                             </div>
-                            {!error.is_resolved && (
-                              <div className="space-y-2">
+                            {!error.is_resolved &&
+                          <div className="space-y-2">
                                 <Label htmlFor="resolution">Resolution Notes</Label>
                                 <Textarea
-                                  id="resolution"
-                                  placeholder="Describe how this error was resolved..."
-                                  value={resolutionNotes}
-                                  onChange={(e) => setResolutionNotes(e.target.value)}
-                                />
-                                <Button 
-                                  onClick={() => handleMarkResolved(error.id)}
-                                  disabled={!resolutionNotes.trim()}
-                                >
+                              id="resolution"
+                              placeholder="Describe how this error was resolved..."
+                              value={resolutionNotes}
+                              onChange={(e) => setResolutionNotes(e.target.value)} />
+
+                                <Button
+                              onClick={() => handleMarkResolved(error.id)}
+                              disabled={!resolutionNotes.trim()}>
+
                                   Mark as Resolved
                                 </Button>
                               </div>
-                            )}
-                            {error.is_resolved && error.resolution_notes && (
-                              <div>
+                          }
+                            {error.is_resolved && error.resolution_notes &&
+                          <div>
                                 <Label>Resolution Notes</Label>
                                 <p className="text-sm bg-green-50 p-3 rounded mt-1">
                                   {error.resolution_notes}
                                 </p>
                               </div>
-                            )}
+                          }
                           </div>
                         </DialogContent>
                       </Dialog>
                     </div>
-                  ))}
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
@@ -553,8 +553,8 @@ const ErrorMonitoringDashboard: React.FC<ErrorDashboardProps> = ({ className }) 
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ErrorMonitoringDashboard;

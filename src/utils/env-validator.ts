@@ -100,12 +100,12 @@ class EnvironmentValidator {
 
   validateAll(): EnvironmentValidation {
     const nodeEnv = this.getEnvironmentType();
-    
+
     try {
       // Simplified validation for production to avoid read-only property errors
       const errors: string[] = [];
       const warnings: string[] = [];
-      
+
       const config = this.getEnvironmentConfig();
 
       // Only log in development to avoid production console pollution
@@ -119,9 +119,9 @@ class EnvironmentValidator {
             config: config
           });
         } catch (logError) {
+
           // Silently ignore console errors
-        }
-      }
+        }}
 
       return {
         isValid: true, // Always consider valid to avoid blocking app startup

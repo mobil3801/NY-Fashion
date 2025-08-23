@@ -113,7 +113,7 @@ const PerformanceThresholdManager: React.FC = () => {
     try {
       const { error } = await window.ezsite.apis.tableDelete(37307, { ID: id });
       if (error) throw new Error(error);
-      
+
       toast.success('Threshold deleted successfully');
       loadThresholds();
     } catch (error) {
@@ -169,11 +169,11 @@ const PerformanceThresholdManager: React.FC = () => {
   };
 
   const metricTypes = [
-    { value: 'load_time', label: 'Load Time' },
-    { value: 'api_response', label: 'API Response' },
-    { value: 'memory', label: 'Memory Usage' },
-    { value: 'interaction', label: 'User Interaction' }
-  ];
+  { value: 'load_time', label: 'Load Time' },
+  { value: 'api_response', label: 'API Response' },
+  { value: 'memory', label: 'Memory Usage' },
+  { value: 'interaction', label: 'User Interaction' }];
+
 
   const metricNamesByType: Record<string, string[]> = {
     load_time: ['page_load', 'first_contentful_paint', 'largest_contentful_paint', 'dom_content_loaded'],
@@ -183,24 +183,24 @@ const PerformanceThresholdManager: React.FC = () => {
   };
 
   const units = [
-    { value: 'ms', label: 'Milliseconds (ms)' },
-    { value: 'MB', label: 'Megabytes (MB)' },
-    { value: 'score', label: 'Score' },
-    { value: 'count', label: 'Count' }
-  ];
+  { value: 'ms', label: 'Milliseconds (ms)' },
+  { value: 'MB', label: 'Megabytes (MB)' },
+  { value: 'score', label: 'Score' },
+  { value: 'count', label: 'Count' }];
+
 
   if (isLoading) {
     return (
       <Card>
         <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
-            ))}
+            {[1, 2, 3].map((i) =>
+            <div key={i} className="h-12 bg-gray-200 rounded"></div>
+            )}
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -240,39 +240,39 @@ const PerformanceThresholdManager: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="metricType">Metric Type</Label>
-                      <Select 
-                        value={formData.metricType} 
-                        onValueChange={(value) => setFormData({...formData, metricType: value, metricName: ''})}
-                      >
+                      <Select
+                        value={formData.metricType}
+                        onValueChange={(value) => setFormData({ ...formData, metricType: value, metricName: '' })}>
+
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          {metricTypes.map(type => (
-                            <SelectItem key={type.value} value={type.value}>
+                          {metricTypes.map((type) =>
+                          <SelectItem key={type.value} value={type.value}>
                               {type.label}
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
                     
                     <div>
                       <Label htmlFor="metricName">Metric Name</Label>
-                      <Select 
-                        value={formData.metricName} 
-                        onValueChange={(value) => setFormData({...formData, metricName: value})}
-                        disabled={!formData.metricType}
-                      >
+                      <Select
+                        value={formData.metricName}
+                        onValueChange={(value) => setFormData({ ...formData, metricName: value })}
+                        disabled={!formData.metricType}>
+
                         <SelectTrigger>
                           <SelectValue placeholder="Select metric" />
                         </SelectTrigger>
                         <SelectContent>
-                          {formData.metricType && metricNamesByType[formData.metricType]?.map(name => (
-                            <SelectItem key={name} value={name}>
+                          {formData.metricType && metricNamesByType[formData.metricType]?.map((name) =>
+                          <SelectItem key={name} value={name}>
                               {name.replace('_', ' ')}
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -285,9 +285,9 @@ const PerformanceThresholdManager: React.FC = () => {
                         id="warningThreshold"
                         type="number"
                         value={formData.warningThreshold}
-                        onChange={(e) => setFormData({...formData, warningThreshold: Number(e.target.value)})}
-                        placeholder="Enter warning value"
-                      />
+                        onChange={(e) => setFormData({ ...formData, warningThreshold: Number(e.target.value) })}
+                        placeholder="Enter warning value" />
+
                     </div>
                     
                     <div>
@@ -296,24 +296,24 @@ const PerformanceThresholdManager: React.FC = () => {
                         id="criticalThreshold"
                         type="number"
                         value={formData.criticalThreshold}
-                        onChange={(e) => setFormData({...formData, criticalThreshold: Number(e.target.value)})}
-                        placeholder="Enter critical value"
-                      />
+                        onChange={(e) => setFormData({ ...formData, criticalThreshold: Number(e.target.value) })}
+                        placeholder="Enter critical value" />
+
                     </div>
                   </div>
                   
                   <div>
                     <Label htmlFor="unit">Unit</Label>
-                    <Select value={formData.unit} onValueChange={(value) => setFormData({...formData, unit: value})}>
+                    <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {units.map(unit => (
-                          <SelectItem key={unit.value} value={unit.value}>
+                        {units.map((unit) =>
+                        <SelectItem key={unit.value} value={unit.value}>
                             {unit.label}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -322,8 +322,8 @@ const PerformanceThresholdManager: React.FC = () => {
                     <Switch
                       id="enabled"
                       checked={formData.enabled}
-                      onCheckedChange={(checked) => setFormData({...formData, enabled: checked})}
-                    />
+                      onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })} />
+
                     <Label htmlFor="enabled">Enable threshold monitoring</Label>
                   </div>
                 </div>
@@ -342,14 +342,14 @@ const PerformanceThresholdManager: React.FC = () => {
         </CardHeader>
         
         <CardContent>
-          {thresholds.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+          {thresholds.length === 0 ?
+          <div className="text-center py-8 text-muted-foreground">
               <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No performance thresholds configured</p>
               <p className="text-sm">Click "Add Threshold" to get started</p>
-            </div>
-          ) : (
-            <Table>
+            </div> :
+
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Metric</TableHead>
@@ -361,8 +361,8 @@ const PerformanceThresholdManager: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {thresholds.map((threshold: any) => (
-                  <TableRow key={threshold.id}>
+                {thresholds.map((threshold: any) =>
+              <TableRow key={threshold.id}>
                     <TableCell>
                       <div>
                         <p className="font-medium">
@@ -387,9 +387,9 @@ const PerformanceThresholdManager: React.FC = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={threshold.enabled}
-                          onCheckedChange={(checked) => handleToggleEnabled(threshold.id, checked)}
-                        />
+                      checked={threshold.enabled}
+                      onCheckedChange={(checked) => handleToggleEnabled(threshold.id, checked)} />
+
                         <span className="text-sm">
                           {threshold.enabled ? 'Active' : 'Inactive'}
                         </span>
@@ -398,31 +398,31 @@ const PerformanceThresholdManager: React.FC = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditThreshold(threshold)}
-                        >
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditThreshold(threshold)}>
+
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteThreshold(threshold.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteThreshold(threshold.id)}
+                      className="text-red-600 hover:text-red-700">
+
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+              )}
               </TableBody>
             </Table>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PerformanceThresholdManager;

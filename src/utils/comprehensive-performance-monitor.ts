@@ -54,15 +54,15 @@ class ComprehensivePerformanceMonitor {
 
   private initializeDefaultThresholds(): void {
     const defaultThresholds: PerformanceThreshold[] = [
-      { metricType: 'load_time', metricName: 'page_load', warningThreshold: 3000, criticalThreshold: 5000, unit: 'ms', enabled: true },
-      { metricType: 'load_time', metricName: 'first_contentful_paint', warningThreshold: 1800, criticalThreshold: 3000, unit: 'ms', enabled: true },
-      { metricType: 'load_time', metricName: 'largest_contentful_paint', warningThreshold: 2500, criticalThreshold: 4000, unit: 'ms', enabled: true },
-      { metricType: 'api_response', metricName: 'api_call', warningThreshold: 1000, criticalThreshold: 3000, unit: 'ms', enabled: true },
-      { metricType: 'memory', metricName: 'heap_used', warningThreshold: 100, criticalThreshold: 200, unit: 'MB', enabled: true },
-      { metricType: 'interaction', metricName: 'click_response', warningThreshold: 100, criticalThreshold: 300, unit: 'ms', enabled: true }
-    ];
+    { metricType: 'load_time', metricName: 'page_load', warningThreshold: 3000, criticalThreshold: 5000, unit: 'ms', enabled: true },
+    { metricType: 'load_time', metricName: 'first_contentful_paint', warningThreshold: 1800, criticalThreshold: 3000, unit: 'ms', enabled: true },
+    { metricType: 'load_time', metricName: 'largest_contentful_paint', warningThreshold: 2500, criticalThreshold: 4000, unit: 'ms', enabled: true },
+    { metricType: 'api_response', metricName: 'api_call', warningThreshold: 1000, criticalThreshold: 3000, unit: 'ms', enabled: true },
+    { metricType: 'memory', metricName: 'heap_used', warningThreshold: 100, criticalThreshold: 200, unit: 'MB', enabled: true },
+    { metricType: 'interaction', metricName: 'click_response', warningThreshold: 100, criticalThreshold: 300, unit: 'ms', enabled: true }];
 
-    defaultThresholds.forEach(threshold => {
+
+    defaultThresholds.forEach((threshold) => {
       const key = `${threshold.metricType}_${threshold.metricName}`;
       this.thresholds.set(key, threshold);
     });
@@ -136,7 +136,7 @@ class ComprehensivePerformanceMonitor {
   private setupNavigationTimingMonitoring(): void {
     if ('getEntriesByType' in performance) {
       const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-      navigationEntries.forEach(entry => {
+      navigationEntries.forEach((entry) => {
         this.recordMetric('load_time', 'dns_lookup', entry.domainLookupEnd - entry.domainLookupStart, 'ms');
         this.recordMetric('load_time', 'tcp_connection', entry.connectEnd - entry.connectStart, 'ms');
         this.recordMetric('load_time', 'server_response', entry.responseEnd - entry.requestStart, 'ms');
@@ -145,10 +145,10 @@ class ComprehensivePerformanceMonitor {
   }
 
   private setupUserInteractionMonitoring(): void {
-    ['click', 'keydown', 'touchstart'].forEach(eventType => {
+    ['click', 'keydown', 'touchstart'].forEach((eventType) => {
       document.addEventListener(eventType, (event) => {
         this.userInteractionStartTime = performance.now();
-        
+
         // Monitor response time for interactions
         requestAnimationFrame(() => {
           const responseTime = performance.now() - this.userInteractionStartTime;
@@ -164,15 +164,15 @@ class ComprehensivePerformanceMonitor {
     window.fetch = async (...args) => {
       const startTime = performance.now();
       const url = args[0]?.toString() || 'unknown';
-      
+
       try {
         const response = await originalFetch(...args);
         const endTime = performance.now();
         const duration = endTime - startTime;
-        
+
         this.recordMetric('api_response', this.extractAPIEndpoint(url), duration, 'ms');
         this.trackAPIMetrics(url, duration);
-        
+
         return response;
       } catch (error) {
         const endTime = performance.now();
@@ -197,10 +197,10 @@ class ComprehensivePerformanceMonitor {
     if (!this.apiMetrics.has(endpoint)) {
       this.apiMetrics.set(endpoint, []);
     }
-    
+
     const metrics = this.apiMetrics.get(endpoint)!;
     metrics.push(duration);
-    
+
     // Keep only last 100 measurements
     if (metrics.length > 100) {
       metrics.shift();
@@ -248,12 +248,12 @@ class ComprehensivePerformanceMonitor {
   private checkThresholds(metric: PerformanceMetric): void {
     const key = `${metric.type}_${metric.name}`;
     const threshold = this.thresholds.get(key);
-    
+
     if (!threshold || !threshold.enabled) return;
 
     let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
     let thresholdValue = 0;
-    
+
     if (metric.value >= threshold.criticalThreshold) {
       severity = 'critical';
       thresholdValue = threshold.criticalThreshold;
@@ -369,8 +369,8 @@ class ComprehensivePerformanceMonitor {
 
   public getMetricsSummary(): Record<string, any> {
     const summary: Record<string, any> = {};
-    
-    this.metrics.forEach(metric => {
+
+    this.metrics.forEach((metric) => {
       const key = `${metric.type}_${metric.name}`;
       if (!summary[key]) {
         summary[key] = {
@@ -381,7 +381,7 @@ class ComprehensivePerformanceMonitor {
           unit: metric.unit
         };
       }
-      
+
       summary[key].count++;
       summary[key].total += metric.value;
       summary[key].min = Math.min(summary[key].min, metric.value);
@@ -394,7 +394,7 @@ class ComprehensivePerformanceMonitor {
 
   public getAPIMetricsSummary(): Record<string, any> {
     const summary: Record<string, any> = {};
-    
+
     this.apiMetrics.forEach((durations, endpoint) => {
       summary[endpoint] = {
         count: durations.length,
@@ -411,14 +411,14 @@ class ComprehensivePerformanceMonitor {
 
   private calculatePercentile(values: number[], percentile: number): number {
     const sorted = [...values].sort((a, b) => a - b);
-    const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+    const index = Math.ceil(percentile / 100 * sorted.length) - 1;
     return sorted[index] || 0;
   }
 
   public updateThreshold(metricType: string, metricName: string, threshold: Partial<PerformanceThreshold>): void {
     const key = `${metricType}_${metricName}`;
     const existing = this.thresholds.get(key);
-    
+
     if (existing) {
       this.thresholds.set(key, { ...existing, ...threshold });
     }
@@ -429,12 +429,12 @@ class ComprehensivePerformanceMonitor {
       this.observer.disconnect();
       this.observer = null;
     }
-    
+
     if (this.memoryMonitorInterval) {
       clearInterval(this.memoryMonitorInterval);
       this.memoryMonitorInterval = null;
     }
-    
+
     this.metrics.length = 0;
     this.apiMetrics.clear();
   }

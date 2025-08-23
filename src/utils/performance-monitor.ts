@@ -139,7 +139,7 @@ export class PerformanceMonitor {
     const interval = setInterval(() => {
       this.flush();
     }, this.config.flushInterval);
-    
+
     this.intervals.push(interval);
   }
 
@@ -148,7 +148,7 @@ export class PerformanceMonitor {
     const memoryInterval = setInterval(() => {
       this.checkMemoryPressure();
     }, 5000);
-    
+
     this.intervals.push(memoryInterval);
   }
 
@@ -160,13 +160,13 @@ export class PerformanceMonitor {
     if (!this.enabled) return 0;
 
     const startTime = performance.now();
-    
+
     try {
       performance.mark(`${name}-start`);
     } catch (error) {
+
       // Ignore errors if performance API is not available
     }
-
     return startTime;
   }
 
@@ -179,9 +179,9 @@ export class PerformanceMonitor {
       performance.mark(`${name}-end`);
       performance.measure(name, `${name}-start`, `${name}-end`);
     } catch (error) {
+
       // Ignore errors if performance API is not available
     }
-
     this.recordMetric(name, duration, { type: 'timing' });
     return duration;
   }
@@ -229,7 +229,7 @@ export class PerformanceMonitor {
 
   getMemoryMetrics(): MemoryMetrics {
     const memory = (performance as any).memory;
-    
+
     if (!memory) {
       return {
         usedJSHeapSize: 0,
@@ -247,7 +247,7 @@ export class PerformanceMonitor {
 
   getNavigationMetrics(): NavigationMetrics {
     const entries = performance.getEntriesByType('navigation') as any[];
-    
+
     if (entries.length === 0) {
       return {
         domContentLoaded: 0,
@@ -270,10 +270,10 @@ export class PerformanceMonitor {
 
   checkMemoryPressure(): void {
     const memory = this.getMemoryMetrics();
-    
+
     if (memory.jsHeapSizeLimit === 0) return;
 
-    const usagePercentage = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+    const usagePercentage = memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100;
 
     if (usagePercentage > 90) {
       this.recordIssue({
@@ -315,14 +315,14 @@ export class PerformanceMonitor {
 
   private recordNavigationTiming(entry: any): void {
     const metrics = [
-      { name: 'dns-lookup', value: entry.domainLookupEnd - entry.domainLookupStart },
-      { name: 'tcp-connect', value: entry.connectEnd - entry.connectStart },
-      { name: 'request-time', value: entry.responseStart - entry.requestStart },
-      { name: 'response-time', value: entry.responseEnd - entry.responseStart },
-      { name: 'dom-processing', value: entry.domComplete - entry.domLoading }
-    ];
+    { name: 'dns-lookup', value: entry.domainLookupEnd - entry.domainLookupStart },
+    { name: 'tcp-connect', value: entry.connectEnd - entry.connectStart },
+    { name: 'request-time', value: entry.responseStart - entry.requestStart },
+    { name: 'response-time', value: entry.responseEnd - entry.responseStart },
+    { name: 'dom-processing', value: entry.domComplete - entry.domLoading }];
 
-    metrics.forEach(metric => {
+
+    metrics.forEach((metric) => {
       if (metric.value > 0) {
         this.recordMetric(metric.name, metric.value, { type: 'timing' });
       }
@@ -351,8 +351,8 @@ export class PerformanceMonitor {
 
   getResourceMetrics(): ResourceMetrics[] {
     const entries = performance.getEntriesByType('resource') as any[];
-    
-    return entries.map(entry => ({
+
+    return entries.map((entry) => ({
       url: entry.name,
       duration: entry.duration,
       size: entry.transferSize || 0,
@@ -361,7 +361,7 @@ export class PerformanceMonitor {
   }
 
   getSlowResources(threshold: number = 1000): ResourceMetrics[] {
-    return this.getResourceMetrics().filter(resource => resource.duration > threshold);
+    return this.getResourceMetrics().filter((resource) => resource.duration > threshold);
   }
 
   recordUserInteraction(interaction: UserInteraction): void {
@@ -388,15 +388,15 @@ export class PerformanceMonitor {
   }
 
   getInteractionMetrics(): InteractionMetrics {
-    const interactionMetrics = this.metrics.filter(m => 
-      m.name === 'user-interaction'
+    const interactionMetrics = this.metrics.filter((m) =>
+    m.name === 'user-interaction'
     );
 
     const totalInteractions = interactionMetrics.length;
-    const averageResponseTime = totalInteractions > 0 
-      ? interactionMetrics.reduce((sum, m) => sum + m.value, 0) / totalInteractions
-      : 0;
-    const slowInteractions = interactionMetrics.filter(m => m.value > 100).length;
+    const averageResponseTime = totalInteractions > 0 ?
+    interactionMetrics.reduce((sum, m) => sum + m.value, 0) / totalInteractions :
+    0;
+    const slowInteractions = interactionMetrics.filter((m) => m.value > 100).length;
 
     return {
       totalInteractions,
@@ -407,9 +407,9 @@ export class PerformanceMonitor {
 
   private recordIssue(issue: PerformanceIssue): void {
     this.issues.push(issue);
-    
+
     // Notify callbacks
-    this.issueCallbacks.forEach(callback => {
+    this.issueCallbacks.forEach((callback) => {
       try {
         callback(issue);
       } catch (error) {
@@ -420,7 +420,7 @@ export class PerformanceMonitor {
 
   onPerformanceIssue(callback: (issue: PerformanceIssue) => void): () => void {
     this.issueCallbacks.push(callback);
-    
+
     return () => {
       const index = this.issueCallbacks.indexOf(callback);
       if (index > -1) {
@@ -431,21 +431,21 @@ export class PerformanceMonitor {
 
   generateReport(): PerformanceReport {
     const now = Date.now();
-    const recentMetrics = this.metrics.filter(m => now - m.timestamp < 300000); // Last 5 minutes
+    const recentMetrics = this.metrics.filter((m) => now - m.timestamp < 300000); // Last 5 minutes
 
-    const timingMetrics = recentMetrics.filter(m => m.type === 'timing');
-    const averageResponseTime = timingMetrics.length > 0
-      ? timingMetrics.reduce((sum, m) => sum + m.value, 0) / timingMetrics.length
-      : 0;
+    const timingMetrics = recentMetrics.filter((m) => m.type === 'timing');
+    const averageResponseTime = timingMetrics.length > 0 ?
+    timingMetrics.reduce((sum, m) => sum + m.value, 0) / timingMetrics.length :
+    0;
 
     const memory = this.getMemoryMetrics();
-    const memoryUsage = memory.jsHeapSizeLimit > 0
-      ? (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100
-      : 0;
+    const memoryUsage = memory.jsHeapSizeLimit > 0 ?
+    memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100 :
+    0;
 
-    const errorMetrics = recentMetrics.filter(m => m.name.includes('error'));
-    const totalRequests = recentMetrics.filter(m => m.name.includes('request')).length;
-    const errorRate = totalRequests > 0 ? (errorMetrics.length / totalRequests) * 100 : 0;
+    const errorMetrics = recentMetrics.filter((m) => m.name.includes('error'));
+    const totalRequests = recentMetrics.filter((m) => m.name.includes('request')).length;
+    const errorRate = totalRequests > 0 ? errorMetrics.length / totalRequests * 100 : 0;
 
     return {
       timestamp: now,
@@ -456,35 +456,35 @@ export class PerformanceMonitor {
         errorRate,
         totalRequests
       },
-      issues: [...this.issues.filter(i => now - i.timestamp < 300000)]
+      issues: [...this.issues.filter((i) => now - i.timestamp < 300000)]
     };
   }
 
   calculatePerformanceScore(): number {
     const navigation = this.getNavigationMetrics();
     const memory = this.getMemoryMetrics();
-    const issues = this.issues.filter(i => Date.now() - i.timestamp < 300000);
+    const issues = this.issues.filter((i) => Date.now() - i.timestamp < 300000);
 
     let score = 100;
 
     // Deduct points for slow loading
-    if (navigation.domContentLoaded > 3000) score -= 20;
-    else if (navigation.domContentLoaded > 1500) score -= 10;
+    if (navigation.domContentLoaded > 3000) score -= 20;else
+    if (navigation.domContentLoaded > 1500) score -= 10;
 
-    if (navigation.firstContentfulPaint > 2500) score -= 15;
-    else if (navigation.firstContentfulPaint > 1000) score -= 5;
+    if (navigation.firstContentfulPaint > 2500) score -= 15;else
+    if (navigation.firstContentfulPaint > 1000) score -= 5;
 
     // Deduct points for high memory usage
     if (memory.jsHeapSizeLimit > 0) {
-      const memoryUsage = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
-      if (memoryUsage > 80) score -= 20;
-      else if (memoryUsage > 60) score -= 10;
+      const memoryUsage = memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100;
+      if (memoryUsage > 80) score -= 20;else
+      if (memoryUsage > 60) score -= 10;
     }
 
     // Deduct points for performance issues
-    const highIssues = issues.filter(i => i.severity === 'high').length;
-    const mediumIssues = issues.filter(i => i.severity === 'medium').length;
-    
+    const highIssues = issues.filter((i) => i.severity === 'high').length;
+    const mediumIssues = issues.filter((i) => i.severity === 'medium').length;
+
     score -= highIssues * 10;
     score -= mediumIssues * 5;
 
@@ -496,9 +496,9 @@ export class PerformanceMonitor {
     trend: 'improving' | 'degrading' | 'stable';
     samples: number;
   } {
-    const relevantMetrics = this.metrics
-      .filter(m => m.name === metricName)
-      .slice(-20); // Last 20 samples
+    const relevantMetrics = this.metrics.
+    filter((m) => m.name === metricName).
+    slice(-20); // Last 20 samples
 
     if (relevantMetrics.length < 2) {
       return {
@@ -509,17 +509,17 @@ export class PerformanceMonitor {
     }
 
     const average = relevantMetrics.reduce((sum, m) => sum + m.value, 0) / relevantMetrics.length;
-    
+
     // Compare first half with second half to determine trend
     const firstHalf = relevantMetrics.slice(0, Math.floor(relevantMetrics.length / 2));
     const secondHalf = relevantMetrics.slice(Math.floor(relevantMetrics.length / 2));
-    
+
     const firstAverage = firstHalf.reduce((sum, m) => sum + m.value, 0) / firstHalf.length;
     const secondAverage = secondHalf.reduce((sum, m) => sum + m.value, 0) / secondHalf.length;
-    
+
     const difference = secondAverage - firstAverage;
     const threshold = average * 0.05; // 5% threshold
-    
+
     let trend: 'improving' | 'degrading' | 'stable';
     if (difference > threshold) {
       trend = 'degrading'; // Higher values are usually worse
@@ -562,7 +562,7 @@ export class PerformanceMonitor {
     if (data.metrics && Array.isArray(data.metrics)) {
       this.metrics = [...data.metrics];
     }
-    
+
     if (data.issues && Array.isArray(data.issues)) {
       this.issues = [...data.issues];
     }
@@ -589,17 +589,17 @@ export class PerformanceMonitor {
     this.enabled = false;
 
     // Clean up observers
-    this.observers.forEach(observer => {
+    this.observers.forEach((observer) => {
       try {
         observer.disconnect();
       } catch (error) {
+
         // Ignore errors during cleanup
-      }
-    });
+      }});
     this.observers = [];
 
     // Clear intervals
-    this.intervals.forEach(interval => clearInterval(interval));
+    this.intervals.forEach((interval) => clearInterval(interval));
     this.intervals = [];
 
     // Clear callbacks

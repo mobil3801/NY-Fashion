@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  AlertTriangle, 
-  Activity, 
-  Network, 
-  Zap, 
-  RefreshCw, 
+import {
+  AlertTriangle,
+  Activity,
+  Network,
+  Zap,
+  RefreshCw,
   Filter,
   Download,
   CheckCircle,
   Clock,
   AlertCircle,
-  TrendingUp
-} from 'lucide-react';
+  TrendingUp } from
+'lucide-react';
 import { centralizedErrorService } from '@/services/centralized-error-service';
 import { logger } from '@/utils/production-logger';
 
@@ -65,8 +65,8 @@ interface ErrorStats {
   criticalErrors: number;
   resolvedErrors: number;
   errorRate: number;
-  topErrorTypes: { type: string; count: number }[];
-  errorsByHour: { hour: string; count: number }[];
+  topErrorTypes: {type: string;count: number;}[];
+  errorsByHour: {hour: string;count: number;}[];
 }
 
 const ErrorMonitoringDashboard: React.FC = () => {
@@ -86,11 +86,11 @@ const ErrorMonitoringDashboard: React.FC = () => {
     setLoading(true);
     try {
       await Promise.all([
-        loadErrorLogs(),
-        loadPerformanceIssues(),
-        loadNetworkErrors(),
-        loadStatistics()
-      ]);
+      loadErrorLogs(),
+      loadPerformanceIssues(),
+      loadNetworkErrors(),
+      loadStatistics()]
+      );
     } catch (error) {
       logger.logError('Failed to load dashboard data', error);
       centralizedErrorService.reportApplicationError(
@@ -158,16 +158,16 @@ const ErrorMonitoringDashboard: React.FC = () => {
     try {
       // Calculate statistics from loaded data
       const allErrors = errorLogs.length + performanceIssues.length + networkErrors.length;
-      const criticalErrors = errorLogs.filter(e => e.severity_level === 'critical').length;
-      const resolvedErrors = errorLogs.filter(e => e.resolved).length + 
-                           performanceIssues.filter(e => e.resolved).length + 
-                           networkErrors.filter(e => e.resolved).length;
+      const criticalErrors = errorLogs.filter((e) => e.severity_level === 'critical').length;
+      const resolvedErrors = errorLogs.filter((e) => e.resolved).length +
+      performanceIssues.filter((e) => e.resolved).length +
+      networkErrors.filter((e) => e.resolved).length;
 
       setStats({
         totalErrors: allErrors,
         criticalErrors,
         resolvedErrors,
-        errorRate: allErrors > 0 ? (criticalErrors / allErrors) * 100 : 0,
+        errorRate: allErrors > 0 ? criticalErrors / allErrors * 100 : 0,
         topErrorTypes: [],
         errorsByHour: []
       });
@@ -192,7 +192,7 @@ const ErrorMonitoringDashboard: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      
+
       // Refresh data
       await loadDashboardData();
       logger.logInfo('Error marked as resolved', { errorId });
@@ -212,8 +212,8 @@ const ErrorMonitoringDashboard: React.FC = () => {
     return (
       <Badge className={colors[severity as keyof typeof colors] || colors.medium}>
         {severity}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -225,8 +225,8 @@ const ErrorMonitoringDashboard: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading error monitoring dashboard...</span>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -327,19 +327,19 @@ const ErrorMonitoringDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats && stats.totalErrors === 0 ? (
-                  <Alert>
+                {stats && stats.totalErrors === 0 ?
+                <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
                       No errors detected in the last 24 hours. System is running smoothly!
                     </AlertDescription>
-                  </Alert>
-                ) : (
-                  <div className="text-sm text-gray-600">
+                  </Alert> :
+
+                <div className="text-sm text-gray-600">
                     Monitor all types of errors from a centralized dashboard. 
                     Use the tabs above to view specific error categories.
                   </div>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -355,11 +355,11 @@ const ErrorMonitoringDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {errorLogs.map((error) => (
-                  <div
-                    key={error.id}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
+                {errorLogs.map((error) =>
+                <div
+                  key={error.id}
+                  className="border rounded-lg p-4 space-y-2">
+
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -381,29 +381,29 @@ const ErrorMonitoringDashboard: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {!error.resolved && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResolveError(error.id.toString(), 37297)}
-                          >
+                        {!error.resolved &&
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleResolveError(error.id.toString(), 37297)}>
+
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Resolve
                           </Button>
-                        )}
+                      }
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
 
-                {errorLogs.length === 0 && (
-                  <Alert>
+                {errorLogs.length === 0 &&
+                <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
                       No application errors found. Great job!
                     </AlertDescription>
                   </Alert>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -419,11 +419,11 @@ const ErrorMonitoringDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {performanceIssues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
+                {performanceIssues.map((issue) =>
+                <div
+                  key={issue.id}
+                  className="border rounded-lg p-4 space-y-2">
+
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -442,29 +442,29 @@ const ErrorMonitoringDashboard: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {!issue.resolved && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResolveError(issue.id.toString(), 37298)}
-                          >
+                        {!issue.resolved &&
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleResolveError(issue.id.toString(), 37298)}>
+
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Resolve
                           </Button>
-                        )}
+                      }
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
 
-                {performanceIssues.length === 0 && (
-                  <Alert>
+                {performanceIssues.length === 0 &&
+                <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
                       No performance issues detected. System is performing well!
                     </AlertDescription>
                   </Alert>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
@@ -480,11 +480,11 @@ const ErrorMonitoringDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {networkErrors.map((error) => (
-                  <div
-                    key={error.id}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
+                {networkErrors.map((error) =>
+                <div
+                  key={error.id}
+                  className="border rounded-lg p-4 space-y-2">
+
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -504,36 +504,36 @@ const ErrorMonitoringDashboard: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        {!error.resolved && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleResolveError(error.id.toString(), 37299)}
-                          >
+                        {!error.resolved &&
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleResolveError(error.id.toString(), 37299)}>
+
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Resolve
                           </Button>
-                        )}
+                      }
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
 
-                {networkErrors.length === 0 && (
-                  <Alert>
+                {networkErrors.length === 0 &&
+                <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
                       No network errors detected. All API calls are successful!
                     </AlertDescription>
                   </Alert>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ErrorMonitoringDashboard;

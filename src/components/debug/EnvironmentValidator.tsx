@@ -17,26 +17,26 @@ const EnvironmentValidator: React.FC = () => {
 
     // Update validation every 5 seconds in development
     const interval = ENV_CONFIG.IS_DEVELOPMENT ? setInterval(updateValidation, 5000) : null;
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
   }, []);
 
   const getStatusIcon = (isValid: boolean) => {
-    return isValid ? (
-      <CheckCircle className="h-5 w-5 text-green-500" />
-    ) : (
-      <XCircle className="h-5 w-5 text-red-500" />
-    );
+    return isValid ?
+    <CheckCircle className="h-5 w-5 text-green-500" /> :
+
+    <XCircle className="h-5 w-5 text-red-500" />;
+
   };
 
   const getEnvironmentBadgeVariant = (env: string) => {
     switch (env) {
-      case 'production': return 'destructive';
-      case 'development': return 'default';
-      case 'test': return 'secondary';
-      default: return 'outline';
+      case 'production':return 'destructive';
+      case 'development':return 'default';
+      case 'test':return 'secondary';
+      default:return 'outline';
     }
   };
 
@@ -98,34 +98,34 @@ const EnvironmentValidator: React.FC = () => {
       </Card>
 
       {/* Errors */}
-      {validation.errors.length > 0 && (
-        <Alert variant="destructive">
+      {validation.errors.length > 0 &&
+      <Alert variant="destructive">
           <XCircle className="h-4 w-4" />
           <AlertTitle>Configuration Errors</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside mt-2 space-y-1">
-              {validation.errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
+              {validation.errors.map((error, index) =>
+            <li key={index}>{error}</li>
+            )}
             </ul>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Warnings */}
-      {validation.warnings.length > 0 && (
-        <Alert>
+      {validation.warnings.length > 0 &&
+      <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Configuration Warnings</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside mt-2 space-y-1">
-              {validation.warnings.map((warning, index) => (
-                <li key={index}>{warning}</li>
-              ))}
+              {validation.warnings.map((warning, index) =>
+            <li key={index}>{warning}</li>
+            )}
             </ul>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Configuration Details */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -158,14 +158,14 @@ const EnvironmentValidator: React.FC = () => {
             <CardDescription>Application feature configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(envInfo.FEATURES).map(([key, value]) => (
-              <div key={key} className="flex justify-between">
+            {Object.entries(envInfo.FEATURES).map(([key, value]) =>
+            <div key={key} className="flex justify-between">
                 <span className="text-sm font-medium">{key.replace('ENABLE_', '').replace('DISABLE_', '!')}:</span>
                 <Badge variant={value ? 'default' : 'secondary'}>
                   {value ? 'ON' : 'OFF'}
                 </Badge>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
@@ -176,14 +176,14 @@ const EnvironmentValidator: React.FC = () => {
             <CardDescription>Application security configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(envInfo.SECURITY).map(([key, value]) => (
-              <div key={key} className="flex justify-between">
+            {Object.entries(envInfo.SECURITY).map(([key, value]) =>
+            <div key={key} className="flex justify-between">
                 <span className="text-sm font-medium">{key.replace('ENABLE_', '')}:</span>
                 <span className="text-sm text-muted-foreground">
-                  {typeof value === 'boolean' ? (value ? 'Enabled' : 'Disabled') : value}
+                  {typeof value === 'boolean' ? value ? 'Enabled' : 'Disabled' : value}
                 </span>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
@@ -194,12 +194,12 @@ const EnvironmentValidator: React.FC = () => {
             <CardDescription>Application performance configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(envInfo.PERFORMANCE).map(([key, value]) => (
-              <div key={key} className="flex justify-between">
+            {Object.entries(envInfo.PERFORMANCE).map(([key, value]) =>
+            <div key={key} className="flex justify-between">
                 <span className="text-sm font-medium">{key}:</span>
                 <span className="text-sm text-muted-foreground">{value}</span>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
       </div>
@@ -212,21 +212,21 @@ const EnvironmentValidator: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {Object.entries(validation.config).map(([key, value]) => (
-              <div key={key} className="flex justify-between text-sm">
+            {Object.entries(validation.config).map(([key, value]) =>
+            <div key={key} className="flex justify-between text-sm">
                 <span className="font-mono font-medium">{key}:</span>
                 <span className="text-muted-foreground truncate ml-4">
                   {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                 </span>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Debug Information */}
-      {ENV_CONFIG.IS_DEVELOPMENT && (
-        <Alert>
+      {ENV_CONFIG.IS_DEVELOPMENT &&
+      <Alert>
           <Info className="h-4 w-4" />
           <AlertTitle>Development Mode</AlertTitle>
           <AlertDescription>
@@ -235,9 +235,9 @@ const EnvironmentValidator: React.FC = () => {
             for runtime debugging.
           </AlertDescription>
         </Alert>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default EnvironmentValidator;

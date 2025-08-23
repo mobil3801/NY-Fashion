@@ -8,16 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiClient } from '@/lib/network/client';
 import { offlineQueue } from '@/lib/offlineQueue';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Memory, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Memory,
+  TrendingUp,
+  TrendingDown,
   AlertTriangle,
   Activity,
   Zap,
   RefreshCw,
-  Trash2
-} from 'lucide-react';
+  Trash2 } from
+'lucide-react';
 
 interface MemoryReading {
   timestamp: number;
@@ -47,11 +47,11 @@ export default function MemoryLeakDetector() {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [leakTests, setLeakTests] = useState<LeakTest[]>([]);
   const [currentTest, setCurrentTest] = useState<LeakTest | null>(null);
-  
+
   const { toast } = useToast();
   const monitoringInterval = useRef<number>();
   const testRefs = useRef(new Map<string, any>());
-  
+
   // Memory monitoring
   const collectMemoryReading = () => {
     if ('memory' in performance) {
@@ -60,21 +60,21 @@ export default function MemoryLeakDetector() {
         timestamp: Date.now(),
         used: memory.usedJSHeapSize,
         total: memory.totalJSHeapSize,
-        percentage: (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100,
+        percentage: memory.usedJSHeapSize / memory.totalJSHeapSize * 100,
         heapSize: memory.usedJSHeapSize
       };
-      
-      setMemoryReadings(prev => {
+
+      setMemoryReadings((prev) => {
         const updated = [...prev, reading];
         // Keep only last 100 readings
         return updated.slice(-100);
       });
-      
+
       return reading;
     }
     return null;
   };
-  
+
   // Start/stop monitoring
   const toggleMonitoring = () => {
     if (isMonitoring) {
@@ -88,12 +88,12 @@ export default function MemoryLeakDetector() {
       collectMemoryReading(); // Initial reading
     }
   };
-  
+
   // Clear memory readings
   const clearReadings = () => {
     setMemoryReadings([]);
   };
-  
+
   // Force garbage collection (if available)
   const forceGC = () => {
     if ('gc' in window) {
@@ -111,54 +111,54 @@ export default function MemoryLeakDetector() {
       });
     }
   };
-  
+
   // Initialize leak tests
   useEffect(() => {
     const tests: LeakTest[] = [
-      {
-        name: 'API Client Memory Leak',
-        description: 'Test for memory leaks in API client request handling',
-        status: 'idle'
-      },
-      {
-        name: 'Queue Operations Memory Leak',
-        description: 'Test for memory leaks in offline queue operations',
-        status: 'idle'
-      },
-      {
-        name: 'Context Provider Memory Leak',
-        description: 'Test for memory leaks in network context providers',
-        status: 'idle'
-      },
-      {
-        name: 'Event Listeners Memory Leak',
-        description: 'Test for memory leaks from unremoved event listeners',
-        status: 'idle'
-      },
-      {
-        name: 'Large Data Processing',
-        description: 'Test memory handling with large data operations',
-        status: 'idle'
-      }
-    ];
-    
+    {
+      name: 'API Client Memory Leak',
+      description: 'Test for memory leaks in API client request handling',
+      status: 'idle'
+    },
+    {
+      name: 'Queue Operations Memory Leak',
+      description: 'Test for memory leaks in offline queue operations',
+      status: 'idle'
+    },
+    {
+      name: 'Context Provider Memory Leak',
+      description: 'Test for memory leaks in network context providers',
+      status: 'idle'
+    },
+    {
+      name: 'Event Listeners Memory Leak',
+      description: 'Test for memory leaks from unremoved event listeners',
+      status: 'idle'
+    },
+    {
+      name: 'Large Data Processing',
+      description: 'Test memory handling with large data operations',
+      status: 'idle'
+    }];
+
+
     setLeakTests(tests);
   }, []);
-  
+
   // Run specific leak test
   const runLeakTest = async (testIndex: number) => {
     const test = leakTests[testIndex];
     if (test.status === 'running') return;
-    
+
     setCurrentTest(test);
-    
+
     const updatedTests = [...leakTests];
     updatedTests[testIndex] = { ...test, status: 'running' };
     setLeakTests(updatedTests);
-    
+
     try {
       let results;
-      
+
       switch (testIndex) {
         case 0:
           results = await testApiClientMemoryLeak();
@@ -178,19 +178,19 @@ export default function MemoryLeakDetector() {
         default:
           throw new Error('Unknown test');
       }
-      
+
       updatedTests[testIndex] = {
         ...test,
         status: 'completed',
         results
       };
-      
+
       toast({
         title: 'Test Completed',
         description: `${test.name} - ${results.leakDetected ? 'Leak detected' : 'No leak detected'}`,
         variant: results.leakDetected ? 'destructive' : 'default'
       });
-      
+
     } catch (error) {
       updatedTests[testIndex] = {
         ...test,
@@ -205,50 +205,50 @@ export default function MemoryLeakDetector() {
           details: `Test failed: ${error}`
         }
       };
-      
+
       toast({
         title: 'Test Failed',
         description: test.name,
         variant: 'destructive'
       });
     }
-    
+
     setLeakTests(updatedTests);
     setCurrentTest(null);
   };
-  
+
   // API Client memory leak test
   const testApiClientMemoryLeak = async () => {
     const initialMemory = collectMemoryReading();
     if (!initialMemory) throw new Error('Memory monitoring not available');
-    
+
     const requests = [];
     const numRequests = 100;
-    
+
     // Create many API requests
     for (let i = 0; i < numRequests; i++) {
       requests.push(
-        apiClient.get(`/memory-test-${i}`, { 
+        apiClient.get(`/memory-test-${i}`, {
           timeout: 100,
-          skipRetry: true 
+          skipRetry: true
         }).catch(() => {}) // Ignore failures
       );
     }
-    
+
     await Promise.allSettled(requests);
-    
+
     // Force cleanup
     apiClient.cleanup();
-    
+
     // Wait for potential garbage collection
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     const finalMemory = collectMemoryReading();
     if (!finalMemory) throw new Error('Final memory reading failed');
-    
+
     const memoryDelta = finalMemory.used - initialMemory.used;
-    const leakDetected = memoryDelta > (5 * 1024 * 1024); // 5MB threshold
-    
+    const leakDetected = memoryDelta > 5 * 1024 * 1024; // 5MB threshold
+
     return {
       initialMemory: initialMemory.used,
       finalMemory: finalMemory.used,
@@ -259,17 +259,17 @@ export default function MemoryLeakDetector() {
       details: `Memory change: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB`
     };
   };
-  
+
   // Queue operations memory leak test
   const testQueueOperationsMemoryLeak = async () => {
     const initialMemory = collectMemoryReading();
     if (!initialMemory) throw new Error('Memory monitoring not available');
-    
+
     const numOperations = 200;
-    
+
     // Clear existing queue
     await offlineQueue.clear();
-    
+
     // Add many operations
     for (let i = 0; i < numOperations; i++) {
       await offlineQueue.enqueue('POST', `/queue-memory-test-${i}`, {
@@ -277,19 +277,19 @@ export default function MemoryLeakDetector() {
         timestamp: Date.now()
       });
     }
-    
+
     // Process and remove all operations
     await offlineQueue.flush(async () => true); // Remove all
-    
+
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const finalMemory = collectMemoryReading();
     if (!finalMemory) throw new Error('Final memory reading failed');
-    
+
     const memoryDelta = finalMemory.used - initialMemory.used;
-    const leakDetected = memoryDelta > (10 * 1024 * 1024); // 10MB threshold
-    
+    const leakDetected = memoryDelta > 10 * 1024 * 1024; // 10MB threshold
+
     return {
       initialMemory: initialMemory.used,
       finalMemory: finalMemory.used,
@@ -300,16 +300,16 @@ export default function MemoryLeakDetector() {
       details: `Memory change: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB`
     };
   };
-  
+
   // Context provider memory leak test
   const testContextProviderMemoryLeak = async () => {
     const initialMemory = collectMemoryReading();
     if (!initialMemory) throw new Error('Memory monitoring not available');
-    
+
     // Simulate multiple provider mount/unmount cycles
     const cycles = 50;
     const contexts = [];
-    
+
     for (let i = 0; i < cycles; i++) {
       // Simulate context creation and destruction
       const context = {
@@ -319,28 +319,28 @@ export default function MemoryLeakDetector() {
           context.listeners.clear();
         }
       };
-      
+
       contexts.push(context);
-      
+
       // Add some listeners
       for (let j = 0; j < 10; j++) {
         context.listeners.add(() => {});
       }
     }
-    
+
     // Cleanup all contexts
-    contexts.forEach(context => context.cleanup());
+    contexts.forEach((context) => context.cleanup());
     contexts.length = 0; // Clear array
-    
+
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const finalMemory = collectMemoryReading();
     if (!finalMemory) throw new Error('Final memory reading failed');
-    
+
     const memoryDelta = finalMemory.used - initialMemory.used;
-    const leakDetected = memoryDelta > (2 * 1024 * 1024); // 2MB threshold
-    
+    const leakDetected = memoryDelta > 2 * 1024 * 1024; // 2MB threshold
+
     return {
       initialMemory: initialMemory.used,
       finalMemory: finalMemory.used,
@@ -351,41 +351,41 @@ export default function MemoryLeakDetector() {
       details: `Memory change: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB`
     };
   };
-  
+
   // Event listeners memory leak test
   const testEventListenersMemoryLeak = async () => {
     const initialMemory = collectMemoryReading();
     if (!initialMemory) throw new Error('Memory monitoring not available');
-    
+
     const numListeners = 500;
     const listeners = [];
-    
+
     // Add many event listeners
     for (let i = 0; i < numListeners; i++) {
       const listener = () => console.log(`Listener ${i}`);
       window.addEventListener('custom-event', listener);
       listeners.push(listener);
     }
-    
+
     // Trigger some events
     for (let i = 0; i < 10; i++) {
       window.dispatchEvent(new CustomEvent('custom-event'));
     }
-    
+
     // Remove all listeners
     listeners.forEach((listener, index) => {
       window.removeEventListener('custom-event', listener);
     });
-    
+
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     const finalMemory = collectMemoryReading();
     if (!finalMemory) throw new Error('Final memory reading failed');
-    
+
     const memoryDelta = finalMemory.used - initialMemory.used;
-    const leakDetected = memoryDelta > (1 * 1024 * 1024); // 1MB threshold
-    
+    const leakDetected = memoryDelta > 1 * 1024 * 1024; // 1MB threshold
+
     return {
       initialMemory: initialMemory.used,
       finalMemory: finalMemory.used,
@@ -396,14 +396,14 @@ export default function MemoryLeakDetector() {
       details: `Memory change: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB`
     };
   };
-  
+
   // Large data processing test
   const testLargeDataProcessing = async () => {
     const initialMemory = collectMemoryReading();
     if (!initialMemory) throw new Error('Memory monitoring not available');
-    
+
     const iterations = 10;
-    
+
     for (let i = 0; i < iterations; i++) {
       // Create large data structures
       const largeArray = new Array(100000).fill(0).map((_, index) => ({
@@ -413,28 +413,28 @@ export default function MemoryLeakDetector() {
           moreData: new Array(100).fill(index)
         }
       }));
-      
+
       // Process the data
-      const processed = largeArray.map(item => ({
+      const processed = largeArray.map((item) => ({
         ...item,
         processed: true,
         processedAt: Date.now()
       }));
-      
+
       // Clear references
       largeArray.length = 0;
       processed.length = 0;
     }
-    
+
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     const finalMemory = collectMemoryReading();
     if (!finalMemory) throw new Error('Final memory reading failed');
-    
+
     const memoryDelta = finalMemory.used - initialMemory.used;
-    const leakDetected = memoryDelta > (20 * 1024 * 1024); // 20MB threshold
-    
+    const leakDetected = memoryDelta > 20 * 1024 * 1024; // 20MB threshold
+
     return {
       initialMemory: initialMemory.used,
       finalMemory: finalMemory.used,
@@ -445,7 +445,7 @@ export default function MemoryLeakDetector() {
       details: `Memory change: ${(memoryDelta / 1024 / 1024).toFixed(2)}MB`
     };
   };
-  
+
   // Cleanup
   useEffect(() => {
     return () => {
@@ -454,24 +454,24 @@ export default function MemoryLeakDetector() {
       }
     };
   }, []);
-  
+
   // Calculate memory trend
   const getMemoryTrend = () => {
     if (memoryReadings.length < 10) return 'stable';
-    
+
     const recent = memoryReadings.slice(-10);
     const first = recent[0].used;
     const last = recent[recent.length - 1].used;
-    const change = ((last - first) / first) * 100;
-    
+    const change = (last - first) / first * 100;
+
     if (change > 5) return 'increasing';
     if (change < -5) return 'decreasing';
     return 'stable';
   };
-  
+
   const memoryTrend = getMemoryTrend();
   const currentMemory = memoryReadings.length > 0 ? memoryReadings[memoryReadings.length - 1] : null;
-  
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -514,15 +514,15 @@ export default function MemoryLeakDetector() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {currentMemory 
-                    ? `${(currentMemory.used / 1024 / 1024).toFixed(1)}MB`
-                    : 'N/A'
+                  {currentMemory ?
+                  `${(currentMemory.used / 1024 / 1024).toFixed(1)}MB` :
+                  'N/A'
                   }
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {currentMemory 
-                    ? `${currentMemory.percentage.toFixed(1)}% of ${(currentMemory.total / 1024 / 1024).toFixed(1)}MB`
-                    : 'No data available'
+                  {currentMemory ?
+                  `${currentMemory.percentage.toFixed(1)}% of ${(currentMemory.total / 1024 / 1024).toFixed(1)}MB` :
+                  'No data available'
                   }
                 </p>
               </CardContent>
@@ -531,13 +531,13 @@ export default function MemoryLeakDetector() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Memory Trend</CardTitle>
-                {memoryTrend === 'increasing' ? (
-                  <TrendingUp className="h-4 w-4 text-red-500" />
-                ) : memoryTrend === 'decreasing' ? (
-                  <TrendingDown className="h-4 w-4 text-green-500" />
-                ) : (
-                  <Activity className="h-4 w-4 text-blue-500" />
-                )}
+                {memoryTrend === 'increasing' ?
+                <TrendingUp className="h-4 w-4 text-red-500" /> :
+                memoryTrend === 'decreasing' ?
+                <TrendingDown className="h-4 w-4 text-green-500" /> :
+
+                <Activity className="h-4 w-4 text-blue-500" />
+                }
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold capitalize">{memoryTrend}</div>
@@ -565,32 +565,32 @@ export default function MemoryLeakDetector() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Leak Status</CardTitle>
-                {leakTests.some(t => t.results?.leakDetected) ? (
-                  <AlertTriangle className="h-4 w-4 text-red-500" />
-                ) : (
-                  <Zap className="h-4 w-4 text-green-500" />
-                )}
+                {leakTests.some((t) => t.results?.leakDetected) ?
+                <AlertTriangle className="h-4 w-4 text-red-500" /> :
+
+                <Zap className="h-4 w-4 text-green-500" />
+                }
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {leakTests.some(t => t.results?.leakDetected) ? 'Issues' : 'Clean'}
+                  {leakTests.some((t) => t.results?.leakDetected) ? 'Issues' : 'Clean'}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {leakTests.filter(t => t.status === 'completed').length} tests completed
+                  {leakTests.filter((t) => t.status === 'completed').length} tests completed
                 </p>
               </CardContent>
             </Card>
           </div>
           
-          {currentMemory && currentMemory.percentage > 80 && (
-            <Alert>
+          {currentMemory && currentMemory.percentage > 80 &&
+          <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 High memory usage detected ({currentMemory.percentage.toFixed(1)}%). 
                 Consider running garbage collection or investigating potential leaks.
               </AlertDescription>
             </Alert>
-          )}
+          }
         </TabsContent>
         
         <TabsContent value="monitoring" className="space-y-4">
@@ -599,8 +599,8 @@ export default function MemoryLeakDetector() {
               <CardTitle>Real-time Memory Monitoring</CardTitle>
             </CardHeader>
             <CardContent>
-              {currentMemory && (
-                <div className="space-y-4">
+              {currentMemory &&
+              <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
                       <span>Used Memory</span>
@@ -628,16 +628,16 @@ export default function MemoryLeakDetector() {
                     </div>
                   </div>
                 </div>
-              )}
+              }
               
-              {!currentMemory && (
-                <div className="text-center py-8 text-gray-500">
-                  {isMonitoring 
-                    ? 'Collecting memory data...'
-                    : 'Start monitoring to see memory usage'
-                  }
+              {!currentMemory &&
+              <div className="text-center py-8 text-gray-500">
+                  {isMonitoring ?
+                'Collecting memory data...' :
+                'Start monitoring to see memory usage'
+                }
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
         </TabsContent>
@@ -652,8 +652,8 @@ export default function MemoryLeakDetector() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {leakTests.map((test, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
+                {leakTests.map((test, index) =>
+                <div key={index} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <div className="font-medium">{test.name}</div>
@@ -661,34 +661,34 @@ export default function MemoryLeakDetector() {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={
-                            test.status === 'completed' && !test.results?.leakDetected ? 'default' :
-                            test.status === 'completed' && test.results?.leakDetected ? 'destructive' :
-                            test.status === 'running' ? 'outline' :
-                            test.status === 'failed' ? 'destructive' :
-                            'secondary'
-                          }
-                        >
+                        <Badge
+                        variant={
+                        test.status === 'completed' && !test.results?.leakDetected ? 'default' :
+                        test.status === 'completed' && test.results?.leakDetected ? 'destructive' :
+                        test.status === 'running' ? 'outline' :
+                        test.status === 'failed' ? 'destructive' :
+                        'secondary'
+                        }>
+
                           {test.status}
                         </Badge>
                         
                         <Button
-                          size="sm"
-                          onClick={() => runLeakTest(index)}
-                          disabled={test.status === 'running'}
-                        >
-                          {test.status === 'running' ? (
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                          ) : (
-                            'Run Test'
-                          )}
+                        size="sm"
+                        onClick={() => runLeakTest(index)}
+                        disabled={test.status === 'running'}>
+
+                          {test.status === 'running' ?
+                        <RefreshCw className="h-4 w-4 animate-spin" /> :
+
+                        'Run Test'
+                        }
                         </Button>
                       </div>
                     </div>
                     
-                    {test.results && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded text-sm space-y-2">
+                    {test.results &&
+                  <div className="mt-3 p-3 bg-gray-50 rounded text-sm space-y-2">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           <div>
                             <div className="font-medium">Memory Delta</div>
@@ -709,18 +709,18 @@ export default function MemoryLeakDetector() {
                             </div>
                           </div>
                         </div>
-                        {test.results.details && (
-                          <div className="text-gray-600">{test.results.details}</div>
-                        )}
+                        {test.results.details &&
+                    <div className="text-gray-600">{test.results.details}</div>
+                    }
                       </div>
-                    )}
+                  }
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }

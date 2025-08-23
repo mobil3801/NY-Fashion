@@ -108,16 +108,16 @@ class EnhancedErrorTrackingService {
 
   private async setupDefaultCategories(): Promise<void> {
     const defaultCategories = [
-      { name: 'JavaScript Error', description: 'Runtime JavaScript errors', severity_level: 2, alert_threshold: 5 },
-      { name: 'Network Error', description: 'Network and API related errors', severity_level: 3, alert_threshold: 10 },
-      { name: 'UI Component Error', description: 'React component rendering errors', severity_level: 3, alert_threshold: 8 },
-      { name: 'Authentication Error', description: 'User authentication failures', severity_level: 2, alert_threshold: 3 },
-      { name: 'Database Error', description: 'Database operation failures', severity_level: 1, alert_threshold: 2 },
-      { name: 'Performance Warning', description: 'Performance related warnings', severity_level: 4, alert_threshold: 20 }
-    ];
+    { name: 'JavaScript Error', description: 'Runtime JavaScript errors', severity_level: 2, alert_threshold: 5 },
+    { name: 'Network Error', description: 'Network and API related errors', severity_level: 3, alert_threshold: 10 },
+    { name: 'UI Component Error', description: 'React component rendering errors', severity_level: 3, alert_threshold: 8 },
+    { name: 'Authentication Error', description: 'User authentication failures', severity_level: 2, alert_threshold: 3 },
+    { name: 'Database Error', description: 'Database operation failures', severity_level: 1, alert_threshold: 2 },
+    { name: 'Performance Warning', description: 'Performance related warnings', severity_level: 4, alert_threshold: 20 }];
+
 
     for (const category of defaultCategories) {
-      const exists = this.categories.some(c => c.name === category.name);
+      const exists = this.categories.some((c) => c.name === category.name);
       if (!exists) {
         try {
           const { error } = await window.ezsite.apis.tableCreate(37301, {
@@ -143,19 +143,19 @@ class EnhancedErrorTrackingService {
   private categorizeError(error: ErrorReport): number | undefined {
     // Simple categorization logic
     if (error.errorType.toLowerCase().includes('network') || error.errorType.toLowerCase().includes('api')) {
-      return this.categories.find(c => c.name === 'Network Error')?.id;
+      return this.categories.find((c) => c.name === 'Network Error')?.id;
     }
     if (error.errorType.toLowerCase().includes('auth')) {
-      return this.categories.find(c => c.name === 'Authentication Error')?.id;
+      return this.categories.find((c) => c.name === 'Authentication Error')?.id;
     }
     if (error.componentName) {
-      return this.categories.find(c => c.name === 'UI Component Error')?.id;
+      return this.categories.find((c) => c.name === 'UI Component Error')?.id;
     }
     if (error.errorType.toLowerCase().includes('database') || error.errorType.toLowerCase().includes('sql')) {
-      return this.categories.find(c => c.name === 'Database Error')?.id;
+      return this.categories.find((c) => c.name === 'Database Error')?.id;
     }
-    
-    return this.categories.find(c => c.name === 'JavaScript Error')?.id;
+
+    return this.categories.find((c) => c.name === 'JavaScript Error')?.id;
   }
 
   async reportError(errorReport: Partial<ErrorReport>): Promise<void> {
@@ -183,7 +183,7 @@ class EnhancedErrorTrackingService {
 
   private async storeError(error: ErrorReport): Promise<void> {
     const categoryId = this.categorizeError(error);
-    
+
     try {
       // Check if error already exists
       const { data: existingErrors } = await window.ezsite.apis.tablePage(37302, {
@@ -248,10 +248,10 @@ class EnhancedErrorTrackingService {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'date_key', op: 'Equal', value: dateKey },
-          { name: 'hour_key', op: 'Equal', value: hourKey },
-          { name: 'error_type', op: 'Equal', value: error.errorType }
-        ]
+        { name: 'date_key', op: 'Equal', value: dateKey },
+        { name: 'hour_key', op: 'Equal', value: hourKey },
+        { name: 'error_type', op: 'Equal', value: error.errorType }]
+
       });
 
       if (existingStats?.List && existingStats.List.length > 0) {
@@ -281,7 +281,7 @@ class EnhancedErrorTrackingService {
 
   private startAlertProcessor(): void {
     if (this.isProcessingAlerts) return;
-    
+
     this.isProcessingAlerts = true;
     setInterval(async () => {
       if (this.alertQueue.length > 0) {
@@ -307,8 +307,8 @@ class EnhancedErrorTrackingService {
       for (const [key, groupErrors] of Object.entries(errorGroups)) {
         const [categoryIdStr] = key.split('-');
         const categoryId = parseInt(categoryIdStr);
-        const category = this.categories.find(c => c.id === categoryId);
-        
+        const category = this.categories.find((c) => c.id === categoryId);
+
         if (category && groupErrors.length >= category.alert_threshold) {
           await this.triggerAlert(category, groupErrors);
         }
@@ -322,10 +322,10 @@ class EnhancedErrorTrackingService {
     try {
       // Log alert trigger
       console.warn(`🚨 ERROR ALERT: ${category.name} - ${errors.length} errors detected`);
-      
+
       // In a real implementation, you would send emails, webhooks, etc.
       // For now, we'll just create an alert record
-      
+
       const now = new Date().toISOString();
       const { data: existingAlerts } = await window.ezsite.apis.tablePage(37303, {
         PageNo: 1,
@@ -333,9 +333,9 @@ class EnhancedErrorTrackingService {
         OrderByField: 'id',
         IsAsc: false,
         Filters: [
-          { name: 'category_id', op: 'Equal', value: category.id },
-          { name: 'is_enabled', op: 'Equal', value: true }
-        ]
+        { name: 'category_id', op: 'Equal', value: category.id },
+        { name: 'is_enabled', op: 'Equal', value: true }]
+
       });
 
       if (existingAlerts?.List && existingAlerts.List.length > 0) {
@@ -351,7 +351,7 @@ class EnhancedErrorTrackingService {
     }
   }
 
-  async getErrorStatistics(dateRange: { from: Date; to: Date }): Promise<any> {
+  async getErrorStatistics(dateRange: {from: Date;to: Date;}): Promise<any> {
     try {
       const fromDate = dateRange.from.toISOString().split('T')[0];
       const toDate = dateRange.to.toISOString().split('T')[0];
@@ -362,9 +362,9 @@ class EnhancedErrorTrackingService {
         OrderByField: 'date_key',
         IsAsc: true,
         Filters: [
-          { name: 'date_key', op: 'GreaterThanOrEqual', value: fromDate },
-          { name: 'date_key', op: 'LessThanOrEqual', value: toDate }
-        ]
+        { name: 'date_key', op: 'GreaterThanOrEqual', value: fromDate },
+        { name: 'date_key', op: 'LessThanOrEqual', value: toDate }]
+
       });
 
       if (error) throw new Error(error);

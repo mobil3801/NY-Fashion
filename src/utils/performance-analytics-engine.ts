@@ -23,11 +23,11 @@ interface PerformanceAnalytics {
 }
 
 class PerformanceAnalyticsEngine {
-  public async generateAnalytics(timeRange: { start: Date; end: Date }): Promise<PerformanceAnalytics> {
+  public async generateAnalytics(timeRange: {start: Date;end: Date;}): Promise<PerformanceAnalytics> {
     const [metrics, alerts] = await Promise.all([
-      this.fetchMetricsData(timeRange),
-      this.fetchAlertsData(timeRange)
-    ]);
+    this.fetchMetricsData(timeRange),
+    this.fetchAlertsData(timeRange)]
+    );
 
     const analytics: PerformanceAnalytics = {
       timeRange,
@@ -42,23 +42,23 @@ class PerformanceAnalyticsEngine {
     return analytics;
   }
 
-  private async fetchMetricsData(timeRange: { start: Date; end: Date }): Promise<any[]> {
+  private async fetchMetricsData(timeRange: {start: Date;end: Date;}): Promise<any[]> {
     try {
       const { data, error } = await window.ezsite.apis.tablePage(37304, {
         PageNo: 1,
         PageSize: 10000,
         Filters: [
-          {
-            name: 'created_at',
-            op: 'GreaterThanOrEqual',
-            value: timeRange.start.toISOString()
-          },
-          {
-            name: 'created_at',
-            op: 'LessThanOrEqual',
-            value: timeRange.end.toISOString()
-          }
-        ],
+        {
+          name: 'created_at',
+          op: 'GreaterThanOrEqual',
+          value: timeRange.start.toISOString()
+        },
+        {
+          name: 'created_at',
+          op: 'LessThanOrEqual',
+          value: timeRange.end.toISOString()
+        }],
+
         OrderByField: 'created_at',
         IsAsc: true
       });
@@ -71,23 +71,23 @@ class PerformanceAnalyticsEngine {
     }
   }
 
-  private async fetchAlertsData(timeRange: { start: Date; end: Date }): Promise<any[]> {
+  private async fetchAlertsData(timeRange: {start: Date;end: Date;}): Promise<any[]> {
     try {
       const { data, error } = await window.ezsite.apis.tablePage(37305, {
         PageNo: 1,
         PageSize: 1000,
         Filters: [
-          {
-            name: 'created_at',
-            op: 'GreaterThanOrEqual',
-            value: timeRange.start.toISOString()
-          },
-          {
-            name: 'created_at',
-            op: 'LessThanOrEqual',
-            value: timeRange.end.toISOString()
-          }
-        ],
+        {
+          name: 'created_at',
+          op: 'GreaterThanOrEqual',
+          value: timeRange.start.toISOString()
+        },
+        {
+          name: 'created_at',
+          op: 'LessThanOrEqual',
+          value: timeRange.end.toISOString()
+        }],
+
         OrderByField: 'created_at',
         IsAsc: true
       });
@@ -104,23 +104,23 @@ class PerformanceAnalyticsEngine {
     if (metrics.length === 0) return 100;
 
     let score = 100;
-    
+
     // Penalize based on alerts
-    const criticalAlerts = alerts.filter(a => a.severity === 'critical').length;
-    const highAlerts = alerts.filter(a => a.severity === 'high').length;
-    const mediumAlerts = alerts.filter(a => a.severity === 'medium').length;
+    const criticalAlerts = alerts.filter((a) => a.severity === 'critical').length;
+    const highAlerts = alerts.filter((a) => a.severity === 'high').length;
+    const mediumAlerts = alerts.filter((a) => a.severity === 'medium').length;
 
     score -= criticalAlerts * 20;
     score -= highAlerts * 10;
     score -= mediumAlerts * 5;
 
     // Factor in performance metrics quality
-    const loadTimeMetrics = metrics.filter(m => m.metric_type === 'load_time');
+    const loadTimeMetrics = metrics.filter((m) => m.metric_type === 'load_time');
     if (loadTimeMetrics.length > 0) {
       const avgLoadTime = loadTimeMetrics.reduce((sum, m) => sum + m.value, 0) / loadTimeMetrics.length;
-      if (avgLoadTime > 5000) score -= 15;
-      else if (avgLoadTime > 3000) score -= 10;
-      else if (avgLoadTime > 1000) score -= 5;
+      if (avgLoadTime > 5000) score -= 15;else
+      if (avgLoadTime > 3000) score -= 10;else
+      if (avgLoadTime > 1000) score -= 5;
     }
 
     return Math.max(0, Math.min(100, score));
@@ -129,24 +129,24 @@ class PerformanceAnalyticsEngine {
   private analyzeTrends(metrics: any[]): Record<string, any> {
     const trends: Record<string, any> = {};
     const metricGroups = this.groupMetricsByType(metrics);
-    
-    Object.keys(metricGroups).forEach(metricKey => {
+
+    Object.keys(metricGroups).forEach((metricKey) => {
       const metricData = metricGroups[metricKey];
       const midPoint = Math.floor(metricData.length / 2);
-      
+
       const firstHalf = metricData.slice(0, midPoint);
       const secondHalf = metricData.slice(midPoint);
-      
+
       if (firstHalf.length > 0 && secondHalf.length > 0) {
         const previousAvg = firstHalf.reduce((sum, m) => sum + m.value, 0) / firstHalf.length;
         const currentAvg = secondHalf.reduce((sum, m) => sum + m.value, 0) / secondHalf.length;
-        const change = ((currentAvg - previousAvg) / previousAvg) * 100;
-        
+        const change = (currentAvg - previousAvg) / previousAvg * 100;
+
         trends[metricKey] = {
           current: currentAvg,
           previous: previousAvg,
           change: change,
-          trend: Math.abs(change) < 5 ? 'stable' : (change > 0 ? 'degrading' : 'improving')
+          trend: Math.abs(change) < 5 ? 'stable' : change > 0 ? 'degrading' : 'improving'
         };
       }
     });
@@ -166,22 +166,22 @@ class PerformanceAnalyticsEngine {
   private identifyBottlenecks(metrics: any[], alerts: any[]): Array<any> {
     const bottlenecks: Array<any> = [];
     const metricGroups = this.groupMetricsByType(metrics);
-    
+
     // Identify metrics with highest average values
-    Object.keys(metricGroups).forEach(metricKey => {
+    Object.keys(metricGroups).forEach((metricKey) => {
       const metricData = metricGroups[metricKey];
       const avgValue = metricData.reduce((sum, m) => sum + m.value, 0) / metricData.length;
-      const relatedAlerts = alerts.filter(a => 
-        `${a.metric_type}_${a.metric_name}` === metricKey
+      const relatedAlerts = alerts.filter((a) =>
+      `${a.metric_type}_${a.metric_name}` === metricKey
       );
-      
+
       if (relatedAlerts.length > 0) {
         const severityScore = relatedAlerts.reduce((score, alert) => {
           switch (alert.severity) {
-            case 'critical': return score + 4;
-            case 'high': return score + 3;
-            case 'medium': return score + 2;
-            default: return score + 1;
+            case 'critical':return score + 4;
+            case 'high':return score + 3;
+            case 'medium':return score + 2;
+            default:return score + 1;
           }
         }, 0);
 
@@ -206,19 +206,19 @@ class PerformanceAnalyticsEngine {
 
   private getBottleneckRecommendations(metricKey: string, avgValue: number): string[] {
     const recommendations: string[] = [];
-    
+
     if (metricKey.includes('load_time')) {
       recommendations.push('Implement code splitting and lazy loading');
       recommendations.push('Optimize bundle size and remove unused code');
       recommendations.push('Use CDN for static assets');
     }
-    
+
     if (metricKey.includes('api_response')) {
       recommendations.push('Implement API caching strategies');
       recommendations.push('Optimize database queries and indexes');
       recommendations.push('Consider API pagination and data filtering');
     }
-    
+
     if (metricKey.includes('memory')) {
       recommendations.push('Check for memory leaks and dispose unused objects');
       recommendations.push('Optimize image and data caching');
@@ -230,14 +230,14 @@ class PerformanceAnalyticsEngine {
 
   private generateInsights(metrics: any[], alerts: any[]): string[] {
     const insights: string[] = [];
-    
+
     if (metrics.length === 0) {
       insights.push('No performance data available for analysis');
       return insights;
     }
 
     // Page load performance insights
-    const loadTimeMetrics = metrics.filter(m => m.metric_type === 'load_time');
+    const loadTimeMetrics = metrics.filter((m) => m.metric_type === 'load_time');
     if (loadTimeMetrics.length > 0) {
       const avgLoadTime = loadTimeMetrics.reduce((sum, m) => sum + m.value, 0) / loadTimeMetrics.length;
       if (avgLoadTime < 1000) {
@@ -250,7 +250,7 @@ class PerformanceAnalyticsEngine {
     }
 
     // API performance insights
-    const apiMetrics = metrics.filter(m => m.metric_type === 'api_response');
+    const apiMetrics = metrics.filter((m) => m.metric_type === 'api_response');
     if (apiMetrics.length > 0) {
       const avgApiTime = apiMetrics.reduce((sum, m) => sum + m.value, 0) / apiMetrics.length;
       if (avgApiTime > 2000) {
@@ -259,16 +259,16 @@ class PerformanceAnalyticsEngine {
     }
 
     // Memory usage insights
-    const memoryMetrics = metrics.filter(m => m.metric_type === 'memory');
+    const memoryMetrics = metrics.filter((m) => m.metric_type === 'memory');
     if (memoryMetrics.length > 0) {
-      const maxMemory = Math.max(...memoryMetrics.map(m => m.value));
+      const maxMemory = Math.max(...memoryMetrics.map((m) => m.value));
       if (maxMemory > 150) {
         insights.push('High memory usage detected - check for memory leaks');
       }
     }
 
     // Alert frequency insights
-    const criticalAlerts = alerts.filter(a => a.severity === 'critical');
+    const criticalAlerts = alerts.filter((a) => a.severity === 'critical');
     if (criticalAlerts.length > 0) {
       insights.push(`${criticalAlerts.length} critical performance issues detected - immediate attention required`);
     }
@@ -276,12 +276,12 @@ class PerformanceAnalyticsEngine {
     // Performance trend insights
     const recentMetrics = metrics.slice(-100);
     const olderMetrics = metrics.slice(-200, -100);
-    
+
     if (recentMetrics.length > 0 && olderMetrics.length > 0) {
       const recentAvg = recentMetrics.reduce((sum, m) => sum + m.value, 0) / recentMetrics.length;
       const olderAvg = olderMetrics.reduce((sum, m) => sum + m.value, 0) / olderMetrics.length;
-      const change = ((recentAvg - olderAvg) / olderAvg) * 100;
-      
+      const change = (recentAvg - olderAvg) / olderAvg * 100;
+
       if (change > 10) {
         insights.push('Performance is degrading over time - investigate recent changes');
       } else if (change < -10) {
@@ -292,9 +292,9 @@ class PerformanceAnalyticsEngine {
     return insights;
   }
 
-  public async generatePerformanceReport(timeRange: { start: Date; end: Date }): Promise<any> {
+  public async generatePerformanceReport(timeRange: {start: Date;end: Date;}): Promise<any> {
     const analytics = await this.generateAnalytics(timeRange);
-    
+
     return {
       generatedAt: new Date().toISOString(),
       period: {
@@ -306,7 +306,7 @@ class PerformanceAnalyticsEngine {
         performanceScore: analytics.performanceScore,
         totalMetrics: analytics.totalMetrics,
         alertsTriggered: analytics.alertsTriggered,
-        criticalIssues: analytics.bottlenecks.filter(b => b.severity === 'critical').length
+        criticalIssues: analytics.bottlenecks.filter((b) => b.severity === 'critical').length
       },
       analytics,
       recommendations: this.generatePriorityRecommendations(analytics)
@@ -315,9 +315,9 @@ class PerformanceAnalyticsEngine {
 
   private generatePriorityRecommendations(analytics: PerformanceAnalytics): Array<any> {
     const recommendations: Array<any> = [];
-    
+
     // High priority recommendations based on bottlenecks
-    analytics.bottlenecks.forEach(bottleneck => {
+    analytics.bottlenecks.forEach((bottleneck) => {
       if (bottleneck.severity === 'critical' || bottleneck.severity === 'high') {
         recommendations.push({
           priority: bottleneck.severity === 'critical' ? 1 : 2,
@@ -337,10 +337,10 @@ class PerformanceAnalyticsEngine {
         title: 'Overall Performance Optimization',
         description: 'Multiple performance issues detected',
         recommendations: [
-          'Conduct comprehensive performance audit',
-          'Implement performance monitoring alerts',
-          'Review and optimize critical user journeys'
-        ]
+        'Conduct comprehensive performance audit',
+        'Implement performance monitoring alerts',
+        'Review and optimize critical user journeys']
+
       });
     }
 

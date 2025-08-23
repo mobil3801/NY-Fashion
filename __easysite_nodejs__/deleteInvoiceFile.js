@@ -45,6 +45,8 @@ async function deleteInvoiceFile(invoiceId) {
 
 
 
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(invoice.file_id);
       } catch (error) {console.warn('Could not delete file from storage:', error.message); // Continue with database deletion even if storage deletion fails

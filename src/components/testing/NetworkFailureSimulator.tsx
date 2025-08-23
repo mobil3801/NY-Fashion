@@ -8,16 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Wifi, 
-  WifiOff, 
-  AlertTriangle, 
-  Clock, 
+import {
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+  Clock,
   Zap,
   Network,
   Play,
-  Square
-} from 'lucide-react';
+  Square } from
+'lucide-react';
 import { toast } from 'sonner';
 
 interface NetworkCondition {
@@ -55,88 +55,88 @@ const NetworkFailureSimulator: React.FC = () => {
     jitter: 10,
     active: false
   });
-  
+
   const originalFetch = useRef<typeof window.fetch>();
   const simulationId = useRef<string>();
 
   const predefinedConditions: NetworkCondition[] = [
-    {
-      id: 'good-3g',
-      name: 'Good 3G',
-      description: 'Good 3G connection (1.6Mbps, 300ms latency)',
-      latency: 300,
-      bandwidth: 1600,
-      packetLoss: 0,
-      jitter: 50,
-      active: false
-    },
-    {
-      id: 'slow-3g',
-      name: 'Slow 3G',
-      description: 'Slow 3G connection (400kbps, 400ms latency)',
-      latency: 400,
-      bandwidth: 400,
-      packetLoss: 1,
-      jitter: 100,
-      active: false
-    },
-    {
-      id: 'offline',
-      name: 'Offline',
-      description: 'Complete network failure',
-      latency: 0,
-      bandwidth: 0,
-      packetLoss: 100,
-      jitter: 0,
-      active: false
-    },
-    {
-      id: 'unstable',
-      name: 'Unstable Connection',
-      description: 'High packet loss and variable latency',
-      latency: 200,
-      bandwidth: 1000,
-      packetLoss: 10,
-      jitter: 200,
-      active: false
-    },
-    {
-      id: 'high-latency',
-      name: 'High Latency',
-      description: 'Satellite-like connection with high latency',
-      latency: 800,
-      bandwidth: 2000,
-      packetLoss: 0,
-      jitter: 100,
-      active: false
-    }
-  ];
+  {
+    id: 'good-3g',
+    name: 'Good 3G',
+    description: 'Good 3G connection (1.6Mbps, 300ms latency)',
+    latency: 300,
+    bandwidth: 1600,
+    packetLoss: 0,
+    jitter: 50,
+    active: false
+  },
+  {
+    id: 'slow-3g',
+    name: 'Slow 3G',
+    description: 'Slow 3G connection (400kbps, 400ms latency)',
+    latency: 400,
+    bandwidth: 400,
+    packetLoss: 1,
+    jitter: 100,
+    active: false
+  },
+  {
+    id: 'offline',
+    name: 'Offline',
+    description: 'Complete network failure',
+    latency: 0,
+    bandwidth: 0,
+    packetLoss: 100,
+    jitter: 0,
+    active: false
+  },
+  {
+    id: 'unstable',
+    name: 'Unstable Connection',
+    description: 'High packet loss and variable latency',
+    latency: 200,
+    bandwidth: 1000,
+    packetLoss: 10,
+    jitter: 200,
+    active: false
+  },
+  {
+    id: 'high-latency',
+    name: 'High Latency',
+    description: 'Satellite-like connection with high latency',
+    latency: 800,
+    bandwidth: 2000,
+    packetLoss: 0,
+    jitter: 100,
+    active: false
+  }];
+
 
   const testOperations = [
-    {
-      name: 'Database Query',
-      executor: () => window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 10 })
-    },
-    {
-      name: 'User Authentication',
-      executor: () => window.ezsite.apis.getUserInfo()
-    },
-    {
-      name: 'File Upload',
-      executor: async () => {
-        const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
-        return window.ezsite.apis.upload({ filename: 'network-test.txt', file: testFile });
-      }
-    },
-    {
-      name: 'Large Dataset',
-      executor: () => window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 100 })
-    },
-    {
-      name: 'API Health Check',
-      executor: () => window.ezsite.apis.run({ path: 'healthCheck.js', param: [] })
+  {
+    name: 'Database Query',
+    executor: () => window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 10 })
+  },
+  {
+    name: 'User Authentication',
+    executor: () => window.ezsite.apis.getUserInfo()
+  },
+  {
+    name: 'File Upload',
+    executor: async () => {
+      const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
+      return window.ezsite.apis.upload({ filename: 'network-test.txt', file: testFile });
     }
-  ];
+  },
+  {
+    name: 'Large Dataset',
+    executor: () => window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 100 })
+  },
+  {
+    name: 'API Health Check',
+    executor: () => window.ezsite.apis.run({ path: 'healthCheck.js', param: [] })
+  }];
+
 
   const simulateNetworkCondition = useCallback((condition: NetworkCondition) => {
     if (!originalFetch.current) {
@@ -159,19 +159,19 @@ const NetworkFailureSimulator: React.FC = () => {
       }
 
       // Add latency simulation
-      const actualLatency = condition.latency + (Math.random() * condition.jitter);
-      await new Promise(resolve => setTimeout(resolve, actualLatency));
+      const actualLatency = condition.latency + Math.random() * condition.jitter;
+      await new Promise((resolve) => setTimeout(resolve, actualLatency));
 
       try {
         const response = await originalFetch.current!(input, init);
-        
+
         // Simulate bandwidth limitations for response reading
         if (condition.bandwidth > 0 && response.body) {
           const originalJson = response.json.bind(response);
           response.json = async () => {
             // Simulate slower data transfer
             const delay = Math.max(0, 1000 / (condition.bandwidth / 8)); // bytes per ms
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => setTimeout(resolve, delay));
             return originalJson();
           };
         }
@@ -198,25 +198,25 @@ const NetworkFailureSimulator: React.FC = () => {
     setIsSimulating(true);
     setCurrentCondition(condition);
     simulationId.current = `sim-${Date.now()}`;
-    
+
     // Apply network condition
     const activeCondition = { ...condition, active: true };
     simulateNetworkCondition(activeCondition);
-    
+
     toast.info(`Started network simulation: ${condition.name}`);
-    
+
     // Run test operations
     const testResults: SimulationResult[] = [];
-    
+
     for (const operation of testOperations) {
       const startTime = performance.now();
-      
+
       try {
         await operation.executor();
         const duration = performance.now() - startTime;
-        
+
         const status = duration > 5000 ? 'degraded' : 'success';
-        
+
         testResults.push({
           id: `${simulationId.current}-${operation.name}`,
           condition: condition.name,
@@ -225,14 +225,14 @@ const NetworkFailureSimulator: React.FC = () => {
           duration,
           timestamp: new Date().toISOString()
         });
-        
+
       } catch (error) {
         const duration = performance.now() - startTime;
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
+
         let status: SimulationResult['status'] = 'failure';
         if (errorMessage.includes('timeout')) status = 'timeout';
-        
+
         testResults.push({
           id: `${simulationId.current}-${operation.name}`,
           condition: condition.name,
@@ -243,17 +243,17 @@ const NetworkFailureSimulator: React.FC = () => {
           timestamp: new Date().toISOString()
         });
       }
-      
+
       // Small delay between operations
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
-    setResults(prev => [...prev, ...testResults]);
-    
-    const successful = testResults.filter(r => r.status === 'success').length;
-    const failed = testResults.filter(r => r.status === 'failure').length;
-    const degraded = testResults.filter(r => r.status === 'degraded').length;
-    
+
+    setResults((prev) => [...prev, ...testResults]);
+
+    const successful = testResults.filter((r) => r.status === 'success').length;
+    const failed = testResults.filter((r) => r.status === 'failure').length;
+    const degraded = testResults.filter((r) => r.status === 'degraded').length;
+
     toast.success(
       `Simulation completed: ${successful} successful, ${degraded} degraded, ${failed} failed`
     );
@@ -282,11 +282,11 @@ const NetworkFailureSimulator: React.FC = () => {
 
   const getStatusColor = (status: SimulationResult['status']) => {
     switch (status) {
-      case 'success': return 'text-green-600 bg-green-50';
-      case 'degraded': return 'text-yellow-600 bg-yellow-50';
-      case 'timeout': return 'text-orange-600 bg-orange-50';
-      case 'failure': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'success':return 'text-green-600 bg-green-50';
+      case 'degraded':return 'text-yellow-600 bg-yellow-50';
+      case 'timeout':return 'text-orange-600 bg-orange-50';
+      case 'failure':return 'text-red-600 bg-red-50';
+      default:return 'text-gray-600 bg-gray-50';
     }
   };
 
@@ -300,22 +300,22 @@ const NetworkFailureSimulator: React.FC = () => {
           </p>
         </div>
         
-        {currentCondition && (
-          <div className="flex items-center gap-2">
+        {currentCondition &&
+        <div className="flex items-center gap-2">
             <Badge className="gap-1">
               <Network className="h-3 w-3" />
               {currentCondition.name} Active
             </Badge>
             <Button
-              variant="destructive"
-              onClick={stopSimulation}
-              className="gap-2"
-            >
+            variant="destructive"
+            onClick={stopSimulation}
+            className="gap-2">
+
               <Square className="h-4 w-4" />
               Stop Simulation
             </Button>
           </div>
-        )}
+        }
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -325,8 +325,8 @@ const NetworkFailureSimulator: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
-              {predefinedConditions.map((condition) => (
-                <Card key={condition.id} className="p-4">
+              {predefinedConditions.map((condition) =>
+              <Card key={condition.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">{condition.name}</h4>
@@ -340,17 +340,17 @@ const NetworkFailureSimulator: React.FC = () => {
                       </div>
                     </div>
                     <Button
-                      onClick={() => startSimulation(condition)}
-                      disabled={isSimulating}
-                      size="sm"
-                      className="gap-2"
-                    >
+                    onClick={() => startSimulation(condition)}
+                    disabled={isSimulating}
+                    size="sm"
+                    className="gap-2">
+
                       <Play className="h-3 w-3" />
                       Test
                     </Button>
                   </div>
                 </Card>
-              ))}
+              )}
             </div>
 
             <div className="border-t pt-4">
@@ -360,46 +360,46 @@ const NetworkFailureSimulator: React.FC = () => {
                   <Label className="text-sm">Latency: {customCondition.latency}ms</Label>
                   <Slider
                     value={[customCondition.latency]}
-                    onValueChange={([value]) => 
-                      setCustomCondition(prev => ({ ...prev, latency: value }))
+                    onValueChange={([value]) =>
+                    setCustomCondition((prev) => ({ ...prev, latency: value }))
                     }
                     max={2000}
                     step={10}
-                    className="mt-2"
-                  />
+                    className="mt-2" />
+
                 </div>
                 
                 <div>
                   <Label className="text-sm">Bandwidth: {customCondition.bandwidth}kbps</Label>
                   <Slider
                     value={[customCondition.bandwidth]}
-                    onValueChange={([value]) => 
-                      setCustomCondition(prev => ({ ...prev, bandwidth: value }))
+                    onValueChange={([value]) =>
+                    setCustomCondition((prev) => ({ ...prev, bandwidth: value }))
                     }
                     max={10000}
                     step={100}
-                    className="mt-2"
-                  />
+                    className="mt-2" />
+
                 </div>
                 
                 <div>
                   <Label className="text-sm">Packet Loss: {customCondition.packetLoss}%</Label>
                   <Slider
                     value={[customCondition.packetLoss]}
-                    onValueChange={([value]) => 
-                      setCustomCondition(prev => ({ ...prev, packetLoss: value }))
+                    onValueChange={([value]) =>
+                    setCustomCondition((prev) => ({ ...prev, packetLoss: value }))
                     }
                     max={100}
                     step={1}
-                    className="mt-2"
-                  />
+                    className="mt-2" />
+
                 </div>
 
                 <Button
                   onClick={() => startSimulation(customCondition)}
                   disabled={isSimulating}
-                  className="w-full gap-2"
-                >
+                  className="w-full gap-2">
+
                   <Play className="h-4 w-4" />
                   Test Custom Condition
                 </Button>
@@ -413,17 +413,17 @@ const NetworkFailureSimulator: React.FC = () => {
             <CardTitle>Test Results</CardTitle>
           </CardHeader>
           <CardContent>
-            {results.length === 0 ? (
-              <Alert>
+            {results.length === 0 ?
+            <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   No test results available. Run a network simulation to see results.
                 </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {results.slice(-20).reverse().map((result) => (
-                  <Card key={result.id} className="p-3">
+              </Alert> :
+
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+                {results.slice(-20).reverse().map((result) =>
+              <Card key={result.id} className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(result.status)}
@@ -438,23 +438,23 @@ const NetworkFailureSimulator: React.FC = () => {
                         {result.status}
                       </Badge>
                     </div>
-                    {result.error && (
-                      <Alert className="mt-2" variant="destructive">
+                    {result.error &&
+                <Alert className="mt-2" variant="destructive">
                         <AlertDescription className="text-xs">
                           {result.error}
                         </AlertDescription>
                       </Alert>
-                    )}
+                }
                   </Card>
-                ))}
+              )}
               </div>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
 
-      {isSimulating && (
-        <Card>
+      {isSimulating &&
+      <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="animate-pulse">
@@ -469,9 +469,9 @@ const NetworkFailureSimulator: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default NetworkFailureSimulator;

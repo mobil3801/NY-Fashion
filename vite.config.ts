@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
             vendor: ['react', 'react-dom', 'react-router-dom'],
             ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
             charts: ['recharts'],
-            query: ['@tanstack/react-query'],
+            query: ['@tanstack/react-query']
           }
         }
       },
@@ -51,13 +51,13 @@ export default defineConfig(({ mode }) => {
       terserOptions: {
         compress: {
           drop_console: true,
-          drop_debugger: true,
+          drop_debugger: true
         }
       }
     },
     // Production environment variables
     define: {
-      'process.env.NODE_ENV': '"production"',
+      'process.env.NODE_ENV': '"production"'
     },
     define: {
       // Ensure NODE_ENV is available at build time
@@ -91,12 +91,12 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         // Exclude debug modules from production build
         external: isProduction ? [
-          'src/pages/debug/NetworkDebugPage',
-          'src/pages/TestingPage', 
-          'src/pages/ComprehensiveTestingPage',
-          'src/pages/ErrorMonitoringPage',
-          'src/pages/NetworkValidationPage'
-        ] : [],
+        'src/pages/debug/NetworkDebugPage',
+        'src/pages/TestingPage',
+        'src/pages/ComprehensiveTestingPage',
+        'src/pages/ErrorMonitoringPage',
+        'src/pages/NetworkValidationPage'] :
+        [],
         output: {
           // Aggressive chunk splitting for production
           manualChunks: (id) => {
@@ -122,12 +122,12 @@ export default defineConfig(({ mode }) => {
 
             // Skip debug chunks in production
             if (isProduction && (
-              id.includes('debug/') ||
-              id.includes('testing/') ||
-              id.includes('TestingPage') ||
-              id.includes('NetworkDebugPage') ||
-              id.includes('ErrorMonitoringPage')
-            )) {
+            id.includes('debug/') ||
+            id.includes('testing/') ||
+            id.includes('TestingPage') ||
+            id.includes('NetworkDebugPage') ||
+            id.includes('ErrorMonitoringPage')))
+            {
               return undefined; // Let it be included in main chunk or excluded
             }
 

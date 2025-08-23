@@ -53,11 +53,11 @@ describe('Network Error Handling', () => {
 
       it('should classify timeout status codes as timeout errors', () => {
         const timeoutCodes = [408, 429, 503, 504];
-        
-        timeoutCodes.forEach(status => {
+
+        timeoutCodes.forEach((status) => {
           const error = { status };
           const classification = NetworkErrorClassifier.classifyError(error);
-          
+
           expect(classification.isTimeoutError).toBe(true);
           expect(classification.isRetryable).toBe(true);
         });
@@ -65,17 +65,17 @@ describe('Network Error Handling', () => {
 
       it('should handle network-related error messages', () => {
         const networkMessages = [
-          'Network request failed',
-          'Connection timeout',
-          'DNS resolution failed',
-          'Connection reset',
-          'Connection refused'
-        ];
+        'Network request failed',
+        'Connection timeout',
+        'DNS resolution failed',
+        'Connection reset',
+        'Connection refused'];
 
-        networkMessages.forEach(message => {
+
+        networkMessages.forEach((message) => {
           const error = new Error(message);
           const classification = NetworkErrorClassifier.classifyError(error);
-          
+
           expect(classification.isNetworkError).toBe(true);
           expect(classification.isRetryable).toBe(true);
         });
@@ -84,7 +84,7 @@ describe('Network Error Handling', () => {
       it('should provide appropriate retry delays', () => {
         const networkError = new TypeError('Failed to fetch');
         const classification = NetworkErrorClassifier.classifyError(networkError);
-        
+
         expect(classification.retryDelay).toBeGreaterThan(0);
         expect(classification.retryDelay).toBeLessThanOrEqual(5000);
       });
@@ -94,9 +94,9 @@ describe('Network Error Handling', () => {
       it('should extract comprehensive error context', () => {
         const error = new Error('Test error');
         error.stack = 'Error: Test error\n  at test.js:1:1';
-        
+
         const context = NetworkErrorClassifier.getErrorContext(error);
-        
+
         expect(context).toHaveProperty('timestamp');
         expect(context).toHaveProperty('userAgent');
         expect(context).toHaveProperty('url');
@@ -113,9 +113,9 @@ describe('Network Error Handling', () => {
 
         const error = new Error('Test error');
         const context = NetworkErrorClassifier.getErrorContext(error);
-        
+
         expect(context.connectionType).toBe('unknown');
-        
+
         // Restore
         (navigator as any).connection = originalConnection;
       });
@@ -125,7 +125,7 @@ describe('Network Error Handling', () => {
       it('should provide network error recovery suggestions', () => {
         const error = new TypeError('Failed to fetch');
         const suggestions = NetworkErrorClassifier.getRecoverySuggestions(error);
-        
+
         expect(suggestions).toContain('Check your internet connection');
         expect(suggestions).toContain('Try refreshing the page');
         expect(suggestions.length).toBeGreaterThan(0);
@@ -134,7 +134,7 @@ describe('Network Error Handling', () => {
       it('should provide server error recovery suggestions', () => {
         const error = { status: 500 };
         const suggestions = NetworkErrorClassifier.getRecoverySuggestions(error);
-        
+
         expect(suggestions).toContain('The server is experiencing issues');
         expect(suggestions).toContain('Please try again in a few minutes');
       });
@@ -142,7 +142,7 @@ describe('Network Error Handling', () => {
       it('should provide client error recovery suggestions', () => {
         const error = { status: 404 };
         const suggestions = NetworkErrorClassifier.getRecoverySuggestions(error);
-        
+
         expect(suggestions).toContain('The requested resource was not found');
         expect(suggestions).toContain('Please check the URL and try again');
       });
@@ -150,7 +150,7 @@ describe('Network Error Handling', () => {
       it('should provide timeout error recovery suggestions', () => {
         const error = { status: 408 };
         const suggestions = NetworkErrorClassifier.getRecoverySuggestions(error);
-        
+
         expect(suggestions).toContain('The request took too long to complete');
         expect(suggestions).toContain('Try again with a more stable connection');
       });
@@ -191,17 +191,17 @@ describe('Network Error Handling', () => {
   describe('Error categorization for monitoring', () => {
     it('should categorize errors by frequency and impact', () => {
       const errors = [
-        new TypeError('Failed to fetch'),
-        { status: 500 },
-        { status: 404 },
-        new Error('AbortError')
-      ];
+      new TypeError('Failed to fetch'),
+      { status: 500 },
+      { status: 404 },
+      new Error('AbortError')];
 
-      const categories = errors.map(error => NetworkErrorClassifier.classifyError(error));
-      
-      const highSeverity = categories.filter(c => c.severity === 'high');
-      const mediumSeverity = categories.filter(c => c.severity === 'medium');
-      const lowSeverity = categories.filter(c => c.severity === 'low');
+
+      const categories = errors.map((error) => NetworkErrorClassifier.classifyError(error));
+
+      const highSeverity = categories.filter((c) => c.severity === 'high');
+      const mediumSeverity = categories.filter((c) => c.severity === 'medium');
+      const lowSeverity = categories.filter((c) => c.severity === 'low');
 
       expect(highSeverity.length).toBeGreaterThan(0);
       expect(mediumSeverity.length).toBeGreaterThan(0);
@@ -226,7 +226,7 @@ describe('Network Error Handling', () => {
     it('should sanitize sensitive data from error reports', () => {
       const error = new Error('Authentication failed for user@example.com');
       const sanitized = NetworkErrorClassifier.sanitizeErrorMessage(error.message);
-      
+
       expect(sanitized).not.toContain('user@example.com');
       expect(sanitized).toContain('Authentication failed');
     });
@@ -234,7 +234,7 @@ describe('Network Error Handling', () => {
     it('should generate structured error reports', () => {
       const error = new TypeError('Network error');
       const report = NetworkErrorClassifier.generateErrorReport(error);
-      
+
       expect(report).toHaveProperty('id');
       expect(report).toHaveProperty('timestamp');
       expect(report).toHaveProperty('error');
@@ -269,7 +269,7 @@ describe('Network Error Handling', () => {
     it('should recommend circuit breaker for persistent errors', () => {
       const errors = Array(10).fill(new TypeError('Failed to fetch'));
       const shouldBreak = NetworkErrorClassifier.shouldTriggerCircuitBreaker(errors);
-      
+
       expect(shouldBreak).toBe(true);
     });
   });

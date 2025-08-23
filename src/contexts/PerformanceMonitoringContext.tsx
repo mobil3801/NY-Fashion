@@ -9,7 +9,7 @@ interface PerformanceMonitoringContextType {
   isEnabled: boolean;
   toggleMonitoring: () => void;
   getPerformanceSnapshot: () => any;
-  exportPerformanceData: (timeRange: { start: Date; end: Date }) => Promise<any>;
+  exportPerformanceData: (timeRange: {start: Date;end: Date;}) => Promise<any>;
 }
 
 const PerformanceMonitoringContext = createContext<PerformanceMonitoringContextType | null>(null);
@@ -19,9 +19,9 @@ interface PerformanceMonitoringProviderProps {
   enableByDefault?: boolean;
 }
 
-export const PerformanceMonitoringProvider: React.FC<PerformanceMonitoringProviderProps> = ({ 
-  children, 
-  enableByDefault = true 
+export const PerformanceMonitoringProvider: React.FC<PerformanceMonitoringProviderProps> = ({
+  children,
+  enableByDefault = true
 }) => {
   const [performanceMonitor] = useState(() => new ComprehensivePerformanceMonitor());
   const [analyticsEngine] = useState(() => new PerformanceAnalyticsEngine());
@@ -50,7 +50,7 @@ export const PerformanceMonitoringProvider: React.FC<PerformanceMonitoringProvid
     };
   };
 
-  const exportPerformanceData = async (timeRange: { start: Date; end: Date }) => {
+  const exportPerformanceData = async (timeRange: {start: Date;end: Date;}) => {
     try {
       const report = await analyticsEngine.generatePerformanceReport(timeRange);
       return report;
@@ -69,11 +69,11 @@ export const PerformanceMonitoringProvider: React.FC<PerformanceMonitoringProvid
         toggleMonitoring,
         getPerformanceSnapshot,
         exportPerformanceData
-      }}
-    >
+      }}>
+
       {children}
-    </PerformanceMonitoringContext.Provider>
-  );
+    </PerformanceMonitoringContext.Provider>);
+
 };
 
 export const usePerformanceMonitoring = (): PerformanceMonitoringContextType => {

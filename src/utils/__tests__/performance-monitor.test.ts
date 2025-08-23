@@ -52,16 +52,16 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should setup performance observers when supported', () => {
-      mockPerformanceObserver.mockImplementation(function(callback) {
+      mockPerformanceObserver.mockImplementation(function (callback) {
         this.observe = vi.fn();
         this.disconnect = vi.fn();
       });
 
       const monitor = new PerformanceMonitor();
-      
+
       // Performance observers should be set up
       expect(mockPerformanceObserver).toHaveBeenCalled();
-      
+
       monitor.destroy();
     });
   });
@@ -69,12 +69,12 @@ describe('PerformanceMonitor', () => {
   describe('metric collection', () => {
     it('should collect timing metrics', () => {
       const startTime = performanceMonitor.startTiming('test-operation');
-      
+
       // Simulate some time passing
       mockPerformance.now.mockReturnValueOnce(1000).mockReturnValueOnce(1500);
-      
+
       const duration = performanceMonitor.endTiming('test-operation', startTime);
-      
+
       expect(duration).toBeGreaterThan(0);
       expect(mockPerformance.mark).toHaveBeenCalled();
     });
@@ -91,7 +91,7 @@ describe('PerformanceMonitor', () => {
       });
 
       const memoryMetrics = performanceMonitor.getMemoryMetrics();
-      
+
       expect(memoryMetrics).toBeDefined();
       expect(memoryMetrics.usedJSHeapSize).toBe(10000000);
       expect(memoryMetrics.totalJSHeapSize).toBe(20000000);
@@ -100,9 +100,9 @@ describe('PerformanceMonitor', () => {
     it('should handle missing memory API gracefully', () => {
       // Remove memory API
       delete (performance as any).memory;
-      
+
       const memoryMetrics = performanceMonitor.getMemoryMetrics();
-      
+
       expect(memoryMetrics).toEqual({
         usedJSHeapSize: 0,
         totalJSHeapSize: 0,
@@ -120,7 +120,7 @@ describe('PerformanceMonitor', () => {
       }]);
 
       const navigationMetrics = performanceMonitor.getNavigationMetrics();
-      
+
       expect(navigationMetrics).toBeDefined();
       expect(navigationMetrics.domContentLoaded).toBe(1000); // 1500 - 500
       expect(navigationMetrics.loadComplete).toBe(1500); // 2000 - 500
@@ -242,15 +242,15 @@ describe('PerformanceMonitor', () => {
   describe('resource monitoring', () => {
     it('should monitor resource loading performance', () => {
       mockPerformance.getEntriesByType.mockReturnValue([
-        {
-          name: 'https://example.com/api/data',
-          entryType: 'resource',
-          duration: 300,
-          transferSize: 1024,
-          responseEnd: 1300,
-          responseStart: 1000
-        }
-      ]);
+      {
+        name: 'https://example.com/api/data',
+        entryType: 'resource',
+        duration: 300,
+        transferSize: 1024,
+        responseEnd: 1300,
+        responseStart: 1000
+      }]
+      );
 
       const resourceMetrics = performanceMonitor.getResourceMetrics();
 
@@ -263,13 +263,13 @@ describe('PerformanceMonitor', () => {
 
     it('should identify slow resources', () => {
       mockPerformance.getEntriesByType.mockReturnValue([
-        {
-          name: 'https://example.com/slow-resource',
-          entryType: 'resource',
-          duration: 5000,
-          transferSize: 1024
-        }
-      ]);
+      {
+        name: 'https://example.com/slow-resource',
+        entryType: 'resource',
+        duration: 5000,
+        transferSize: 1024
+      }]
+      );
 
       const slowResources = performanceMonitor.getSlowResources(1000);
 
@@ -353,16 +353,16 @@ describe('PerformanceMonitor', () => {
 
     it('should export/import performance data', () => {
       performanceMonitor.recordMetric('test-metric', 100);
-      
+
       const exportedData = performanceMonitor.exportData();
       expect(exportedData).toHaveProperty('metrics');
       expect(exportedData).toHaveProperty('timestamp');
 
       const newMonitor = new PerformanceMonitor();
       newMonitor.importData(exportedData);
-      
+
       const report = newMonitor.generateReport();
-      expect(report.metrics.some(m => m.name === 'test-metric')).toBe(true);
+      expect(report.metrics.some((m) => m.name === 'test-metric')).toBe(true);
 
       newMonitor.destroy();
     });

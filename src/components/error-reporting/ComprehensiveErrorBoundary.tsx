@@ -127,7 +127,7 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
   }
 
   private attemptAutoRecovery = () => {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       recoveryAttempts: prev.recoveryAttempts + 1,
       showRecoveryEngine: true
     }));
@@ -146,7 +146,7 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
 
   private handleRecoveryFailure = (error: Error) => {
     console.error('Recovery failed:', error);
-    
+
     if (this.state.recoveryAttempts < this.state.maxRecoveryAttempts) {
       // Try again
       this.attemptAutoRecovery();
@@ -182,9 +182,9 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
       }
 
       // Show recovery engine if enabled and we have error context
-      if (this.props.enableRecoveryEngine && 
-          this.state.showRecoveryEngine && 
-          this.state.errorContext) {
+      if (this.props.enableRecoveryEngine &&
+      this.state.showRecoveryEngine &&
+      this.state.errorContext) {
         return (
           <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
             <div className="w-full max-w-4xl">
@@ -192,23 +192,23 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
                 errorContext={this.state.errorContext}
                 onRecoverySuccess={this.handleRecoverySuccess}
                 onRecoveryFailure={this.handleRecoveryFailure}
-                autoAttemptRecovery={this.props.autoAttemptRecovery}
-              />
+                autoAttemptRecovery={this.props.autoAttemptRecovery} />
+
               <div className="flex justify-center gap-2 mt-4">
                 <Button variant="outline" onClick={this.handleRetry}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try Again Manually
                 </Button>
-                {this.props.enableUserFeedback && (
-                  <Button variant="outline" onClick={this.handleReportIssue}>
+                {this.props.enableUserFeedback &&
+                <Button variant="outline" onClick={this.handleReportIssue}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Report Issue
                   </Button>
-                )}
+                }
               </div>
             </div>
-          </div>
-        );
+          </div>);
+
       }
 
       // Default error UI
@@ -229,11 +229,11 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
                     <p className="text-sm text-gray-600">
                       An unexpected error occurred. Our team has been automatically notified.
                     </p>
-                    {this.errorId && (
-                      <p className="text-xs text-gray-500 font-mono">
+                    {this.errorId &&
+                    <p className="text-xs text-gray-500 font-mono">
                         Error ID: {this.errorId.slice(-12)}
                       </p>
-                    )}
+                    }
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -242,27 +242,27 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
                       Try Again
                     </Button>
                     
-                    {this.props.enableRecoveryEngine && (
-                      <Button 
-                        variant="outline" 
-                        onClick={this.handleShowRecovery}
-                        className="w-full"
-                      >
+                    {this.props.enableRecoveryEngine &&
+                    <Button
+                      variant="outline"
+                      onClick={this.handleShowRecovery}
+                      className="w-full">
+
                         <Shield className="h-4 w-4 mr-2" />
                         Auto Recovery
                       </Button>
-                    )}
+                    }
                     
-                    {this.props.enableUserFeedback && (
-                      <Button 
-                        variant="outline" 
-                        onClick={this.handleReportIssue}
-                        className="w-full"
-                      >
+                    {this.props.enableUserFeedback &&
+                    <Button
+                      variant="outline"
+                      onClick={this.handleReportIssue}
+                      className="w-full">
+
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Report Issue
                       </Button>
-                    )}
+                    }
                   </div>
 
                   <div className="pt-2 border-t">
@@ -276,22 +276,22 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
           </div>
 
           {/* Error Dialog */}
-          {this.props.enableUserFeedback && 
-           this.state.showErrorDialog && 
-           this.state.errorContext && (
-            <UserFriendlyErrorDialog
-              open={this.state.showErrorDialog}
-              onOpenChange={(open) => this.setState({ showErrorDialog: open })}
-              errorContext={this.state.errorContext}
-              showTechnicalDetails={this.props.showTechnicalDetails}
-              onRecoveryAttempt={async (suggestion) => {
-                // Handle recovery attempt from dialog
-                return true; // placeholder
-              }}
-            />
-          )}
-        </>
-      );
+          {this.props.enableUserFeedback &&
+          this.state.showErrorDialog &&
+          this.state.errorContext &&
+          <UserFriendlyErrorDialog
+            open={this.state.showErrorDialog}
+            onOpenChange={(open) => this.setState({ showErrorDialog: open })}
+            errorContext={this.state.errorContext}
+            showTechnicalDetails={this.props.showTechnicalDetails}
+            onRecoveryAttempt={async (suggestion) => {
+              // Handle recovery attempt from dialog
+              return true; // placeholder
+            }} />
+
+          }
+        </>);
+
     }
 
     return this.props.children;
@@ -301,19 +301,19 @@ class ComprehensiveErrorBoundary extends Component<Props, State> {
 export default ComprehensiveErrorBoundary;
 
 // Higher-order component for easy wrapping
-export const withComprehensiveErrorBoundary = <P extends object>(
-  WrappedComponent: React.ComponentType<P>,
-  options: Omit<Props, 'children'> = {}
-) => {
+export const withComprehensiveErrorBoundary = <P extends object,>(
+WrappedComponent: React.ComponentType<P>,
+options: Omit<Props, 'children'> = {}) =>
+{
   const WithErrorBoundary: React.FC<P> = (props) => {
     return (
       <ComprehensiveErrorBoundary {...options}>
         <WrappedComponent {...props} />
-      </ComprehensiveErrorBoundary>
-    );
+      </ComprehensiveErrorBoundary>);
+
   };
 
   WithErrorBoundary.displayName = `withComprehensiveErrorBoundary(${WrappedComponent.displayName || WrappedComponent.name})`;
-  
+
   return WithErrorBoundary;
 };

@@ -9,14 +9,14 @@ export enum ErrorCategory {
   SECURITY = 'security',
   DATABASE = 'database',
   AUTHENTICATION = 'authentication',
-  BUSINESS_LOGIC = 'business_logic'
+  BUSINESS_LOGIC = 'business_logic',
 }
 
 export enum SeverityLevel {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 export enum PerformanceIssueType {
@@ -25,7 +25,7 @@ export enum PerformanceIssueType {
   MEMORY_LEAK = 'memory_leak',
   SLOW_API = 'slow_api',
   LARGE_CONTENTFUL_PAINT = 'large_contentful_paint',
-  FIRST_INPUT_DELAY = 'first_input_delay'
+  FIRST_INPUT_DELAY = 'first_input_delay',
 }
 
 export enum NetworkErrorType {
@@ -34,7 +34,7 @@ export enum NetworkErrorType {
   SERVER_ERROR = 'server_error',
   CLIENT_ERROR = 'client_error',
   CONNECTION_ERROR = 'connection_error',
-  DNS_ERROR = 'dns_error'
+  DNS_ERROR = 'dns_error',
 }
 
 export interface ErrorContext {
@@ -136,11 +136,11 @@ class CentralizedErrorService {
 
   // Main error logging method
   logError(
-    error: Error,
-    category: ErrorCategory,
-    severity: SeverityLevel,
-    context: Partial<ErrorContext> = {}
-  ): string {
+  error: Error,
+  category: ErrorCategory,
+  severity: SeverityLevel,
+  context: Partial<ErrorContext> = {})
+  : string {
     const errorId = this.generateErrorId();
     const fullContext = this.enrichContext(context);
 
@@ -175,12 +175,12 @@ class CentralizedErrorService {
 
   // Log performance issues
   logPerformanceIssue(
-    type: PerformanceIssueType,
-    metricName: string,
-    metricValue: number,
-    thresholdValue: number,
-    context: Partial<ErrorContext> = {}
-  ): string {
+  type: PerformanceIssueType,
+  metricName: string,
+  metricValue: number,
+  thresholdValue: number,
+  context: Partial<ErrorContext> = {})
+  : string {
     const issueId = this.generateErrorId();
     const fullContext = this.enrichContext(context);
 
@@ -207,15 +207,15 @@ class CentralizedErrorService {
 
   // Log network errors
   logNetworkError(
-    requestUrl: string,
-    method: string,
-    errorType: NetworkErrorType,
-    message: string,
-    statusCode?: number,
-    retryCount: number = 0,
-    responseTime?: number,
-    context: Partial<ErrorContext> = {}
-  ): string {
+  requestUrl: string,
+  method: string,
+  errorType: NetworkErrorType,
+  message: string,
+  statusCode?: number,
+  retryCount: number = 0,
+  responseTime?: number,
+  context: Partial<ErrorContext> = {})
+  : string {
     const errorId = this.generateErrorId();
     const fullContext = this.enrichContext(context);
 
@@ -338,7 +338,7 @@ class CentralizedErrorService {
         // Long task monitoring
         const longTaskObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (entry.duration > 50) { // Tasks longer than 50ms
+            if (entry.duration > 50) {// Tasks longer than 50ms
               this.logPerformanceIssue(
                 PerformanceIssueType.LONG_TASK,
                 'long_task_duration',
@@ -380,7 +380,7 @@ class CentralizedErrorService {
         // Largest Contentful Paint monitoring
         const lcpObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (entry.startTime > 2500) { // LCP longer than 2.5s
+            if (entry.startTime > 2500) {// LCP longer than 2.5s
               this.logPerformanceIssue(
                 PerformanceIssueType.LARGE_CONTENTFUL_PAINT,
                 'largest_contentful_paint',
@@ -418,9 +418,9 @@ class CentralizedErrorService {
         const responseTime = performance.now() - startTime;
 
         if (!response.ok) {
-          const errorType = response.status >= 500 
-            ? NetworkErrorType.SERVER_ERROR 
-            : NetworkErrorType.CLIENT_ERROR;
+          const errorType = response.status >= 500 ?
+          NetworkErrorType.SERVER_ERROR :
+          NetworkErrorType.CLIENT_ERROR;
 
           this.logNetworkError(
             url,
@@ -452,7 +452,7 @@ class CentralizedErrorService {
       } catch (error) {
         const responseTime = performance.now() - startTime;
         const networkError = error as Error;
-        
+
         let errorType = NetworkErrorType.NETWORK_ERROR;
         if (networkError.message.includes('timeout')) {
           errorType = NetworkErrorType.TIMEOUT;
@@ -477,8 +477,8 @@ class CentralizedErrorService {
 
   private checkBufferSize() {
     if (this.errorBuffer.length >= this.maxBufferSize ||
-        this.performanceBuffer.length >= this.maxBufferSize ||
-        this.networkBuffer.length >= this.maxBufferSize) {
+    this.performanceBuffer.length >= this.maxBufferSize ||
+    this.networkBuffer.length >= this.maxBufferSize) {
       this.flushBuffers();
     }
   }
@@ -490,9 +490,9 @@ class CentralizedErrorService {
   }
 
   private async flushBuffers() {
-    if (this.errorBuffer.length === 0 && 
-        this.performanceBuffer.length === 0 && 
-        this.networkBuffer.length === 0) {
+    if (this.errorBuffer.length === 0 &&
+    this.performanceBuffer.length === 0 &&
+    this.networkBuffer.length === 0) {
       return;
     }
 
@@ -658,12 +658,12 @@ class CentralizedErrorService {
         OrderByField: 'timestamp',
         IsAsc: false,
         Filters: [
-          {
-            name: 'timestamp',
-            op: 'GreaterThanOrEqual',
-            value: startDate.toISOString()
-          }
-        ]
+        {
+          name: 'timestamp',
+          op: 'GreaterThanOrEqual',
+          value: startDate.toISOString()
+        }]
+
       });
 
       if (errorQueryError) {

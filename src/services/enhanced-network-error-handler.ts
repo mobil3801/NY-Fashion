@@ -76,7 +76,7 @@ class EnhancedNetworkErrorHandler {
         }
 
         const data = await response.json();
-        
+
         return {
           data,
           status: response.status,
@@ -160,7 +160,7 @@ class EnhancedNetworkErrorHandler {
     if (error.isTimeout) {
       return NetworkErrorType.TIMEOUT;
     }
-    
+
     if (error.response?.status) {
       const status = error.response.status;
       if (status >= 500) return NetworkErrorType.SERVER_ERROR;
@@ -192,7 +192,7 @@ class EnhancedNetworkErrorHandler {
     }
 
     // Don't retry on certain error types
-    if (error.name === 'SyntaxError') { // JSON parse errors
+    if (error.name === 'SyntaxError') {// JSON parse errors
       return false;
     }
 
@@ -207,7 +207,7 @@ class EnhancedNetworkErrorHandler {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getDefaultHeaders(): Record<string, string> {
@@ -240,7 +240,7 @@ class EnhancedNetworkErrorHandler {
   async getNetworkErrorStatistics(timeRange: number = 24): Promise<any> {
     try {
       const endTime = new Date();
-      const startTime = new Date(endTime.getTime() - (timeRange * 60 * 60 * 1000));
+      const startTime = new Date(endTime.getTime() - timeRange * 60 * 60 * 1000);
 
       const { data, error } = await window.ezsite.apis.tablePage(37299, {
         PageNo: 1,
@@ -248,18 +248,18 @@ class EnhancedNetworkErrorHandler {
         OrderByField: 'timestamp',
         IsAsc: false,
         Filters: [
-          {
-            name: 'timestamp',
-            op: 'GreaterThanOrEqual',
-            value: startTime.toISOString()
-          }
-        ]
+        {
+          name: 'timestamp',
+          op: 'GreaterThanOrEqual',
+          value: startTime.toISOString()
+        }]
+
       });
 
       if (error) throw new Error(error);
 
       const networkErrors = data?.List || [];
-      
+
       // Analyze error patterns
       const errorsByType = networkErrors.reduce((acc: any, err: any) => {
         acc[err.error_type] = (acc[err.error_type] || 0) + 1;
@@ -272,18 +272,18 @@ class EnhancedNetworkErrorHandler {
         return acc;
       }, {});
 
-      const avgRetryCount = networkErrors.length > 0 
-        ? networkErrors.reduce((sum: number, err: any) => sum + err.retry_count, 0) / networkErrors.length
-        : 0;
+      const avgRetryCount = networkErrors.length > 0 ?
+      networkErrors.reduce((sum: number, err: any) => sum + err.retry_count, 0) / networkErrors.length :
+      0;
 
       return {
         totalNetworkErrors: networkErrors.length,
         errorsByType,
         errorsByUrl,
         avgRetryCount: avgRetryCount.toFixed(2),
-        mostProblematicEndpoints: Object.entries(errorsByUrl)
-          .sort(([,a], [,b]) => (b as number) - (a as number))
-          .slice(0, 5),
+        mostProblematicEndpoints: Object.entries(errorsByUrl).
+        sort(([, a], [, b]) => (b as number) - (a as number)).
+        slice(0, 5),
         timeRange: `${timeRange} hours`
       };
     } catch (error) {

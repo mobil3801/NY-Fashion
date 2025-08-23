@@ -56,7 +56,7 @@ const mockCustomer: Customer = {
 // Test component
 const TestPOSComponent = () => {
   const pos = usePOS();
-  
+
   return (
     <div>
       <div data-testid="cart-count">{pos.state.cart.length}</div>
@@ -66,68 +66,68 @@ const TestPOSComponent = () => {
       <div data-testid="customer-name">{pos.state.customer?.name || 'No customer'}</div>
       <div data-testid="order-discount">{pos.state.orderDiscount}</div>
       
-      <button 
+      <button
         data-testid="add-to-cart"
-        onClick={() => pos.addToCart(mockProduct)}
-      >
+        onClick={() => pos.addToCart(mockProduct)}>
+
         Add to Cart
       </button>
       
-      <button 
+      <button
         data-testid="add-with-variant"
-        onClick={() => pos.addToCart(mockProduct, mockVariant, 2)}
-      >
+        onClick={() => pos.addToCart(mockProduct, mockVariant, 2)}>
+
         Add with Variant
       </button>
       
-      <button 
+      <button
         data-testid="set-customer"
-        onClick={() => pos.setCustomer(mockCustomer)}
-      >
+        onClick={() => pos.setCustomer(mockCustomer)}>
+
         Set Customer
       </button>
       
-      <button 
+      <button
         data-testid="apply-order-discount"
-        onClick={() => pos.applyOrderDiscount(10, 'percentage')}
-      >
+        onClick={() => pos.applyOrderDiscount(10, 'percentage')}>
+
         Apply 10% Discount
       </button>
       
-      <button 
+      <button
         data-testid="clear-cart"
-        onClick={() => pos.clearCart()}
-      >
+        onClick={() => pos.clearCart()}>
+
         Clear Cart
       </button>
       
-      {pos.state.cart.map((item, index) => (
-        <div key={item.id} data-testid={`cart-item-${index}`}>
+      {pos.state.cart.map((item, index) =>
+      <div key={item.id} data-testid={`cart-item-${index}`}>
           <span data-testid={`item-name-${index}`}>{item.product.name}</span>
           <span data-testid={`item-quantity-${index}`}>{item.quantity}</span>
           <span data-testid={`item-subtotal-${index}`}>{item.subtotal}</span>
-          <button 
-            data-testid={`update-quantity-${index}`}
-            onClick={() => pos.updateCartItemQuantity(item.id, item.quantity + 1)}
-          >
+          <button
+          data-testid={`update-quantity-${index}`}
+          onClick={() => pos.updateCartItemQuantity(item.id, item.quantity + 1)}>
+
             +1
           </button>
-          <button 
-            data-testid={`remove-item-${index}`}
-            onClick={() => pos.removeFromCart(item.id)}
-          >
+          <button
+          data-testid={`remove-item-${index}`}
+          onClick={() => pos.removeFromCart(item.id)}>
+
             Remove
           </button>
-          <button 
-            data-testid={`apply-line-discount-${index}`}
-            onClick={() => pos.applyLineDiscount(item.id, 15, 'percentage')}
-          >
+          <button
+          data-testid={`apply-line-discount-${index}`}
+          onClick={() => pos.applyLineDiscount(item.id, 15, 'percentage')}>
+
             15% Off
           </button>
         </div>
-      ))}
-    </div>
-  );
+      )}
+    </div>);
+
 };
 
 describe('POSContext', () => {
@@ -154,16 +154,16 @@ describe('POSContext', () => {
     it('should load persisted cart from sessionStorage', () => {
       const savedCart = {
         cart: [
-          {
-            id: 'item-1',
-            product: mockProduct,
-            quantity: 1,
-            unitPrice: 100,
-            subtotal: 100,
-            lineDiscount: 0,
-            lineDiscountType: 'percentage'
-          }
-        ],
+        {
+          id: 'item-1',
+          product: mockProduct,
+          quantity: 1,
+          unitPrice: 100,
+          subtotal: 100,
+          lineDiscount: 0,
+          lineDiscountType: 'percentage'
+        }],
+
         selectedCustomer: mockCustomer
       };
 
@@ -187,16 +187,16 @@ describe('POSContext', () => {
     it('should fallback to localStorage backup', () => {
       const backupCart = {
         cart: [
-          {
-            id: 'item-1',
-            product: mockProduct,
-            quantity: 1,
-            unitPrice: 100,
-            subtotal: 100,
-            lineDiscount: 0,
-            lineDiscountType: 'percentage'
-          }
-        ],
+        {
+          id: 'item-1',
+          product: mockProduct,
+          quantity: 1,
+          unitPrice: 100,
+          subtotal: 100,
+          lineDiscount: 0,
+          lineDiscountType: 'percentage'
+        }],
+
         selectedCustomer: null,
         timestamp: Date.now() - 1000 // 1 second ago
       };
@@ -220,14 +220,14 @@ describe('POSContext', () => {
     it('should ignore old backup data', () => {
       const oldBackup = {
         cart: [
-          {
-            id: 'item-1',
-            product: mockProduct,
-            quantity: 1,
-            unitPrice: 100,
-            subtotal: 100
-          }
-        ],
+        {
+          id: 'item-1',
+          product: mockProduct,
+          quantity: 1,
+          unitPrice: 100,
+          subtotal: 100
+        }],
+
         timestamp: Date.now() - 4000000 // More than 1 hour ago
       };
 
@@ -315,11 +315,11 @@ describe('POSContext', () => {
       );
 
       await user.click(screen.getByTestId('add-to-cart'));
-      
+
       // Get the cart item to update its quantity to 0
       const pos = usePOS();
       const cartItem = pos.state.cart[0];
-      
+
       act(() => {
         pos.updateCartItemQuantity(cartItem.id, 0);
       });
@@ -382,7 +382,7 @@ describe('POSContext', () => {
       await user.click(screen.getByTestId('apply-order-discount'));
 
       expect(screen.getByTestId('order-discount')).toHaveTextContent('10');
-      
+
       // Calculate expected total: subtotal (100) + tax (8.375) - order discount (10) = 98.375
       const total = parseFloat(screen.getByTestId('cart-total').textContent || '0');
       expect(total).toBeCloseTo(98.375, 2);
@@ -396,9 +396,9 @@ describe('POSContext', () => {
       );
 
       const pos = usePOS();
-      
+
       await user.click(screen.getByTestId('add-to-cart'));
-      
+
       act(() => {
         pos.applyOrderDiscount(25, 'fixed');
       });
@@ -428,7 +428,7 @@ describe('POSContext', () => {
       );
 
       await user.click(screen.getByTestId('set-customer'));
-      
+
       const pos = usePOS();
       act(() => {
         pos.setCustomer(undefined);
@@ -464,14 +464,14 @@ describe('POSContext', () => {
         return (
           <div>
             <div data-testid="tax-amount">{pos.getTaxAmount()}</div>
-            <button 
+            <button
               data-testid="add-apparel"
-              onClick={() => pos.addToCart(apparelProduct)}
-            >
+              onClick={() => pos.addToCart(apparelProduct)}>
+
               Add Apparel
             </button>
-          </div>
-        );
+          </div>);
+
       };
 
       render(
@@ -498,14 +498,14 @@ describe('POSContext', () => {
         return (
           <div>
             <div data-testid="tax-amount">{pos.getTaxAmount()}</div>
-            <button 
+            <button
               data-testid="add-expensive-apparel"
-              onClick={() => pos.addToCart(expensiveApparelProduct)}
-            >
+              onClick={() => pos.addToCart(expensiveApparelProduct)}>
+
               Add Expensive Apparel
             </button>
-          </div>
-        );
+          </div>);
+
       };
 
       render(
@@ -528,20 +528,20 @@ describe('POSContext', () => {
         return (
           <div>
             <div data-testid="payment-method">{pos.state.paymentMethod || 'None'}</div>
-            <button 
+            <button
               data-testid="set-payment-cash"
-              onClick={() => pos.setPaymentMethod('cash')}
-            >
+              onClick={() => pos.setPaymentMethod('cash')}>
+
               Cash
             </button>
-            <button 
+            <button
               data-testid="set-payment-card"
-              onClick={() => pos.setPaymentMethod('card')}
-            >
+              onClick={() => pos.setPaymentMethod('card')}>
+
               Card
             </button>
-          </div>
-        );
+          </div>);
+
       };
 
       render(
@@ -651,10 +651,10 @@ describe('POSContext', () => {
       );
 
       await user.click(screen.getByTestId('add-to-cart'));
-      
+
       const pos = usePOS();
       const cartItem = pos.state.cart[0];
-      
+
       act(() => {
         pos.updateCartItemQuantity(cartItem.id, -1);
       });
@@ -670,10 +670,10 @@ describe('POSContext', () => {
       );
 
       await user.click(screen.getByTestId('add-to-cart'));
-      
+
       const pos = usePOS();
       const cartItem = pos.state.cart[0];
-      
+
       act(() => {
         pos.applyLineDiscount(cartItem.id, 200, 'percentage'); // 200% discount
       });

@@ -12,9 +12,9 @@ interface PerformanceWidgetProps {
   refreshInterval?: number;
 }
 
-const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({ 
-  showDetailedView = false, 
-  refreshInterval = 10000 
+const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
+  showDetailedView = false,
+  refreshInterval = 10000
 }) => {
   const [performanceScore, setPerformanceScore] = useState(100);
   const [activeAlerts, setActiveAlerts] = useState(0);
@@ -32,9 +32,9 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
   const loadQuickStats = async () => {
     try {
       const [alertsResponse, metricsResponse] = await Promise.all([
-        fetchActiveAlerts(),
-        fetchRecentMetrics()
-      ]);
+      fetchActiveAlerts(),
+      fetchRecentMetrics()]
+      );
 
       setActiveAlerts(alertsResponse.count);
       setAvgLoadTime(metricsResponse.avgLoadTime);
@@ -53,12 +53,12 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
         PageNo: 1,
         PageSize: 1,
         Filters: [
-          {
-            name: 'status',
-            op: 'Equal',
-            value: 'active'
-          }
-        ]
+        {
+          name: 'status',
+          op: 'Equal',
+          value: 'active'
+        }]
+
       });
 
       if (error) throw new Error(error);
@@ -75,27 +75,27 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
         PageNo: 1,
         PageSize: 100,
         Filters: [
-          {
-            name: 'created_at',
-            op: 'GreaterThanOrEqual',
-            value: oneDayAgo.toISOString()
-          }
-        ]
+        {
+          name: 'created_at',
+          op: 'GreaterThanOrEqual',
+          value: oneDayAgo.toISOString()
+        }]
+
       });
 
       if (error) throw new Error(error);
-      
+
       const metrics = data?.List || [];
       const loadTimeMetrics = metrics.filter((m: any) => m.metric_type === 'load_time' && m.metric_name === 'page_load');
       const memoryMetrics = metrics.filter((m: any) => m.metric_type === 'memory' && m.metric_name === 'heap_used');
 
-      const avgLoadTime = loadTimeMetrics.length > 0 
-        ? loadTimeMetrics.reduce((sum: number, m: any) => sum + m.value, 0) / loadTimeMetrics.length
-        : 0;
+      const avgLoadTime = loadTimeMetrics.length > 0 ?
+      loadTimeMetrics.reduce((sum: number, m: any) => sum + m.value, 0) / loadTimeMetrics.length :
+      0;
 
-      const avgMemory = memoryMetrics.length > 0
-        ? memoryMetrics.reduce((sum: number, m: any) => sum + m.value, 0) / memoryMetrics.length
-        : 0;
+      const avgMemory = memoryMetrics.length > 0 ?
+      memoryMetrics.reduce((sum: number, m: any) => sum + m.value, 0) / memoryMetrics.length :
+      0;
 
       return {
         avgLoadTime,
@@ -108,15 +108,15 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
 
   const calculatePerformanceScore = (metrics: any, alertCount: number) => {
     let score = 100;
-    
+
     // Deduct points for slow load times
-    if (metrics.avgLoadTime > 5000) score -= 30;
-    else if (metrics.avgLoadTime > 3000) score -= 20;
-    else if (metrics.avgLoadTime > 1000) score -= 10;
+    if (metrics.avgLoadTime > 5000) score -= 30;else
+    if (metrics.avgLoadTime > 3000) score -= 20;else
+    if (metrics.avgLoadTime > 1000) score -= 10;
 
     // Deduct points for high memory usage
-    if (metrics.memoryUsage > 200) score -= 20;
-    else if (metrics.memoryUsage > 100) score -= 10;
+    if (metrics.memoryUsage > 200) score -= 20;else
+    if (metrics.memoryUsage > 100) score -= 10;
 
     // Deduct points for active alerts
     score -= alertCount * 5;
@@ -152,8 +152,8 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
             <div className="h-8 bg-gray-200 rounded w-1/2"></div>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   if (!showDetailedView) {
@@ -166,19 +166,19 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
         <CardContent>
           <div className="text-2xl font-bold flex items-center gap-2">
             <span className={getScoreColor(performanceScore)}>{performanceScore}</span>
-            {activeAlerts > 0 && (
-              <Badge variant="destructive" className="text-xs">
+            {activeAlerts > 0 &&
+            <Badge variant="destructive" className="text-xs">
                 {activeAlerts} alerts
               </Badge>
-            )}
+            }
           </div>
           <Progress value={performanceScore} className="mt-2" />
           <p className="text-xs text-muted-foreground mt-2">
             Avg Load: {formatLoadTime(avgLoadTime)} • Memory: {memoryUsage.toFixed(1)}MB
           </p>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -203,9 +203,9 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
             </p>
           </div>
           <Badge variant={getScoreBadgeVariant(performanceScore)} className="text-lg px-3 py-1">
-            {performanceScore >= 90 ? 'Excellent' : 
-             performanceScore >= 70 ? 'Good' : 
-             performanceScore >= 50 ? 'Fair' : 'Poor'}
+            {performanceScore >= 90 ? 'Excellent' :
+            performanceScore >= 70 ? 'Good' :
+            performanceScore >= 50 ? 'Fair' : 'Poor'}
           </Badge>
         </div>
 
@@ -221,9 +221,9 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
             <p className="text-xl font-semibold">
               {formatLoadTime(avgLoadTime)}
             </p>
-            {avgLoadTime > 3000 && (
-              <Badge variant="destructive" className="text-xs">Slow</Badge>
-            )}
+            {avgLoadTime > 3000 &&
+            <Badge variant="destructive" className="text-xs">Slow</Badge>
+            }
           </div>
 
           <div className="space-y-2">
@@ -234,15 +234,15 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
             <p className="text-xl font-semibold">
               {memoryUsage.toFixed(1)}MB
             </p>
-            {memoryUsage > 150 && (
-              <Badge variant="destructive" className="text-xs">High</Badge>
-            )}
+            {memoryUsage > 150 &&
+            <Badge variant="destructive" className="text-xs">High</Badge>
+            }
           </div>
         </div>
 
         {/* Active Alerts */}
-        {activeAlerts > 0 && (
-          <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+        {activeAlerts > 0 &&
+        <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <span className="text-sm font-medium text-red-800">
@@ -253,7 +253,7 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
               Action Required
             </Badge>
           </div>
-        )}
+        }
 
         {/* Quick Actions */}
         <div className="flex gap-2">
@@ -265,8 +265,8 @@ const PerformanceWidget: React.FC<PerformanceWidgetProps> = ({
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default PerformanceWidget;

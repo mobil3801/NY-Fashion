@@ -3,15 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  TestTube, 
-  Network, 
-  Database, 
-  Activity, 
+import {
+  TestTube,
+  Network,
+  Database,
+  Activity,
   AlertTriangle,
   CheckCircle,
-  Settings
-} from 'lucide-react';
+  Settings } from
+'lucide-react';
 
 import ComprehensiveIntegrationTester from '@/components/testing/ComprehensiveIntegrationTester';
 import NetworkFailureSimulator from '@/components/testing/NetworkFailureSimulator';
@@ -22,39 +22,39 @@ const ComprehensiveTestingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('integration');
 
   const testingSuites = [
-    {
-      id: 'integration',
-      name: 'Integration Testing',
-      description: 'End-to-end functionality validation',
-      icon: TestTube,
-      component: ComprehensiveIntegrationTester,
-      status: 'ready'
-    },
-    {
-      id: 'network',
-      name: 'Network Simulation',
-      description: 'Network failure scenario testing',
-      icon: Network,
-      component: NetworkFailureSimulator,
-      status: 'ready'
-    },
-    {
-      id: 'database',
-      name: 'Database Validation',
-      description: 'Data integrity and consistency checks',
-      icon: Database,
-      component: DatabaseConsistencyValidator,
-      status: 'ready'
-    },
-    {
-      id: 'recovery',
-      name: 'Error Recovery',
-      description: 'Recovery mechanism validation',
-      icon: Activity,
-      component: ErrorRecoveryTester,
-      status: 'ready'
-    }
-  ];
+  {
+    id: 'integration',
+    name: 'Integration Testing',
+    description: 'End-to-end functionality validation',
+    icon: TestTube,
+    component: ComprehensiveIntegrationTester,
+    status: 'ready'
+  },
+  {
+    id: 'network',
+    name: 'Network Simulation',
+    description: 'Network failure scenario testing',
+    icon: Network,
+    component: NetworkFailureSimulator,
+    status: 'ready'
+  },
+  {
+    id: 'database',
+    name: 'Database Validation',
+    description: 'Data integrity and consistency checks',
+    icon: Database,
+    component: DatabaseConsistencyValidator,
+    status: 'ready'
+  },
+  {
+    id: 'recovery',
+    name: 'Error Recovery',
+    description: 'Recovery mechanism validation',
+    icon: Activity,
+    component: ErrorRecoveryTester,
+    status: 'ready'
+  }];
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -123,8 +123,8 @@ const ComprehensiveTestingPage: React.FC = () => {
                   {getStatusIcon(suite.status)}
                 </div>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
@@ -147,8 +147,8 @@ const ComprehensiveTestingPage: React.FC = () => {
               <TabsTrigger key={suite.id} value={suite.id} className="gap-2">
                 <IconComponent className="h-4 w-4" />
                 {suite.name}
-              </TabsTrigger>
-            );
+              </TabsTrigger>);
+
           })}
         </TabsList>
 
@@ -157,8 +157,8 @@ const ComprehensiveTestingPage: React.FC = () => {
           return (
             <TabsContent key={suite.id} value={suite.id}>
               <ComponentToRender />
-            </TabsContent>
-          );
+            </TabsContent>);
+
         })}
       </Tabs>
 
@@ -193,8 +193,8 @@ const ComprehensiveTestingPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ComprehensiveTestingPage;

@@ -6,19 +6,19 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Network,
   Database,
   Zap,
   Activity,
-  Settings
-} from 'lucide-react';
+  Settings } from
+'lucide-react';
 import { toast } from 'sonner';
 
 interface TestResult {
@@ -52,137 +52,137 @@ const ComprehensiveIntegrationTester: React.FC = () => {
 
   // Test Suites Configuration
   const testSuites: TestSuite[] = [
+  {
+    name: 'API Integration Tests',
+    category: 'api',
+    tests: [
     {
-      name: 'API Integration Tests',
-      category: 'api',
-      tests: [
-        {
-          name: 'Authentication Flow',
-          executor: testAuthenticationFlow,
-          critical: true
-        },
-        {
-          name: 'Database CRUD Operations',
-          executor: testDatabaseOperations,
-          critical: true
-        },
-        {
-          name: 'File Upload/Download',
-          executor: testFileOperations,
-          critical: false
-        },
-        {
-          name: 'API Error Handling',
-          executor: testApiErrorHandling,
-          critical: true
-        }
-      ]
+      name: 'Authentication Flow',
+      executor: testAuthenticationFlow,
+      critical: true
     },
     {
-      name: 'Network Resilience Tests',
-      category: 'network',
-      tests: [
-        {
-          name: 'Connection Failure Recovery',
-          executor: testConnectionFailureRecovery,
-          critical: true
-        },
-        {
-          name: 'Request Timeout Handling',
-          executor: testTimeoutHandling,
-          critical: true
-        },
-        {
-          name: 'Offline Mode Functionality',
-          executor: testOfflineMode,
-          critical: false
-        },
-        {
-          name: 'Network Quality Adaptation',
-          executor: testNetworkQualityAdaptation,
-          critical: false
-        }
-      ]
+      name: 'Database CRUD Operations',
+      executor: testDatabaseOperations,
+      critical: true
     },
     {
-      name: 'Cross-Component Integration',
-      category: 'integration',
-      tests: [
-        {
-          name: 'POS to Inventory Sync',
-          executor: testPOSInventorySync,
-          critical: true
-        },
-        {
-          name: 'Employee Time Tracking',
-          executor: testEmployeeTimeTracking,
-          critical: true
-        },
-        {
-          name: 'Purchase Order Workflow',
-          executor: testPurchaseOrderWorkflow,
-          critical: true
-        },
-        {
-          name: 'Payroll Processing',
-          executor: testPayrollProcessing,
-          critical: false
-        }
-      ]
+      name: 'File Upload/Download',
+      executor: testFileOperations,
+      critical: false
     },
     {
-      name: 'Error Recovery Tests',
-      category: 'recovery',
-      tests: [
-        {
-          name: 'Component Error Boundaries',
-          executor: testErrorBoundaries,
-          critical: true
-        },
-        {
-          name: 'State Recovery After Error',
-          executor: testStateRecovery,
-          critical: true
-        },
-        {
-          name: 'Transaction Rollback',
-          executor: testTransactionRollback,
-          critical: true
-        },
-        {
-          name: 'Cache Invalidation',
-          executor: testCacheInvalidation,
-          critical: false
-        }
-      ]
+      name: 'API Error Handling',
+      executor: testApiErrorHandling,
+      critical: true
+    }]
+
+  },
+  {
+    name: 'Network Resilience Tests',
+    category: 'network',
+    tests: [
+    {
+      name: 'Connection Failure Recovery',
+      executor: testConnectionFailureRecovery,
+      critical: true
     },
     {
-      name: 'Performance Tests',
-      category: 'performance',
-      tests: [
-        {
-          name: 'Large Dataset Handling',
-          executor: testLargeDatasetHandling,
-          critical: false
-        },
-        {
-          name: 'Concurrent User Operations',
-          executor: testConcurrentOperations,
-          critical: false
-        },
-        {
-          name: 'Memory Usage Validation',
-          executor: testMemoryUsage,
-          critical: false
-        },
-        {
-          name: 'Response Time Validation',
-          executor: testResponseTimes,
-          critical: true
-        }
-      ]
-    }
-  ];
+      name: 'Request Timeout Handling',
+      executor: testTimeoutHandling,
+      critical: true
+    },
+    {
+      name: 'Offline Mode Functionality',
+      executor: testOfflineMode,
+      critical: false
+    },
+    {
+      name: 'Network Quality Adaptation',
+      executor: testNetworkQualityAdaptation,
+      critical: false
+    }]
+
+  },
+  {
+    name: 'Cross-Component Integration',
+    category: 'integration',
+    tests: [
+    {
+      name: 'POS to Inventory Sync',
+      executor: testPOSInventorySync,
+      critical: true
+    },
+    {
+      name: 'Employee Time Tracking',
+      executor: testEmployeeTimeTracking,
+      critical: true
+    },
+    {
+      name: 'Purchase Order Workflow',
+      executor: testPurchaseOrderWorkflow,
+      critical: true
+    },
+    {
+      name: 'Payroll Processing',
+      executor: testPayrollProcessing,
+      critical: false
+    }]
+
+  },
+  {
+    name: 'Error Recovery Tests',
+    category: 'recovery',
+    tests: [
+    {
+      name: 'Component Error Boundaries',
+      executor: testErrorBoundaries,
+      critical: true
+    },
+    {
+      name: 'State Recovery After Error',
+      executor: testStateRecovery,
+      critical: true
+    },
+    {
+      name: 'Transaction Rollback',
+      executor: testTransactionRollback,
+      critical: true
+    },
+    {
+      name: 'Cache Invalidation',
+      executor: testCacheInvalidation,
+      critical: false
+    }]
+
+  },
+  {
+    name: 'Performance Tests',
+    category: 'performance',
+    tests: [
+    {
+      name: 'Large Dataset Handling',
+      executor: testLargeDatasetHandling,
+      critical: false
+    },
+    {
+      name: 'Concurrent User Operations',
+      executor: testConcurrentOperations,
+      critical: false
+    },
+    {
+      name: 'Memory Usage Validation',
+      executor: testMemoryUsage,
+      critical: false
+    },
+    {
+      name: 'Response Time Validation',
+      executor: testResponseTimes,
+      critical: true
+    }]
+
+  }];
+
 
   // Test Implementation Functions
   async function testAuthenticationFlow(): Promise<void> {
@@ -226,7 +226,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
   async function testFileOperations(): Promise<void> {
     // Create a test file
     const testFile = new File(['test content'], 'test.txt', { type: 'text/plain' });
-    
+
     const uploadResult = await window.ezsite.apis.upload({
       filename: 'integration-test.txt',
       file: testFile
@@ -275,7 +275,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
 
   async function testTimeoutHandling(): Promise<void> {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (...args) => {
       return new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 100);
@@ -286,10 +286,10 @@ const ComprehensiveIntegrationTester: React.FC = () => {
       await window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 1 });
       throw new Error('Timeout was not handled');
     } catch (error) {
+
+
       // Expected timeout error
-    } finally {
-      window.fetch = originalFetch;
-    }
+    } finally {window.fetch = originalFetch;}
   }
 
   async function testOfflineMode(): Promise<void> {
@@ -302,7 +302,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
       });
 
       // Test offline operations
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Restore online status
       Object.defineProperty(navigator, 'onLine', {
@@ -315,7 +315,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
   async function testNetworkQualityAdaptation(): Promise<void> {
     // Test adaptation to different network conditions
     const testSizes = [1, 10, 100]; // Different payload sizes
-    
+
     for (const size of testSizes) {
       const result = await window.ezsite.apis.tablePage(36848, {
         PageNo: 1,
@@ -332,7 +332,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
       PageSize: 1,
       Filters: [{ name: 'ID', op: 'Equal', value: 1 }]
     });
-    
+
     if (initialStock.error) throw new Error('Failed to get initial stock');
 
     // Simulate a sale
@@ -356,7 +356,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
     if (clockInResult.error) throw new Error('Clock in failed');
 
     // Wait a moment then clock out
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const clockOutResult = await window.ezsite.apis.run({
       path: 'clockInOut.js',
@@ -411,12 +411,12 @@ const ComprehensiveIntegrationTester: React.FC = () => {
     // Test state persistence and recovery
     const testData = { test: 'recovery', timestamp: Date.now() };
     localStorage.setItem('integration-test', JSON.stringify(testData));
-    
+
     const recovered = JSON.parse(localStorage.getItem('integration-test') || '{}');
     if (recovered.test !== testData.test) {
       throw new Error('State recovery failed');
     }
-    
+
     localStorage.removeItem('integration-test');
   }
 
@@ -435,14 +435,14 @@ const ComprehensiveIntegrationTester: React.FC = () => {
         await window.ezsite.apis.tableDelete(36848, { ID: createResult.data });
       }
     } catch (error) {
-      // Transaction rollback handling
-    }
-  }
 
+
+      // Transaction rollback handling
+    }}
   async function testCacheInvalidation(): Promise<void> {
     // Test cache invalidation mechanisms
     await window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 1 });
-    
+
     // Modify data
     const createResult = await window.ezsite.apis.tableCreate(36848, {
       name: 'Cache Test',
@@ -454,7 +454,7 @@ const ComprehensiveIntegrationTester: React.FC = () => {
       // Verify cache is invalidated
       const freshResult = await window.ezsite.apis.tablePage(36848, { PageNo: 1, PageSize: 10 });
       if (freshResult.error) throw new Error('Cache invalidation test failed');
-      
+
       // Clean up
       await window.ezsite.apis.tableDelete(36848, { ID: createResult.data });
     }
@@ -466,22 +466,22 @@ const ComprehensiveIntegrationTester: React.FC = () => {
       PageNo: 1,
       PageSize: 100
     });
-    
+
     if (largePageResult.error) throw new Error('Large dataset handling failed');
   }
 
   async function testConcurrentOperations(): Promise<void> {
     // Test concurrent API calls
     const promises = Array.from({ length: 5 }, (_, i) =>
-      window.ezsite.apis.tablePage(36848, {
-        PageNo: i + 1,
-        PageSize: 10
-      })
+    window.ezsite.apis.tablePage(36848, {
+      PageNo: i + 1,
+      PageSize: 10
+    })
     );
 
     const results = await Promise.all(promises);
-    const failures = results.filter(r => r.error);
-    
+    const failures = results.filter((r) => r.error);
+
     if (failures.length > 0) {
       throw new Error(`${failures.length} concurrent operations failed`);
     }
@@ -490,34 +490,34 @@ const ComprehensiveIntegrationTester: React.FC = () => {
   async function testMemoryUsage(): Promise<void> {
     // Basic memory usage test
     const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
-    
+
     // Perform memory-intensive operations
     const largeArray = new Array(10000).fill('test data');
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     // Force garbage collection if available
     if ((window as any).gc) {
       (window as any).gc();
     }
-    
+
     const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
-    
+
     // Clean up
     largeArray.length = 0;
   }
 
   async function testResponseTimes(): Promise<void> {
     const startTime = performance.now();
-    
+
     await window.ezsite.apis.tablePage(36848, {
       PageNo: 1,
       PageSize: 10
     });
-    
+
     const endTime = performance.now();
     const responseTime = endTime - startTime;
-    
-    if (responseTime > 5000) { // 5 second threshold
+
+    if (responseTime > 5000) {// 5 second threshold
       throw new Error(`Response time too slow: ${responseTime}ms`);
     }
   }
@@ -529,31 +529,31 @@ const ComprehensiveIntegrationTester: React.FC = () => {
     try {
       await test.executor();
       const duration = performance.now() - startTime;
-      
-      setResults(prev => prev.map(result => 
-        result.id === testId 
-          ? { 
-              ...result, 
-              status: 'passed' as const, 
-              duration,
-              details: `Test completed successfully in ${Math.round(duration)}ms`
-            }
-          : result
+
+      setResults((prev) => prev.map((result) =>
+      result.id === testId ?
+      {
+        ...result,
+        status: 'passed' as const,
+        duration,
+        details: `Test completed successfully in ${Math.round(duration)}ms`
+      } :
+      result
       ));
     } catch (error) {
       const duration = performance.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      setResults(prev => prev.map(result => 
-        result.id === testId 
-          ? { 
-              ...result, 
-              status: (test.critical ? 'failed' : 'warning') as const, 
-              duration,
-              error: errorMessage,
-              details: `Test failed after ${Math.round(duration)}ms: ${errorMessage}`
-            }
-          : result
+
+      setResults((prev) => prev.map((result) =>
+      result.id === testId ?
+      {
+        ...result,
+        status: (test.critical ? 'failed' : 'warning') as const,
+        duration,
+        error: errorMessage,
+        details: `Test failed after ${Math.round(duration)}ms: ${errorMessage}`
+      } :
+      result
       ));
     }
   }, []);
@@ -566,19 +566,19 @@ const ComprehensiveIntegrationTester: React.FC = () => {
     abortController.current = new AbortController();
 
     // Initialize results
-    const allTests = testSuites.flatMap(suite => 
-      suite.tests.map(test => ({
-        id: `${suite.category}-${test.name}`,
-        name: test.name,
-        category: suite.category,
-        status: 'pending' as const,
-        timestamp: new Date().toISOString()
-      }))
+    const allTests = testSuites.flatMap((suite) =>
+    suite.tests.map((test) => ({
+      id: `${suite.category}-${test.name}`,
+      name: test.name,
+      category: suite.category,
+      status: 'pending' as const,
+      timestamp: new Date().toISOString()
+    }))
     );
 
-    const filteredTests = selectedCategory === 'all' 
-      ? allTests 
-      : allTests.filter(test => test.category === selectedCategory);
+    const filteredTests = selectedCategory === 'all' ?
+    allTests :
+    allTests.filter((test) => test.category === selectedCategory);
 
     setResults(filteredTests);
 
@@ -592,28 +592,28 @@ const ComprehensiveIntegrationTester: React.FC = () => {
 
         for (const test of suite.tests) {
           if (abortController.current?.signal.aborted) break;
-          
+
           const testId = `${suite.category}-${test.name}`;
-          
-          setResults(prev => prev.map(result => 
-            result.id === testId 
-              ? { ...result, status: 'running' as const }
-              : result
+
+          setResults((prev) => prev.map((result) =>
+          result.id === testId ?
+          { ...result, status: 'running' as const } :
+          result
           ));
 
           await runTest(test, suite.category, testId);
-          
+
           completedTests++;
-          setProgress((completedTests / totalTests) * 100);
-          
+          setProgress(completedTests / totalTests * 100);
+
           // Small delay between tests
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
 
-      const passedTests = results.filter(r => r.status === 'passed').length;
-      const failedTests = results.filter(r => r.status === 'failed').length;
-      const warningTests = results.filter(r => r.status === 'warning').length;
+      const passedTests = results.filter((r) => r.status === 'passed').length;
+      const failedTests = results.filter((r) => r.status === 'failed').length;
+      const warningTests = results.filter((r) => r.status === 'warning').length;
 
       toast.success(
         `Integration testing completed: ${passedTests} passed, ${failedTests} failed, ${warningTests} warnings`
@@ -676,16 +676,16 @@ const ComprehensiveIntegrationTester: React.FC = () => {
   };
 
   const categoryStats = React.useMemo(() => {
-    const stats: Record<string, { total: number; passed: number; failed: number; warning: number }> = {};
-    
-    results.forEach(result => {
+    const stats: Record<string, {total: number;passed: number;failed: number;warning: number;}> = {};
+
+    results.forEach((result) => {
       if (!stats[result.category]) {
         stats[result.category] = { total: 0, passed: 0, failed: 0, warning: 0 };
       }
       stats[result.category].total++;
-      if (result.status === 'passed') stats[result.category].passed++;
-      else if (result.status === 'failed') stats[result.category].failed++;
-      else if (result.status === 'warning') stats[result.category].warning++;
+      if (result.status === 'passed') stats[result.category].passed++;else
+      if (result.status === 'failed') stats[result.category].failed++;else
+      if (result.status === 'warning') stats[result.category].warning++;
     });
 
     return stats;
@@ -705,37 +705,37 @@ const ComprehensiveIntegrationTester: React.FC = () => {
           <Button
             onClick={runAllTests}
             disabled={isRunning}
-            className="gap-2"
-          >
+            className="gap-2">
+
             <Play className="h-4 w-4" />
             {isRunning ? 'Running...' : 'Run Tests'}
           </Button>
           
-          {isRunning && (
-            <Button
-              variant="destructive"
-              onClick={stopTests}
-              className="gap-2"
-            >
+          {isRunning &&
+          <Button
+            variant="destructive"
+            onClick={stopTests}
+            className="gap-2">
+
               <Pause className="h-4 w-4" />
               Stop
             </Button>
-          )}
+          }
           
           <Button
             variant="outline"
             onClick={resetTests}
             disabled={isRunning}
-            className="gap-2"
-          >
+            className="gap-2">
+
             <RotateCcw className="h-4 w-4" />
             Reset
           </Button>
         </div>
       </div>
 
-      {isRunning && (
-        <Card>
+      {isRunning &&
+      <Card>
           <CardContent className="pt-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -743,15 +743,15 @@ const ComprehensiveIntegrationTester: React.FC = () => {
                 <span>{Math.round(progress)}%</span>
               </div>
               <Progress value={progress} className="h-2" />
-              {currentTest && (
-                <p className="text-sm text-muted-foreground">
+              {currentTest &&
+            <p className="text-sm text-muted-foreground">
                   Running: {currentTest}
                 </p>
-              )}
+            }
             </div>
           </CardContent>
         </Card>
-      )}
+      }
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
         <TabsList className="grid grid-cols-6 w-full">
@@ -779,10 +779,10 @@ const ComprehensiveIntegrationTester: React.FC = () => {
         </TabsList>
 
         <TabsContent value={selectedCategory} className="space-y-4">
-          {Object.entries(categoryStats).length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(categoryStats).map(([category, stats]) => (
-                <Card key={category}>
+          {Object.entries(categoryStats).length > 0 &&
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(categoryStats).map(([category, stats]) =>
+            <Card key={category}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium capitalize">
                       {category}
@@ -795,22 +795,22 @@ const ComprehensiveIntegrationTester: React.FC = () => {
                       <Badge variant="secondary" className="text-xs">
                         ✓ {stats.passed}
                       </Badge>
-                      {stats.failed > 0 && (
-                        <Badge variant="destructive" className="text-xs">
+                      {stats.failed > 0 &&
+                  <Badge variant="destructive" className="text-xs">
                           ✗ {stats.failed}
                         </Badge>
-                      )}
-                      {stats.warning > 0 && (
-                        <Badge variant="outline" className="text-xs">
+                  }
+                      {stats.warning > 0 &&
+                  <Badge variant="outline" className="text-xs">
                           ⚠ {stats.warning}
                         </Badge>
-                      )}
+                  }
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+            )}
             </div>
-          )}
+          }
 
           <Card>
             <CardHeader>
@@ -819,18 +819,18 @@ const ComprehensiveIntegrationTester: React.FC = () => {
             <CardContent>
               <ScrollArea className="h-[600px]">
                 <div className="space-y-2">
-                  {results.length === 0 ? (
-                    <Alert>
+                  {results.length === 0 ?
+                  <Alert>
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
                         No test results available. Click "Run Tests" to start integration testing.
                       </AlertDescription>
-                    </Alert>
-                  ) : (
-                    results
-                      .filter(result => selectedCategory === 'all' || result.category === selectedCategory)
-                      .map((result) => (
-                        <Card key={result.id} className="p-4">
+                    </Alert> :
+
+                  results.
+                  filter((result) => selectedCategory === 'all' || result.category === selectedCategory).
+                  map((result) =>
+                  <Card key={result.id} className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                               {getStatusIcon(result.status)}
@@ -840,50 +840,50 @@ const ComprehensiveIntegrationTester: React.FC = () => {
                                   <Badge variant="outline" className="text-xs">
                                     {result.category}
                                   </Badge>
-                                  {result.duration && (
-                                    <span className="text-xs text-muted-foreground">
+                                  {result.duration &&
+                            <span className="text-xs text-muted-foreground">
                                       {Math.round(result.duration)}ms
                                     </span>
-                                  )}
+                            }
                                 </div>
                               </div>
                             </div>
-                            <Badge 
-                              variant={
-                                result.status === 'passed' ? 'secondary' :
-                                result.status === 'failed' ? 'destructive' :
-                                result.status === 'warning' ? 'outline' :
-                                'secondary'
-                              }
-                            >
+                            <Badge
+                        variant={
+                        result.status === 'passed' ? 'secondary' :
+                        result.status === 'failed' ? 'destructive' :
+                        result.status === 'warning' ? 'outline' :
+                        'secondary'
+                        }>
+
                               {result.status}
                             </Badge>
                           </div>
                           
-                          {result.details && (
-                            <p className="text-sm text-muted-foreground mt-2">
+                          {result.details &&
+                    <p className="text-sm text-muted-foreground mt-2">
                               {result.details}
                             </p>
-                          )}
+                    }
                           
-                          {result.error && (
-                            <Alert className="mt-2" variant="destructive">
+                          {result.error &&
+                    <Alert className="mt-2" variant="destructive">
                               <AlertDescription className="text-sm">
                                 {result.error}
                               </AlertDescription>
                             </Alert>
-                          )}
+                    }
                         </Card>
-                      ))
-                  )}
+                  )
+                  }
                 </div>
               </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ComprehensiveIntegrationTester;

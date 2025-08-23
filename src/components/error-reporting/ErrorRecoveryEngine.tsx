@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  RefreshCw, 
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  RefreshCw,
   Wifi,
   WifiOff,
   Shield,
@@ -17,13 +17,13 @@ import {
   Settings,
   ExternalLink,
   Loader2,
-  TrendingUp
-} from 'lucide-react';
-import { 
+  TrendingUp } from
+'lucide-react';
+import {
   comprehensiveErrorReporting,
   type ErrorContext,
-  type ErrorRecoverySuggestion 
-} from '@/services/comprehensive-error-reporting';
+  type ErrorRecoverySuggestion } from
+'@/services/comprehensive-error-reporting';
 import { useEnhancedToast } from '@/utils/enhanced-toast';
 
 interface ErrorRecoveryEngineProps {
@@ -78,7 +78,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
   useEffect(() => {
     // Load recovery suggestions for this error
     const suggestions = comprehensiveErrorReporting.getRecoverySuggestions(errorContext);
-    setRecoveryState(prev => ({
+    setRecoveryState((prev) => ({
       ...prev,
       suggestions: suggestions.slice(0, 5) // Limit to top 5 suggestions
     }));
@@ -90,24 +90,24 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
   }, [errorContext, autoAttemptRecovery]);
 
   const attemptAutoRecovery = async (suggestions: ErrorRecoverySuggestion[]) => {
-    const autoSuggestions = suggestions
-      .filter(s => s.priority <= 1 && s.action.type !== 'custom') // Only attempt safe, high-priority actions
-      .slice(0, maxAutoAttempts);
+    const autoSuggestions = suggestions.
+    filter((s) => s.priority <= 1 && s.action.type !== 'custom') // Only attempt safe, high-priority actions
+    .slice(0, maxAutoAttempts);
 
     for (const suggestion of autoSuggestions) {
       if (recoveryState.attemptHistory.length >= maxAutoAttempts) break;
-      
+
       showInfo(`Attempting automatic recovery: ${suggestion.title}`);
       const success = await executeRecoverySuggestion(suggestion, true);
-      
+
       if (success) {
-        setRecoveryState(prev => ({ ...prev, recoverySuccess: true }));
+        setRecoveryState((prev) => ({ ...prev, recoverySuccess: true }));
         onRecoverySuccess?.();
         return;
       }
 
       // Wait between attempts
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     if (!recoveryState.recoverySuccess) {
@@ -116,12 +116,12 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
   };
 
   const executeRecoverySuggestion = async (
-    suggestion: ErrorRecoverySuggestion,
-    isAutoAttempt = false
-  ): Promise<boolean> => {
+  suggestion: ErrorRecoverySuggestion,
+  isAutoAttempt = false)
+  : Promise<boolean> => {
     const startTime = Date.now();
-    
-    setRecoveryState(prev => ({
+
+    setRecoveryState((prev) => ({
       ...prev,
       currentAttempt: {
         suggestion,
@@ -133,7 +133,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
     try {
       // Simulate progress updates
       const progressInterval = setInterval(() => {
-        setRecoveryState(prev => ({
+        setRecoveryState((prev) => ({
           ...prev,
           currentAttempt: {
             ...prev.currentAttempt,
@@ -150,7 +150,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
             success = await suggestion.action.handler();
           } else {
             // Default retry logic
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             success = navigator.onLine;
           }
           break;
@@ -163,7 +163,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
         case 'clear_cache':
           if ('caches' in window) {
             const cacheNames = await caches.keys();
-            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
             showInfo('Cache cleared. Reloading...');
             setTimeout(() => window.location.reload(), 1000);
             return true;
@@ -198,8 +198,8 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
       }
 
       clearInterval(progressInterval);
-      
-      setRecoveryState(prev => ({
+
+      setRecoveryState((prev) => ({
         ...prev,
         currentAttempt: {
           ...prev.currentAttempt,
@@ -215,7 +215,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
         duration
       };
 
-      setRecoveryState(prev => ({
+      setRecoveryState((prev) => ({
         ...prev,
         attemptHistory: [...prev.attemptHistory, attempt],
         recoverySuccess: success,
@@ -254,7 +254,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
         error: error instanceof Error ? error.message : 'Unknown error'
       };
 
-      setRecoveryState(prev => ({
+      setRecoveryState((prev) => ({
         ...prev,
         attemptHistory: [...prev.attemptHistory, attempt],
         currentAttempt: {
@@ -267,7 +267,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
       if (!isAutoAttempt) {
         showError(`Recovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-      
+
       onRecoveryFailure?.(error instanceof Error ? error : new Error('Recovery failed'));
       return false;
     }
@@ -323,15 +323,15 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
             The issue has been resolved. You can continue using the application.
           </p>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
     <div className="space-y-4">
       {/* Current Recovery Attempt */}
-      {recoveryState.currentAttempt.isAttempting && recoveryState.currentAttempt.suggestion && (
-        <Alert>
+      {recoveryState.currentAttempt.isAttempting && recoveryState.currentAttempt.suggestion &&
+      <Alert>
           <Loader2 className="h-4 w-4 animate-spin" />
           <AlertDescription>
             <div className="space-y-2">
@@ -343,7 +343,7 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
             </div>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Recovery Suggestions */}
       <Card>
@@ -351,26 +351,26 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
             Recovery Suggestions
-            {recoveryState.autoRecoveryEnabled && (
-              <Badge variant="outline" className="ml-auto">
+            {recoveryState.autoRecoveryEnabled &&
+            <Badge variant="outline" className="ml-auto">
                 Auto Recovery Enabled
               </Badge>
-            )}
+            }
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {recoveryState.suggestions.length > 0 ? (
-              recoveryState.suggestions.map((suggestion, index) => {
-                const attemptedBefore = recoveryState.attemptHistory.find(
-                  a => a.suggestionId === suggestion.id
-                );
+            {recoveryState.suggestions.length > 0 ?
+            recoveryState.suggestions.map((suggestion, index) => {
+              const attemptedBefore = recoveryState.attemptHistory.find(
+                (a) => a.suggestionId === suggestion.id
+              );
 
-                return (
-                  <div
-                    key={suggestion.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
-                  >
+              return (
+                <div
+                  key={suggestion.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+
                     <div className="flex-shrink-0">
                       {getSuggestionIcon(suggestion)}
                     </div>
@@ -381,60 +381,60 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
                         <Badge className={getPriorityColor(suggestion.priority)}>
                           Priority {suggestion.priority + 1}
                         </Badge>
-                        {attemptedBefore && (
-                          <div className="flex items-center gap-1">
+                        {attemptedBefore &&
+                      <div className="flex items-center gap-1">
                             {getAttemptIcon(attemptedBefore)}
                             <span className="text-xs text-gray-500">
                               {attemptedBefore.success ? 'Worked' : 'Failed'}
                             </span>
                           </div>
-                        )}
+                      }
                       </div>
                       <p className="text-sm text-gray-600">{suggestion.userMessage}</p>
                     </div>
                     
                     <Button
-                      onClick={() => executeRecoverySuggestion(suggestion)}
-                      disabled={
-                        recoveryState.currentAttempt.isAttempting ||
-                        (attemptedBefore && attemptedBefore.success)
-                      }
-                      variant={index === 0 ? 'default' : 'outline'}
-                      size="sm"
-                    >
-                      {attemptedBefore && attemptedBefore.success ? 
-                        'Completed' : 
-                        recoveryState.currentAttempt.isAttempting ? 
-                          'Processing...' : 
-                          'Try This'
-                      }
+                    onClick={() => executeRecoverySuggestion(suggestion)}
+                    disabled={
+                    recoveryState.currentAttempt.isAttempting ||
+                    attemptedBefore && attemptedBefore.success
+                    }
+                    variant={index === 0 ? 'default' : 'outline'}
+                    size="sm">
+
+                      {attemptedBefore && attemptedBefore.success ?
+                    'Completed' :
+                    recoveryState.currentAttempt.isAttempting ?
+                    'Processing...' :
+                    'Try This'
+                    }
                     </Button>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-center py-8 text-gray-500">
+                  </div>);
+
+            }) :
+
+            <div className="text-center py-8 text-gray-500">
                 <AlertTriangle className="h-8 w-8 mx-auto mb-3 text-gray-400" />
                 <p>No recovery suggestions available for this error type.</p>
                 <p className="text-sm mt-1">Please try refreshing the page or contact support.</p>
               </div>
-            )}
+            }
           </div>
         </CardContent>
       </Card>
 
       {/* Attempt History */}
-      {recoveryState.attemptHistory.length > 0 && (
-        <Card>
+      {recoveryState.attemptHistory.length > 0 &&
+      <Card>
           <CardHeader>
             <CardTitle className="text-sm">Recovery Attempts</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {recoveryState.attemptHistory.slice(-5).map((attempt, index) => {
-                const suggestion = recoveryState.suggestions.find(s => s.id === attempt.suggestionId);
-                return (
-                  <div key={index} className="flex items-center justify-between text-sm">
+              const suggestion = recoveryState.suggestions.find((s) => s.id === attempt.suggestionId);
+              return (
+                <div key={index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       {getAttemptIcon(attempt)}
                       <span>{suggestion?.title || attempt.suggestionId}</span>
@@ -443,33 +443,33 @@ const ErrorRecoveryEngine: React.FC<ErrorRecoveryEngineProps> = ({
                       <span>{attempt.duration}ms</span>
                       <span>{new Date(attempt.timestamp).toLocaleTimeString()}</span>
                     </div>
-                  </div>
-                );
-              })}
+                  </div>);
+
+            })}
             </div>
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Network Status */}
       <div className="flex items-center justify-center gap-4 text-sm text-gray-500 pt-2 border-t">
-        {navigator.onLine ? (
-          <div className="flex items-center gap-1 text-green-600">
+        {navigator.onLine ?
+        <div className="flex items-center gap-1 text-green-600">
             <Wifi className="h-4 w-4" />
             Connection: Online
-          </div>
-        ) : (
-          <div className="flex items-center gap-1 text-red-600">
+          </div> :
+
+        <div className="flex items-center gap-1 text-red-600">
             <WifiOff className="h-4 w-4" />
             Connection: Offline
           </div>
-        )}
+        }
         <div className="flex items-center gap-1">
           <span>Error ID: {errorContext.errorId.slice(-8)}</span>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ErrorRecoveryEngine;

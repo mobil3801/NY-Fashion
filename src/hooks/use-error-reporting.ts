@@ -17,9 +17,9 @@ export const useErrorReporting = () => {
   const { reportError, reportNetworkError, reportPerformanceIssue } = useErrorMonitoring();
 
   const reportWithContext = useCallback((
-    error: Error,
-    options: ErrorReportOptions = {}
-  ) => {
+  error: Error,
+  options: ErrorReportOptions = {}) =>
+  {
     const {
       category = ErrorCategory.APPLICATION,
       severity = SeverityLevel.MEDIUM,
@@ -98,7 +98,7 @@ export const useErrorReporting = () => {
   const reportAPIError = useCallback((error: Error, url: string, method: string, statusCode?: number) => {
     // Report as network error
     const networkErrorId = reportNetworkError(url, method, error, statusCode);
-    
+
     // Also report as application error for API-related issues
     const appErrorId = reportWithContext(error, {
       category: ErrorCategory.APPLICATION,
@@ -113,7 +113,7 @@ export const useErrorReporting = () => {
 
   const reportPerformanceError = useCallback((metricName: string, value: number, threshold: number, additionalData?: any) => {
     const issueId = reportPerformanceIssue(metricName, value, threshold);
-    
+
     // Also report as application error if performance is critically bad
     if (value > threshold * 3) {
       reportWithContext(new Error(`Critical performance issue: ${metricName}`), {
@@ -129,27 +129,27 @@ export const useErrorReporting = () => {
   }, [reportPerformanceIssue, reportWithContext]);
 
   // Wrapper for async operations with automatic error reporting
-  const withErrorReporting = useCallback(<T>(
-    asyncFn: () => Promise<T>,
-    options: ErrorReportOptions & { 
-      errorMessage?: string;
-      onError?: (error: Error, errorId: string) => void;
-    } = {}
-  ) => {
+  const withErrorReporting = useCallback(<T,>(
+  asyncFn: () => Promise<T>,
+  options: ErrorReportOptions & {
+    errorMessage?: string;
+    onError?: (error: Error, errorId: string) => void;
+  } = {}) =>
+  {
     return async (): Promise<T> => {
       try {
         const result = await asyncFn();
         return result;
       } catch (error) {
         const errorToReport = error instanceof Error ? error : new Error(String(error));
-        
+
         // Add custom error message if provided
         if (options.errorMessage) {
           errorToReport.message = `${options.errorMessage}: ${errorToReport.message}`;
         }
 
         const errorId = reportWithContext(errorToReport, options);
-        
+
         // Call custom error handler if provided
         if (options.onError) {
           options.onError(errorToReport, errorId);
@@ -163,7 +163,7 @@ export const useErrorReporting = () => {
   // Method to report user actions that might be relevant for debugging
   const reportUserAction = useCallback((action: string, data?: any) => {
     logger.logUserAction(action, data);
-    
+
     // Store user action for context in future error reports
     if (typeof window !== 'undefined') {
       const recentActions = JSON.parse(localStorage.getItem('recent_user_actions') || '[]');
@@ -172,7 +172,7 @@ export const useErrorReporting = () => {
         data,
         timestamp: new Date().toISOString()
       });
-      
+
       // Keep only last 10 actions
       localStorage.setItem('recent_user_actions', JSON.stringify(recentActions.slice(0, 10)));
     }

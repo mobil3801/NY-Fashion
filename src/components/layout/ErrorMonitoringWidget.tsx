@@ -10,11 +10,11 @@ import ErrorMonitoringDashboard from '@/components/error-monitoring/ErrorMonitor
 import RealTimeErrorMonitor from '@/components/error-monitoring/RealTimeErrorMonitor';
 
 const ErrorMonitoringWidget: React.FC = () => {
-  const { 
-    errorCount, 
-    criticalErrorCount, 
-    recentErrors, 
-    isLoading 
+  const {
+    errorCount,
+    criticalErrorCount,
+    recentErrors,
+    isLoading
   } = useErrorMonitoring();
   const [showDashboard, setShowDashboard] = useState(false);
 
@@ -41,8 +41,8 @@ const ErrorMonitoringWidget: React.FC = () => {
             <span className="text-sm">Loading error data...</span>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -77,11 +77,11 @@ const ErrorMonitoringWidget: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="font-medium">{getStatusText()}</span>
             <div className="flex items-center gap-2">
-              {criticalErrorCount > 0 && (
-                <Badge variant="destructive" className="text-xs">
+              {criticalErrorCount > 0 &&
+              <Badge variant="destructive" className="text-xs">
                   {criticalErrorCount} Critical
                 </Badge>
-              )}
+              }
               <Badge variant="outline" className="text-xs">
                 {errorCount} Total
               </Badge>
@@ -101,26 +101,26 @@ const ErrorMonitoringWidget: React.FC = () => {
           </div>
 
           {/* Recent Errors Preview */}
-          {recentErrors.length > 0 && (
-            <div>
+          {recentErrors.length > 0 &&
+          <div>
               <h4 className="text-sm font-medium mb-2 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 Recent Issues
               </h4>
               <div className="space-y-1 max-h-32 overflow-y-auto">
-                {recentErrors.slice(0, 3).map((error) => (
-                  <div
-                    key={error.id}
-                    className="text-xs p-2 rounded bg-white/50 border"
-                  >
+                {recentErrors.slice(0, 3).map((error) =>
+              <div
+                key={error.id}
+                className="text-xs p-2 rounded bg-white/50 border">
+
                     <div className="flex items-center gap-1 mb-1">
                       <Badge
-                        variant="secondary"
-                        className="text-xs h-4"
-                        style={{
-                          backgroundColor: error.severity_level <= 2 ? '#fef2f2' : '#f8fafc'
-                        }}
-                      >
+                    variant="secondary"
+                    className="text-xs h-4"
+                    style={{
+                      backgroundColor: error.severity_level <= 2 ? '#fef2f2' : '#f8fafc'
+                    }}>
+
                         {error.severity_level <= 2 ? 'High' : 'Medium'}
                       </Badge>
                       <span className="text-xs opacity-75">
@@ -133,23 +133,23 @@ const ErrorMonitoringWidget: React.FC = () => {
                       {error.component_name && ` • ${error.component_name}`}
                     </p>
                   </div>
-                ))}
+              )}
               </div>
-              {recentErrors.length > 3 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-2 text-xs"
-                  onClick={() => setShowDashboard(true)}
-                >
+              {recentErrors.length > 3 &&
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full mt-2 text-xs"
+              onClick={() => setShowDashboard(true)}>
+
                   View All {recentErrors.length} Errors
                 </Button>
-              )}
+            }
             </div>
-          )}
+          }
 
-          {errorCount === 0 && (
-            <div className="text-center py-4">
+          {errorCount === 0 &&
+          <div className="text-center py-4">
               <div className="text-green-600 mb-2">
                 <Activity className="h-8 w-8 mx-auto" />
               </div>
@@ -160,7 +160,7 @@ const ErrorMonitoringWidget: React.FC = () => {
                 All systems running smoothly
               </p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -168,8 +168,8 @@ const ErrorMonitoringWidget: React.FC = () => {
       <div className="fixed bottom-4 right-4 z-50">
         <RealTimeErrorMonitor className="w-96" maxErrors={10} refreshInterval={15000} />
       </div>
-    </>
-  );
+    </>);
+
 };
 
 export default ErrorMonitoringWidget;

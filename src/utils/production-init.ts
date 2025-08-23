@@ -87,7 +87,7 @@ class ProductionInitializer {
     try {
       // Use the production debug disabler
       const status = productionDebugDisabler.getStatus();
-      
+
       if (!status.debugDisabled) {
         logger.logWarning('Debug features are not fully disabled');
       }
@@ -200,7 +200,7 @@ class ProductionInitializer {
     try {
       // Remove development-only attributes
       const devElements = document.querySelectorAll('[data-testid], [data-dev], [data-debug]');
-      devElements.forEach(element => {
+      devElements.forEach((element) => {
         element.removeAttribute('data-testid');
         element.removeAttribute('data-dev');
         element.removeAttribute('data-debug');
@@ -208,11 +208,11 @@ class ProductionInitializer {
 
       // Clean up development classes
       const elementsWithDevClasses = document.querySelectorAll('[class*="dev-"], [class*="debug-"], [class*="test-"]');
-      elementsWithDevClasses.forEach(element => {
-        element.className = element.className
-          .split(' ')
-          .filter(cls => !cls.startsWith('dev-') && !cls.startsWith('debug-') && !cls.startsWith('test-'))
-          .join(' ');
+      elementsWithDevClasses.forEach((element) => {
+        element.className = element.className.
+        split(' ').
+        filter((cls) => !cls.startsWith('dev-') && !cls.startsWith('debug-') && !cls.startsWith('test-')).
+        join(' ');
       });
 
       logger.logInfo('Development artifacts cleaned up');
@@ -226,18 +226,18 @@ class ProductionInitializer {
    */
   private removeDebugElements(): void {
     const debugSelectors = [
-      '[data-testid*="debug"]',
-      '[data-debug="true"]',
-      '[class*="debug-"]',
-      '[id*="debug"]',
-      '.debug-panel',
-      '.dev-tools',
-      '#react-refresh'
-    ];
+    '[data-testid*="debug"]',
+    '[data-debug="true"]',
+    '[class*="debug-"]',
+    '[id*="debug"]',
+    '.debug-panel',
+    '.dev-tools',
+    '#react-refresh'];
 
-    debugSelectors.forEach(selector => {
+
+    debugSelectors.forEach((selector) => {
       const elements = document.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
+      elements.forEach((el) => el.remove());
     });
   }
 
@@ -249,7 +249,7 @@ class ProductionInitializer {
       delete (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
       delete (window as any).React;
       delete (window as any).ReactDOM;
-      
+
       // Override the hook to prevent devtools from attaching
       (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
         isDisabled: true,
@@ -266,13 +266,13 @@ class ProductionInitializer {
    */
   private setSecurityMeta(): void {
     const securityMeta = [
-      { name: 'referrer', content: 'strict-origin-when-cross-origin' },
-      { name: 'X-Content-Type-Options', content: 'nosniff' },
-      { name: 'X-Frame-Options', content: 'DENY' },
-      { name: 'X-XSS-Protection', content: '1; mode=block' }
-    ];
+    { name: 'referrer', content: 'strict-origin-when-cross-origin' },
+    { name: 'X-Content-Type-Options', content: 'nosniff' },
+    { name: 'X-Frame-Options', content: 'DENY' },
+    { name: 'X-XSS-Protection', content: '1; mode=block' }];
 
-    securityMeta.forEach(meta => {
+
+    securityMeta.forEach((meta) => {
       let metaEl = document.querySelector(`meta[name="${meta.name}"]`) as HTMLMetaElement;
       if (!metaEl) {
         metaEl = document.createElement('meta');
@@ -289,7 +289,7 @@ class ProductionInitializer {
   private configureCSP(): void {
     // This would typically be done server-side, but we can add a meta tag as fallback
     const csp = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;";
-    
+
     let cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]') as HTMLMetaElement;
     if (!cspMeta) {
       cspMeta = document.createElement('meta');
@@ -304,7 +304,7 @@ class ProductionInitializer {
    */
   private trackPerformanceMetric(entry: PerformanceEntry): void {
     // Only log significant performance issues
-    if (entry.duration && entry.duration > 1000) { // More than 1 second
+    if (entry.duration && entry.duration > 1000) {// More than 1 second
       logger.logWarning(`Performance: ${entry.name} took ${entry.duration}ms`);
     }
   }
@@ -317,7 +317,7 @@ class ProductionInitializer {
       const memory = (performance as any).memory;
       if (memory) {
         const usedRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-        if (usedRatio > 0.8) { // More than 80% memory usage
+        if (usedRatio > 0.8) {// More than 80% memory usage
           logger.logWarning(`High memory usage: ${Math.round(usedRatio * 100)}%`);
         }
       }
@@ -352,11 +352,11 @@ class ProductionInitializer {
    */
   private preloadCriticalResources(): void {
     const criticalResources = [
-      { href: '/favicon.ico', as: 'image' },
-      // Add other critical resources as needed
+    { href: '/favicon.ico', as: 'image' }
+    // Add other critical resources as needed
     ];
 
-    criticalResources.forEach(resource => {
+    criticalResources.forEach((resource) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.href = resource.href;
@@ -371,11 +371,11 @@ class ProductionInitializer {
   private enableResourceHints(): void {
     // DNS prefetch for external domains
     const externalDomains = [
-      '//fonts.googleapis.com',
-      '//fonts.gstatic.com'
-    ];
+    '//fonts.googleapis.com',
+    '//fonts.gstatic.com'];
 
-    externalDomains.forEach(domain => {
+
+    externalDomains.forEach((domain) => {
       const link = document.createElement('link');
       link.rel = 'dns-prefetch';
       link.href = domain;
@@ -389,7 +389,7 @@ class ProductionInitializer {
   private optimizeImages(): void {
     // Add lazy loading to images that don't have it
     const images = document.querySelectorAll('img:not([loading])') as NodeListOf<HTMLImageElement>;
-    images.forEach(img => {
+    images.forEach((img) => {
       if (!img.loading) {
         img.loading = 'lazy';
       }
@@ -399,7 +399,7 @@ class ProductionInitializer {
   /**
    * Get initialization status
    */
-  getStatus(): { initialized: boolean; config: ProductionInitConfig } {
+  getStatus(): {initialized: boolean;config: ProductionInitConfig;} {
     return {
       initialized: this.isInitialized,
       config: this.config
