@@ -101,6 +101,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -193,11 +194,10 @@ const ApiDebugDashboard: React.FC = () => {
         <CardContent className="p-0">
           <ScrollArea className="h-96">
             <div className="space-y-2 p-4">
-              {filteredCalls.map((call) =>
-            <div
-              key={call.id}
-              className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-              onClick={() => setSelectedCall(call.id)}>
+              {filteredCalls.map((call) => <div
+                key={call.id}
+                className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                onClick={() => setSelectedCall(call.id)}>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -207,24 +207,24 @@ const ApiDebugDashboard: React.FC = () => {
                       </Badge>
                       <span className="font-medium text-sm">{call.operation}</span>
                       {call.attempt > 1 &&
-                  <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs">
                           Attempt {call.attempt}
                         </Badge>
-                  }
+                    }
                     </div>
                     <div className="flex items-center gap-2">
                       {call.status === 'error' &&
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRetryCall(call.id);
-                    }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRetryCall(call.id);
+                      }}>
 
                           <RotateCcw className="h-3 w-3" />
                         </Button>
-                  }
+                    }
                       <Badge variant={getStatusColor(call.status) as any} className="text-xs">
                         {call.status}
                       </Badge>
@@ -235,10 +235,10 @@ const ApiDebugDashboard: React.FC = () => {
                     <span>{formatDistanceToNow(call.timestamp, { addSuffix: true })}</span>
                   </div>
                   {call.duration &&
-              <div className="text-xs text-gray-500 mt-1">
+                <div className="text-xs text-gray-500 mt-1">
                       Duration: {call.duration.toFixed(0)}ms
                     </div>
-              }
+                }
                 </div>
             )}
               {filteredCalls.length === 0 &&

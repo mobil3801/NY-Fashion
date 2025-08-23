@@ -18,7 +18,7 @@ interface ImageUploadProgressProps {
 }
 
 const ImageUploadProgress: React.FC<ImageUploadProgressProps> = ({ uploads, onClose }) => {
-  const allCompleted = uploads.every(upload => upload.status === 'completed' || upload.status === 'error');
+  const allCompleted = uploads.every((upload) => upload.status === 'completed' || upload.status === 'error');
 
   React.useEffect(() => {
     if (allCompleted && uploads.length > 0) {
@@ -35,8 +35,8 @@ const ImageUploadProgress: React.FC<ImageUploadProgressProps> = ({ uploads, onCl
     <Card className="mb-4 border-blue-200 bg-blue-50">
       <CardContent className="p-4">
         <div className="space-y-3">
-          {uploads.map((upload) => (
-            <div key={upload.id} className="space-y-2">
+          {uploads.map((upload) =>
+          <div key={upload.id} className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center space-x-2">
                   {upload.status === 'uploading' && <Upload className="h-4 w-4 text-blue-500 animate-spin" />}
@@ -51,19 +51,19 @@ const ImageUploadProgress: React.FC<ImageUploadProgressProps> = ({ uploads, onCl
                 </span>
               </div>
               
-              {upload.status === 'uploading' && (
-                <Progress value={upload.progress} className="h-2" />
-              )}
+              {upload.status === 'uploading' &&
+            <Progress value={upload.progress} className="h-2" />
+            }
               
-              {upload.status === 'error' && upload.error && (
-                <p className="text-xs text-red-600">{upload.error}</p>
-              )}
+              {upload.status === 'error' && upload.error &&
+            <p className="text-xs text-red-600">{upload.error}</p>
+            }
             </div>
-          ))}
+          )}
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default ImageUploadProgress;

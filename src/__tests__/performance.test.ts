@@ -226,9 +226,9 @@ describe('Performance Optimizations', () => {
 
 
 
+
           // Mock terminate
-        }}const worker = new MockWorker();
-      let receivedResult = false;
+        }}const worker = new MockWorker();let receivedResult = false;
 
       worker.onmessage = (event) => {
         if (event.data.type === 'DATA_PROCESSED') {

@@ -326,6 +326,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -474,9 +476,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                               </Select>
                             </TableCell>
                             <TableCell>
-                              <Select value={returnItem?.reason || ''}
-                          onValueChange={(value) => handleReasonChange(item.id, value)}
-                          disabled={!returnItem?.returnQuantity}>
+                              <Select value={returnItem?.reason || ''} onValueChange={(value) => handleReasonChange(item.id, value)} disabled={!returnItem?.returnQuantity}>
 
                                 <SelectTrigger className="w-40">
                                   <SelectValue placeholder="Select reason" />

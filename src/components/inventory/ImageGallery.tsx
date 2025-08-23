@@ -26,11 +26,11 @@ interface ImageGalleryProps {
   productId?: number;
 }
 
-const ImageGallery: React.FC<ImageGalleryProps> = ({ 
-  images, 
-  onDeleteImage, 
+const ImageGallery: React.FC<ImageGalleryProps> = ({
+  images,
+  onDeleteImage,
   onReorderImages,
-  productId 
+  productId
 }) => {
   const [previewImage, setPreviewImage] = useState<ProductImage | null>(null);
   const [deleteImageId, setDeleteImageId] = useState<number | null>(null);
@@ -65,7 +65,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 
     if (!draggedItem) return;
 
-    const currentIndex = images.findIndex(img => img.id === draggedItem.id);
+    const currentIndex = images.findIndex((img) => img.id === draggedItem.id);
     if (currentIndex === -1 || currentIndex === dropIndex) return;
 
     // Create new order
@@ -83,13 +83,13 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
       await onReorderImages(updatedImages);
       toast({
         title: "Success",
-        description: "Image order updated successfully",
+        description: "Image order updated successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to reorder images",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
 
@@ -103,13 +103,13 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
       await onDeleteImage(deleteImageId);
       toast({
         title: "Success",
-        description: "Image deleted successfully",
+        description: "Image deleted successfully"
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete image",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
     setDeleteImageId(null);
@@ -119,40 +119,40 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p>No images uploaded yet</p>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {images.map((image, index) => (
-          <Card 
-            key={image.id}
-            className={`relative group cursor-move transition-all duration-200 ${
-              draggedOverIndex === index ? 'ring-2 ring-primary' : ''
-            }`}
-            draggable
-            onDragStart={(e) => handleDragStart(e, image)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, index)}
-          >
+        {images.map((image, index) =>
+        <Card
+          key={image.id}
+          className={`relative group cursor-move transition-all duration-200 ${
+          draggedOverIndex === index ? 'ring-2 ring-primary' : ''}`
+          }
+          draggable
+          onDragStart={(e) => handleDragStart(e, image)}
+          onDragOver={(e) => handleDragOver(e, index)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, index)}>
+
             <CardContent className="p-2">
               <div className="relative aspect-square overflow-hidden rounded-lg">
                 <img
-                  src={image.image_url}
-                  alt={image.alt_text}
-                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                />
+                src={image.image_url}
+                alt={image.alt_text}
+                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105" />
+
                 
                 {/* Primary image badge */}
-                {image.sort_order === 0 && (
-                  <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
+                {image.sort_order === 0 &&
+              <Badge className="absolute top-2 left-2 bg-yellow-500 text-white">
                     <Star className="h-3 w-3 mr-1" />
                     Primary
                   </Badge>
-                )}
+              }
 
                 {/* Drag handle */}
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -163,17 +163,17 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="flex space-x-2">
                     <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setPreviewImage(image)}
-                    >
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setPreviewImage(image)}>
+
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => setDeleteImageId(image.id)}
-                    >
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setDeleteImageId(image.id)}>
+
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -192,7 +192,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
               </div>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
       {/* Preview Dialog */}
@@ -201,14 +201,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
           <DialogHeader>
             <DialogTitle>{previewImage?.alt_text}</DialogTitle>
           </DialogHeader>
-          {previewImage && (
-            <div className="space-y-4">
+          {previewImage &&
+          <div className="space-y-4">
               <div className="relative aspect-video overflow-hidden rounded-lg">
                 <img
-                  src={previewImage.image_url}
-                  alt={previewImage.alt_text}
-                  className="w-full h-full object-contain"
-                />
+                src={previewImage.image_url}
+                alt={previewImage.alt_text}
+                className="w-full h-full object-contain" />
+
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -222,9 +222,9 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                 <div>
                   <span className="font-medium">Position: </span>
                   #{previewImage.sort_order + 1}
-                  {previewImage.sort_order === 0 && (
-                    <Badge className="ml-2 bg-yellow-500">Primary</Badge>
-                  )}
+                  {previewImage.sort_order === 0 &&
+                <Badge className="ml-2 bg-yellow-500">Primary</Badge>
+                }
                 </div>
                 <div>
                   <span className="font-medium">Uploaded: </span>
@@ -232,7 +232,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                 </div>
               </div>
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
 
@@ -253,8 +253,8 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
+    </>);
+
 };
 
 export default ImageGallery;

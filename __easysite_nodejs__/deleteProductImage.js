@@ -11,9 +11,9 @@ function deleteProductImage(imageId) {
       FROM product_images 
       WHERE id = $1
     `;
-    
+
     const imageResult = window.ezsite.db.query(getQuery, [parseInt(imageId)]);
-    
+
     if (!imageResult || imageResult.length === 0) {
       throw new Error('Image not found');
     }
@@ -30,7 +30,7 @@ function deleteProductImage(imageId) {
       SET sort_order = sort_order - 1 
       WHERE product_id = $1 AND sort_order > $2
     `;
-    
+
     window.ezsite.db.query(reorderQuery, [image.product_id, image.sort_order]);
 
     return {

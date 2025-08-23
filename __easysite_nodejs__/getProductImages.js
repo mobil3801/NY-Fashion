@@ -13,7 +13,7 @@ function getProductImages(productId) {
     `;
 
     const result = window.ezsite.db.query(query, [parseInt(productId)]);
-    
+
     return result || [];
 
   } catch (error) {

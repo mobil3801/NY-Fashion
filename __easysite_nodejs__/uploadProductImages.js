@@ -5,7 +5,7 @@ async function uploadProductImages(productId, files) {
       throw new Error('Product ID is required');
     }
 
-    if (!files || (!Array.isArray(files) && !files.file)) {
+    if (!files || !Array.isArray(files) && !files.file) {
       throw new Error('No files provided');
     }
 
@@ -18,11 +18,11 @@ async function uploadProductImages(productId, files) {
 
     for (const fileData of filesToProcess) {
       const file = fileData.file || fileData;
-      
+
       if (!allowedTypes.includes(file.type)) {
         throw new Error(`File ${file.name} has invalid type. Only JPG, PNG, and WebP are allowed.`);
       }
-      
+
       if (file.size > maxFileSize) {
         throw new Error(`File ${file.name} is too large. Maximum size is 5MB.`);
       }
@@ -72,13 +72,13 @@ async function uploadProductImages(productId, files) {
       `;
 
       const insertResult = window.ezsite.db.query(insertQuery, [
-        parseInt(productId),
-        urlResult.data,
-        fileData.altText || `Product image ${sortOrder + 1}`,
-        sortOrder,
-        file.size,
-        file.type
-      ]);
+      parseInt(productId),
+      urlResult.data,
+      fileData.altText || `Product image ${sortOrder + 1}`,
+      sortOrder,
+      file.size,
+      file.type]
+      );
 
       if (!insertResult || insertResult.length === 0) {
         throw new Error(`Failed to save image record for ${file.name}`);
