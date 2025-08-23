@@ -10,9 +10,10 @@ import { NetworkStatusIndicator } from '@/components/network/NetworkStatusIndica
 interface HeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
+  isMobile?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen, isMobile = false }) => {
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -25,18 +26,18 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) => {
           size="sm"
           onClick={onToggleSidebar}
           className="lg:hidden p-2"
-          aria-label="Toggle menu"
-        >
+          aria-label="Toggle menu">
+
           <Menu className="h-5 w-5" />
         </Button>
         
         {/* Logo and app name */}
         <div className="flex items-center space-x-2">
-          <img 
-            src="https://cdn.ezsite.ai/AutoDev/19016/bb4a2cd5-b101-49df-bd0d-eeb788f55077.jpg" 
-            alt="Logo" 
-            className="h-8 w-8 rounded object-contain"
-          />
+          <img
+            src="https://cdn.ezsite.ai/AutoDev/19016/bb4a2cd5-b101-49df-bd0d-eeb788f55077.jpg"
+            alt="Logo"
+            className="h-8 w-8 rounded object-contain" />
+
           <h1 className="text-lg lg:text-xl font-semibold text-gray-900 hidden sm:block">
             {t('common.appName', 'Business Management')}
           </h1>
@@ -52,8 +53,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) => {
           type="text"
           placeholder={t('search')}
           className="border rounded-lg px-3 py-1 w-64 hidden md:block"
-          aria-label={t('search')}
-        />
+          aria-label={t('search')} />
+
 
         {/* Network status */}
         <div className="hidden sm:block">
@@ -74,15 +75,15 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) => {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2"
-            >
+              className="p-2">
+
               <User className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };
 
 export default Header;

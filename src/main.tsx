@@ -4,8 +4,12 @@ import App from './App.tsx';
 import SafeNetworkProvider from '@/components/network/SafeNetworkProvider';
 import { initConsoleDebugUtils } from '@/utils/consoleDebugUtils';
 import { setupPageLifecycle } from '@/lib/lifecycle';
+import { setupGlobalErrorHandling } from '@/lib/layout-error-handler';
 import './index.css';
 import './styles/accessibility.css';
+
+// Initialize global error handling
+setupGlobalErrorHandling();
 
 // Initialize debug utilities and enhanced unload protection
 if (import.meta.env.DEV || process.env.NODE_ENV === 'development') {
