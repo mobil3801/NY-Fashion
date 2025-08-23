@@ -87,6 +87,48 @@
   .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgb(209 213 219 / 0.6);
   }
+
+  /* Sticky header improvements */
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgb(229 231 235);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  /* Responsive spacing utilities */
+  .responsive-padding {
+    padding: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-padding {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-padding {
+      padding: 1.5rem 2rem;
+    }
+  }
+
+  /* Focus visible improvements for accessibility */
+  .focus-visible:focus-visible {
+    outline: 2px solid hsl(160 84% 39%);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  /* Smooth transitions for layout changes */
+  .layout-transition {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s ease-in-out;
+  }
 }
 
 /* Custom animations */
@@ -95,8 +137,26 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-out {
+  animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Emerald theme customizations */
@@ -141,10 +201,45 @@ input:focus, select:focus, textarea:focus {
   .main-content {
     padding: 1rem;
   }
+  
+  .responsive-spacing {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
 }
 
 @media (max-width: 768px) {
   .main-content {
     padding: 0.75rem;
+  }
+  
+  .responsive-spacing {
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+  }
+  
+  /* Improve touch targets on mobile */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 1rem 0.75rem;
+  }
+  
+  .responsive-spacing {
+    padding: 1rem 0.75rem;
+    margin: 0.75rem 0;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .sharp-rendering {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
