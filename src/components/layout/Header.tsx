@@ -143,7 +143,7 @@ const Header: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-10 w-10 rounded-2xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 hover:bg-emerald-50"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:text-accent-foreground px-4 py-2 relative h-10 w-10 rounded-2xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 hover:bg-emerald-50"
                   aria-label="User menu">
 
 

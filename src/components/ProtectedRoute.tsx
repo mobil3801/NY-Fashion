@@ -35,8 +35,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <Skeleton className="h-32 w-96" />
           <Skeleton className="h-4 w-64" />
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   // For layout testing, use test user if no auth
@@ -54,8 +54,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
           <p className="text-gray-600">You don't have permission to access this page.</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return <>{children}</>;
