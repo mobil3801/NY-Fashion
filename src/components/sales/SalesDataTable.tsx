@@ -7,9 +7,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNetwork } from '@/contexts/NetworkContext';
 import {
   MoreHorizontal, Eye, Printer, RefreshCcw, Undo2,
-  ChevronLeft, ChevronRight, Download, Mail } from
+  ChevronLeft, ChevronRight, Download, Mail, WifiOff, AlertTriangle } from
 'lucide-react';
 import { format } from 'date-fns';
 
@@ -44,10 +45,12 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { online, retryNow } = useNetwork();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [lastError, setLastError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSales();
@@ -56,6 +59,14 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
   const loadSales = async () => {
     try {
       setLoading(true);
+      setLastError(null);
+
+      // Show offline message if not online
+      if (!online) {
+        setLastError('offline');
+        setLoading(false);
+        return;
+      }
 
       const apiFilters = [];
 
@@ -147,11 +158,24 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
 
     } catch (error) {
       console.error('Error loading sales:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load sales data",
-        variant: "destructive"
-      });
+
+      // Check if it's a network error
+      const isNetworkError = error instanceof Error && (
+      error.message.includes('fetch') ||
+      error.message.includes('network') ||
+      error.name === 'TypeError');
+
+
+      if (isNetworkError) {
+        setLastError('network');
+      } else {
+        setLastError('generic');
+        toast({
+          title: "Error",
+          description: "Failed to load sales data",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -253,6 +277,46 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Network Status Messages */}
+      {lastError === 'offline' &&
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-amber-800">
+              <WifiOff className="h-4 w-4" />
+              <span className="text-sm font-medium">You're offline</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={async () => {
+            await retryNow();
+            await loadSales();
+          }}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
+          </div>
+          <p className="text-sm text-amber-700 mt-1">
+            Cannot load latest sales data while offline. Check your connection and try again.
+          </p>
+        </div>
+      }
+
+      {lastError === 'network' &&
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-red-800">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">Connection Error</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadSales}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
+          <p className="text-sm text-red-700 mt-1">
+            Failed to load sales data. Please check your connection and try again.
+          </p>
+        </div>
+      }
+
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
         <Table>
@@ -321,14 +385,26 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
                         <Eye className="w-4 h-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handlePrintReceipt(sale)}>
+                      <DropdownMenuItem
+                      onClick={() => handlePrintReceipt(sale)}
+                      disabled={!online}>
+
+
+
                         <Printer className="w-4 h-4 mr-2" />
                         Print Receipt
+                        {!online && <WifiOff className="w-3 h-3 ml-auto" />}
                       </DropdownMenuItem>
                       {sale.status === 'completed' &&
-                    <DropdownMenuItem onClick={() => handleRefund(sale)}>
+                    <DropdownMenuItem
+                      onClick={() => handleRefund(sale)}
+                      disabled={!online}>
+
+
+
                           <Undo2 className="w-4 h-4 mr-2" />
                           Process Refund
+                          {!online && <WifiOff className="w-3 h-3 ml-auto" />}
                         </DropdownMenuItem>
                     }
                     </DropdownMenuContent>
@@ -410,9 +486,21 @@ const SalesDataTable: React.FC<SalesDataTableProps> = ({
             {formatCurrency(sales.reduce((sum, sale) => sum + (sale.total_amount || 0), 0))}
           </span>
         </div>
-        <Button variant="ghost" size="sm" onClick={loadSales}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={async () => {
+            if (!online) {
+              await retryNow();
+            }
+            await loadSales();
+          }}
+          disabled={loading}>
+
+
+
           <RefreshCcw className="w-4 h-4 mr-2" />
-          Refresh
+          {!online ? 'Retry Connection' : 'Refresh'}
         </Button>
       </div>
     </div>);

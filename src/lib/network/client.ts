@@ -58,8 +58,13 @@ class NetworkRetryScheduler implements RetryScheduler {
 
     const timerId = window.setTimeout(async () => {
       this.pendingRetries.delete(id);
+      // Double-check paused state before executing
       if (!this.paused) {
-        await fn();
+        try {
+          await fn();
+        } catch (error) {
+          console.error('Retry execution failed:', error);
+        }
       }
     }, delay);
 
@@ -280,17 +285,15 @@ export class ApiClient {
           break;
         }
 
-        // Wait before retry (unless we're offline and scheduler is paused)
-        if (!this.retryScheduler.isPaused()) {
-          const delay = calculateBackoffDelay(
-            attempt,
-            this.config.retryDelay,
-            this.config.retryDelayMax,
-            this.config.retryFactor
-          );
+        // Wait before retry with full jitter backoff
+        const delay = calculateBackoffDelay(
+          attempt + 1, // Pass attempt+1 for 1-based indexing
+          this.config.retryDelay,
+          this.config.retryDelayMax,
+          this.config.retryFactor
+        );
 
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 

@@ -13,13 +13,14 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Plus, Search, Filter, Download, TrendingUp, DollarSign,
   ShoppingCart, Users, Calendar, MoreHorizontal, Eye, RefreshCcw,
-  X } from
+  X, WifiOff, AlertTriangle } from
 'lucide-react';
 import SalesAnalytics from '@/components/sales/SalesAnalytics';
 import SalesDataTable from '@/components/sales/SalesDataTable';
 import AdvancedFilters from '@/components/sales/AdvancedFilters';
 import BulkOperations from '@/components/sales/BulkOperations';
 import { NetworkAwareSaleForm } from '@/components/sales/NetworkAwareSaleForm';
+import { useNetwork } from '@/contexts/NetworkContext';
 
 interface SalesData {
   totalSales: number;
@@ -43,6 +44,7 @@ const SalesPage: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { online, retryNow } = useNetwork();
   const [activeTab, setActiveTab] = useState('overview');
   const [salesData, setSalesData] = useState<SalesData>({
     totalSales: 0,
@@ -75,6 +77,17 @@ const SalesPage: React.FC = () => {
   const loadSalesData = async () => {
     try {
       setLoading(true);
+
+      // Check if offline and show appropriate message
+      if (!online) {
+        toast({
+          title: "Offline",
+          description: "Cannot load latest data while offline. Showing cached data.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
 
       // Build filters for API call
       const apiFilters = [];
@@ -176,11 +189,33 @@ const SalesPage: React.FC = () => {
 
     } catch (error) {
       console.error('Error loading sales data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load sales data",
-        variant: "destructive"
-      });
+
+      // Check if it's a network error
+      const isNetworkError = error instanceof Error && (
+      error.message.includes('fetch') ||
+      error.message.includes('network') ||
+      error.name === 'TypeError');
+
+
+      if (isNetworkError && !online) {
+        toast({
+          title: "Connection Lost",
+          description: "Unable to load data. Will retry when back online.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load sales data. Please try again.",
+          variant: "destructive",
+          action: online ?
+          <Button variant="outline" size="sm" onClick={loadSalesData}>
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              Retry
+            </Button> :
+          undefined
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -223,8 +258,19 @@ const SalesPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('sales')}</h1>
-          <p className="text-gray-600 mt-2">Manage and analyze your sales data</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">{t('sales')}</h1>
+            {!online &&
+            <Badge variant="secondary" className="flex items-center gap-1">
+                <WifiOff className="h-3 w-3" />
+                Offline Mode
+              </Badge>
+            }
+          </div>
+          <p className="text-gray-600 mt-2">
+            Manage and analyze your sales data
+            {!online && " • Limited functionality while offline"}
+          </p>
         </div>
         <div className="flex gap-2">
           {canExportData &&
@@ -252,10 +298,14 @@ const SalesPage: React.FC = () => {
           </Button>
           <Button
             className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
-            onClick={() => window.location.href = '/pos'}>
+            onClick={() => window.location.href = '/pos'}
+            disabled={!online}
+            aria-disabled={!online}
+            title={!online ? "This action requires an active internet connection" : ""}>
 
             <Plus className="w-4 h-4 mr-2" />
             New Sale
+            {!online && <WifiOff className="w-4 h-4 ml-2" />}
           </Button>
         </div>
       </div>
@@ -387,10 +437,13 @@ const SalesPage: React.FC = () => {
                 <Button
                   className="w-full justify-start bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
                   variant="ghost"
-                  onClick={() => window.location.href = '/pos'}>
+                  onClick={() => window.location.href = '/pos'}
+                  disabled={!online}
+                  aria-disabled={!online}>
 
                   <Plus className="w-4 h-4 mr-2" />
                   Process New Sale
+                  {!online && <WifiOff className="w-4 h-4 ml-2" />}
                 </Button>
                 <Button
                   className="w-full justify-start"
@@ -413,10 +466,15 @@ const SalesPage: React.FC = () => {
                 <Button
                   className="w-full justify-start"
                   variant="ghost"
-                  onClick={loadSalesData}>
+                  onClick={async () => {
+                    if (!online) {
+                      await retryNow();
+                    }
+                    await loadSalesData();
+                  }}>
 
                   <RefreshCcw className="w-4 h-4 mr-2" />
-                  Refresh Data
+                  {!online ? 'Retry Connection' : 'Refresh Data'}
                 </Button>
               </CardContent>
             </Card>

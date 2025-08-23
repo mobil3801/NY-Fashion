@@ -44,13 +44,13 @@ export type ApiErrorType = NetworkError | HttpError | BusinessError | TimeoutErr
 export class ApiError extends Error {
   public readonly type: string;
   public readonly timestamp: number;
-  
+
   constructor(
-    message: string,
-    public code: string = 'UNKNOWN_ERROR',
-    public retryable: boolean = false,
-    public details?: any
-  ) {
+  message: string,
+  public code: string = 'UNKNOWN_ERROR',
+  public retryable: boolean = false,
+  public details?: any)
+  {
     super(message);
     this.name = 'ApiError';
     this.type = this.determineType();
@@ -86,46 +86,50 @@ export const ERROR_CODES = {
  * Error classification patterns for non-retryable business errors
  */
 const NON_RETRYABLE_PATTERNS = [
-  /reminder:\s*please\s*retry\s*it\s*or\s*send\s*email\s*to\s*support\s*for\s*help/i,
-  /validation\s*error/i,
-  /authentication\s*failed/i,
-  /authorization\s*denied/i,
-  /access\s*denied/i,
-  /forbidden/i,
-  /not\s*found/i,
-  /bad\s*request/i,
-  /invalid\s*request/i,
-  /malformed\s*request/i
-];
+/reminder:\s*please\s*retry\s*it\s*or\s*send\s*email\s*to\s*support\s*for\s*help/i,
+/validation\s*error/i,
+/authentication\s*failed/i,
+/authorization\s*denied/i,
+/access\s*denied/i,
+/forbidden/i,
+/not\s*found/i,
+/bad\s*request/i,
+/invalid\s*request/i,
+/malformed\s*request/i];
+
 
 /**
  * HTTP status codes that are retryable
  */
 const RETRYABLE_HTTP_CODES = new Set([
-  408, // Request Timeout
-  429, // Too Many Requests
-  500, // Internal Server Error
-  502, // Bad Gateway
-  503, // Service Unavailable
-  504, // Gateway Timeout
-  507, // Insufficient Storage
-  508, // Loop Detected
-  510, // Not Extended
-  511  // Network Authentication Required
+408, // Request Timeout
+429, // Too Many Requests
+500, // Internal Server Error
+501, // Not Implemented
+502, // Bad Gateway
+503, // Service Unavailable
+504, // Gateway Timeout
+505, // HTTP Version Not Supported
+506, // Variant Also Negotiates
+507, // Insufficient Storage
+508, // Loop Detected
+509, // Bandwidth Limit Exceeded
+510, // Not Extended
+511  // Network Authentication Required
 ]);
 
 /**
  * Network error codes that are retryable
  */
 const RETRYABLE_NETWORK_CODES = new Set([
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'ENOTFOUND',
-  'ETIMEDOUT',
-  'EHOSTUNREACH',
-  'ENETUNREACH',
-  'EAI_AGAIN'
-]);
+'ECONNRESET',
+'ECONNREFUSED',
+'ENOTFOUND',
+'ETIMEDOUT',
+'EHOSTUNREACH',
+'ENETUNREACH',
+'EAI_AGAIN']
+);
 
 /**
  * Normalizes any error to a typed ApiError
@@ -151,8 +155,14 @@ export function normalizeError(error: unknown, operation?: string): ApiError {
     );
   }
 
-  // Handle TypeError (usually network errors)
-  if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) {
+  // Handle TypeError and network errors (including ERR_NETWORK)
+  if (error instanceof TypeError || 
+      (error instanceof Error && (
+        error.message.includes('fetch') ||
+        error.message.includes('ERR_NETWORK') ||
+        error.message.includes('NetworkError') ||
+        error.message.includes('Failed to fetch')
+      ))) {
     const message = error instanceof Error ? error.message : String(error);
     return new ApiError(
       'Network connection issue',
@@ -166,8 +176,10 @@ export function normalizeError(error: unknown, operation?: string): ApiError {
   if (error && typeof error === 'object' && 'status' in error) {
     const response = error as any;
     const statusCode = response.status;
-    const isRetryable = RETRYABLE_HTTP_CODES.has(statusCode);
-    
+    // 4xx errors are generally non-retryable business errors, except 408/429
+    // 5xx errors are generally retryable server errors
+    const isRetryable = statusCode >= 500 || statusCode === 408 || statusCode === 429;
+
     return new ApiError(
       `HTTP ${statusCode}: ${response.statusText || 'Unknown error'}`,
       statusCode >= 400 && statusCode < 500 ? 'CLIENT_ERROR' : 'SERVER_ERROR',
@@ -191,7 +203,7 @@ export function normalizeError(error: unknown, operation?: string): ApiError {
     const message = error.message;
 
     // Check if it's a business error based on message patterns
-    const isBusinessError = NON_RETRYABLE_PATTERNS.some(pattern => pattern.test(message));
+    const isBusinessError = NON_RETRYABLE_PATTERNS.some((pattern) => pattern.test(message));
 
     if (isBusinessError) {
       return new ApiError(
@@ -213,7 +225,7 @@ export function normalizeError(error: unknown, operation?: string): ApiError {
 
   // Handle string errors
   if (typeof error === 'string') {
-    const isBusinessError = NON_RETRYABLE_PATTERNS.some(pattern => pattern.test(error));
+    const isBusinessError = NON_RETRYABLE_PATTERNS.some((pattern) => pattern.test(error));
 
     if (isBusinessError) {
       return new ApiError(
@@ -269,10 +281,10 @@ export function getUserFriendlyMessage(error: unknown): string {
     case 'VALIDATION_ERROR':
     case 'PERMISSION_DENIED':
       // Clean up business error messages
-      return normalizedError.message
-        .replace(/reminder:\s*please\s*retry\s*it\s*or\s*send\s*email\s*to\s*support\s*for\s*help\.?/i, 
-        'Operation completed with warnings')
-        .trim();
+      return normalizedError.message.
+      replace(/reminder:\s*please\s*retry\s*it\s*or\s*send\s*email\s*to\s*support\s*for\s*help\.?/i,
+      'Operation completed with warnings').
+      trim();
 
     case 'NETWORK_OFFLINE':
       return 'Connection lost. Please check your internet connection.';
@@ -356,7 +368,7 @@ interface NetworkDiagnostics {
 /**
  * Perform DNS resolution test
  */
-async function testDnsResolution(): Promise<{success: boolean; time: number;}> {
+async function testDnsResolution(): Promise<{success: boolean;time: number;}> {
   const startTime = performance.now();
   try {
     // Use a simple image request to test DNS resolution
@@ -365,7 +377,7 @@ async function testDnsResolution(): Promise<{success: boolean; time: number;}> {
       img.onload = () => resolve();
       img.onerror = () => reject();
       img.src = `https://www.google.com/favicon.ico?${Date.now()}`;
-      
+
       // Timeout after 5 seconds
       setTimeout(() => reject(new Error('DNS timeout')), 5000);
     });
@@ -385,7 +397,7 @@ async function testDnsResolution(): Promise<{success: boolean; time: number;}> {
 /**
  * Perform ping test to measure latency
  */
-async function testPing(): Promise<{success: boolean; latency: number;}> {
+async function testPing(): Promise<{success: boolean;latency: number;}> {
   const startTime = performance.now();
   try {
     const response = await fetch(`${window.location.origin}/favicon.ico`, {
@@ -421,9 +433,9 @@ async function gatherNetworkDiagnostics(): Promise<NetworkDiagnostics> {
   // Run diagnostic tests
   try {
     const [dnsTest, pingTest] = await Promise.allSettled([
-      testDnsResolution(),
-      testPing()
-    ]);
+    testDnsResolution(),
+    testPing()]
+    );
 
     if (dnsTest.status === 'fulfilled') {
       diagnostics.dnsResolution = dnsTest.value;
@@ -502,9 +514,9 @@ export function createErrorReport(error: unknown, context: Record<string, unknow
  * Creates an enhanced error report with network diagnostics (async)
  */
 export async function createEnhancedErrorReport(
-  error: unknown,
-  context: Record<string, unknown> = {}
-): Promise<Record<string, unknown>> {
+error: unknown,
+context: Record<string, unknown> = {})
+: Promise<Record<string, unknown>> {
   const baseReport = createErrorReport(error, context);
 
   try {

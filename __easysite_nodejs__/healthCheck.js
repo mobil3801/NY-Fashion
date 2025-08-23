@@ -1,16 +1,12 @@
 
 function healthCheck() {
-  const currentTime = new Date();
-
+  // Simple health check endpoint
+  // Returns basic system status and timestamp
   return {
     status: 'healthy',
-    timestamp: currentTime.toISOString(),
-    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    service: 'NY FASHION POS',
     version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    services: {
-      database: 'connected',
-      storage: 'available'
-    }
+    uptime: process.uptime()
   };
 }

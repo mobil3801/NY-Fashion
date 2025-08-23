@@ -12,11 +12,11 @@ export class RetryableError extends Error {
   public readonly operation?: string;
 
   constructor(
-    originalError: Error,
-    attempt: number,
-    maxAttempts: number,
-    operation?: string
-  ) {
+  originalError: Error,
+  attempt: number,
+  maxAttempts: number,
+  operation?: string)
+  {
     super(originalError.message);
     this.name = 'RetryableError';
     this.originalError = originalError;
@@ -61,22 +61,22 @@ export function createUserFriendlyErrorMessage(error: Error | ApiError | Retryab
   // Handle generic Error
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    
+
     // Network-related errors
     if (message.includes('network') || message.includes('fetch')) {
       return 'Network connection issue. Please check your internet and try again.';
     }
-    
+
     // Timeout errors
     if (message.includes('timeout')) {
       return 'The request timed out. Please try again.';
     }
-    
+
     // Abort errors
     if (message.includes('abort')) {
       return 'Request was cancelled.';
     }
-    
+
     // Generic fallback
     return error.message || 'An unexpected error occurred. Please try again.';
   }
@@ -97,20 +97,20 @@ export function shouldRetry(error: Error | ApiError, attempt: number, maxAttempt
 
   // Handle generic errors
   const message = error.message.toLowerCase();
-  
+
   // Don't retry validation or permission errors
-  if (message.includes('validation') || 
-      message.includes('permission') || 
-      message.includes('forbidden') ||
-      message.includes('unauthorized')) {
+  if (message.includes('validation') ||
+  message.includes('permission') ||
+  message.includes('forbidden') ||
+  message.includes('unauthorized')) {
     return false;
   }
-  
+
   // Don't retry abort errors
   if (message.includes('abort')) {
     return false;
   }
-  
+
   // Retry network and timeout errors
   return true;
 }
@@ -119,15 +119,15 @@ export function shouldRetry(error: Error | ApiError, attempt: number, maxAttempt
  * Calculate exponential backoff delay with jitter
  */
 export function calculateRetryDelay(
-  attempt: number, 
-  baseDelay: number = 300, 
-  maxDelay: number = 10000,
-  jitter: boolean = true
-): number {
+attempt: number,
+baseDelay: number = 300,
+maxDelay: number = 10000,
+jitter: boolean = true)
+: number {
   const exponentialDelay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
-  
+
   if (!jitter) return exponentialDelay;
-  
+
   // Add jitter (randomness) to prevent thundering herd
   return Math.floor(exponentialDelay * (0.5 + Math.random() * 0.5));
 }

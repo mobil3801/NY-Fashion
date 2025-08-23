@@ -16,8 +16,8 @@ export interface ConnectivityConfig {
 }
 
 const DEFAULT_CONFIG: ConnectivityConfig = {
-  heartbeatInterval: 25000, // 25s
-  heartbeatTimeout: 5000, // 5s
+  heartbeatInterval: 20000, // 20s
+  heartbeatTimeout: 3000, // 3s
   maxRetries: 5,
   baseDelay: 300,
   maxDelay: 10000,
@@ -105,12 +105,14 @@ export class ConnectivityMonitor {
     this.diagnostics.totalAttempts++;
 
     try {
-      // Use actual API endpoints - try EasySite built-in endpoints first, then fallbacks
+      // Health check endpoint with fallbacks
+      const healthEndpoint = process.env.NEXT_PUBLIC_HEALTH_ENDPOINT || '/v1/health';
       const endpoints = [
-      `${window.location.origin}/favicon.ico`, // Static resource (most reliable for EasySite)
-      `${window.location.origin}/`, // Home page
-      'https://httpbin.org/status/200', // Reliable external fallback
-      'https://www.google.com/favicon.ico' // Ultimate fallback
+        `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
+        `${window.location.origin}/favicon.ico`, // Static resource fallback
+        `${window.location.origin}/`, // Home page fallback
+        'https://httpbin.org/status/200', // External fallback
+        'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;
@@ -127,7 +129,7 @@ export class ConnectivityMonitor {
           });
 
           const fetchPromise = fetch(endpoint, {
-            method: 'HEAD',
+            method: endpoint.endsWith('/v1/health') ? 'GET' : 'HEAD',
             mode: endpoint.includes(window.location.origin) ? 'cors' : 'no-cors',
             cache: 'no-cache',
             signal: this.abortController.signal
@@ -275,18 +277,17 @@ export function isOfflineError(error: unknown): boolean {
   return false;
 }
 
-// Exponential backoff with jitter
+// Exponential backoff with full jitter
 export function calculateBackoffDelay(
 attempt: number,
 baseDelay: number = 300,
 maxDelay: number = 10000,
 factor: number = 2)
 : number {
-  const exponentialDelay = baseDelay * Math.pow(factor, attempt);
+  // Full jitter exponential backoff: delay = Math.min(maxDelay, base * 2^(attempt-1))
+  const exponentialDelay = baseDelay * Math.pow(factor, attempt - 1);
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
 
-  // Add jitter (±25% randomization)
-  const jitter = cappedDelay * 0.25 * (Math.random() - 0.5);
-
-  return Math.max(0, cappedDelay + jitter);
+  // Full jitter: random value between 0 and cappedDelay
+  return Math.floor(Math.random() * cappedDelay);
 }
