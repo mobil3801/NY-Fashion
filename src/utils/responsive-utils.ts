@@ -18,13 +18,13 @@ export type Breakpoint = keyof typeof BREAKPOINTS;
  */
 export const getCurrentBreakpoint = (): Breakpoint => {
   const width = window.innerWidth;
-  
+
   if (width >= BREAKPOINTS['2xl']) return '2xl';
   if (width >= BREAKPOINTS.xl) return 'xl';
   if (width >= BREAKPOINTS.lg) return 'lg';
   if (width >= BREAKPOINTS.md) return 'md';
   if (width >= BREAKPOINTS.sm) return 'sm';
-  
+
   return 'sm'; // Default to smallest
 };
 
@@ -54,12 +54,12 @@ export const isDesktopScreen = (): boolean => {
  * Get responsive class names based on current screen size
  */
 export const getResponsiveClasses = (
-  mobile: string = '',
-  tablet: string = '',
-  desktop: string = ''
-): string => {
+mobile: string = '',
+tablet: string = '',
+desktop: string = '')
+: string => {
   const breakpoint = getCurrentBreakpoint();
-  
+
   if (breakpoint === 'sm' || breakpoint === 'md') {
     return mobile;
   } else if (breakpoint === 'lg') {
@@ -73,26 +73,26 @@ export const getResponsiveClasses = (
  * Debounced resize handler
  */
 export const createDebouncedResizeHandler = (
-  callback: () => void,
-  delay: number = 150
-): (() => void) => {
+callback: () => void,
+delay: number = 150)
+: (() => void) => {
   let timeoutId: NodeJS.Timeout;
-  
+
   const cleanup = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
   };
-  
+
   const debouncedHandler = () => {
     cleanup();
     timeoutId = setTimeout(callback, delay);
   };
-  
+
   // Return handler with cleanup
   const handler = () => debouncedHandler();
   (handler as any).cleanup = cleanup;
-  
+
   return handler;
 };
 
@@ -100,9 +100,9 @@ export const createDebouncedResizeHandler = (
  * Hook for responsive behavior with proper cleanup
  */
 export const useResponsiveLayout = (
-  onMobile?: () => void,
-  onDesktop?: () => void
-) => {
+onMobile?: () => void,
+onDesktop?: () => void) =>
+{
   const handleResize = createDebouncedResizeHandler(() => {
     if (isMobileScreen() && onMobile) {
       onMobile();
@@ -133,10 +133,10 @@ export const setResponsiveCSSProperties = (element: HTMLElement) => {
   };
 
   updateProperties();
-  
+
   const handler = createDebouncedResizeHandler(updateProperties);
   window.addEventListener('resize', handler);
-  
+
   return () => {
     window.removeEventListener('resize', handler);
     (handler as any).cleanup();

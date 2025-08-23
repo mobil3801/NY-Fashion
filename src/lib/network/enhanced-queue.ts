@@ -33,10 +33,10 @@ class EnhancedNetworkQueue {
    * Add operation to queue
    */
   enqueue(
-    id: string,
-    operation: () => Promise<any>,
-    options: Partial<Pick<QueueItem, 'priority' | 'maxAttempts' | 'data' | 'onSuccess' | 'onFailure'>> = {}
-  ): void {
+  id: string,
+  operation: () => Promise<any>,
+  options: Partial<Pick<QueueItem, 'priority' | 'maxAttempts' | 'data' | 'onSuccess' | 'onFailure'>> = {})
+  : void {
     // Check queue size limit
     if (this.queue.size >= this.maxQueueSize) {
       // Remove oldest low priority items
@@ -56,7 +56,7 @@ class EnhancedNetworkQueue {
     };
 
     this.queue.set(id, queueItem);
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log(`[NetworkQueue] Enqueued: ${id}, Queue size: ${this.queue.size}`);
     }
@@ -97,7 +97,7 @@ class EnhancedNetworkQueue {
     return {
       size: this.queue.size,
       processing: this.processing,
-      items: Array.from(this.queue.values()).map(item => ({
+      items: Array.from(this.queue.values()).map((item) => ({
         id: item.id,
         priority: item.priority,
         attempts: item.attempts,
@@ -123,11 +123,11 @@ class EnhancedNetworkQueue {
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         const aPriority = priorityOrder[a.priority];
         const bPriority = priorityOrder[b.priority];
-        
+
         if (aPriority !== bPriority) {
           return bPriority - aPriority; // Higher priority first
         }
-        
+
         return a.timestamp - b.timestamp; // Older items first
       });
 
@@ -139,30 +139,30 @@ class EnhancedNetworkQueue {
 
         try {
           const result = await this.executeWithTimeout(item.operation, 30000); // 30s timeout
-          
+
           // Success - remove from queue
           this.queue.delete(item.id);
           item.onSuccess?.(result);
-          
+
           if (process.env.NODE_ENV === 'development') {
             console.log(`[NetworkQueue] Processed successfully: ${item.id}`);
           }
-          
+
         } catch (error) {
           item.attempts++;
-          
+
           if (item.attempts >= item.maxAttempts) {
             // Max attempts reached - remove from queue
             this.queue.delete(item.id);
             item.onFailure?.(error as Error);
-            
+
             if (process.env.NODE_ENV === 'development') {
               console.error(`[NetworkQueue] Max attempts reached for: ${item.id}`, error);
             }
           } else {
             // Update attempt count
             this.queue.set(item.id, item);
-            
+
             if (process.env.NODE_ENV === 'development') {
               console.warn(`[NetworkQueue] Retry ${item.attempts}/${item.maxAttempts} for: ${item.id}`, error);
             }
@@ -170,9 +170,9 @@ class EnhancedNetworkQueue {
         }
 
         // Small delay between requests to avoid overwhelming
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      
+
     } finally {
       this.processing = false;
     }
@@ -182,23 +182,23 @@ class EnhancedNetworkQueue {
    * Execute operation with timeout
    */
   private async executeWithTimeout<T>(
-    operation: () => Promise<T>, 
-    timeout: number
-  ): Promise<T> {
+  operation: () => Promise<T>,
+  timeout: number)
+  : Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error('Operation timed out'));
       }, timeout);
 
-      operation()
-        .then((result) => {
-          clearTimeout(timer);
-          resolve(result);
-        })
-        .catch((error) => {
-          clearTimeout(timer);
-          reject(error);
-        });
+      operation().
+      then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      }).
+      catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
     });
   }
 
@@ -206,10 +206,10 @@ class EnhancedNetworkQueue {
    * Remove oldest low priority items
    */
   private removeOldestLowPriorityItems(count: number): void {
-    const lowPriorityItems = Array.from(this.queue.entries())
-      .filter(([_, item]) => item.priority === 'low')
-      .sort(([_, a], [__, b]) => a.timestamp - b.timestamp)
-      .slice(0, count);
+    const lowPriorityItems = Array.from(this.queue.entries()).
+    filter(([_, item]) => item.priority === 'low').
+    sort(([_, a], [__, b]) => a.timestamp - b.timestamp).
+    slice(0, count);
 
     for (const [id] of lowPriorityItems) {
       this.queue.delete(id);
@@ -226,7 +226,7 @@ class EnhancedNetworkQueue {
   clear(): void {
     const size = this.queue.size;
     this.queue.clear();
-    
+
     if (size > 0 && process.env.NODE_ENV === 'development') {
       console.log(`[NetworkQueue] Cleared ${size} items`);
     }
@@ -236,11 +236,11 @@ class EnhancedNetworkQueue {
    * Retry failed operations
    */
   retryFailed(): void {
-    const failedItems = Array.from(this.queue.values())
-      .filter(item => item.attempts > 0)
-      .map(item => ({ ...item, attempts: 0 }));
+    const failedItems = Array.from(this.queue.values()).
+    filter((item) => item.attempts > 0).
+    map((item) => ({ ...item, attempts: 0 }));
 
-    failedItems.forEach(item => {
+    failedItems.forEach((item) => {
       this.queue.set(item.id, item);
     });
 
@@ -255,10 +255,10 @@ export const networkQueue = EnhancedNetworkQueue.getInstance();
 
 // Utility functions
 export const enqueueOperation = (
-  id: string,
-  operation: () => Promise<any>,
-  options?: Parameters<typeof networkQueue.enqueue>[2]
-) => {
+id: string,
+operation: () => Promise<any>,
+options?: Parameters<typeof networkQueue.enqueue>[2]) =>
+{
   networkQueue.enqueue(id, operation, options);
 };
 

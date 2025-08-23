@@ -83,6 +83,8 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
           description: "Successfully reconnected to the server.",
           variant: "default"
         });
+      }).catch((error) => {
+        console.warn('Failed to load toast notification:', error);
       });
     }
   });
@@ -175,6 +177,8 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
             description,
             variant: "default"
           });
+        }).catch((error) => {
+          console.warn('Failed to show connection restored notification:', error);
         });
 
         // Clear error details on successful reconnection
@@ -249,6 +253,10 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
           description: errorDetails.userMessage,
           variant: "destructive"
         });
+      }).catch((toastError) => {
+        console.warn('Failed to show retry failed notification:', toastError);
+        // Fallback to console error for debugging
+        console.error('Retry failed:', error);
       });
     }
   }, [monitor, status.online, executeWithRetry]);

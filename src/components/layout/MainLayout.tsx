@@ -4,6 +4,8 @@ import DebugFloatingButton from '@/components/debug/DebugFloatingButton';
 import ConnectionQualityIndicator from '@/components/network/ConnectionQualityIndicator';
 import { OfflineBanner } from '@/components/network/OfflineBanner';
 import EnhancedNetworkErrorBoundary from '@/components/network/EnhancedNetworkErrorBoundary';
+import SafeErrorBoundary from '@/components/network/SafeErrorBoundary';
+import ContentLoader from '@/components/common/ContentLoader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -100,12 +102,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
   }
 
   return (
-    <EnhancedNetworkErrorBoundary>
+    <SafeErrorBoundary
+      resetKeys={[isMobile, sidebarOpen]}
+      resetOnPropsChange={false}
+      onError={(error, errorInfo) => {
+        console.error('[MainLayout] Critical error detected:', error);
+        console.error('[MainLayout] Component stack:', errorInfo.componentStack);
+      }}>
+
+      <EnhancedNetworkErrorBoundary>
 
 
 
-      <div
-        className={`flex h-screen bg-gray-50 ${className}`.trim()}>
+        <div
+          className={`flex h-screen bg-gray-50 ${className}`.trim()}>
 
 
 
@@ -117,9 +127,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
         
         {/* Sidebar with proper mobile handling */}
         <Sidebar
-          isOpen={isMobile ? sidebarOpen : true}
-          onClose={closeSidebar}
-          className={`
+            isOpen={isMobile ? sidebarOpen : true}
+            onClose={closeSidebar}
+            className={`
             ${isMobile ? 'lg:translate-x-0' : ''}
             transition-transform duration-200 ease-in-out
           `.trim()} />
@@ -129,7 +139,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
         {/* Main content wrapper with responsive margins */}
         <div
-          className={`
+            className={`
             flex flex-col flex-1
             ${isMobile ? 'ml-0' : 'lg:ml-0'}
             transition-all duration-200 ease-in-out
@@ -139,75 +149,33 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
           {/* Header with enhanced props */}
           <Header
-            onToggleSidebar={toggleSidebar}
-            sidebarOpen={sidebarOpen}
-            isMobile={isMobile} />
+              onToggleSidebar={toggleSidebar}
+              sidebarOpen={sidebarOpen}
+              isMobile={isMobile} />
 
 
 
 
           {/* Main content with enhanced error boundary and accessibility */}
           <main
-            className="flex-1 overflow-y-auto p-4 sm:p-6"
-            role="main"
-            aria-label="Main content">
+              className="flex-1 overflow-y-auto p-4 sm:p-6"
+              role="main"
+              aria-label="Main content">
 
 
 
             <EnhancedNetworkErrorBoundary
-              fallback={
-              <div
-                className="flex items-center justify-center h-full min-h-[50vh]">
+                fallback={
+                <ContentLoader
+                  hasError={true}
+                  errorTitle="Content Loading Error"
+                  errorMessage="Failed to load this section. This might be a temporary network issue."
+                  isNetworkError={true}
+                  onRetry={() => window.location.reload()}
+                  onReload={() => window.location.reload()}
+                  className="h-full min-h-[50vh]" />
 
-
-
-                  <div
-                  className="text-center space-y-4 p-6 bg-white rounded-lg shadow-sm max-w-md mx-4">
-
-
-
-                    <div
-                    className="text-3xl text-amber-500">
-
-
-
-                      ⚠️
-                    </div>
-                    <h3
-                    className="text-lg font-semibold text-gray-900">
-
-
-
-                      Content Loading Error
-                    </h3>
-                    <p
-                    className="text-gray-600 text-sm">
-
-
-
-                      Failed to load this section. This might be a temporary network issue.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <button
-                      onClick={() => window.location.reload()}
-                      className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex-1">
-
-
-
-                        Reload Page
-                      </button>
-                      <button
-                      onClick={() => window.history.back()}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors flex-1">
-
-
-
-                        Go Back
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              }>
+                }>
 
 
 
@@ -221,16 +189,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
         {/* Enhanced Network Connection Quality Indicator with accessibility */}
         <div
-          className="fixed bottom-4 left-4 z-40 pointer-events-auto"
-          role="status"
-          aria-live="polite"
-          aria-label="Network connection status">
+            className="fixed bottom-4 left-4 z-40 pointer-events-auto"
+            role="status"
+            aria-live="polite"
+            aria-label="Network connection status">
 
 
 
           <ConnectionQualityIndicator
-            variant="full"
-            showDetails={true} />
+              variant="full"
+              showDetails={true} />
 
 
 
@@ -238,31 +206,33 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
         {/* Debug Tools - Development Only with safe rendering and environment checks */}
         {envConfig.enableDebugTools &&
-        <DebugFloatingButton />
+          <DebugFloatingButton />
 
 
 
-        }
+          }
 
         {/* Mobile Sidebar Overlay */}
         {isMobile && sidebarOpen &&
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={closeSidebar}
-          aria-label="Close sidebar"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              closeSidebar();
-            }
-          }} />
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            onClick={closeSidebar}
+            aria-label="Close sidebar"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                closeSidebar();
+              }
+            }} />
 
 
 
-        }
+          }
       </div>
-    </EnhancedNetworkErrorBoundary>);
+    </EnhancedNetworkErrorBoundary>
+  </SafeErrorBoundary>);
+
 
 };
 

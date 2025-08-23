@@ -80,18 +80,18 @@ class LayoutErrorHandler {
 
   hasRecentErrors(timeWindow: number = 60000): boolean {
     const cutoff = Date.now() - timeWindow;
-    return this.errors.some(error => error.timestamp > cutoff);
+    return this.errors.some((error) => error.timestamp > cutoff);
   }
 
   getErrorsByType(type: LayoutError['type']): LayoutError[] {
-    return this.errors.filter(error => error.type === type);
+    return this.errors.filter((error) => error.type === type);
   }
 }
 
 // Error boundary helper
 export const createErrorBoundaryHandler = (componentName: string) => {
   const errorHandler = LayoutErrorHandler.getInstance();
-  
+
   return {
     logError: (error: Error) => errorHandler.logError(error, 'render', componentName),
     getRecentErrors: () => errorHandler.getRecentErrors(),
