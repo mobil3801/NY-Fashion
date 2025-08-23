@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SettingsDataPersistence from '@/components/settings/SettingsDataPersistence';
+import FileManagementSettings from '@/components/settings/FileManagementSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -334,7 +335,7 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 rounded-2xl">
+        <TabsList className="grid w-full grid-cols-7 rounded-2xl">
           <TabsTrigger value="store" className="rounded-xl">
             <Store className="w-4 h-4 mr-2" />
             Store
@@ -354,6 +355,10 @@ const SettingsPage: React.FC = () => {
           <TabsTrigger value="security" className="rounded-xl">
             <Shield className="w-4 h-4 mr-2" />
             Security
+          </TabsTrigger>
+          <TabsTrigger value="files" className="rounded-xl">
+            <FileText className="w-4 h-4 mr-2" />
+            Files
           </TabsTrigger>
           <TabsTrigger value="system" className="rounded-xl">
             <Database className="w-4 h-4 mr-2" />
@@ -1115,7 +1120,22 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="data">
+        <TabsContent value="files" className="space-y-6">
+          {hasPermission(user?.role || '', 'manage_settings') ?
+          <FileManagementSettings /> :
+
+          <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>You don't have permission to manage file settings</p>
+                </div>
+              </CardContent>
+            </Card>
+          }
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
           <SettingsDataPersistence />
         </TabsContent>
       </Tabs>

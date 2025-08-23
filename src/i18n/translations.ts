@@ -36,7 +36,7 @@ export const translations = {
     // Dashboard
     totalSales: 'Total Sales',
     totalOrders: 'Total Orders',
-    inventory: 'Inventory Items',
-    employees: 'Total Employees'
+    inventoryItems: 'Inventory Items',
+    totalEmployees: 'Total Employees'
   }
 };

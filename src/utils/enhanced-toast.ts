@@ -1,518 +1,390 @@
-
-import { toast } from '@/hooks/use-toast';
+import React from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, CheckCircle, X, Loader2, Undo, Bug, Copy, ExternalLink } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { logger } from '@/utils/production-logger';
+import { PRODUCTION_CONFIG } from '@/config/production';
+import { cn } from '@/lib/utils';
 
-export type ErrorCategory = 'network' | 'validation' | 'permission' | 'business' | 'system' | 'timeout';
-export type ToastPriority = 'low' | 'medium' | 'high' | 'critical';
-
-interface EnhancedToastOptions {
+interface ToastOptions {
   title: string;
   description?: string;
-  category?: ErrorCategory;
-  priority?: ToastPriority;
-  retryAction?: () => void | Promise<void>;
-  undoAction?: () => void | Promise<void>;
-  reportAction?: () => void;
-  helpAction?: () => void;
   duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
   persistent?: boolean;
-  showCopyButton?: boolean;
-  metadata?: Record<string, any>;
+  category?: string;
 }
 
-interface RetryOptions {
-  maxRetries?: number;
-  baseDelay?: number;
-  backoffMultiplier?: number;
-  showProgress?: boolean;
+interface ErrorToastOptions extends Omit<ToastOptions, 'title'> {
+  error?: Error | string;
+  showRetry?: boolean;
+  onRetry?: () => void;
+  errorId?: string;
 }
 
-const errorCategoryConfig = {
-  network: {
-    icon: RefreshCw,
-    color: 'orange',
-    defaultMessage: 'Connection error. Please check your internet connection.',
-    suggestions: [
-    'Check your internet connection',
-    'Try refreshing the page',
-    'Wait a moment and try again']
-
-  },
-  validation: {
-    icon: AlertTriangle,
-    color: 'yellow',
-    defaultMessage: 'Please fix the errors and try again.',
-    suggestions: [
-    'Review the highlighted fields',
-    'Ensure all required information is provided',
-    'Check the format of your input']
-
-  },
-  permission: {
-    icon: X,
-    color: 'red',
-    defaultMessage: 'You don\'t have permission to perform this action.',
-    suggestions: [
-    'Contact your administrator',
-    'Ensure you\'re logged in with the correct account',
-    'Try logging out and back in']
-
-  },
-  business: {
-    icon: AlertTriangle,
-    color: 'blue',
-    defaultMessage: 'This action cannot be completed due to business rules.',
-    suggestions: [
-    'Review the business rules',
-    'Check if prerequisites are met',
-    'Contact support for clarification']
-
-  },
-  system: {
-    icon: Bug,
-    color: 'red',
-    defaultMessage: 'A system error occurred. Please try again.',
-    suggestions: [
-    'Try the action again',
-    'Refresh the page',
-    'Contact support if the problem persists']
-
-  },
-  timeout: {
-    icon: Loader2,
-    color: 'gray',
-    defaultMessage: 'The request took too long to complete.',
-    suggestions: [
-    'Try again with a smaller request',
-    'Check your connection speed',
-    'Wait a moment and retry']
-
+class EnhancedToast {
+  private toastHook: ReturnType<typeof useToast> | null = null;
+  
+  // Initialize toast hook (called from a React component)
+  initialize(toastHook: ReturnType<typeof useToast>) {
+    this.toastHook = toastHook;
   }
-};
 
-const priorityConfig = {
-  low: { duration: 3000, persistent: false },
-  medium: { duration: 5000, persistent: false },
-  high: { duration: 8000, persistent: false },
-  critical: { duration: 0, persistent: true }
-};
-
-class EnhancedToastManager {
-  private static instance: EnhancedToastManager;
-  private activeToasts = new Map<string, any>();
-  private retryStates = new Map<string, {count: number;maxRetries: number;}>();
-
-  static getInstance(): EnhancedToastManager {
-    if (!this.instance) {
-      this.instance = new EnhancedToastManager();
+  private getToast() {
+    if (!this.toastHook) {
+      // Fallback to console logging if toast hook not available
+      return null;
     }
-    return this.instance;
+    return this.toastHook;
   }
 
-  private generateId(): string {
-    return `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  showErrorToast(message: string, options: ErrorToastOptions = {}) {
+    const toast = this.getToast();
+    
+    const errorMessage = this.formatErrorMessage(message, options.error);
+    const errorCategory = this.categorizeError(message, options.error);
+    
+    logger.logError('Toast error displayed', options.error, {
+      message,
+      category: errorCategory,
+      errorId: options.errorId
+    });
+
+    if (!toast) {
+      console.error(`[TOAST ERROR] ${errorMessage}`);
+      return;
+    }
+
+    const toastConfig: any = {
+      title: "Error",
+      description: errorMessage,
+      variant: "destructive" as const,
+      duration: options.persistent ? Infinity : (options.duration || 5000),
+    };
+
+    if (options.showRetry && options.onRetry) {
+      toastConfig.action = React.createElement(Button, {
+        variant: "outline",
+        size: "sm",
+        onClick: options.onRetry,
+        className: "ml-2"
+      }, "Retry");
+    } else if (options.action) {
+      toastConfig.action = React.createElement(Button, {
+        variant: "outline",
+        size: "sm",
+        onClick: options.action.onClick,
+        className: "ml-2"
+      }, options.action.label);
+    }
+
+    toast.toast(toastConfig);
+    
+    // Log to production monitoring if enabled
+    if (PRODUCTION_CONFIG.monitoring.enableErrorTracking) {
+      this.sendErrorTelemetry(errorMessage, options.error, errorCategory);
+    }
   }
 
-  private getErrorConfig(category: ErrorCategory) {
-    return errorCategoryConfig[category] || errorCategoryConfig.system;
+  showSuccessToast(message: string, options: Omit<ToastOptions, 'title'> = {}) {
+    const toast = this.getToast();
+    
+    logger.logInfo('Success toast displayed', { message, category: options.category });
+
+    if (!toast) {
+      console.log(`[TOAST SUCCESS] ${message}`);
+      return;
+    }
+
+    const toastConfig: any = {
+      title: "Success",
+      description: message,
+      variant: "default",
+      duration: options.duration || 3000,
+      className: "border-green-200 bg-green-50 text-green-800",
+    };
+
+    if (options.action) {
+      toastConfig.action = React.createElement(Button, {
+        variant: "outline",
+        size: "sm",
+        onClick: options.action.onClick,
+        className: "ml-2"
+      }, options.action.label);
+    }
+
+    toast.toast(toastConfig);
   }
 
-  private async copyToClipboard(text: string): Promise<boolean> {
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        return true;
+  showWarningToast(message: string, options: Omit<ToastOptions, 'title'> = {}) {
+    const toast = this.getToast();
+    
+    logger.logWarn('Warning toast displayed', { message, category: options.category });
+
+    if (!toast) {
+      console.warn(`[TOAST WARNING] ${message}`);
+      return;
+    }
+
+    const toastConfig: any = {
+      title: "Warning",
+      description: message,
+      variant: "default",
+      duration: options.duration || 4000,
+      className: "border-yellow-200 bg-yellow-50 text-yellow-800",
+    };
+
+    if (options.action) {
+      toastConfig.action = React.createElement(Button, {
+        variant: "outline",
+        size: "sm",
+        onClick: options.action.onClick,
+        className: "ml-2"
+      }, options.action.label);
+    }
+
+    toast.toast(toastConfig);
+  }
+
+  showInfoToast(message: string, options: Omit<ToastOptions, 'title'> = {}) {
+    const toast = this.getToast();
+    
+    logger.logInfo('Info toast displayed', { message, category: options.category });
+
+    if (!toast) {
+      console.info(`[TOAST INFO] ${message}`);
+      return;
+    }
+
+    const toastConfig: any = {
+      title: "Information",
+      description: message,
+      variant: "default",
+      duration: options.duration || 3000,
+      className: "border-blue-200 bg-blue-50 text-blue-800",
+    };
+
+    if (options.action) {
+      toastConfig.action = React.createElement(Button, {
+        variant: "outline",
+        size: "sm",
+        onClick: options.action.onClick,
+        className: "ml-2"
+      }, options.action.label);
+    }
+
+    toast.toast(toastConfig);
+  }
+
+  showLoadingToast(message: string, options: Omit<ToastOptions, 'title'> = {}) {
+    const toast = this.getToast();
+    
+    if (!toast) {
+      console.log(`[TOAST LOADING] ${message}`);
+      return null;
+    }
+
+    const { dismiss } = toast.toast({
+      title: "Loading",
+      description: message,
+      variant: "default",
+      duration: Infinity,
+      className: "border-gray-200 bg-gray-50",
+    });
+
+    return {
+      dismiss,
+      update: (newMessage: string) => {
+        dismiss();
+        return this.showLoadingToast(newMessage, options);
       }
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-      return false;
-    }
+    };
   }
 
-  private createActionsElement(options: EnhancedToastOptions, toastId: string) {
-    const actions = [];
-
-    // Retry Action
-    if (options.retryAction) {
-      actions.push(
-        React.createElement(Button, {
-          key: "retry",
-          variant: "outline",
-          size: "sm",
-          onClick: async () => {
-            try {
-              await options.retryAction!();
-            } catch (error) {
-              console.error('Retry failed:', error);
-            }
-          }
-        },
-        React.createElement(RefreshCw, { className: "h-3 w-3 mr-1" }),
-        "Retry"
-        )
-      );
-    }
-
-    // Undo Action
-    if (options.undoAction) {
-      actions.push(
-        React.createElement(Button, {
-          key: "undo",
-          variant: "outline",
-          size: "sm",
-          onClick: async () => {
-            try {
-              await options.undoAction!();
-              this.dismiss(toastId);
-            } catch (error) {
-              console.error('Undo failed:', error);
-            }
-          }
-        },
-        React.createElement(Undo, { className: "h-3 w-3 mr-1" }),
-        "Undo"
-        )
-      );
-    }
-
-    // Copy Button
-    if (options.showCopyButton) {
-      actions.push(
-        React.createElement(Button, {
-          key: "copy",
-          variant: "outline",
-          size: "sm",
-          onClick: async () => {
-            const content = {
-              title: options.title,
-              description: options.description,
-              category: options.category,
-              timestamp: new Date().toISOString(),
-              metadata: options.metadata
-            };
-
-            const success = await this.copyToClipboard(JSON.stringify(content, null, 2));
-            if (success) {
-              this.success({
-                title: 'Copied',
-                description: 'Error details copied to clipboard',
-                duration: 2000
-              });
-            }
-          }
-        },
-        React.createElement(Copy, { className: "h-3 w-3 mr-1" }),
-        "Copy"
-        )
-      );
-    }
-
-    // Report Action
-    if (options.reportAction) {
-      actions.push(
-        React.createElement(Button, {
-          key: "report",
-          variant: "outline",
-          size: "sm",
-          onClick: options.reportAction
-        },
-        React.createElement(Bug, { className: "h-3 w-3 mr-1" }),
-        "Report"
-        )
-      );
-    }
-
-    // Help Action
-    if (options.helpAction) {
-      actions.push(
-        React.createElement(Button, {
-          key: "help",
-          variant: "outline",
-          size: "sm",
-          onClick: options.helpAction
-        },
-        React.createElement(ExternalLink, { className: "h-3 w-3 mr-1" }),
-        "Help"
-        )
-      );
-    }
-
-    return actions.length > 0 ?
-    React.createElement("div", { className: "flex gap-2 mt-2" }, ...actions) :
-    undefined;
-  }
-
-  private createDescriptionElement(options: EnhancedToastOptions) {
-    const config = options.category ? this.getErrorConfig(options.category) : null;
-
-    return React.createElement("div", null,
-    React.createElement("div", null, options.description),
-    config && config.suggestions &&
-    React.createElement("div", { className: "mt-2 text-xs" },
-    React.createElement("div", { className: "font-medium" }, "Suggestions:"),
-    React.createElement("ul", { className: "list-disc list-inside mt-1" },
-    config.suggestions.slice(0, 2).map((suggestion, index) =>
-    React.createElement("li", { key: index }, suggestion)
-    )
-    )
-    )
+  showNetworkErrorToast(error?: Error | string, options: Omit<ErrorToastOptions, 'error'> = {}) {
+    this.showErrorToast(
+      "Network connection error. Please check your internet connection.",
+      {
+        ...options,
+        error,
+        showRetry: true,
+        category: 'network',
+        onRetry: options.onRetry || (() => window.location.reload())
+      }
     );
   }
 
-  success(options: Partial<EnhancedToastOptions>) {
-    const toastId = this.generateId();
-    const config = priorityConfig[options.priority || 'medium'];
-
-    const toastInstance = toast({
-      title: options.title || 'Success',
-      description: options.description,
-      duration: options.duration ?? config.duration,
-      action: this.createActionsElement(options as EnhancedToastOptions, toastId)
+  showApiErrorToast(error?: Error | string, options: Omit<ErrorToastOptions, 'error'> = {}) {
+    const message = this.getApiErrorMessage(error);
+    
+    this.showErrorToast(message, {
+      ...options,
+      error,
+      category: 'api',
+      showRetry: true
     });
-
-    this.activeToasts.set(toastId, toastInstance);
-    return toastId;
   }
 
-  error(options: EnhancedToastOptions) {
-    const toastId = this.generateId();
-    const config = priorityConfig[options.priority || 'high'];
-    const errorConfig = options.category ? this.getErrorConfig(options.category) : null;
-
-    const toastInstance = toast({
-      title: options.title,
-      description: this.createDescriptionElement(options),
-      variant: 'destructive',
-      duration: options.duration ?? config.duration,
-      action: this.createActionsElement(options, toastId)
-    });
-
-    this.activeToasts.set(toastId, toastInstance);
-    return toastId;
-  }
-
-  warning(options: Partial<EnhancedToastOptions>) {
-    const toastId = this.generateId();
-    const config = priorityConfig[options.priority || 'medium'];
-
-    const toastInstance = toast({
-      title: options.title || 'Warning',
-      description: options.description,
-      duration: options.duration ?? config.duration,
-      action: this.createActionsElement(options as EnhancedToastOptions, toastId)
-    });
-
-    this.activeToasts.set(toastId, toastInstance);
-    return toastId;
-  }
-
-  info(options: Partial<EnhancedToastOptions>) {
-    const toastId = this.generateId();
-    const config = priorityConfig[options.priority || 'low'];
-
-    const toastInstance = toast({
-      title: options.title || 'Information',
-      description: options.description,
-      duration: options.duration ?? config.duration,
-      action: this.createActionsElement(options as EnhancedToastOptions, toastId)
-    });
-
-    this.activeToasts.set(toastId, toastInstance);
-    return toastId;
-  }
-
-  async retryWithBackoff(
-  action: () => Promise<void>,
-  options: RetryOptions & Partial<EnhancedToastOptions> = {})
-  : Promise<void> {
-    const {
-      maxRetries = 3,
-      baseDelay = 1000,
-      backoffMultiplier = 2,
-      showProgress = true,
-      ...toastOptions
-    } = options;
-
-    let currentRetry = 0;
-    let delay = baseDelay;
-    let toastId: string | null = null;
-
-    while (currentRetry < maxRetries) {
-      try {
-        if (showProgress && currentRetry > 0) {
-          if (toastId) this.dismiss(toastId);
-
-          toastId = this.info({
-            title: `Retrying... (${currentRetry}/${maxRetries})`,
-            description: 'Please wait while we retry the operation.',
-            persistent: true,
-            ...toastOptions
-          });
-        }
-
-        await action();
-
-        if (toastId) this.dismiss(toastId);
-
-        if (currentRetry > 0) {
-          this.success({
-            title: 'Success',
-            description: 'Operation completed successfully after retry.',
-            ...toastOptions
-          });
-        }
-
-        return;
-
-      } catch (error) {
-        currentRetry++;
-
-        if (currentRetry >= maxRetries) {
-          if (toastId) this.dismiss(toastId);
-
-          this.error({
-            title: 'Operation Failed',
-            description: `Failed after ${maxRetries} attempts. ${error instanceof Error ? error.message : 'Unknown error'}`,
-            category: 'system',
-            priority: 'high',
-            retryAction: () => this.retryWithBackoff(action, options),
-            showCopyButton: true,
-            metadata: {
-              attempts: maxRetries,
-              lastError: error instanceof Error ? error.message : 'Unknown error',
-              timestamp: new Date().toISOString()
-            },
-            ...toastOptions
-          });
-
-          throw error;
-        }
-
-        // Wait before next retry
-        await new Promise((resolve) => setTimeout(resolve, delay));
-        delay *= backoffMultiplier;
-      }
+  showValidationErrorToast(errors: string[] | Record<string, string>) {
+    let message: string;
+    
+    if (Array.isArray(errors)) {
+      message = errors.join(', ');
+    } else {
+      message = Object.values(errors).join(', ');
     }
-  }
-
-  optimisticUpdate<T>(
-  optimisticAction: () => T,
-  actualAction: () => Promise<T>,
-  rollbackAction: () => void,
-  options: Partial<EnhancedToastOptions> = {})
-  : Promise<T> {
-    return new Promise((resolve, reject) => {
-      try {
-        // Apply optimistic update
-        const optimisticResult = optimisticAction();
-
-        // Show optimistic success with undo option
-        const toastId = this.success({
-          title: options.title || 'Updated',
-          description: options.description || 'Changes have been applied.',
-          undoAction: () => {
-            rollbackAction();
-            this.info({
-              title: 'Changes Reverted',
-              description: 'Your changes have been undone.',
-              duration: 3000
-            });
-          },
-          ...options
-        });
-
-        // Perform actual action
-        actualAction().
-        then((result) => {
-          this.dismiss(toastId);
-          resolve(result);
-        }).
-        catch((error) => {
-          // Rollback on error
-          rollbackAction();
-          this.dismiss(toastId);
-
-          this.error({
-            title: 'Update Failed',
-            description: `The update could not be completed. ${error instanceof Error ? error.message : 'Unknown error'}`,
-            category: 'system',
-            retryAction: () => this.optimisticUpdate(optimisticAction, actualAction, rollbackAction, options),
-            ...options
-          });
-
-          reject(error);
-        });
-
-      } catch (error) {
-        this.error({
-          title: 'Update Error',
-          description: `Failed to apply optimistic update. ${error instanceof Error ? error.message : 'Unknown error'}`,
-          category: 'system',
-          ...options
-        });
-        reject(error);
-      }
+    
+    this.showErrorToast("Please fix the following issues:", {
+      description: message,
+      category: 'validation'
     });
   }
 
-  dismiss(toastId: string) {
-    const toastInstance = this.activeToasts.get(toastId);
-    if (toastInstance && toastInstance.dismiss) {
-      toastInstance.dismiss();
-      this.activeToasts.delete(toastId);
+  private formatErrorMessage(message: string, error?: Error | string): string {
+    if (!error) return message;
+    
+    if (typeof error === 'string') {
+      return `${message}: ${error}`;
     }
+    
+    if (error instanceof Error) {
+      // Don't expose technical error details in production
+      if (PRODUCTION_CONFIG.development.enableDebugMode) {
+        return `${message}: ${error.message}`;
+      }
+      
+      // Return user-friendly message in production
+      return this.getUserFriendlyMessage(error, message);
+    }
+    
+    return message;
   }
 
-  dismissAll() {
-    this.activeToasts.forEach((toastInstance) => {
-      if (toastInstance.dismiss) {
-        toastInstance.dismiss();
-      }
-    });
-    this.activeToasts.clear();
+  private getUserFriendlyMessage(error: Error, fallback: string): string {
+    const errorMessage = error.message.toLowerCase();
+    
+    if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      return 'Network connection issue. Please check your internet connection and try again.';
+    }
+    
+    if (errorMessage.includes('timeout')) {
+      return 'Request timed out. Please try again.';
+    }
+    
+    if (errorMessage.includes('unauthorized') || errorMessage.includes('403')) {
+      return 'You don\'t have permission to perform this action.';
+    }
+    
+    if (errorMessage.includes('not found') || errorMessage.includes('404')) {
+      return 'The requested resource was not found.';
+    }
+    
+    if (errorMessage.includes('server') || errorMessage.includes('500')) {
+      return 'Server error. Please try again later.';
+    }
+    
+    return fallback;
+  }
+
+  private getApiErrorMessage(error?: Error | string): string {
+    if (!error) return 'An unexpected error occurred.';
+    
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    if (error instanceof Error) {
+      return this.getUserFriendlyMessage(error, 'API request failed. Please try again.');
+    }
+    
+    return 'An unexpected error occurred.';
+  }
+
+  categorizeError(message: string, error?: Error | string): string {
+    if (!error) return 'general';
+    
+    const errorText = (typeof error === 'string' ? error : error.message || '').toLowerCase();
+    
+    if (errorText.includes('network') || errorText.includes('fetch') || errorText.includes('connection')) {
+      return 'network';
+    }
+    
+    if (errorText.includes('timeout')) {
+      return 'timeout';
+    }
+    
+    if (errorText.includes('auth') || errorText.includes('unauthorized') || errorText.includes('forbidden')) {
+      return 'auth';
+    }
+    
+    if (errorText.includes('validation') || errorText.includes('invalid')) {
+      return 'validation';
+    }
+    
+    if (errorText.includes('server') || errorText.includes('500')) {
+      return 'server';
+    }
+    
+    if (errorText.includes('not found') || errorText.includes('404')) {
+      return 'not_found';
+    }
+    
+    return 'general';
+  }
+
+  private async sendErrorTelemetry(message: string, error?: Error | string, category = 'general') {
+    try {
+      // In a real production environment, send this to your error tracking service
+      const errorData = {
+        message,
+        error: typeof error === 'string' ? error : error?.message,
+        category,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        userId: (logger as any).userId // Assuming logger has userId
+      };
+      
+      // For now, we'll use the production logger
+      logger.logError('Toast error telemetry', errorData, { category: 'toast_error' });
+      
+    } catch (telemetryError) {
+      logger.logError('Failed to send error telemetry', telemetryError);
+    }
   }
 }
 
-// Export singleton instance
-export const enhancedToast = EnhancedToastManager.getInstance();
+// Create singleton instance
+export const enhancedToast = new EnhancedToast();
 
-// Convenience functions
-export const showErrorToast = (options: EnhancedToastOptions) => enhancedToast.error(options);
-export const showSuccessToast = (options: Partial<EnhancedToastOptions>) => enhancedToast.success(options);
-export const showWarningToast = (options: Partial<EnhancedToastOptions>) => enhancedToast.warning(options);
-export const showInfoToast = (options: Partial<EnhancedToastOptions>) => enhancedToast.info(options);
-
-// Error categorization helper
-export const categorizeError = (error: unknown): ErrorCategory => {
-  if (error instanceof Error) {
-    const message = error.message.toLowerCase();
-
-    if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
-      return 'network';
-    }
-    if (message.includes('timeout') || message.includes('timed out')) {
-      return 'timeout';
-    }
-    if (message.includes('permission') || message.includes('unauthorized') || message.includes('forbidden')) {
-      return 'permission';
-    }
-    if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
-      return 'validation';
-    }
-    if (message.includes('business') || message.includes('rule')) {
-      return 'business';
-    }
-  }
-
-  return 'system';
+// React hook for using enhanced toast
+export const useEnhancedToast = () => {
+  const toastHook = useToast();
+  
+  // Initialize the enhanced toast with the hook
+  React.useEffect(() => {
+    enhancedToast.initialize(toastHook);
+  }, [toastHook]);
+  
+  return {
+    showError: enhancedToast.showErrorToast.bind(enhancedToast),
+    showSuccess: enhancedToast.showSuccessToast.bind(enhancedToast),
+    showWarning: enhancedToast.showWarningToast.bind(enhancedToast),
+    showInfo: enhancedToast.showInfoToast.bind(enhancedToast),
+    showLoading: enhancedToast.showLoadingToast.bind(enhancedToast),
+    showNetworkError: enhancedToast.showNetworkErrorToast.bind(enhancedToast),
+    showApiError: enhancedToast.showApiErrorToast.bind(enhancedToast),
+    showValidationError: enhancedToast.showValidationErrorToast.bind(enhancedToast)
+  };
 };
+
+// Convenience functions for use outside React components
+export const showErrorToast = enhancedToast.showErrorToast.bind(enhancedToast);
+export const showSuccessToast = enhancedToast.showSuccessToast.bind(enhancedToast);
+export const showWarningToast = enhancedToast.showWarningToast.bind(enhancedToast);
+export const showInfoToast = enhancedToast.showInfoToast.bind(enhancedToast);
+
+export default enhancedToast;

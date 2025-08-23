@@ -15,6 +15,7 @@ import { useEmployee } from '@/contexts/EmployeeContext';
 import { PhotoId } from '@/types/employee';
 import { useAuth } from '@/contexts/AuthContext';
 import { hasPermission } from '@/utils/permissions';
+import { toast } from '@/hooks/use-toast';
 
 interface PhotoIdManagementProps {
   employeeId: number;
@@ -75,9 +76,53 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
   const onDropFront = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      // In a real implementation, upload to EasySite Storage with proper security
-      const url = URL.createObjectURL(file);
-      setFrontImage(url);
+      try {
+        // Validate file
+        const validationResult = await window.ezsite.apis.run({
+          path: 'validateFileUpload',
+          param: [file, 'employee_photo']
+        });
+
+        if (validationResult.error) {
+          toast({
+            title: "Validation Error",
+            description: validationResult.error,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Upload to EasySite Storage
+        const uploadResult = await window.ezsite.apis.upload({
+          filename: `employee_${employeeId}_front_${Date.now()}.${file.name.split('.').pop()}`,
+          file: file
+        });
+
+        if (uploadResult.error) {
+          throw new Error(uploadResult.error);
+        }
+
+        // Get file URL
+        const urlResult = await window.ezsite.apis.getUploadUrl(uploadResult.data);
+        if (urlResult.error) {
+          throw new Error(urlResult.error);
+        }
+
+        setFrontImage(urlResult.data);
+        setFormData((prev) => ({ ...prev, front_file_id: uploadResult.data }));
+
+        toast({
+          title: "Success",
+          description: "Front image uploaded successfully"
+        });
+
+      } catch (error: any) {
+        toast({
+          title: "Upload Error",
+          description: error.message || "Failed to upload front image",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -92,8 +137,53 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
   const onDropBack = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setBackImage(url);
+      try {
+        // Validate file
+        const validationResult = await window.ezsite.apis.run({
+          path: 'validateFileUpload',
+          param: [file, 'employee_photo']
+        });
+
+        if (validationResult.error) {
+          toast({
+            title: "Validation Error",
+            description: validationResult.error,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Upload to EasySite Storage
+        const uploadResult = await window.ezsite.apis.upload({
+          filename: `employee_${employeeId}_back_${Date.now()}.${file.name.split('.').pop()}`,
+          file: file
+        });
+
+        if (uploadResult.error) {
+          throw new Error(uploadResult.error);
+        }
+
+        // Get file URL
+        const urlResult = await window.ezsite.apis.getUploadUrl(uploadResult.data);
+        if (urlResult.error) {
+          throw new Error(urlResult.error);
+        }
+
+        setBackImage(urlResult.data);
+        setFormData((prev) => ({ ...prev, back_file_id: uploadResult.data }));
+
+        toast({
+          title: "Success",
+          description: "Back image uploaded successfully"
+        });
+
+      } catch (error: any) {
+        toast({
+          title: "Upload Error",
+          description: error.message || "Failed to upload back image",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -106,19 +196,49 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
 
   const handleSubmit = async () => {
     if (!frontImage) {
-      alert('Front image is required');
+      toast({
+        title: "Validation Error",
+        description: "Front image is required",
+        variant: "destructive"
+      });
       return;
     }
 
     try {
-      await savePhotoId({
-        ...formData,
-        front_image_url: frontImage,
-        back_image_url: backImage
+      const result = await window.ezsite.apis.run({
+        path: 'uploadEmployeePhoto',
+        param: [
+        employeeId,
+        formData,
+        {
+          frontImageUrl: frontImage,
+          backImageUrl: backImage,
+          frontFileId: formData.front_file_id,
+          backFileId: formData.back_file_id
+        }]
+
       });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      toast({
+        title: "Success",
+        description: result.data.message
+      });
+
       handleCloseDialog();
-    } catch (error) {
-      console.error('Failed to save photo ID:', error);
+
+      // Refresh the photo IDs list
+      window.location.reload();
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save photo ID",
+        variant: "destructive"
+      });
     }
   };
 

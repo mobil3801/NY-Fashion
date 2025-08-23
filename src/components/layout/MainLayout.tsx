@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import DebugFloatingButton from '@/components/debug/DebugFloatingButton';
-import ConnectionQualityIndicator from '@/components/network/ConnectionQualityIndicator';
+import { ConnectionQualityIndicator } from '@/components/network/ConnectionQualityIndicator';
 import { OfflineBanner } from '@/components/network/OfflineBanner';
 import EnhancedNetworkErrorBoundary from '@/components/network/EnhancedNetworkErrorBoundary';
 import { SkipLink } from '@/components/ui/skip-link';

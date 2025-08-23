@@ -8,15 +8,24 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { RetryBanner } from '@/components/ui/retry-banner';
+import LoadingState from '@/components/common/LoadingState';
+import ProductionErrorBoundary from '@/components/common/ProductionErrorBoundary';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import { useApiRetry, type RetryContext } from '@/hooks/use-api-retry';
-import { normalizeError, getUserFriendlyMessage, logApiEvent, type ApiError } from '@/lib/errors';
+import productionApi from '@/services/api';
+import PRODUCTION_CONFIG from '@/config/production';
+import { dataSyncManager } from '@/utils/data-sync';
+import { performanceMonitor } from '@/utils/performance-monitor';
+import useLoadingState from '@/hooks/use-loading-state';
+import {
+  logger,
+  logUserAction,
+  logBusinessMetric } from
+'@/utils/production-logger';
 import {
   TrendingUp, TrendingDown, ShoppingBag, Package, Users, AlertTriangle,
   DollarSign, BarChart3, PieChart, Calendar as CalendarIcon, RefreshCw,
-  ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
+  ArrowUpIcon, ArrowDownIcon, Activity } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar } from 'recharts';

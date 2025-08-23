@@ -2,6 +2,16 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Employee, PhotoId, TimeEntry, TimeTrackingStatus, EmployeeFilters, EmployeePagination } from '@/types/employee';
 import { useToast } from '@/hooks/use-toast';
+import productionApi from '@/services/api';
+import PRODUCTION_CONFIG from '@/config/production';
+import {
+  logger,
+  logDatabaseOperation,
+  logUserAction,
+  logBusinessMetric } from
+'@/utils/production-logger';
+import { validateEmployee } from '@/utils/validation-schemas';
+import useLoadingState from '@/hooks/use-loading-state';
 
 interface EmployeeContextType {
   // State

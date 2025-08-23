@@ -1,27 +1,52 @@
 
-function reorderProductImages(productId, imageOrders) {
+async function reorderProductImages(productId, imageOrder) {
   try {
-    if (!productId || !imageOrders || !Array.isArray(imageOrders)) {
-      throw new Error('Product ID and image orders array are required');
+    if (!productId) {
+      throw new Error('Product ID is required');
     }
 
-    // Start transaction-like updates
-    for (let i = 0; i < imageOrders.length; i++) {
-      const { imageId, sortOrder } = imageOrders[i];
-
-      const updateQuery = `
-        UPDATE product_images 
-        SET sort_order = $1 
-        WHERE id = $2 AND product_id = $3
-      `;
-
-      window.ezsite.db.query(updateQuery, [sortOrder, parseInt(imageId), parseInt(productId)]);
+    if (!Array.isArray(imageOrder)) {
+      throw new Error('Image order must be an array');
     }
 
-    return {
-      message: 'Image order updated successfully',
-      updatedCount: imageOrders.length
-    };
+    // Validate that all images belong to the product
+    const existingImagesQuery = `
+      SELECT id FROM product_images WHERE product_id = $1
+    `;
+    const existingImages = await window.ezsite.db.query(existingImagesQuery, [parseInt(productId)]);
+    const existingIds = existingImages.map(img => img.id);
+
+    for (const image of imageOrder) {
+      if (!existingIds.includes(image.id)) {
+        throw new Error(`Image ${image.id} does not belong to product ${productId}`);
+      }
+    }
+
+    // Begin transaction
+    await window.ezsite.db.query('BEGIN');
+
+    try {
+      // Update sort orders
+      for (let i = 0; i < imageOrder.length; i++) {
+        const updateQuery = `
+          UPDATE product_images 
+          SET sort_order = $1 
+          WHERE id = $2
+        `;
+        await window.ezsite.db.query(updateQuery, [i, imageOrder[i].id]);
+      }
+
+      await window.ezsite.db.query('COMMIT');
+
+      return {
+        message: 'Images reordered successfully',
+        reorderedCount: imageOrder.length
+      };
+
+    } catch (error) {
+      await window.ezsite.db.query('ROLLBACK');
+      throw error;
+    }
 
   } catch (error) {
     console.error('Reorder product images error:', error);

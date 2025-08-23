@@ -2,6 +2,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PurchaseOrder, Supplier, POReceipt, POInvoice } from '@/types/purchase';
 import { toast } from '@/hooks/use-toast';
+import productionApi from '@/services/api';
+import PRODUCTION_CONFIG from '@/config/production';
+import {
+  logger,
+  logDatabaseOperation,
+  logUserAction,
+  logBusinessMetric } from
+'@/utils/production-logger';
+import useLoadingState from '@/hooks/use-loading-state';
 
 interface PurchaseOrderContextType {
   suppliers: Supplier[];

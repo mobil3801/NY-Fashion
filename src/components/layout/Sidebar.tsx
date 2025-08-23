@@ -12,7 +12,8 @@ import {
   Shield,
   Settings,
   Network,
-  TestTube } from
+  TestTube,
+  Activity } from
 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -80,6 +81,19 @@ const Sidebar: React.FC = () => {
           }>
             <Network className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">{t('debug.title')}</span>
+          </NavLink>
+        }
+        {isAdmin &&
+        <NavLink
+          to="/performance"
+          className={({ isActive }) =>
+          cn(
+            "px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-3 text-gray-700 transition-colors duration-200",
+            isActive && "bg-emerald-100 text-emerald-800"
+          )
+          }>
+            <Activity className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('Performance')}</span>
           </NavLink>
         }
         {isAdmin &&

@@ -1,301 +1,213 @@
 
 import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, Signal, SignalHigh, SignalLow, SignalMedium } from 'lucide-react';
+import { Wifi, WifiOff, Signal, SignalLow, SignalMedium, SignalHigh, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useNetwork } from '@/contexts/NetworkContext';
-import { networkDiagnostics, NetworkDiagnostics } from '@/lib/network/diagnostics';
+import { networkDiagnostics } from '@/lib/network/diagnostics';
 
-interface ConnectionQualityIndicatorProps {
-  variant?: 'full' | 'minimal';
-  showDetails?: boolean;
-}
-
-export function ConnectionQualityIndicator({
-  variant = 'full',
-  showDetails = true
-}: ConnectionQualityIndicatorProps) {
-  const {
-    online,
-    status,
-    connectionState,
-    errorDetails,
-    recoveryInfo,
+export function ConnectionQualityIndicator() {
+  const { 
+    online, 
+    connectionState, 
+    getDiagnostics, 
+    getConnectionQuality,
     retryNow,
-    isAutoRetrying,
-    retryCount
+    isAutoRetrying 
   } = useNetwork();
-  const [quality, setQuality] = useState<'excellent' | 'good' | 'fair' | 'poor' | 'offline'>('offline');
-  const [diagnostics, setDiagnostics] = useState<NetworkDiagnostics | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [diagnostics, setDiagnostics] = useState(getDiagnostics());
+  
+  const quality = getConnectionQuality();
 
   useEffect(() => {
-    let mounted = true;
-
-    const checkQuality = async () => {
-      if (!online) {
-        setQuality('offline');
-        return;
-      }
-
-      try {
-        const [qualityResult, diagnosticsResult] = await Promise.all([
-        networkDiagnostics.getConnectionQuality(),
-        networkDiagnostics.runDiagnostics()]
-        );
-
-        if (mounted) {
-          setQuality(qualityResult);
-          setDiagnostics(diagnosticsResult);
-        }
-      } catch (error) {
-        if (mounted) {
-          setQuality('offline');
-        }
-      }
-    };
-
-    // Check quality on mount and when online status changes
-    checkQuality();
-
-    // Set up periodic checks when online
-    let interval: NodeJS.Timeout | undefined;
-    if (online) {
-      interval = setInterval(checkQuality, 30000); // Check every 30 seconds
+    if (isOpen) {
+      const interval = setInterval(() => {
+        setDiagnostics(getDiagnostics());
+      }, 1000);
+      
+      return () => clearInterval(interval);
     }
-
-    return () => {
-      mounted = false;
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [online]);
-
-  const handleRefresh = async () => {
-    setIsChecking(true);
-    try {
-      await retryNow();
-      const [qualityResult, diagnosticsResult] = await Promise.all([
-      networkDiagnostics.getConnectionQuality(),
-      networkDiagnostics.runDiagnostics()]
-      );
-      setQuality(qualityResult);
-      setDiagnostics(diagnosticsResult);
-    } finally {
-      setIsChecking(false);
-    }
-  };
+  }, [isOpen, getDiagnostics]);
 
   const getQualityIcon = () => {
+    if (!online || connectionState === 'offline') {
+      return <WifiOff className="w-4 h-4" />;
+    }
+    
+    if (connectionState === 'reconnecting') {
+      return <Signal className="w-4 h-4 animate-pulse" />;
+    }
+    
     switch (quality) {
       case 'excellent':
-        return <Signal className="h-4 w-4" />;
+        return <SignalHigh className="w-4 h-4" />;
       case 'good':
-        return <SignalHigh className="h-4 w-4" />;
+        return <SignalHigh className="w-4 h-4" />;
       case 'fair':
-        return <SignalMedium className="h-4 w-4" />;
+        return <SignalMedium className="w-4 h-4" />;
       case 'poor':
-        return <SignalLow className="h-4 w-4" />;
+        return <SignalLow className="w-4 h-4" />;
       default:
-        return <WifiOff className="h-4 w-4" />;
+        return <WifiOff className="w-4 h-4" />;
     }
   };
 
   const getQualityColor = () => {
-    // Override colors based on connection state
-    if (connectionState === 'recovering') {
-      return 'bg-green-100 text-green-800 border-green-200';
-    }
-    if (connectionState === 'reconnecting') {
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-    if (connectionState === 'poor_connection') {
-      return 'bg-orange-100 text-orange-800 border-orange-200';
-    }
-
+    if (!online) return 'destructive';
+    
     switch (quality) {
-      case 'excellent':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'good':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'fair':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'poor':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      default:
-        return 'bg-red-100 text-red-800 border-red-200';
+      case 'excellent': return 'default';
+      case 'good': return 'default';
+      case 'fair': return 'secondary';
+      case 'poor': return 'destructive';
+      default: return 'destructive';
     }
   };
 
   const getQualityText = () => {
-    switch (connectionState) {
-      case 'recovering':
-        return 'Recovering';
-      case 'reconnecting':
-        return 'Reconnecting';
-      case 'poor_connection':
-        return 'Poor Connection';
-      case 'offline':
-        return 'Offline';
-      case 'online':
-        if (!online) return 'Offline';
-        return quality.charAt(0).toUpperCase() + quality.slice(1);
-      default:
-        return 'Unknown';
+    if (!online) return 'Offline';
+    if (connectionState === 'reconnecting') return 'Reconnecting...';
+    if (connectionState === 'recovering') return 'Recovering...';
+    
+    switch (quality) {
+      case 'excellent': return 'Excellent';
+      case 'good': return 'Good';
+      case 'fair': return 'Fair';
+      case 'poor': return 'Poor';
+      default: return 'Unknown';
     }
   };
 
-  if (variant === 'minimal') {
-    return (
-      <Badge
-        variant="outline"
-        className={`${getQualityColor()} text-xs`}>
+  const formatLatency = (ms: number) => {
+    if (ms === 0) return 'N/A';
+    if (ms < 100) return `${Math.round(ms)}ms (Fast)`;
+    if (ms < 300) return `${Math.round(ms)}ms (Good)`;
+    if (ms < 1000) return `${Math.round(ms)}ms (Slow)`;
+    return `${Math.round(ms)}ms (Very Slow)`;
+  };
 
-        <div className="flex items-center gap-1">
-          {getQualityIcon()}
-          {online ? 'Online' : 'Offline'}
-        </div>
-      </Badge>);
-
-  }
+  const formatDuration = (ms: number) => {
+    if (ms === 0) return 'N/A';
+    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
+    return `${Math.round(ms / 60000)}m`;
+  };
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
-          className={`h-8 px-2 ${getQualityColor()}`}>
-
-          <div className="flex items-center gap-2">
-            {getQualityIcon()}
-            <span className="text-xs font-medium">
-              {getQualityText()}
-            </span>
-          </div>
+          className="h-8 px-2 gap-2"
+        >
+          {getQualityIcon()}
+          <Badge variant={getQualityColor()} className="text-xs">
+            {getQualityText()}
+          </Badge>
         </Button>
       </PopoverTrigger>
       
-      {showDetails &&
       <PopoverContent className="w-80" align="end">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium">Connection Status</h4>
-              <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isChecking || isAutoRetrying}
-              className="h-6 px-2"
-              aria-label="Refresh connection status">
-
-                <Wifi className={`h-3 w-3 ${isChecking || isAutoRetrying ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {/* Connection State */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Status:</span>
-                <Badge className={getQualityColor()}>
-                  {getQualityText()}
-                </Badge>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h4 className="font-medium flex items-center gap-2">
+              Network Status
+              {online ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+              )}
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Status:</span>
+                <div className="font-medium">{connectionState}</div>
               </div>
-
-              {/* Error Details */}
-              {errorDetails &&
-            <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Error Type:</span>
-                    <span className="text-sm font-medium capitalize">
-                      {errorDetails.type.replace('_', ' ')}
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                    {errorDetails.userMessage}
-                  </div>
+              
+              <div>
+                <span className="text-muted-foreground">Quality:</span>
+                <div className="font-medium">{getQualityText()}</div>
+              </div>
+              
+              <div>
+                <span className="text-muted-foreground">Latency:</span>
+                <div className="font-medium">{formatLatency(diagnostics.averageLatency)}</div>
+              </div>
+              
+              <div>
+                <span className="text-muted-foreground">Queued:</span>
+                <div className="font-medium">
+                  {diagnostics.queuedOperations} operation{diagnostics.queuedOperations !== 1 ? 's' : ''}
                 </div>
-            }
-
-              {/* Recovery Info */}
-              {recoveryInfo &&
-            <div className="space-y-2 bg-green-50 p-2 rounded">
-                  <div className="text-xs text-green-700 font-medium">
-                    Connection Recovered
-                  </div>
-                  <div className="text-xs text-green-600">
-                    Offline for: {recoveryInfo.wasOfflineFor > 60000 ?
-                `${Math.round(recoveryInfo.wasOfflineFor / 60000)} min` :
-                `${Math.round(recoveryInfo.wasOfflineFor / 1000)} sec`}
-                  </div>
-                </div>
-            }
-
-              {/* Retry Information */}
-              {retryCount > 0 &&
-            <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Retry Attempts:</span>
-                  <span className="text-sm font-medium">{retryCount}</span>
-                </div>
-            }
-
-              {/* Connection Quality Metrics */}
-              {diagnostics && online &&
-            <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Quality:</span>
-                    <Badge variant={quality === 'excellent' ? 'default' : 'secondary'}>
-                      {quality.charAt(0).toUpperCase() + quality.slice(1)}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Latency:</span>
-                    <span className="text-sm font-medium">
-                      {Math.round(diagnostics.apiTest.latency)}ms
-                    </span>
-                  </div>
-
-                  {diagnostics.effectiveType &&
-              <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Connection:</span>
-                      <span className="text-sm font-medium">
-                        {diagnostics.effectiveType.toUpperCase()}
-                      </span>
-                    </div>
-              }
-
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-gray-500">
-                      {networkDiagnostics.getConnectionAdvice(diagnostics)}
-                    </p>
-                  </div>
-                </>
-            }
-
-              {/* Failure Information */}
-              {status.consecutiveFailures > 0 &&
-            <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Consecutive Failures:</span>
-                  <span className="text-sm font-medium text-red-600">
-                    {status.consecutiveFailures}
-                  </span>
-                </div>
-            }
-
-              {/* Last Check Time */}
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>Last checked:</span>
-                <span>{new Date(status.lastCheck).toLocaleTimeString()}</span>
               </div>
             </div>
           </div>
-        </PopoverContent>
-      }
-    </Popover>);
 
+          <div className="space-y-2">
+            <h5 className="font-medium text-sm">Connection Statistics</h5>
+            <div className="text-xs space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Success Rate:</span>
+                <span>
+                  {diagnostics.totalAttempts > 0 
+                    ? `${Math.round((diagnostics.successfulAttempts / diagnostics.totalAttempts) * 100)}%`
+                    : 'N/A'
+                  }
+                </span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Current Outage:</span>
+                <span>{formatDuration(diagnostics.currentOutageMs)}</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Longest Outage:</span>
+                <span>{formatDuration(diagnostics.longestOutageMs)}</span>
+              </div>
+              
+              {diagnostics.lastConnectedAt && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Connected:</span>
+                  <span>
+                    {diagnostics.lastConnectedAt.toLocaleTimeString()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {!online && (
+            <div className="pt-2 border-t">
+              <Button
+                onClick={() => {
+                  retryNow();
+                  setIsOpen(false);
+                }}
+                disabled={isAutoRetrying}
+                className="w-full"
+                size="sm"
+              >
+                {isAutoRetrying ? (
+                  <>
+                    <Signal className="w-4 h-4 mr-2 animate-pulse" />
+                    Reconnecting...
+                  </>
+                ) : (
+                  <>
+                    <Wifi className="w-4 h-4 mr-2" />
+                    Retry Connection
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
-
-export default ConnectionQualityIndicator;
