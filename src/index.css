@@ -99,23 +99,6 @@
     box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   }
 
-  /* Responsive spacing utilities */
-  .responsive-padding {
-    padding: 1rem;
-  }
-
-  @media (min-width: 640px) {
-    .responsive-padding {
-      padding: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .responsive-padding {
-      padding: 1.5rem 2rem;
-    }
-  }
-
   /* Focus visible improvements for accessibility */
   .focus-visible:focus-visible {
     outline: 2px solid hsl(160 84% 39%);
@@ -175,65 +158,6 @@
 /* Focus states */
 input:focus, select:focus, textarea:focus {
   @apply ring-2 ring-emerald-500 border-emerald-500;
-}
-
-/* Custom scrollbar for main content */
-.main-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.main-content::-webkit-scrollbar-track {
-  background: rgb(243 244 246);
-  border-radius: 4px;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background: rgb(209 213 219);
-  border-radius: 4px;
-}
-
-.main-content::-webkit-scrollbar-thumb:hover {
-  background: rgb(156 163 175);
-}
-
-/* Responsive design improvements */
-@media (max-width: 1024px) {
-  .main-content {
-    padding: 1rem;
-  }
-  
-  .responsive-spacing {
-    padding: 1rem;
-    margin: 1rem 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    padding: 0.75rem;
-  }
-  
-  .responsive-spacing {
-    padding: 0.75rem;
-    margin: 0.75rem 0;
-  }
-  
-  /* Improve touch targets on mobile */
-  button, .btn, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-@media (max-width: 640px) {
-  .main-content {
-    padding: 1rem 0.75rem;
-  }
-  
-  .responsive-spacing {
-    padding: 1rem 0.75rem;
-    margin: 0.75rem 0;
-  }
 }
 
 /* High DPI displays */
