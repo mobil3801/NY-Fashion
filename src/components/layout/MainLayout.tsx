@@ -23,20 +23,20 @@ const MainLayout: React.FC = () => {
           <Header />
 
           {/* Main content with enhanced error boundary */}
-          <main 
-            className="flex-1 overflow-y-auto p-6" 
-            role="main" 
-            aria-label="Main content"
-          >
+          <main
+            className="flex-1 overflow-y-auto p-6"
+            role="main"
+            aria-label="Main content">
+
             <EnhancedNetworkErrorBoundary fallback={
-              <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full">
                 <div className="text-center space-y-4">
                   <div className="text-2xl text-gray-400">⚠️</div>
                   <p className="text-gray-600">Failed to load this section</p>
-                  <button 
-                    onClick={() => window.location.reload()} 
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-                  >
+                  <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+
                     Reload
                   </button>
                 </div>
@@ -48,22 +48,22 @@ const MainLayout: React.FC = () => {
         </div>
 
         {/* Enhanced Network Connection Quality Indicator with accessibility */}
-        <div 
+        <div
           className="fixed bottom-4 left-4 z-40"
           role="status"
           aria-live="polite"
-          aria-label="Network connection status"
-        >
+          aria-label="Network connection status">
+
           <ConnectionQualityIndicator variant="full" showDetails={true} />
         </div>
 
         {/* Debug Tools - Development Only with safe rendering */}
-        {process.env.NODE_ENV === 'development' && (
-          <DebugFloatingButton />
-        )}
+        {process.env.NODE_ENV === 'development' &&
+        <DebugFloatingButton />
+        }
       </div>
-    </EnhancedNetworkErrorBoundary>
-  );
+    </EnhancedNetworkErrorBoundary>);
+
 };
 
 export default MainLayout;

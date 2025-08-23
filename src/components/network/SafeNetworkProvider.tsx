@@ -14,7 +14,7 @@ export function SafeNetworkProvider({ children, config }: SafeNetworkProviderPro
   // Wrap NetworkProvider with error boundary for production safety
   return (
     <EnhancedNetworkErrorBoundary fallback={
-      <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <div className="text-2xl text-gray-400">🔌</div>
           <h2 className="text-xl font-semibold text-gray-900">
@@ -23,10 +23,10 @@ export function SafeNetworkProvider({ children, config }: SafeNetworkProviderPro
           <p className="text-gray-600">
             The app is running in offline-only mode.
           </p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-          >
+          <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors">
+
             Retry
           </button>
         </div>
@@ -35,8 +35,8 @@ export function SafeNetworkProvider({ children, config }: SafeNetworkProviderPro
       <NetworkProvider config={config}>
         {children}
       </NetworkProvider>
-    </EnhancedNetworkErrorBoundary>
-  );
+    </EnhancedNetworkErrorBoundary>);
+
 }
 
 export default SafeNetworkProvider;

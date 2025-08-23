@@ -20,35 +20,35 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true }
-      ],
+      "warn",
+      { allowConstantExport: true }],
+
 
       "@typescript-eslint/no-unused-vars": "off",
       "no-undef": "error",
 
       // Prevent importing from wrong debug context paths to avoid duplicate contexts
       "no-restricted-imports": [
-        "error",
+      "error",
+      {
+        "patterns": [
         {
-          "patterns": [
-            {
-              "group": ["@/contexts/DebugContext", "@/debug/DebugProvider", "**/debug/DebugProvider"],
-              "message": "Import debug functionality from '@/debug' barrel export only to use the consolidated context."
-            }
-          ],
-          "paths": [
-            {
-              "name": "../debug/DebugProvider",
-              "message": "Import from '@/debug' barrel only."
-            },
-            {
-              "name": "./debug/DebugProvider", 
-              "message": "Import from '@/debug' barrel only."
-            }
-          ]
-        }
-      ]
+          "group": ["@/contexts/DebugContext", "@/debug/DebugProvider", "**/debug/DebugProvider"],
+          "message": "Import debug functionality from '@/debug' barrel export only to use the consolidated context."
+        }],
+
+        "paths": [
+        {
+          "name": "../debug/DebugProvider",
+          "message": "Import from '@/debug' barrel only."
+        },
+        {
+          "name": "./debug/DebugProvider",
+          "message": "Import from '@/debug' barrel only."
+        }]
+
+      }]
+
     }
   }
 );

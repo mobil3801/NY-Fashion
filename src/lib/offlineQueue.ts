@@ -190,7 +190,7 @@ class IndexedDBWrapper {
         if (db.objectStoreNames.contains(this.storeName)) {
           db.deleteObjectStore(this.storeName);
         }
-        
+
         store = db.createObjectStore(this.storeName, { keyPath: 'id' });
         store.createIndex(IDX_CREATED_AT, 'createdAt', { unique: false });
         store.createIndex(IDX_IDEMPOTENCY, 'idempotencyKey', { unique: false });

@@ -8,8 +8,8 @@ export type {
   DebugInfo,
   NetworkStatus,
   ApiCall,
-  DebugSettings
-} from './context';
+  DebugSettings } from
+'./context';
 
 // Re-export for backward compatibility
 export { DebugProvider as default } from './context';

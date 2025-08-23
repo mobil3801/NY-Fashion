@@ -89,7 +89,7 @@ export interface DebugContextType {
 
   // Testing utilities
   simulateNetworkFailure: (duration: number) => void;
-  runNetworkBenchmark: () => Promise<{latency: number; bandwidth: number;}>;
+  runNetworkBenchmark: () => Promise<{latency: number;bandwidth: number;}>;
 }
 
 // Export types for compatibility
@@ -181,7 +181,7 @@ interface DebugProviderProps {
 export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   // Environment checks
   const isDevelopment = import.meta.env.DEV || process.env.NODE_ENV === 'development';
-  
+
   // Debug logs state
   const [logs, setLogs] = useState<DebugLog[]>([]);
 
@@ -296,7 +296,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     if (!debugSettings.enabled) return;
 
     setApiCalls((prev) => prev.map((call) =>
-      call.id === id ? { ...call, ...updates } : call
+    call.id === id ? { ...call, ...updates } : call
     ));
   }, [debugSettings.enabled]);
 
@@ -376,7 +376,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     }, duration);
   }, [debugSettings.enabled]);
 
-  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number; bandwidth: number;}> => {
+  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number;bandwidth: number;}> => {
     if (!debugSettings.enabled) {
       return { latency: 0, bandwidth: 0 };
     }
@@ -476,13 +476,13 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     return (
       <DebugContext.Provider value={createNoOpDebugContext()}>
         {children}
-      </DebugContext.Provider>
-    );
+      </DebugContext.Provider>);
+
   }
 
   return (
     <DebugContext.Provider value={contextValue}>
       {children}
-    </DebugContext.Provider>
-  );
+    </DebugContext.Provider>);
+
 };

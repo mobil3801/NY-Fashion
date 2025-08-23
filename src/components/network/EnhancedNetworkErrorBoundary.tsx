@@ -68,8 +68,8 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
 
       // Use sendBeacon for reliability
       if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(errorReport)], { 
-          type: 'application/json' 
+        const blob = new Blob([JSON.stringify(errorReport)], {
+          type: 'application/json'
         });
         navigator.sendBeacon('/api/errors', blob);
       }
@@ -90,7 +90,7 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
 
     try {
       // Wait a moment before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Clear error state to retry rendering
       this.setState({
@@ -140,32 +140,32 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
                     onClick={this.handleRetry}
                     disabled={this.state.isRetrying}
                     className="flex-1"
-                    variant="default"
-                  >
-                    {this.state.isRetrying ? (
-                      <>
+                    variant="default">
+
+                    {this.state.isRetrying ?
+                    <>
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                         Retrying...
-                      </>
-                    ) : (
-                      <>
+                      </> :
+
+                    <>
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Try again ({this.maxRetries - this.retryCount} left)
                       </>
-                    )}
+                    }
                   </Button>
                   
                   <Button
                     onClick={this.handleReload}
                     variant="outline"
-                    className="flex-1"
-                  >
+                    className="flex-1">
+
                     Reload page
                   </Button>
                 </div>
 
-                {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-                  <details className="mt-4 text-left">
+                {process.env.NODE_ENV === 'development' && this.state.errorInfo &&
+                <details className="mt-4 text-left">
                     <summary className="text-xs text-gray-500 cursor-pointer">
                       Error details (development only)
                     </summary>
@@ -174,12 +174,12 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
                       {this.state.errorInfo}
                     </pre>
                   </details>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
-        </div>
-      );
+        </div>);
+
     }
 
     return this.props.children;
