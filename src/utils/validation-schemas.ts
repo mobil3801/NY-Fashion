@@ -15,9 +15,9 @@ const sanitizeString = (value: string): string => {
 };
 
 const createStringSchema = (min = 1, max = 255, pattern?: RegExp) => {
-  let schema = z.string()
-    .min(min, `Must be at least ${min} characters`)
-    .max(max, `Must be at most ${max} characters`);
+  let schema = z.string().
+  min(min, `Must be at least ${min} characters`).
+  max(max, `Must be at most ${max} characters`);
 
   if (pattern) {
     schema = schema.regex(pattern, 'Invalid format');

@@ -180,6 +180,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -200,9 +202,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <div className="text-gray-600 text-sm mt-2">Loading chart...</div>
         </div>
-      </div>;
-  }
-
+      </div>;}
   return (
     <div
       ref={containerRef}
