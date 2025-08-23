@@ -39,7 +39,28 @@ export interface AbortError extends BaseApiError {
   reason?: string;
 }
 
-export type ApiError = NetworkError | HttpError | BusinessError | TimeoutError | AbortError;
+export type ApiErrorType = NetworkError | HttpError | BusinessError | TimeoutError | AbortError;
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public code: string = 'UNKNOWN_ERROR',
+    public retryable: boolean = false,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export const ERROR_CODES = {
+  NETWORK_OFFLINE: 'NETWORK_OFFLINE',
+  TIMEOUT: 'TIMEOUT',
+  CLIENT_ERROR: 'CLIENT_ERROR',
+  SERVER_ERROR: 'SERVER_ERROR',
+  QUEUED_OFFLINE: 'QUEUED_OFFLINE',
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+} as const;
 
 /**
  * Error classification patterns for non-retryable business errors

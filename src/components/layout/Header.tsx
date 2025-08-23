@@ -4,6 +4,7 @@ import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { NetworkStatusIndicator } from '@/components/network/NetworkStatusIndicator';
 
 const Header: React.FC = () => {
   const { user } = useAuth();
@@ -28,6 +29,9 @@ const Header: React.FC = () => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-4">
+        {/* Network Status Indicator */}
+        <NetworkStatusIndicator />
+
         {/* Language Toggle */}
         <Button
           variant="ghost"

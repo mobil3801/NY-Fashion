@@ -19,6 +19,7 @@ import SalesAnalytics from '@/components/sales/SalesAnalytics';
 import SalesDataTable from '@/components/sales/SalesDataTable';
 import AdvancedFilters from '@/components/sales/AdvancedFilters';
 import BulkOperations from '@/components/sales/BulkOperations';
+import { NetworkAwareSaleForm } from '@/components/sales/NetworkAwareSaleForm';
 
 interface SalesData {
   totalSales: number;
@@ -352,8 +353,9 @@ const SalesPage: React.FC = () => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="new-sale">New Sale</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -452,6 +454,12 @@ const SalesPage: React.FC = () => {
 
         <TabsContent value="analytics" className="space-y-6">
           <SalesAnalytics filters={filters} canViewAll={canViewAllSales} />
+        </TabsContent>
+
+        <TabsContent value="new-sale" className="space-y-4">
+          <div className="flex justify-center">
+            <NetworkAwareSaleForm />
+          </div>
         </TabsContent>
       </Tabs>
     </div>);

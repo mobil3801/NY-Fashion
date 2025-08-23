@@ -204,10 +204,10 @@ export function useApiRetry() {
 
 
 
+
     // Debug context not available, continue without it
   } // Cleanup on unmount
-  useEffect(() => {isMountedRef.current = true;
-      return () => {
+  useEffect(() => {isMountedRef.current = true;return () => {
         isMountedRef.current = false;
         // Abort all ongoing operations
         abortControllersRef.current.forEach((controller) => {

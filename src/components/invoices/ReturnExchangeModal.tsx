@@ -286,6 +286,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -307,9 +309,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <Button variant={returnType === 'return' ? 'default' : 'outline'}
-              onClick={() => setReturnType('return')}
-              className="h-20 flex flex-col">
+                <Button variant={returnType === 'return' ? 'default' : 'outline'} onClick={() => setReturnType('return')} className="h-20 flex flex-col">
 
                   <Undo2 className="w-6 h-6 mb-2" />
                   <span>Return for Refund</span>
