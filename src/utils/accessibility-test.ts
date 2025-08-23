@@ -22,20 +22,20 @@ export interface AccessibilityIssue {
  */
 export function testContrastRatios(): AccessibilityIssue[] {
   const issues: AccessibilityIssue[] = [];
-  
+
   // Test common problematic elements
   const selectors = [
-    '.text-gray-500',
-    '.text-gray-600',
-    '.opacity-75',
-    '.opacity-80',
-    '[class*="text-muted"]:not([class*="text-muted-aa"])',
-    '[class*="badge"]:not([class*="badge-aa"])'
-  ];
+  '.text-gray-500',
+  '.text-gray-600',
+  '.opacity-75',
+  '.opacity-80',
+  '[class*="text-muted"]:not([class*="text-muted-aa"])',
+  '[class*="badge"]:not([class*="badge-aa"])'];
 
-  selectors.forEach(selector => {
+
+  selectors.forEach((selector) => {
     const elements = document.querySelectorAll(selector);
-    elements.forEach(element => {
+    elements.forEach((element) => {
       issues.push({
         type: 'warning',
         rule: 'WCAG-1.4.3-AA',
@@ -57,11 +57,11 @@ export function testFormSemantics(): AccessibilityIssue[] {
 
   // Test for inputs without labels
   const inputs = document.querySelectorAll('input, textarea, select');
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     const id = input.getAttribute('id');
     const ariaLabel = input.getAttribute('aria-label');
     const ariaLabelledBy = input.getAttribute('aria-labelledby');
-    
+
     let hasLabel = false;
     if (id) {
       hasLabel = !!document.querySelector(`label[for="${id}"]`);
@@ -80,7 +80,7 @@ export function testFormSemantics(): AccessibilityIssue[] {
 
   // Test for proper error messaging
   const invalidInputs = document.querySelectorAll('[aria-invalid="true"]');
-  invalidInputs.forEach(input => {
+  invalidInputs.forEach((input) => {
     const describedBy = input.getAttribute('aria-describedby');
     if (!describedBy) {
       issues.push({
@@ -107,12 +107,12 @@ export function testKeyboardNavigation(): AccessibilityIssue[] {
     'button, [role="button"], a, input, textarea, select, [tabindex]'
   );
 
-  interactiveElements.forEach(element => {
+  interactiveElements.forEach((element) => {
     const computedStyle = window.getComputedStyle(element);
-    const hasFocusStyle = element.classList.contains('focus-visible-aa') || 
-                         element.classList.contains('focus-aa') ||
-                         computedStyle.outline !== 'none' ||
-                         computedStyle.boxShadow.includes('ring');
+    const hasFocusStyle = element.classList.contains('focus-visible-aa') ||
+    element.classList.contains('focus-aa') ||
+    computedStyle.outline !== 'none' ||
+    computedStyle.boxShadow.includes('ring');
 
     if (!hasFocusStyle) {
       issues.push({
@@ -161,9 +161,9 @@ export function testARIASemantics(): AccessibilityIssue[] {
   let hasH1 = false;
   let lastLevel = 0;
 
-  headings.forEach(heading => {
+  headings.forEach((heading) => {
     const level = parseInt(heading.tagName[1]);
-    
+
     if (level === 1) {
       if (hasH1) {
         issues.push({
@@ -200,14 +200,14 @@ export function testTouchTargets(): AccessibilityIssue[] {
   const issues: AccessibilityIssue[] = [];
 
   const touchElements = document.querySelectorAll('button, [role="button"], a, input[type="checkbox"], input[type="radio"]');
-  
-  touchElements.forEach(element => {
+
+  touchElements.forEach((element) => {
     const rect = element.getBoundingClientRect();
     const minSize = 44; // WCAG AAA guideline
-    
-    if ((rect.width < minSize || rect.height < minSize) && 
-        !element.classList.contains('touch-target-aa') &&
-        !element.classList.contains('touch-target-sm-aa')) {
+
+    if ((rect.width < minSize || rect.height < minSize) &&
+    !element.classList.contains('touch-target-aa') &&
+    !element.classList.contains('touch-target-sm-aa')) {
       issues.push({
         type: 'warning',
         rule: 'WCAG-2.5.5-AAA',
@@ -226,20 +226,20 @@ export function testTouchTargets(): AccessibilityIssue[] {
  */
 export function runAccessibilityAudit(): AccessibilityTestResult {
   const allIssues: AccessibilityIssue[] = [
-    ...testContrastRatios(),
-    ...testFormSemantics(),
-    ...testKeyboardNavigation(),
-    ...testARIASemantics(),
-    ...testTouchTargets()
-  ];
+  ...testContrastRatios(),
+  ...testFormSemantics(),
+  ...testKeyboardNavigation(),
+  ...testARIASemantics(),
+  ...testTouchTargets()];
 
-  const errorCount = allIssues.filter(issue => issue.type === 'error').length;
-  const warningCount = allIssues.filter(issue => issue.type === 'warning').length;
-  
+
+  const errorCount = allIssues.filter((issue) => issue.type === 'error').length;
+  const warningCount = allIssues.filter((issue) => issue.type === 'warning').length;
+
   // Calculate score (0-100)
   const totalChecks = 20; // Approximate number of checks
-  const passed = totalChecks - errorCount - (warningCount * 0.5);
-  const score = Math.max(0, Math.round((passed / totalChecks) * 100));
+  const passed = totalChecks - errorCount - warningCount * 0.5;
+  const score = Math.max(0, Math.round(passed / totalChecks * 100));
 
   return {
     passed: errorCount === 0,
@@ -253,7 +253,7 @@ export function runAccessibilityAudit(): AccessibilityTestResult {
  */
 export function generateAccessibilityReport(): string {
   const result = runAccessibilityAudit();
-  
+
   let report = `# Accessibility Audit Report\n\n`;
   report += `**Score: ${result.score}/100**\n`;
   report += `**Status: ${result.passed ? '✅ PASSED' : '❌ FAILED'}**\n\n`;
@@ -263,9 +263,9 @@ export function generateAccessibilityReport(): string {
     return report;
   }
 
-  const errorIssues = result.issues.filter(issue => issue.type === 'error');
-  const warningIssues = result.issues.filter(issue => issue.type === 'warning');
-  const infoIssues = result.issues.filter(issue => issue.type === 'info');
+  const errorIssues = result.issues.filter((issue) => issue.type === 'error');
+  const warningIssues = result.issues.filter((issue) => issue.type === 'warning');
+  const infoIssues = result.issues.filter((issue) => issue.type === 'info');
 
   if (errorIssues.length > 0) {
     report += `## ❌ Errors (${errorIssues.length})\n\n`;

@@ -90,6 +90,8 @@ interface InventoryContextType {
   selectedProduct: Product | null;
   error: ApiError | null;
   isRetrying: boolean;
+  connectionState: 'online' | 'offline' | 'poor_connection' | 'reconnecting';
+  lastSuccessfulSync: Date | null;
 
   // Product management
   fetchProducts: (filters?: any) => Promise<void>;
@@ -130,11 +132,36 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [connectionState, setConnectionState] = useState<'online' | 'offline' | 'poor_connection' | 'reconnecting'>('online');
+  const [lastSuccessfulSync, setLastSuccessfulSync] = useState<Date | null>(null);
 
   // Request management
   const currentRequestIdRef = useRef(0);
   const isMountedRef = useRef(true);
   const lastFailedOperationRef = useRef<string | null>(null);
+
+  // Network status monitoring
+  useEffect(() => {
+    const updateConnectionState = () => {
+      if (navigator.onLine) {
+        setConnectionState('online');
+      } else {
+        setConnectionState('offline');
+      }
+    };
+
+    // Initial check
+    updateConnectionState();
+
+    // Listen for online/offline events
+    window.addEventListener('online', updateConnectionState);
+    window.addEventListener('offline', updateConnectionState);
+
+    return () => {
+      window.removeEventListener('online', updateConnectionState);
+      window.removeEventListener('offline', updateConnectionState);
+    };
+  }, []);
 
   // API retry hook
   const { executeWithRetry, abortAll, isMounted } = useApiRetry();
@@ -337,6 +364,7 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
       if (isMountedRef.current) {
         setIsRetrying(false);
         clearError();
+        setLastSuccessfulSync(new Date());
       }
 
     } catch (error) {
@@ -592,6 +620,8 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     selectedProduct,
     error,
     isRetrying,
+    connectionState,
+    lastSuccessfulSync,
     fetchProducts,
     fetchCategories,
     saveProduct,

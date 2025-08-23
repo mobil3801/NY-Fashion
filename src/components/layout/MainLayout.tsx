@@ -39,18 +39,18 @@ const MainLayout: React.FC = () => {
             className="flex-1 overflow-y-auto p-6"
             role="main"
             aria-label="Main content"
-            tabIndex={-1}
-          >
+            tabIndex={-1}>
+
             <EnhancedNetworkErrorBoundary fallback={
             <div className="flex items-center justify-center h-full">
                 <div className="text-center space-y-4">
                   <div className="text-2xl text-muted-aa" role="img" aria-label="Warning">⚠️</div>
                   <p className="text-default-aa">Failed to load this section</p>
                   <button
-                    onClick={() => window.location.reload()}
-                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors focus-visible-aa touch-target-aa"
-                    aria-label="Reload the page"
-                  >
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors focus-visible-aa touch-target-aa"
+                  aria-label="Reload the page">
+
                     Reload
                   </button>
                 </div>
@@ -66,8 +66,8 @@ const MainLayout: React.FC = () => {
           className="fixed bottom-4 left-4 z-40"
           role="status"
           aria-live="polite"
-          aria-label="Network connection status"
-        >
+          aria-label="Network connection status">
+
           <ConnectionQualityIndicator variant="full" showDetails={true} />
         </div>
 
