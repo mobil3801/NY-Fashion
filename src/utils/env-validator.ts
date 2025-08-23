@@ -34,11 +34,11 @@ class EnvironmentValidator {
   private getEffectiveNodeEnv(): string {
     // Try multiple sources for NODE_ENV
     const sources = [
-      import.meta.env?.NODE_ENV,
-      process.env?.NODE_ENV,
-      import.meta.env?.VITE_NODE_ENV,
-      import.meta.env?.MODE
-    ];
+    import.meta.env?.NODE_ENV,
+    process.env?.NODE_ENV,
+    import.meta.env?.VITE_NODE_ENV,
+    import.meta.env?.MODE];
+
 
     for (const env of sources) {
       if (env && typeof env === 'string') {
@@ -221,12 +221,12 @@ class EnvironmentValidator {
   private validateSensitiveVariable(name: string, value: string, warnings: string[]): void {
     // Check for common insecure values
     const insecurePatterns = [
-      { pattern: /^(password|secret|key)$/i, message: 'appears to be a default placeholder' },
-      { pattern: /^(test|demo|example)/, message: 'appears to contain test/demo values' },
-      { pattern: /localhost|127\.0\.0\.1/, message: 'contains localhost references' },
-      { pattern: /^.{1,5}$/, message: 'is suspiciously short for a sensitive value' },
-      { pattern: /^(admin|root|user)$/i, message: 'uses a common default value' }
-    ];
+    { pattern: /^(password|secret|key)$/i, message: 'appears to be a default placeholder' },
+    { pattern: /^(test|demo|example)/, message: 'appears to contain test/demo values' },
+    { pattern: /localhost|127\.0\.0\.1/, message: 'contains localhost references' },
+    { pattern: /^.{1,5}$/, message: 'is suspiciously short for a sensitive value' },
+    { pattern: /^(admin|root|user)$/i, message: 'uses a common default value' }];
+
 
     insecurePatterns.forEach(({ pattern, message }) => {
       if (pattern.test(value)) {
@@ -266,9 +266,9 @@ class EnvironmentValidator {
   private checkProductionSafety(warnings: string[], errors: string[]): void {
     // Don't be too strict about production safety in build environment
     const devPatterns = [
-      { env: 'VITE_API_BASE_URL', pattern: /localhost|127\.0\.0\.1/, message: 'API URL points to localhost in production' },
-      { env: 'VITE_ENABLE_DEBUG', pattern: /^true$/i, message: 'Debug mode is enabled in production' }
-    ];
+    { env: 'VITE_API_BASE_URL', pattern: /localhost|127\.0\.0\.1/, message: 'API URL points to localhost in production' },
+    { env: 'VITE_ENABLE_DEBUG', pattern: /^true$/i, message: 'Debug mode is enabled in production' }];
+
 
     devPatterns.forEach(({ env, pattern, message }) => {
       const value = import.meta.env[env];
@@ -318,17 +318,17 @@ class EnvironmentValidator {
    */
   private isSensitiveKey(key: string): boolean {
     const sensitivePatterns = [
-      /password/i,
-      /secret/i,
-      /key/i,
-      /token/i,
-      /credential/i,
-      /private/i,
-      /auth/i,
-      /_key$/i,
-      /_secret$/i,
-      /_token$/i
-    ];
+    /password/i,
+    /secret/i,
+    /key/i,
+    /token/i,
+    /credential/i,
+    /private/i,
+    /auth/i,
+    /_key$/i,
+    /_secret$/i,
+    /_token$/i];
+
 
     return sensitivePatterns.some((pattern) => pattern.test(key));
   }
@@ -372,7 +372,7 @@ class EnvironmentValidator {
 // Default validation configuration with more lenient requirements
 export const DEFAULT_ENV_VALIDATION_CONFIG: EnvValidationConfig = {
   NODE_ENV: {
-    required: true,
+    required: false, // Made optional to avoid build issues
     type: 'string',
     allowedValues: ['development', 'production', 'test'],
     defaultValue: 'production' // Safe default

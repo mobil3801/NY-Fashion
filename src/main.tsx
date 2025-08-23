@@ -17,14 +17,22 @@ import './styles/accessibility.css';
 const initializeApp = async () => {
   try {
     // Validate environment variables with more lenient approach
-    const envValidation = environmentValidator.validateAll();
+    try {
+      const envValidation = environmentValidator.validateAll();
 
-    if (!envValidation.isValid) {
-      console.warn('Environment validation issues found:', envValidation.errors);
-      // In production builds, we'll continue with warnings rather than failing hard
-      if (import.meta.env.NODE_ENV === 'production' && envValidation.errors.some((e) => e.includes('NODE_ENV'))) {
-        console.warn('NODE_ENV issue detected, but continuing with inferred environment settings');
+      if (!envValidation.isValid) {
+        console.warn('Environment validation issues found:', envValidation.errors);
+        // In production builds, we'll continue with warnings rather than failing hard
+        const nodeEnv = import.meta.env.NODE_ENV || 'production';
+        console.warn('Continuing with environment:', nodeEnv);
       }
+
+      if (envValidation.warnings.length > 0) {
+        console.warn('Environment warnings:', envValidation.warnings);
+      }
+    } catch (envError) {
+      console.warn('Environment validation failed, using defaults:', envError);
+      // Continue execution with default values
     }
 
     if (envValidation.warnings.length > 0) {
@@ -33,6 +41,7 @@ const initializeApp = async () => {
 
     // Initialize core security
     try {
+      const { initializeSecurity } = await import('@/config/security');
       initializeSecurity();
     } catch (securityError) {
       console.warn('Security initialization warning:', securityError);

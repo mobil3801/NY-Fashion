@@ -124,9 +124,9 @@ function checkDatabaseHealth() {
 
 
 
+
       // This query might not work on all database systems, ignore silently
     }} catch (error) {check.status = 'CRITICAL';check.issues.push(`Database health check failed: ${error.message}`);}
-
   return check;
 }
 

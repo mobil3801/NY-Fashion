@@ -362,8 +362,20 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   // Update queue count periodically
   useEffect(() => {
     const interval = setInterval(async () => {
-      const queueSize = await connectivity.getQueueSize();
-      setQueuedOperations(queueSize);
+      try {
+        const queueSize = await connectivity.getQueueSize();
+        setQueuedOperations(queueSize);
+      } catch (error) {
+        // Fallback to offlineQueue direct access if connectivity method fails
+        try {
+          const { offlineQueue } = await import('@/lib/offlineQueue');
+          const queueSize = await offlineQueue.size();
+          setQueuedOperations(queueSize);
+        } catch (fallbackError) {
+          console.warn('Failed to get queue size:', fallbackError);
+          setQueuedOperations(0);
+        }
+      }
     }, 5000);
 
     return () => clearInterval(interval);

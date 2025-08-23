@@ -32,6 +32,8 @@ async function deleteProductImage(imageId) {
 
 
 
+
+
         // Note: EasySite storage doesn't have a delete API yet, but we prepare for it
         // await window.ezsite.apis.deleteFile(image.file_id);
       } catch (error) {console.warn('Could not delete file from storage:', error.message); // Continue with database deletion even if storage deletion fails
@@ -41,9 +43,7 @@ async function deleteProductImage(imageId) {
       UPDATE product_images 
       SET sort_order = sort_order - 1 
       WHERE product_id = $1 AND sort_order > $2
-    `;await window.ezsite.db.query(reorderQuery, [image.product_id, image.sort_order]);
-    return {
-      message: 'Image deleted successfully',
+    `;await window.ezsite.db.query(reorderQuery, [image.product_id, image.sort_order]);return { message: 'Image deleted successfully',
       deletedImageId: imageId
     };
 

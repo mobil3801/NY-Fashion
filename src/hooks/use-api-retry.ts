@@ -243,12 +243,12 @@ export function useApiRetry() {
 
 
 
+
     // Debug context not available, continue without it
   } // Cleanup on unmount
   useEffect(() => {isMountedRef.current = true;return () => {isMountedRef.current = false; // Abort all ongoing operations
         abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);const executeWithRetry = useCallback(async <T,>(fn: (ctx: RetryContext) => Promise<T>, options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;}): Promise<T> => {if (!isMountedRef.current) {throw new Error('Component is unmounted');}const controller = new AbortController();abortControllersRef.current.add(controller); // Track API call in debug system if available
-      let debugCallId: string | null = null;if (debugContext?.addApiCall) {debugCallId = debugContext.addApiCall({ timestamp: new Date(), operation: options?.operation || 'unknown', method: options?.method || 'GET', url: options?.url || 'unknown', attempt: 1, duration: null, status: 'pending' });}try {const result = await executeWithRetry(fn, { ...DEFAULT_RETRY_OPTIONS, ...options,
-            signal: controller.signal,
+      let debugCallId: string | null = null;if (debugContext?.addApiCall) {debugCallId = debugContext.addApiCall({ timestamp: new Date(), operation: options?.operation || 'unknown', method: options?.method || 'GET', url: options?.url || 'unknown', attempt: 1, duration: null, status: 'pending' });}try {const result = await executeWithRetry(fn, { ...DEFAULT_RETRY_OPTIONS, ...options, signal: controller.signal,
             onAttempt: (info) => {
               if (isMountedRef.current) {
                 // Update debug tracking

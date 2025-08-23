@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { POSState, CartItem, Customer, PaymentMethod, Product, ProductVariant } from '@/types/pos';
 import { toast } from '@/hooks/use-toast';
 import { usePageLifecycle } from '@/hooks/usePageLifecycle';
