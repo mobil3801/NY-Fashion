@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { 
-  AlertTriangle, 
-  RefreshCw, 
-  Wifi, 
-  WifiOff, 
+import {
+  AlertTriangle,
+  RefreshCw,
+  Wifi,
+  WifiOff,
   Bug,
   Copy,
-  ExternalLink
-} from 'lucide-react';
+  ExternalLink } from
+'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -31,7 +31,7 @@ interface State {
 export class InventoryErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    
+
     this.state = {
       hasError: false,
       error: null,
@@ -59,7 +59,7 @@ export class InventoryErrorBoundary extends Component<Props, State> {
 
   handleOnlineStatus() {
     this.setState({ isOnline: navigator.onLine });
-    
+
     // If error was network-related and we're back online, suggest retry
     if (navigator.onLine && this.state.hasError && this.isNetworkError()) {
       // Auto-retry after 2 seconds if retry count is low
@@ -119,42 +119,42 @@ export class InventoryErrorBoundary extends Component<Props, State> {
 
   private isNetworkError(): boolean {
     if (!this.state.error) return false;
-    
+
     const message = this.state.error.message.toLowerCase();
     return message.includes('network') ||
-           message.includes('fetch') ||
-           message.includes('connection') ||
-           message.includes('timeout') ||
-           !this.state.isOnline;
+    message.includes('fetch') ||
+    message.includes('connection') ||
+    message.includes('timeout') ||
+    !this.state.isOnline;
   }
 
   private getErrorCategory(): 'network' | 'data' | 'rendering' | 'unknown' {
     if (!this.state.error) return 'unknown';
-    
+
     const message = this.state.error.message.toLowerCase();
     const stack = this.state.error.stack?.toLowerCase() || '';
-    
+
     if (this.isNetworkError()) {
       return 'network';
     }
-    
-    if (message.includes('cannot read') || 
-        message.includes('undefined') || 
-        message.includes('null')) {
+
+    if (message.includes('cannot read') ||
+    message.includes('undefined') ||
+    message.includes('null')) {
       return 'data';
     }
-    
-    if (stack.includes('render') || 
-        message.includes('element') || 
-        message.includes('component')) {
+
+    if (stack.includes('render') ||
+    message.includes('element') ||
+    message.includes('component')) {
       return 'rendering';
     }
-    
+
     return 'unknown';
   }
 
   private handleRetry() {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
@@ -164,16 +164,16 @@ export class InventoryErrorBoundary extends Component<Props, State> {
 
   private async copyErrorToClipboard() {
     if (!this.state.error) return;
-    
+
     const errorText = [
-      `Error ID: ${this.state.errorId}`,
-      `Message: ${this.state.error.message}`,
-      `Stack: ${this.state.error.stack}`,
-      `Component Stack: ${this.state.errorInfo?.componentStack}`,
-      `Timestamp: ${new Date().toISOString()}`,
-      `Online Status: ${this.state.isOnline}`,
-      `Retry Count: ${this.state.retryCount}`
-    ].join('\n');
+    `Error ID: ${this.state.errorId}`,
+    `Message: ${this.state.error.message}`,
+    `Stack: ${this.state.error.stack}`,
+    `Component Stack: ${this.state.errorInfo?.componentStack}`,
+    `Timestamp: ${new Date().toISOString()}`,
+    `Online Status: ${this.state.isOnline}`,
+    `Retry Count: ${this.state.retryCount}`].
+    join('\n');
 
     try {
       await navigator.clipboard.writeText(errorText);
@@ -263,36 +263,36 @@ export class InventoryErrorBoundary extends Component<Props, State> {
           <CardContent className="space-y-4">
             {/* Error Category Badge */}
             <div className="flex items-center space-x-2">
-              <Badge 
+              <Badge
                 variant={
-                  errorCategory === 'network' ? 'destructive' :
-                  errorCategory === 'data' ? 'secondary' : 'default'
+                errorCategory === 'network' ? 'destructive' :
+                errorCategory === 'data' ? 'secondary' : 'default'
                 }
-                className="flex items-center space-x-1"
-              >
-                {errorCategory === 'network' ? (
-                  <>
+                className="flex items-center space-x-1">
+
+                {errorCategory === 'network' ?
+                <>
                     <WifiOff className="h-3 w-3" />
                     <span>Network Issue</span>
-                  </>
-                ) : (
-                  <>
+                  </> :
+
+                <>
                     <Bug className="h-3 w-3" />
                     <span>{errorCategory.charAt(0).toUpperCase() + errorCategory.slice(1)} Error</span>
                   </>
-                )}
+                }
               </Badge>
 
               {/* Connection Status */}
-              <Badge 
+              <Badge
                 variant={this.state.isOnline ? 'default' : 'destructive'}
-                className="flex items-center space-x-1"
-              >
-                {this.state.isOnline ? (
-                  <Wifi className="h-3 w-3" />
-                ) : (
-                  <WifiOff className="h-3 w-3" />
-                )}
+                className="flex items-center space-x-1">
+
+                {this.state.isOnline ?
+                <Wifi className="h-3 w-3" /> :
+
+                <WifiOff className="h-3 w-3" />
+                }
                 <span>{this.state.isOnline ? 'Online' : 'Offline'}</span>
               </Badge>
             </div>
@@ -307,32 +307,32 @@ export class InventoryErrorBoundary extends Component<Props, State> {
                   </p>
                   
                   {/* Error-specific guidance */}
-                  {errorCategory === 'network' && (
-                    <p className="text-sm">
+                  {errorCategory === 'network' &&
+                  <p className="text-sm">
                       This appears to be a network connectivity issue. Please check your 
                       internet connection and try again.
                     </p>
-                  )}
+                  }
                   
-                  {errorCategory === 'data' && (
-                    <p className="text-sm">
+                  {errorCategory === 'data' &&
+                  <p className="text-sm">
                       This error is related to data processing. The system may be receiving 
                       unexpected data format.
                     </p>
-                  )}
+                  }
                   
-                  {this.state.retryCount > 0 && (
-                    <p className="text-sm text-gray-600">
+                  {this.state.retryCount > 0 &&
+                  <p className="text-sm text-gray-600">
                       Failed {this.state.retryCount} time{this.state.retryCount > 1 ? 's' : ''}
                     </p>
-                  )}
+                  }
                 </div>
               </AlertDescription>
             </Alert>
 
             {/* Technical Details (Development Only) */}
-            {import.meta.env.DEV && this.state.error?.stack && (
-              <details className="mt-4">
+            {import.meta.env.DEV && this.state.error?.stack &&
+            <details className="mt-4">
                 <summary className="cursor-pointer text-sm font-medium text-gray-600 hover:text-gray-800">
                   Technical Details
                 </summary>
@@ -340,22 +340,22 @@ export class InventoryErrorBoundary extends Component<Props, State> {
                   {this.state.error.stack}
                 </div>
               </details>
-            )}
+            }
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2 pt-4">
-              {suggestedActions.map((action, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  variant={action.primary ? 'default' : 'outline'}
-                  onClick={action.action}
-                  className="flex items-center space-x-2"
-                >
+              {suggestedActions.map((action, index) =>
+              <Button
+                key={index}
+                size="sm"
+                variant={action.primary ? 'default' : 'outline'}
+                onClick={action.action}
+                className="flex items-center space-x-2">
+
                   <action.icon className="h-4 w-4" />
                   <span>{action.label}</span>
                 </Button>
-              ))}
+              )}
             </div>
 
             {/* Error ID for Support */}
@@ -364,8 +364,8 @@ export class InventoryErrorBoundary extends Component<Props, State> {
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 }
 

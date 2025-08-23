@@ -4,16 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Save, 
-  Wifi, 
-  WifiOff, 
-  AlertTriangle, 
-  CheckCircle2, 
+import {
+  Save,
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+  CheckCircle2,
   Clock,
   Upload,
-  Loader2
-} from 'lucide-react';
+  Loader2 } from
+'lucide-react';
 import { useInventory } from '@/contexts/InventoryContext';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { useNetworkAwareInventory } from './NetworkAwareInventoryProvider';
@@ -55,17 +55,17 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
       setShowNetworkWarning(true);
     } else if (online && showNetworkWarning) {
       setShowNetworkWarning(false);
-      
+
       // If there are pending changes and we're back online, offer to save
       if (pendingChanges) {
         toast({
           title: "Connection Restored",
           description: "Would you like to save your pending changes?",
-          action: (
-            <Button size="sm" onClick={() => handleSave(pendingChanges, true)}>
+          action:
+          <Button size="sm" onClick={() => handleSave(pendingChanges, true)}>
               Save Now
             </Button>
-          )
+
         });
       }
     }
@@ -87,7 +87,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
   // Enhanced save handler with network awareness
   const handleSave = useCallback(async (formData: any, showToast = true, isAutoSave = false) => {
     formDataRef.current = formData;
-    
+
     // Check if we're online
     if (!online && !isAutoSave) {
       setSaveState({
@@ -112,15 +112,15 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
       return;
     }
 
-    setSaveState(prev => ({ 
-      ...prev, 
+    setSaveState((prev) => ({
+      ...prev,
       status: 'saving',
       error: undefined
     }));
 
     try {
       await saveProduct(formData);
-      
+
       setSaveState({
         status: 'saved_online',
         timestamp: new Date(),
@@ -144,11 +144,11 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
       }
 
     } catch (error: any) {
-      const isNetworkError = error.message.includes('network') || 
-                            error.message.includes('connection') ||
-                            !online;
+      const isNetworkError = error.message.includes('network') ||
+      error.message.includes('connection') ||
+      !online;
 
-      setSaveState(prev => ({
+      setSaveState((prev) => ({
         status: isNetworkError ? 'saved_offline' : 'failed',
         timestamp: new Date(),
         error: error.message,
@@ -157,7 +157,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
 
       if (isNetworkError) {
         setPendingChanges(formData);
-        
+
         if (showToast) {
           toast({
             title: "Saved Offline",
@@ -186,7 +186,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
       try {
         await retryNow();
         // Wait for connection to stabilize
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         toast({
           title: "Connection Failed",
@@ -204,7 +204,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
   // Form change handler for auto-save
   const handleFormChange = useCallback((formData: any) => {
     formDataRef.current = formData;
-    
+
     if (autoSaveEnabled && online) {
       triggerAutoSave(formData);
     }
@@ -228,7 +228,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
           text: 'Saving...',
           bgClass: 'bg-blue-50 border-blue-200'
         };
-      
+
       case 'saved_online':
         return {
           icon: CheckCircle2,
@@ -236,7 +236,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
           text: `Saved ${saveState.timestamp?.toLocaleTimeString()}`,
           bgClass: 'bg-green-50 border-green-200'
         };
-      
+
       case 'saved_offline':
         return {
           icon: WifiOff,
@@ -244,7 +244,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
           text: 'Saved offline - will sync when online',
           bgClass: 'bg-amber-50 border-amber-200'
         };
-      
+
       case 'failed':
         return {
           icon: AlertTriangle,
@@ -252,7 +252,7 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
           text: `Save failed${saveState.retryCount > 0 ? ` (${saveState.retryCount} attempts)` : ''}`,
           bgClass: 'bg-red-50 border-red-200'
         };
-      
+
       default:
         return null;
     }
@@ -263,8 +263,8 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
   return (
     <div className="space-y-4">
       {/* Network Status Warning */}
-      {showNetworkWarning && (
-        <Alert className="border-amber-200 bg-amber-50">
+      {showNetworkWarning &&
+      <Alert className="border-amber-200 bg-amber-50">
           <WifiOff className="h-4 w-4" />
           <AlertDescription>
             <div className="flex items-center justify-between">
@@ -275,87 +275,87 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
                 </p>
               </div>
               <Button
-                size="sm"
-                variant="outline"
-                onClick={retryOperation}
-                className="ml-4"
-              >
+              size="sm"
+              variant="outline"
+              onClick={retryOperation}
+              className="ml-4">
+
                 <Wifi className="h-3 w-3 mr-1" />
                 Reconnect
               </Button>
             </div>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Save Status Display */}
-      {statusDisplay && (
-        <Card className={`${statusDisplay.bgClass} border`}>
+      {statusDisplay &&
+      <Card className={`${statusDisplay.bgClass} border`}>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <statusDisplay.icon className={`h-4 w-4 ${statusDisplay.iconClass}`} />
                 <span className="text-sm font-medium">{statusDisplay.text}</span>
-                {saveState.error && (
-                  <Badge variant="destructive" className="text-xs">
+                {saveState.error &&
+              <Badge variant="destructive" className="text-xs">
                     {saveState.error}
                   </Badge>
-                )}
+              }
               </div>
 
               {/* Action buttons based on status */}
               <div className="flex items-center space-x-2">
-                {saveState.status === 'saved_offline' && online && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRetry}
-                  >
+                {saveState.status === 'saved_offline' && online &&
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRetry}>
+
                     <Upload className="h-3 w-3 mr-1" />
                     Sync Now
                   </Button>
-                )}
+              }
 
-                {saveState.status === 'failed' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRetry}
-                  >
+                {saveState.status === 'failed' &&
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRetry}>
+
                     <Loader2 className="h-3 w-3 mr-1" />
                     Retry
                   </Button>
-                )}
+              }
 
-                {pendingChanges && (
-                  <Badge variant="secondary" className="flex items-center space-x-1">
+                {pendingChanges &&
+              <Badge variant="secondary" className="flex items-center space-x-1">
                     <Clock className="h-3 w-3" />
                     <span>Pending</span>
                   </Badge>
-                )}
+              }
               </div>
             </div>
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Connection Quality Indicator */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Badge 
+          <Badge
             variant={online ? 'default' : 'destructive'}
-            className="flex items-center space-x-1"
-          >
+            className="flex items-center space-x-1">
+
             {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
             <span>{online ? 'Online' : 'Offline'}</span>
           </Badge>
 
-          {connectionState === 'poor_connection' && (
-            <Badge variant="secondary" className="flex items-center space-x-1">
+          {connectionState === 'poor_connection' &&
+          <Badge variant="secondary" className="flex items-center space-x-1">
               <AlertTriangle className="h-3 w-3" />
               <span>Poor Connection</span>
             </Badge>
-          )}
+          }
         </div>
 
         {/* Auto-save toggle */}
@@ -365,8 +365,8 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
             size="sm"
             variant={autoSaveEnabled ? 'default' : 'outline'}
             onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
-            disabled={!online}
-          >
+            disabled={!online}>
+
             {autoSaveEnabled ? 'On' : 'Off'}
           </Button>
         </div>
@@ -377,8 +377,8 @@ export function NetworkAwareProductForm({ product, onClose, onSave }: NetworkAwa
         product={product}
         onClose={onClose}
         onSave={(formData) => handleSave(formData, true)}
-        onChange={handleFormChange}
-      />
-    </div>
-  );
+        onChange={handleFormChange} />
+
+    </div>);
+
 }

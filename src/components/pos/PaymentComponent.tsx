@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -333,6 +333,9 @@ const PaymentComponent: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-center">Payment Successful!</DialogTitle>
+            <DialogDescription className="sr-only">
+              Transaction has been completed successfully. You can now print receipts or start a new transaction.
+            </DialogDescription>
           </DialogHeader>
           <div className="text-center space-y-4">
             <div className="p-4 bg-green-50 rounded-lg">

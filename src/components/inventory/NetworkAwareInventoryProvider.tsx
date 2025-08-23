@@ -6,31 +6,31 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Wifi, 
-  WifiOff, 
-  AlertTriangle, 
-  RefreshCw, 
+import {
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+  RefreshCw,
   CheckCircle2,
   Clock,
-  Loader2
-} from 'lucide-react';
+  Loader2 } from
+'lucide-react';
 
 interface NetworkAwareInventoryContextType {
   // Network-aware operations
   isOnline: boolean;
   connectionState: string;
   isRetrying: boolean;
-  
+
   // Enhanced error handling
   hasNetworkError: boolean;
   canRetry: boolean;
   retryOperation: () => Promise<void>;
-  
+
   // Data freshness
   lastSync: Date | null;
   isDataStale: boolean;
-  
+
   // Queue status
   pendingOperations: number;
   hasPendingChanges: boolean;
@@ -81,10 +81,10 @@ export function NetworkAwareInventoryProvider({ children }: NetworkAwareInventor
       const refreshData = async () => {
         try {
           await Promise.all([
-            fetchProducts(),
-            fetchCategories()
-          ]);
-          
+          fetchProducts(),
+          fetchCategories()]
+          );
+
           toast({
             title: "Data Refreshed",
             description: "Inventory data has been synchronized.",
@@ -107,7 +107,7 @@ export function NetworkAwareInventoryProvider({ children }: NetworkAwareInventor
       if (!online) {
         await networkRetryNow();
         // Wait for network to stabilize
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       // Then retry inventory operations
@@ -116,9 +116,9 @@ export function NetworkAwareInventoryProvider({ children }: NetworkAwareInventor
       } else {
         // Refresh data
         await Promise.all([
-          fetchProducts(),
-          fetchCategories()
-        ]);
+        fetchProducts(),
+        fetchCategories()]
+        );
       }
 
     } catch (retryError) {
@@ -141,14 +141,14 @@ export function NetworkAwareInventoryProvider({ children }: NetworkAwareInventor
 
   // Determine if there's a network-related error
   const hasNetworkError = !!(error && (
-    !online || 
-    connectionState === 'offline' || 
-    connectionState === 'poor_connection' ||
-    errorDetails?.type === 'network_unavailable' ||
-    errorDetails?.type === 'timeout'
-  ));
+  !online ||
+  connectionState === 'offline' ||
+  connectionState === 'poor_connection' ||
+  errorDetails?.type === 'network_unavailable' ||
+  errorDetails?.type === 'timeout'));
 
-  const canRetry = hasNetworkError || (!online && error);
+
+  const canRetry = hasNetworkError || !online && error;
   const isRetrying = inventoryRetrying || isAutoRetrying;
 
   const contextValue: NetworkAwareInventoryContextType = {
@@ -167,8 +167,8 @@ export function NetworkAwareInventoryProvider({ children }: NetworkAwareInventor
   return (
     <NetworkAwareInventoryContext.Provider value={contextValue}>
       {children}
-    </NetworkAwareInventoryContext.Provider>
-  );
+    </NetworkAwareInventoryContext.Provider>);
+
 }
 
 export function useNetworkAwareInventory() {
@@ -181,15 +181,15 @@ export function useNetworkAwareInventory() {
 
 // Network Status Bar Component
 export function InventoryNetworkStatusBar() {
-  const { 
-    isOnline, 
-    connectionState, 
-    isRetrying, 
-    hasNetworkError, 
-    canRetry, 
+  const {
+    isOnline,
+    connectionState,
+    isRetrying,
+    hasNetworkError,
+    canRetry,
     retryOperation,
     lastSync,
-    isDataStale 
+    isDataStale
   } = useNetworkAwareInventory();
 
   if (isOnline && connectionState === 'online' && !isDataStale) {
@@ -261,60 +261,60 @@ export function InventoryNetworkStatusBar() {
       <CardContent className="pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Icon 
-              className={`h-4 w-4 ${color} ${spinning ? 'animate-spin' : ''}`} 
-              aria-hidden="true" 
-            />
+            <Icon
+              className={`h-4 w-4 ${color} ${spinning ? 'animate-spin' : ''}`}
+              aria-hidden="true" />
+
             <div>
               <p className={`text-sm font-medium ${color}`}>
                 {message}
               </p>
-              {lastSync && (
-                <p className="text-xs text-gray-600 mt-1">
+              {lastSync &&
+              <p className="text-xs text-gray-600 mt-1">
                   Last synced: {lastSync.toLocaleTimeString()}
                 </p>
-              )}
+              }
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
-            {isOnline && (
-              <Badge 
-                className="text-xs" 
-                variant={connectionState === 'online' ? 'default' : 'secondary'}
-              >
+            {isOnline &&
+            <Badge
+              className="text-xs"
+              variant={connectionState === 'online' ? 'default' : 'secondary'}>
+
                 <Wifi className="h-3 w-3 mr-1" />
                 Online
               </Badge>
-            )}
+            }
             
-            {canRetry && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={retryOperation}
-                disabled={isRetrying}
-                className={`border-current ${color} hover:bg-current/10`}
-                aria-label="Retry connection"
-              >
-                {isRetrying ? (
-                  <>
+            {canRetry &&
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={retryOperation}
+              disabled={isRetrying}
+              className={`border-current ${color} hover:bg-current/10`}
+              aria-label="Retry connection">
+
+                {isRetrying ?
+              <>
                     <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                     Retrying...
-                  </>
-                ) : (
-                  <>
+                  </> :
+
+              <>
                     <RefreshCw className="h-3 w-3 mr-1" />
                     Retry
                   </>
-                )}
+              }
               </Button>
-            )}
+            }
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 }
 
 // Connection Quality Indicator
@@ -361,14 +361,14 @@ export function InventoryConnectionIndicator() {
   const { icon: Icon, color, label, variant, spinning = false } = getIndicatorProps();
 
   return (
-    <Badge 
-      variant={variant} 
+    <Badge
+      variant={variant}
       className="flex items-center space-x-1"
       role="status"
-      aria-label={`Connection status: ${label}`}
-    >
+      aria-label={`Connection status: ${label}`}>
+
       <Icon className={`h-3 w-3 ${color} ${spinning ? 'animate-spin' : ''}`} />
       <span>{label}</span>
-    </Badge>
-  );
+    </Badge>);
+
 }

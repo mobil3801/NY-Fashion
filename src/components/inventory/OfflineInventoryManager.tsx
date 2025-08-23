@@ -5,18 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  WifiOff, 
-  Database, 
-  Upload, 
+import {
+  WifiOff,
+  Database,
+  Upload,
   Download,
   AlertTriangle,
   CheckCircle2,
   Clock,
   Trash2,
   RefreshCw,
-  Loader2
-} from 'lucide-react';
+  Loader2 } from
+'lucide-react';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { useInventory } from '@/contexts/InventoryContext';
 import { toast } from '@/hooks/use-toast';
@@ -44,11 +44,11 @@ const MAX_OFFLINE_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 export function OfflineInventoryManager() {
   const { online, connectionState, retryNow } = useNetwork();
-  const { 
-    products, 
-    categories, 
-    loading, 
-    fetchProducts, 
+  const {
+    products,
+    categories,
+    loading,
+    fetchProducts,
     fetchCategories,
     saveProduct
   } = useInventory();
@@ -57,7 +57,7 @@ export function OfflineInventoryManager() {
   const [offlineData, setOfflineData] = useState<OfflineData | null>(null);
   const [syncProgress, setSyncProgress] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [storageUsage, setStorageUsage] = useState<{ used: number; quota: number } | null>(null);
+  const [storageUsage, setStorageUsage] = useState<{used: number;quota: number;} | null>(null);
 
   // Load offline data and operations from localStorage
   useEffect(() => {
@@ -140,7 +140,7 @@ export function OfflineInventoryManager() {
 
   // Remove offline operation
   const removeOfflineOperation = useCallback((operationId: string) => {
-    const updatedOperations = offlineOperations.filter(op => op.id !== operationId);
+    const updatedOperations = offlineOperations.filter((op) => op.id !== operationId);
     setOfflineOperations(updatedOperations);
     saveOfflineOperations(updatedOperations);
   }, [offlineOperations, saveOfflineOperations]);
@@ -157,7 +157,7 @@ export function OfflineInventoryManager() {
 
     for (const operation of offlineOperations) {
       try {
-        setSyncProgress((processedCount / totalOperations) * 100);
+        setSyncProgress(processedCount / totalOperations * 100);
 
         // Process different types of operations
         switch (operation.type) {
@@ -168,7 +168,7 @@ export function OfflineInventoryManager() {
             }
             // Add other entity types as needed
             break;
-          
+
           case 'delete':
             // Handle delete operations
             break;
@@ -180,7 +180,7 @@ export function OfflineInventoryManager() {
 
       } catch (error: any) {
         console.error('Error processing offline operation:', error);
-        
+
         // Update retry count
         const updatedOperation = {
           ...operation,
@@ -193,13 +193,13 @@ export function OfflineInventoryManager() {
           removeOfflineOperation(operation.id);
         } else {
           // Update operation with error info
-          const updatedOperations = offlineOperations.map(op => 
-            op.id === operation.id ? updatedOperation : op
+          const updatedOperations = offlineOperations.map((op) =>
+          op.id === operation.id ? updatedOperation : op
           );
           setOfflineOperations(updatedOperations);
           saveOfflineOperations(updatedOperations);
         }
-        
+
         processedCount++;
       }
     }
@@ -210,7 +210,7 @@ export function OfflineInventoryManager() {
     if (processedCount > 0) {
       // Refresh data after sync
       await Promise.all([fetchProducts(), fetchCategories()]);
-      
+
       toast({
         title: "Sync Complete",
         description: `Successfully synced ${processedCount} offline changes.`,
@@ -232,7 +232,7 @@ export function OfflineInventoryManager() {
   // Check storage usage
   useEffect(() => {
     if ('storage' in navigator && 'estimate' in navigator.storage) {
-      navigator.storage.estimate().then(estimate => {
+      navigator.storage.estimate().then((estimate) => {
         if (estimate.usage && estimate.quota) {
           setStorageUsage({
             used: estimate.usage,
@@ -248,7 +248,7 @@ export function OfflineInventoryManager() {
     if (offlineData && Date.now() - offlineData.lastUpdate.getTime() > MAX_OFFLINE_AGE) {
       localStorage.removeItem(OFFLINE_STORAGE_KEY);
       setOfflineData(null);
-      
+
       toast({
         title: "Offline Data Cleared",
         description: "Old offline data has been cleared to free up space.",
@@ -276,11 +276,11 @@ export function OfflineInventoryManager() {
   }, [online, retryNow, processOfflineOperations]);
 
   // Calculate storage usage percentage
-  const storagePercentage = storageUsage ? 
-    Math.round((storageUsage.used / storageUsage.quota) * 100) : 0;
+  const storagePercentage = storageUsage ?
+  Math.round(storageUsage.used / storageUsage.quota * 100) : 0;
 
-  const isOfflineDataStale = offlineData && 
-    Date.now() - offlineData.lastUpdate.getTime() > MAX_OFFLINE_AGE;
+  const isOfflineDataStale = offlineData &&
+  Date.now() - offlineData.lastUpdate.getTime() > MAX_OFFLINE_AGE;
 
   // Don't show if online and no offline operations
   if (online && offlineOperations.length === 0 && !offlineData) {
@@ -293,49 +293,49 @@ export function OfflineInventoryManager() {
       <Card className={`${!online ? 'border-amber-200 bg-amber-50' : 'border-green-200 bg-green-50'}`}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center space-x-2">
-            {!online ? (
-              <WifiOff className="h-5 w-5 text-amber-600" />
-            ) : (
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-            )}
+            {!online ?
+            <WifiOff className="h-5 w-5 text-amber-600" /> :
+
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            }
             <span>Offline Mode</span>
-            {offlineOperations.length > 0 && (
-              <Badge variant="secondary">
+            {offlineOperations.length > 0 &&
+            <Badge variant="secondary">
                 {offlineOperations.length} pending
               </Badge>
-            )}
+            }
           </CardTitle>
         </CardHeader>
         
         <CardContent>
           <div className="space-y-4">
-            {!online ? (
-              <Alert>
+            {!online ?
+            <Alert>
                 <Database className="h-4 w-4" />
                 <AlertDescription>
                   You are currently offline. All changes are being saved locally and will 
                   sync automatically when your connection is restored.
                 </AlertDescription>
-              </Alert>
-            ) : (
-              offlineOperations.length > 0 && (
-                <Alert>
+              </Alert> :
+
+            offlineOperations.length > 0 &&
+            <Alert>
                   <Upload className="h-4 w-4" />
                   <AlertDescription>
                     You have {offlineOperations.length} offline changes ready to sync.
                   </AlertDescription>
                 </Alert>
-              )
-            )}
+
+            }
 
             {/* Offline Data Info */}
-            {offlineData && (
-              <div className="bg-white p-3 rounded-lg border">
+            {offlineData &&
+            <div className="bg-white p-3 rounded-lg border">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-sm">Cached Data</h4>
-                  {isOfflineDataStale && (
-                    <Badge variant="destructive">Stale</Badge>
-                  )}
+                  {isOfflineDataStale &&
+                <Badge variant="destructive">Stale</Badge>
+                }
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -355,11 +355,11 @@ export function OfflineInventoryManager() {
                   </div>
                 </div>
               </div>
-            )}
+            }
 
             {/* Storage Usage */}
-            {storageUsage && (
-              <div className="bg-white p-3 rounded-lg border">
+            {storageUsage &&
+            <div className="bg-white p-3 rounded-lg border">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-sm">Storage Usage</h4>
                   <span className="text-sm text-gray-600">
@@ -371,18 +371,18 @@ export function OfflineInventoryManager() {
                   {Math.round(storageUsage.used / 1024 / 1024)} MB of {Math.round(storageUsage.quota / 1024 / 1024)} MB
                 </p>
               </div>
-            )}
+            }
 
             {/* Sync Progress */}
-            {isSyncing && (
-              <div>
+            {isSyncing &&
+            <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Syncing changes...</span>
                   <span className="text-sm text-gray-600">{Math.round(syncProgress)}%</span>
                 </div>
                 <Progress value={syncProgress} className="h-2" />
               </div>
-            )}
+            }
 
             {/* Actions */}
             <div className="flex items-center justify-between">
@@ -391,53 +391,53 @@ export function OfflineInventoryManager() {
                   size="sm"
                   variant="outline"
                   onClick={handleManualSync}
-                  disabled={!online || isSyncing || offlineOperations.length === 0}
-                >
-                  {isSyncing ? (
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4 mr-1" />
-                  )}
+                  disabled={!online || isSyncing || offlineOperations.length === 0}>
+
+                  {isSyncing ?
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" /> :
+
+                  <Upload className="h-4 w-4 mr-1" />
+                  }
                   Sync Now
                 </Button>
                 
-                {offlineData && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={clearOldOfflineData}
-                    disabled={!isOfflineDataStale}
-                  >
+                {offlineData &&
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={clearOldOfflineData}
+                  disabled={!isOfflineDataStale}>
+
                     <Trash2 className="h-4 w-4 mr-1" />
                     Clear Cache
                   </Button>
-                )}
+                }
               </div>
 
-              {offlineOperations.length > 0 && (
-                <Badge variant="secondary" className="flex items-center space-x-1">
+              {offlineOperations.length > 0 &&
+              <Badge variant="secondary" className="flex items-center space-x-1">
                   <Clock className="h-3 w-3" />
                   <span>{offlineOperations.length} pending</span>
                 </Badge>
-              )}
+              }
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Pending Operations List */}
-      {offlineOperations.length > 0 && (
-        <Card>
+      {offlineOperations.length > 0 &&
+      <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Pending Changes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {offlineOperations.slice(0, 5).map((operation) => (
-                <div 
-                  key={operation.id}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                >
+              {offlineOperations.slice(0, 5).map((operation) =>
+            <div
+              key={operation.id}
+              className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-1">
                       {operation.type === 'create' && <Database className="h-4 w-4 text-blue-600" />}
@@ -452,42 +452,42 @@ export function OfflineInventoryManager() {
                       <p className="text-xs text-gray-600">
                         {operation.timestamp.toLocaleTimeString()}
                       </p>
-                      {operation.lastError && (
-                        <p className="text-xs text-red-600">
+                      {operation.lastError &&
+                  <p className="text-xs text-red-600">
                           Error: {operation.lastError}
                         </p>
-                      )}
+                  }
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {operation.retryCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
+                    {operation.retryCount > 0 &&
+                <Badge variant="secondary" className="text-xs">
                         Retry {operation.retryCount}
                       </Badge>
-                    )}
+                }
                     
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeOfflineOperation(operation.id)}
-                      className="h-6 w-6 p-0"
-                    >
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => removeOfflineOperation(operation.id)}
+                  className="h-6 w-6 p-0">
+
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
-              ))}
+            )}
               
-              {offlineOperations.length > 5 && (
-                <p className="text-sm text-gray-600 text-center">
+              {offlineOperations.length > 5 &&
+            <p className="text-sm text-gray-600 text-center">
                   And {offlineOperations.length - 5} more...
                 </p>
-              )}
+            }
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
