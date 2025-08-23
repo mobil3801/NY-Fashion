@@ -22,12 +22,12 @@ const InventoryPage = () => {
 
   return (
     <InventoryProvider>
-      <div className="container mx-auto p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{t('inventory')}</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mt-2">
               Comprehensive inventory management for Bangladeshi women's wear
             </p>
           </div>
@@ -182,8 +182,8 @@ const InventoryPage = () => {
         <CSVImport isOpen={showCSVImport} onClose={() => setShowCSVImport(false)} />
         <BarcodeGeneration isOpen={showBarcodeGen} onClose={() => setShowBarcodeGen(false)} />
       </div>
-    </InventoryProvider>);
-
+    </InventoryProvider>
+  );
 };
 
 export default InventoryPage;

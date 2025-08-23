@@ -34,18 +34,24 @@ const MainLayout: React.FC = () => {
     setIsSidebarOpen(false);
   }, []);
 
+  // Fixed header heights for consistent spacing
+  const MOBILE_HEADER_HEIGHT = 64; // 16 * 4 = 64px
+  const DESKTOP_HEADER_HEIGHT = 80; // 20 * 4 = 80px
+
   return (
-    <div className="min-h-screen bg-gray-50 layout-transition">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
         onClose={closeSidebar} />
 
-      
-      <div className={`min-h-screen flex flex-col layout-transition ${isDesktop ? 'lg:ml-64' : ''}`}>
+
+
+
+      <div className={`min-h-screen flex flex-col ${isDesktop ? 'lg:ml-64' : ''}`}>
         {/* Mobile/Tablet Header Bar */}
         {(isMobile || isTablet) &&
-        <div className="flex items-center justify-between sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
                 <span className="text-white font-bold text-sm">NY</span>
@@ -64,22 +70,33 @@ const MainLayout: React.FC = () => {
             aria-expanded={isSidebarOpen}
             aria-controls="sidebar-navigation">
 
+
+
               <Menu className="w-5 h-5" />
             </Button>
           </div>
         }
 
         {/* Desktop Header */}
-        {isDesktop && <Header />}
+        {isDesktop &&
+        <div className="fixed top-0 left-64 right-0 z-30">
+            <Header />
+          </div>
+        }
 
         {/* Main Content Area */}
         <main
-          className="flex-1 responsive-padding main-content overflow-x-hidden"
+          className="flex-1 w-full"
           role="main"
           aria-label="Main content"
-          style={{ minHeight: `calc(100vh - ${isDesktop ? '80px' : '64px'})` }}>
+          style={{
+            paddingTop: isDesktop ? `${DESKTOP_HEADER_HEIGHT}px` : `${MOBILE_HEADER_HEIGHT}px`,
+            minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`
+          }}>
 
-          <div className="max-w-none mx-auto animate-fade-in">
+
+
+          <div className="px-4 sm:px-6 py-6">
             <Outlet />
           </div>
         </main>
@@ -91,6 +108,8 @@ const MainLayout: React.FC = () => {
         className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
         onClick={closeSidebar}
         aria-hidden="true" />
+
+
 
       }
     </div>);

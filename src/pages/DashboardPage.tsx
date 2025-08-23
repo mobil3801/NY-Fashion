@@ -422,15 +422,15 @@ const DashboardPage: React.FC = () => {
           <CardContent>
             {analyticsData && analyticsData.charts && analyticsData.charts.salesTrend && analyticsData.charts.salesTrend.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analyticsData.charts.salesTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
+                <LineChart data={analyticsData.charts.salesTrend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
                   dataKey="sale_date"
                   tickFormatter={(date) => format(new Date(date), 'MMM dd')} />
 
-                <YAxis yAxisId="revenue" orientation="left" tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
-                <YAxis yAxisId="count" orientation="right" />
-                <Tooltip
+                  <YAxis yAxisId="revenue" orientation="left" tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
+                  <YAxis yAxisId="count" orientation="right" />
+                  <Tooltip
                   formatter={(value, name) => {
                     if (name === 'daily_revenue') return [formatCurrency(value as number), 'Revenue'];
                     if (name === 'avg_basket') return [formatCurrency(value as number), 'Avg Basket'];
@@ -438,8 +438,8 @@ const DashboardPage: React.FC = () => {
                   }}
                   labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')} />
 
-                <Legend />
-                <Line
+                  <Legend />
+                  <Line
                   yAxisId="revenue"
                   type="monotone"
                   dataKey="daily_revenue"
@@ -447,7 +447,7 @@ const DashboardPage: React.FC = () => {
                   strokeWidth={3}
                   name="Revenue" />
 
-                <Line
+                  <Line
                   yAxisId="count"
                   type="monotone"
                   dataKey="transaction_count"
@@ -455,8 +455,8 @@ const DashboardPage: React.FC = () => {
                   strokeWidth={2}
                   name="Transactions" />
 
-              </LineChart>
-            </ResponsiveContainer> :
+                </LineChart>
+              </ResponsiveContainer> :
 
             <div className="h-64 flex items-center justify-center text-gray-500">
                 <div className="text-center">
@@ -480,8 +480,8 @@ const DashboardPage: React.FC = () => {
           <CardContent>
             {analyticsData && analyticsData.charts && analyticsData.charts.categoryBreakdown && analyticsData.charts.categoryBreakdown.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
-              <RechartsPieChart>
-                <Pie
+                <RechartsPieChart>
+                  <Pie
                   data={analyticsData.charts.categoryBreakdown}
                   dataKey="category_revenue"
                   nameKey="category_name"
@@ -490,13 +490,13 @@ const DashboardPage: React.FC = () => {
                   outerRadius={100}
                   label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}>
 
-                  {analyticsData.charts.categoryBreakdown.map((entry, index) =>
+                    {analyticsData.charts.categoryBreakdown.map((entry, index) =>
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   )}
-                </Pie>
-                <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
-              </RechartsPieChart>
-            </ResponsiveContainer> :
+                  </Pie>
+                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+                </RechartsPieChart>
+              </ResponsiveContainer> :
 
             <div className="h-64 flex items-center justify-center text-gray-500">
                 <div className="text-center">
@@ -523,19 +523,19 @@ const DashboardPage: React.FC = () => {
           <CardContent>
             {analyticsData && analyticsData.kpis && analyticsData.kpis.employeeLeaderboard && analyticsData.kpis.employeeLeaderboard.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
+                <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
                   dataKey="employee_name"
                   angle={-45}
                   textAnchor="end"
                   height={80} />
 
-                <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
-                <Bar dataKey="total_sales" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer> :
+                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
+                  <Bar dataKey="total_sales" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer> :
 
             <div className="h-64 flex items-center justify-center text-gray-500">
                 <div className="text-center">
@@ -564,14 +564,14 @@ const DashboardPage: React.FC = () => {
 
               return (
                 <div key={method.payment_method} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium capitalize">{method.payment_method}</span>
-                    <div className="text-sm text-gray-600">
-                      {method.transaction_count} ({percentage.toFixed(1)}%)
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium capitalize">{method.payment_method}</span>
+                      <div className="text-sm text-gray-600">
+                        {method.transaction_count} ({percentage.toFixed(1)}%)
+                      </div>
                     </div>
-                  </div>
-                  <Progress value={percentage} className="h-2" />
-                </div>);
+                    <Progress value={percentage} className="h-2" />
+                  </div>);
 
             }) :
             <div className="flex items-center justify-center h-32 text-gray-500">
@@ -617,7 +617,6 @@ const DashboardPage: React.FC = () => {
                     </Badge>
                   </div>
               ) :
-
               <p className="text-gray-500 text-center py-8">No low stock alerts</p>
               }
             </div>

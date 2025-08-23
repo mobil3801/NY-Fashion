@@ -29,11 +29,13 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm transition-all duration-200"
+      className="bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm transition-all duration-200 h-20"
       role="banner"
       aria-label="Main header">
 
-      <div className="px-4 sm:px-6 py-4">
+
+
+      <div className="px-4 sm:px-6 py-5">
         <div className="flex items-center justify-between w-full">
           {/* Left Section - Search */}
           <div className="flex items-center flex-1 max-w-2xl">
@@ -43,11 +45,15 @@ const Header: React.FC = () => {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none"
                 aria-hidden="true" />
 
+
+
               <input
                 type="text"
                 placeholder={t('search')}
                 className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-full transition-all duration-200 hover:border-gray-400 text-sm"
                 aria-label={t('search')} />
+
+
 
             </div>
 
@@ -63,12 +69,16 @@ const Header: React.FC = () => {
                     className="pl-10 pr-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-full"
                     autoFocus />
 
+
+
                   </div>
                   <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleSearch}
                   className="ml-2 p-2 hover:bg-gray-100 rounded-2xl">
+
+
 
                     <X className="w-5 h-5" />
                   </Button>
@@ -87,6 +97,8 @@ const Header: React.FC = () => {
               className="md:hidden p-2 hover:bg-emerald-50 rounded-2xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500"
               aria-label={t('search')}>
 
+
+
               <Search className="w-4 h-4" />
             </Button>
 
@@ -98,6 +110,8 @@ const Header: React.FC = () => {
               onKeyDown={(e) => handleKeyDown(e, handleLanguageToggle)}
               className="p-2 sm:px-3 hover:bg-emerald-50 rounded-2xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 min-w-0"
               aria-label={`Switch to ${language === 'en' ? 'বাংলা' : 'English'}`}>
+
+
 
               <Globe className="w-4 h-4 mr-0 sm:mr-2 flex-shrink-0" aria-hidden="true" />
               <span className="hidden sm:inline whitespace-nowrap text-sm">
@@ -112,11 +126,15 @@ const Header: React.FC = () => {
               className="p-2 hover:bg-emerald-50 rounded-2xl relative transition-colors duration-200 focus:ring-2 focus:ring-emerald-500"
               aria-label="Notifications">
 
+
+
               <Bell className="w-4 h-4" />
               {/* Notification indicator */}
               <span
                 className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"
                 aria-hidden="true" />
+
+
 
             </Button>
 
@@ -127,6 +145,8 @@ const Header: React.FC = () => {
                   variant="ghost"
                   className="relative h-10 w-10 rounded-2xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 hover:bg-emerald-50"
                   aria-label="User menu">
+
+
 
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.avatar} alt={user?.name || 'User avatar'} />
@@ -141,6 +161,8 @@ const Header: React.FC = () => {
                 align="end"
                 forceMount
                 sideOffset={8}>
+
+
 
                 <div className="flex items-center gap-3 p-4">
                   <Avatar className="h-10 w-10">
@@ -162,6 +184,8 @@ const Header: React.FC = () => {
                   onClick={logout}
                   className="cursor-pointer rounded-xl m-1 text-red-600 hover:text-red-700 hover:bg-red-50 focus:bg-red-50 focus:text-red-700 transition-colors duration-200"
                   role="menuitem">
+
+
 
                   <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
                   <span>{t('logout')}</span>
