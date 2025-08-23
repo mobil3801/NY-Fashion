@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,13 +12,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useApiRetry, type RetryContext } from '@/hooks/use-api-retry';
 import { normalizeError, getUserFriendlyMessage, logApiEvent, type ApiError } from '@/lib/errors';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   TrendingUp, TrendingDown, ShoppingBag, Package, Users, AlertTriangle,
   DollarSign, BarChart3, PieChart, Calendar as CalendarIcon, RefreshCw,
-  ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
+  ArrowUpIcon, ArrowDownIcon, Menu, X
+} from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+  PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar
+} from 'recharts';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4', '#84cc16', '#f97316'];
@@ -105,6 +107,7 @@ interface AnalyticsData {
 const DashboardPage: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   // State management
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -113,6 +116,9 @@ const DashboardPage: React.FC = () => {
   const [error, setError] = useState<ApiError | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [currentAttempt, setCurrentAttempt] = useState(1);
+
+  // Mobile state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Filter state
   const [dateRange, setDateRange] = useState('today');
@@ -132,11 +138,6 @@ const DashboardPage: React.FC = () => {
 
   // API retry hook
   const { executeWithRetry, abortAll } = useApiRetry();
-
-  // Refs for chart containers
-  const salesTrendRef = useRef<HTMLDivElement>(null);
-  const categoryBreakdownRef = useRef<HTMLDivElement>(null);
-  const employeeLeaderboardRef = useRef<HTMLDivElement>(null);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -360,28 +361,6 @@ const DashboardPage: React.FC = () => {
     }
   }, [isClient, dateRange, customDateRange, fetchAnalytics]);
 
-  // Auto-refresh functionality
-  useEffect(() => {
-    // Clear existing interval
-    if (autoRefreshIntervalRef.current) {
-      clearInterval(autoRefreshIntervalRef.current);
-    }
-
-    if (autoRefresh && isClient && !error) {
-      autoRefreshIntervalRef.current = setInterval(() => {
-        if (isMountedRef.current && !loading && !isRetrying) {
-          fetchAnalytics();
-        }
-      }, 60000); // Refresh every 60 seconds
-    }
-
-    return () => {
-      if (autoRefreshIntervalRef.current) {
-        clearInterval(autoRefreshIntervalRef.current);
-      }
-    };
-  }, [autoRefresh, isClient, error, loading, isRetrying, fetchAnalytics]);
-
   // Helper functions
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -400,113 +379,104 @@ const DashboardPage: React.FC = () => {
     const isPositive = change && change >= 0;
 
     return (
-      <Card className="rounded-3xl border-0 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="rounded-lg border-0 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-semibold text-gray-700">
             {title}
           </CardTitle>
-          <div className={`p-2 rounded-2xl ${color.replace('text-', 'bg-').replace('-600', '-100')}`}>
+          <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('-600', '-100')}`}>
             <IconComponent className={`w-4 h-4 ${color}`} />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
-          {change !== undefined &&
-          <div className="flex items-center text-sm">
-              {isPositive ?
-            <ArrowUpIcon className="w-4 h-4 text-emerald-500 mr-1" /> :
-            <ArrowDownIcon className="w-4 h-4 text-red-500 mr-1" />
-            }
+          <div className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{value}</div>
+          {change !== undefined && (
+            <div className="flex items-center text-sm">
+              {isPositive ? (
+                <ArrowUpIcon className="w-4 h-4 text-emerald-500 mr-1" />
+              ) : (
+                <ArrowDownIcon className="w-4 h-4 text-red-500 mr-1" />
+              )}
               <span className={isPositive ? 'text-emerald-600' : 'text-red-600'}>
                 {Math.abs(change).toFixed(1)}%
               </span>
-              <span className="text-gray-600 ml-1">vs previous period</span>
+              <span className="text-gray-600 ml-1">vs previous</span>
             </div>
-          }
+          )}
         </CardContent>
-      </Card>);
-
+      </Card>
+    );
   };
 
   // Show loading state while client-side hydration is happening or data is loading
-  if (!isClient || loading && !analyticsData) {
+  if (!isClient || (loading && !analyticsData)) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) =>
-          <Card key={i} className="rounded-3xl border-0 shadow-sm animate-pulse">
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}>
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="rounded-lg border-0 shadow-sm animate-pulse">
               <CardContent className="p-6">
                 <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
                 <div className="h-8 bg-gray-300 rounded w-3/4"></div>
               </CardContent>
             </Card>
-          )}
+          ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[1, 2].map((i) =>
-          <Card key={i} className="rounded-3xl border-0 shadow-sm animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-300 rounded w-1/3 mb-4"></div>
-                <div className="h-64 bg-gray-300 rounded"></div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>);
-
+      </div>
+    );
   }
 
   // Calculate percentage changes for KPIs
   const salesChangePercent = analyticsData?.comparison?.previousSales ?
-  calculatePercentageChange(
-    analyticsData.kpis.todaySales.total_revenue,
-    analyticsData.comparison.previousSales.total_revenue
-  ) :
-  undefined;
+    calculatePercentageChange(
+      analyticsData.kpis.todaySales.total_revenue,
+      analyticsData.comparison.previousSales.total_revenue
+    ) :
+    undefined;
 
   const transactionChangePercent = analyticsData?.comparison?.previousSales ?
-  calculatePercentageChange(
-    analyticsData.kpis.todaySales.transaction_count,
-    analyticsData.comparison.previousSales.transaction_count
-  ) :
-  undefined;
+    calculatePercentageChange(
+      analyticsData.kpis.todaySales.transaction_count,
+      analyticsData.comparison.previousSales.transaction_count
+    ) :
+    undefined;
 
   const basketChangePercent = analyticsData?.comparison?.previousSales ?
-  calculatePercentageChange(
-    analyticsData.kpis.todaySales.avg_basket_value,
-    analyticsData.comparison.previousSales.avg_basket_value
-  ) :
-  undefined;
+    calculatePercentageChange(
+      analyticsData.kpis.todaySales.avg_basket_value,
+      analyticsData.comparison.previousSales.avg_basket_value
+    ) :
+    undefined;
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       {/* Error Banner - Only show for significant errors */}
-      {error && error.code !== 'VALIDATION_ERROR' &&
-      <RetryBanner
-        error={error}
-        isRetrying={isRetrying}
-        onRetry={handleRetry}
-        onDismiss={handleClearError}
-        attempt={currentAttempt}
-        maxAttempts={3} />
-
-      }
+      {error && error.code !== 'VALIDATION_ERROR' && (
+        <RetryBanner
+          error={error}
+          isRetrying={isRetrying}
+          onRetry={handleRetry}
+          onDismiss={handleClearError}
+          attempt={currentAttempt}
+          maxAttempts={3}
+        />
+      )}
 
       {/* Header with Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-700 mt-2 font-medium text-sm lg:text-base">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <p className="text-gray-700 mt-2 font-medium text-sm sm:text-base">
             Welcome back, {user?.name}! Here's your business overview.
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -517,41 +487,43 @@ const DashboardPage: React.FC = () => {
             </SelectContent>
           </Select>
 
-          {dateRange === 'custom' &&
-          <Popover>
+          {dateRange === 'custom' && (
+            <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start text-left font-normal">
+                <Button variant="outline" className="justify-start text-left font-normal w-full sm:w-auto">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {customDateRange.from && customDateRange.to ?
-                `${format(customDateRange.from, 'MMM dd')} - ${format(customDateRange.to, 'MMM dd')}` :
-                'Select dates'
-                }
+                    `${format(customDateRange.from, 'MMM dd')} - ${format(customDateRange.to, 'MMM dd')}` :
+                    'Select dates'
+                  }
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
-                mode="range"
-                selected={{
-                  from: customDateRange.from,
-                  to: customDateRange.to
-                }}
-                onSelect={(range) => {
-                  setCustomDateRange({
-                    from: range?.from,
-                    to: range?.to
-                  });
-                }}
-                numberOfMonths={2} />
+                  mode="range"
+                  selected={{
+                    from: customDateRange.from,
+                    to: customDateRange.to
+                  }}
+                  onSelect={(range) => {
+                    setCustomDateRange({
+                      from: range?.from,
+                      to: range?.to
+                    });
+                  }}
+                  numberOfMonths={isMobile ? 1 : 2}
+                />
               </PopoverContent>
             </Popover>
-          }
+          )}
 
           <Button
             onClick={() => fetchAnalytics(true)}
             variant="outline"
             size="sm"
             disabled={loading || isRetrying}
-            className="flex items-center gap-2">
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
             <RefreshCw className={`h-4 w-4 ${loading || isRetrying ? 'animate-spin' : ''}`} />
             {isRetrying ? 'Retrying...' : 'Refresh'}
           </Button>
@@ -559,7 +531,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}>
         {renderKPICard(
           'Total Revenue',
           formatCurrency(analyticsData?.kpis.todaySales.total_revenue || 0),
@@ -590,195 +562,125 @@ const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Charts Row - Responsive layout */}
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
         {/* Sales Trend Chart */}
-        <Card className="rounded-3xl border-0 shadow-sm">
+        <Card className="rounded-lg border-0 shadow-sm">
           <CardHeader>
-            <CardTitle>Sales Trend</CardTitle>
+            <CardTitle className="text-lg">Sales Trend</CardTitle>
             <CardDescription>Daily revenue and transaction count</CardDescription>
           </CardHeader>
           <CardContent>
-            <div ref={salesTrendRef} className="w-full">
-              {isClient && analyticsData?.charts?.salesTrend?.length > 0 ?
-              <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={analyticsData.charts.salesTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
+            {isClient && analyticsData?.charts?.salesTrend?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                <LineChart data={analyticsData.charts.salesTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
                     dataKey="sale_date"
                     tick={{ fill: '#374151', fontSize: 12 }}
-                    tickFormatter={(date) => format(new Date(date), 'MMM dd')} />
-                    <YAxis yAxisId="revenue" orientation="left" tick={{ fill: '#374151', fontSize: 12 }} tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
-                    <YAxis yAxisId="count" orientation="right" tick={{ fill: '#374151', fontSize: 12 }} />
-                    <Tooltip
+                    tickFormatter={(date) => format(new Date(date), 'MMM dd')}
+                  />
+                  <YAxis 
+                    yAxisId="revenue" 
+                    orientation="left" 
+                    tick={{ fill: '#374151', fontSize: 12 }} 
+                    tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} 
+                  />
+                  <YAxis yAxisId="count" orientation="right" tick={{ fill: '#374151', fontSize: 12 }} />
+                  <Tooltip
                     formatter={(value, name) => {
                       if (name === 'daily_revenue') return [formatCurrency(value as number), 'Revenue'];
                       if (name === 'avg_basket') return [formatCurrency(value as number), 'Avg Basket'];
                       return [value, name];
                     }}
-                    labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')} />
-                    <Legend />
-                    <Line
+                    labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')}
+                  />
+                  <Legend />
+                  <Line
                     yAxisId="revenue"
                     type="monotone"
                     dataKey="daily_revenue"
                     stroke="#10b981"
                     strokeWidth={3}
-                    name="Revenue" />
-                    <Line
+                    name="Revenue"
+                  />
+                  <Line
                     yAxisId="count"
                     type="monotone"
                     dataKey="transaction_count"
                     stroke="#3b82f6"
                     strokeWidth={2}
-                    name="Transactions" />
-                  </LineChart>
-                </ResponsiveContainer> :
-              <div className="h-64 flex items-center justify-center text-gray-600">
-                  <div className="text-center">
-                    {loading || isRetrying ?
-                  <div className="animate-pulse space-y-3">
-                        <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
-                        <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
-                      </div> :
-                  <p className="font-medium">No sales data available for selected period</p>
-                  }
-                  </div>
+                    name="Transactions"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className={`${isMobile ? 'h-40' : 'h-64'} flex items-center justify-center text-gray-600`}>
+                <div className="text-center">
+                  {loading || isRetrying ? (
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+                    </div>
+                  ) : (
+                    <p className="font-medium">No sales data available for selected period</p>
+                  )}
                 </div>
-              }
-            </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Category Revenue Breakdown */}
-        <Card className="rounded-3xl border-0 shadow-sm">
+        <Card className="rounded-lg border-0 shadow-sm">
           <CardHeader>
-            <CardTitle>Revenue by Category</CardTitle>
+            <CardTitle className="text-lg">Revenue by Category</CardTitle>
             <CardDescription>Sales distribution across product categories</CardDescription>
           </CardHeader>
           <CardContent>
-            <div ref={categoryBreakdownRef} className="w-full">
-              {isClient && analyticsData?.charts?.categoryBreakdown?.length > 0 ?
-              <ResponsiveContainer width="100%" height={300}>
-                  <RechartsPieChart>
-                    <Pie
+            {isClient && analyticsData?.charts?.categoryBreakdown?.length > 0 ? (
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                <RechartsPieChart>
+                  <Pie
                     data={analyticsData.charts.categoryBreakdown}
                     dataKey="category_revenue"
                     nameKey="category_name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
-                    label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}>
-                      {analyticsData.charts.categoryBreakdown.map((entry, index) =>
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    )}
-                    </Pie>
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
-                  </RechartsPieChart>
-                </ResponsiveContainer> :
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    {loading || isRetrying ?
-                  <div className="animate-pulse space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                        <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
-                      </div> :
-                  <p>No category data available</p>
-                  }
-                  </div>
-                </div>
-              }
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Employee Performance and Payment Methods */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Employee Leaderboard */}
-        <Card className="rounded-3xl border-0 shadow-sm lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Employee Performance</CardTitle>
-            <CardDescription>Top performing team members</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div ref={employeeLeaderboardRef} className="w-full">
-              {isClient && analyticsData?.kpis?.employeeLeaderboard?.length > 0 ?
-              <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                    dataKey="employee_name"
-                    angle={-45}
-                    textAnchor="end"
-                    height={80} />
-                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
-                    <Bar dataKey="total_sales" fill="#10b981" />
-                  </BarChart>
-                </ResponsiveContainer> :
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                  <div className="text-center">
-                    {loading || isRetrying ?
-                  <div className="animate-pulse space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                        <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
-                      </div> :
-                  <p>No employee data available</p>
-                  }
-                  </div>
-                </div>
-              }
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Methods Distribution */}
-        <Card className="rounded-3xl border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle>Payment Methods</CardTitle>
-            <CardDescription>Transaction distribution</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {analyticsData?.charts?.paymentMethods?.length > 0 ?
-            analyticsData.charts.paymentMethods.map((method, index) => {
-              const total = analyticsData.charts.paymentMethods.reduce((sum, m) => sum + m.transaction_count, 0);
-              const percentage = total > 0 ? method.transaction_count / total * 100 : 0;
-
-              return (
-                <div key={method.payment_method} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium capitalize">{method.payment_method}</span>
-                      <div className="text-sm text-gray-700 font-medium">
-                        {method.transaction_count} ({percentage.toFixed(1)}%)
-                      </div>
-                    </div>
-                    <Progress value={percentage} className="h-2" />
-                  </div>);
-
-            }) :
-            <div className="flex items-center justify-center h-32 text-gray-600">
+                    outerRadius={isMobile ? 80 : 100}
+                    label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {analyticsData.charts.categoryBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className={`${isMobile ? 'h-40' : 'h-64'} flex items-center justify-center text-gray-500`}>
                 <div className="text-center">
-                  {loading || isRetrying ?
-                <div className="animate-pulse space-y-3">
-                      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
-                      <div className="h-2 bg-gray-300 rounded w-32 mx-auto"></div>
-                    </div> :
-                <p className="text-sm font-medium">No payment data available</p>
-                }
+                  {loading || isRetrying ? (
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                    </div>
+                  ) : (
+                    <p>No category data available</p>
+                  )}
                 </div>
               </div>
-            }
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Additional Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Additional Insights - Mobile friendly layout */}
+      <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
         {/* Low Stock Alerts */}
-        <Card className="rounded-3xl border-0 shadow-sm">
+        <Card className="rounded-lg border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
               Low Stock Alerts
             </CardTitle>
@@ -786,58 +688,59 @@ const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {analyticsData?.kpis.lowStockAlerts.length ?
-              analyticsData.kpis.lowStockAlerts.map((item, index) =>
-              <div key={index} className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{item.product_name}</p>
-                      {(item.size || item.color) &&
-                  <p className="text-xs text-gray-700 font-medium">
+              {analyticsData?.kpis.lowStockAlerts.length ? (
+                analyticsData.kpis.lowStockAlerts.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{item.product_name}</p>
+                      {(item.size || item.color) && (
+                        <p className="text-xs text-gray-700 font-medium truncate">
                           {[item.size, item.color].filter(Boolean).join(' - ')}
                         </p>
-                  }
+                      )}
                     </div>
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 ml-2">
                       {item.qty_on_hand} left
                     </Badge>
                   </div>
-              ) :
-              <p className="text-gray-600 text-center py-8 font-medium">No low stock alerts</p>
-              }
+                ))
+              ) : (
+                <p className="text-gray-600 text-center py-8 font-medium">No low stock alerts</p>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Top Products */}
-        <Card className="rounded-3xl border-0 shadow-sm">
+        <Card className="rounded-lg border-0 shadow-sm">
           <CardHeader>
-            <CardTitle>Top Products</CardTitle>
+            <CardTitle className="text-lg">Top Products</CardTitle>
             <CardDescription>Best selling items in selected period</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-64 overflow-y-auto">
-              {analyticsData?.kpis.topProducts.map((product, index) =>
-              <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+              {analyticsData?.kpis.topProducts.map((product, index) => (
+                <div key={product.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
                       {index + 1}
                     </div>
-                    <div>
-                      <p className="font-medium text-sm">{product.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{product.name}</p>
                       <p className="text-xs text-gray-700 font-medium">{product.total_qty} units sold</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-2">
                     <p className="font-medium text-sm">{formatCurrency(product.total_revenue)}</p>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default DashboardPage;

@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, AlertTriangle, Wifi, WifiOff, Clock, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -133,7 +132,7 @@ export function ContentLoader({
     return AlertTriangle;
   }, [isActualNetworkError, connectionState, online]);
 
-  // Auto-retry logic
+  // Auto-retry logic with improved error handling
   useEffect(() => {
     if (actualError && autoRetry && canRetry && onRetry && !isAutoRetrying && !isRetrying) {
       const shouldAutoRetry = normalizedError?.retryable !== false;
@@ -148,10 +147,15 @@ export function ContentLoader({
               try {
                 await onRetry();
                 clearRecoveryError();
+              } catch (retryError) {
+                console.error('Auto-retry failed:', retryError);
+                throw retryError;
               } finally {
                 setIsRetrying(false);
                 setLastRetryAt(new Date());
               }
+            }).catch((err) => {
+              console.error('Execute retry failed:', err);
             });
           }
         }, delay);
@@ -173,7 +177,7 @@ export function ContentLoader({
   clearRecoveryError]
   );
 
-  // Manual retry function
+  // Manual retry function with enhanced error handling
   const handleManualRetry = useCallback(async () => {
     if (isRetrying || isAutoRetrying) return;
 
@@ -201,6 +205,12 @@ export function ContentLoader({
     } catch (retryError) {
       console.error('Manual retry failed:', retryError);
       setRecoveryError(retryError instanceof Error ? retryError : new Error(String(retryError)));
+
+      toast({
+        title: "Retry Failed",
+        description: "Unable to load content. Please try again or reload the page.",
+        variant: "destructive"
+      });
     } finally {
       setIsRetrying(false);
     }
@@ -219,15 +229,19 @@ export function ContentLoader({
   const handleForceRetry = useCallback(async () => {
     if (isRetrying) return;
 
-    await forceRetry(async () => {
-      if (onRetry) {
-        await onRetry();
-        setLastRetryAt(new Date());
-      }
-    });
+    try {
+      await forceRetry(async () => {
+        if (onRetry) {
+          await onRetry();
+          setLastRetryAt(new Date());
+        }
+      });
+    } catch (error) {
+      console.error('Force retry failed:', error);
+    }
   }, [isRetrying, forceRetry, onRetry]);
 
-  // Loading state
+  // Loading state with mobile responsiveness
   if ((isLoading || isAutoRetrying || isRetrying) && !actualError) {
     const currentLoadingMessage = isAutoRetrying ?
     `Retrying... (${retryCount + 1}/${maxAutoRetries})` :
@@ -237,7 +251,7 @@ export function ContentLoader({
 
     if (compactMode) {
       return (
-        <div className={`flex items-center justify-center min-h-16 ${className}`}>
+        <div className={`flex items-center justify-center min-h-16 p-4 ${className}`}>
           <div className="flex items-center space-x-2">
             <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
             <span className="text-sm text-gray-600">{currentLoadingMessage}</span>
@@ -247,7 +261,7 @@ export function ContentLoader({
     }
 
     return (
-      <div className={`flex items-center justify-center min-h-32 ${className}`}>
+      <div className={`flex items-center justify-center min-h-32 p-4 ${className}`}>
         <div className="text-center space-y-3 p-4">
           <RefreshCw className="h-6 w-6 animate-spin mx-auto text-blue-500" />
           <p className="text-sm text-gray-600">{currentLoadingMessage}</p>
@@ -261,7 +275,7 @@ export function ContentLoader({
 
   }
 
-  // Error state
+  // Error state with mobile responsiveness
   if (actualError) {
     const ErrorIcon = getErrorIcon();
     const canRetryManually = showRetryButton && onRetry && !isRetrying;
@@ -269,12 +283,12 @@ export function ContentLoader({
 
     if (compactMode) {
       return (
-        <div className={`flex items-center justify-between p-3 bg-red-50 border border-red-200 rounded-lg ${className}`}>
-          <div className="flex items-center space-x-2 flex-1">
-            <ErrorIcon className={`h-4 w-4 ${isActualNetworkError ? 'text-amber-600' : 'text-red-600'}`} />
-            <span className="text-sm text-gray-700">{getErrorMessage()}</span>
+        <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-red-50 border border-red-200 rounded-lg space-y-2 sm:space-y-0 ${className}`}>
+          <div className="flex items-center space-x-2 flex-1 min-w-0">
+            <ErrorIcon className={`h-4 w-4 flex-shrink-0 ${isActualNetworkError ? 'text-amber-600' : 'text-red-600'}`} />
+            <span className="text-sm text-gray-700 break-words">{getErrorMessage()}</span>
           </div>
-          <div className="flex space-x-1">
+          <div className="flex space-x-1 flex-shrink-0">
             {canRetryManually &&
             <Button
               onClick={handleManualRetry}
@@ -291,8 +305,8 @@ export function ContentLoader({
     }
 
     return (
-      <div className={`flex items-center justify-center min-h-32 ${className}`}>
-        <Card className="w-full max-w-md mx-4">
+      <div className={`flex items-center justify-center min-h-32 p-4 ${className}`}>
+        <Card className="w-full max-w-md mx-auto">
           <CardContent className="pt-6">
             <div className="text-center space-y-4">
               <div className="flex justify-center">
@@ -306,10 +320,10 @@ export function ContentLoader({
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 break-words">
                   {errorTitle}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 break-words">
                   {getErrorMessage()}
                 </p>
                 {retryCount > 0 &&
@@ -322,12 +336,12 @@ export function ContentLoader({
                 }
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <div className="flex flex-col space-y-2 pt-4">
                 {canRetryManually &&
                 <Button
                   onClick={handleManualRetry}
                   variant="default"
-                  className="flex-1"
+                  className="w-full"
                   disabled={isRetrying}>
 
                     {isRetrying ?
@@ -344,33 +358,35 @@ export function ContentLoader({
                   </Button>
                 }
                 
-                {canForceRetry &&
-                <Button
-                  onClick={handleForceRetry}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={isRetrying}>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {canForceRetry &&
+                  <Button
+                    onClick={handleForceRetry}
+                    variant="outline"
+                    className="flex-1"
+                    disabled={isRetrying}>
 
-                    Force Retry
-                  </Button>
-                }
-                
-                {showReloadButton && onReload &&
-                <Button
-                  onClick={onReload}
-                  variant="outline"
-                  className="flex-1">
+                      Force Retry
+                    </Button>
+                  }
+                  
+                  {showReloadButton && onReload &&
+                  <Button
+                    onClick={onReload}
+                    variant="outline"
+                    className="flex-1">
 
-                    Reload Page
-                  </Button>
-                }
+                      Reload Page
+                    </Button>
+                  }
+                </div>
               </div>
 
               {/* Network status and recovery info */}
               {showNetworkStatus && isActualNetworkError &&
               <div className="mt-4 p-3 bg-blue-50 rounded-lg space-y-2">
                   <div className="text-xs text-blue-800">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
                       <span><strong>Connection:</strong> {connectionState}</span>
                       <span><strong>Status:</strong> {online ? 'Online' : 'Offline'}</span>
                     </div>
@@ -381,7 +397,7 @@ export function ContentLoader({
                     </div>
                 }
                   {isAutoRetrying &&
-                <div className="text-xs text-blue-700 flex items-center">
+                <div className="text-xs text-blue-700 flex items-center justify-center">
                       <Clock className="h-3 w-3 mr-1" />
                       Auto-retry in progress...
                     </div>
@@ -427,8 +443,9 @@ export function SmartContentLoader({
     try {
       await loadOperation();
     } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      throw err;
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      throw error;
     } finally {
       setIsLoading(false);
     }

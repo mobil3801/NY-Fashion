@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -11,8 +10,9 @@ import {
   Wallet,
   Shield,
   Settings,
-  X } from
-'lucide-react';
+  X,
+  CreditCard
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,20 +31,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
   const location = useLocation();
 
   const menuItems = [
-  { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
-  { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
-  { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
-  { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
-  { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
-  { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
-  { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
-  { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
-  { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
-  { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }];
-
+    { icon: LayoutDashboard, label: t('dashboard', 'Dashboard'), path: '/dashboard', resource: 'dashboard' },
+    { icon: CreditCard, label: 'Point of Sale', path: '/pos', resource: 'sales' },
+    { icon: ShoppingBag, label: t('sales', 'Sales'), path: '/sales', resource: 'sales' },
+    { icon: FileText, label: t('invoices', 'Invoices'), path: '/invoices', resource: 'invoices' },
+    { icon: ShoppingCart, label: t('purchases', 'Purchases'), path: '/purchases', resource: 'purchases' },
+    { icon: Package, label: t('inventory', 'Inventory'), path: '/inventory', resource: 'inventory' },
+    { icon: Users, label: t('employees', 'Employees'), path: '/employees', resource: 'employees' },
+    { icon: Wallet, label: t('salary', 'Payroll'), path: '/salary', resource: 'salary' },
+    { icon: Shield, label: t('admin', 'Admin'), path: '/admin', resource: 'admin' },
+    { icon: Settings, label: t('settings', 'Settings'), path: '/settings', resource: 'settings' }
+  ];
 
   const availableMenuItems = menuItems.filter((item) =>
-  user && canAccess(user.role, item.resource)
+    user && canAccess(user.role, item.resource)
   );
 
   const handleLinkClick = () => {
@@ -55,24 +55,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {isOpen &&
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-        onClick={onClose} />
-
-      }
-      
       {/* Sidebar */}
-      <aside className={cn(
-        'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r shadow-sm flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
-        isOpen ? 'translate-x-0' : '-translate-x-full',
-        className
-      )}>
+      <aside 
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r shadow-lg flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
+          className
+        )}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <h2 className="font-bold">NY FASHION</h2>
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <div className="flex items-center space-x-3">
+            <img
+              src="https://cdn.ezsite.ai/AutoDev/19016/bb4a2cd5-b101-49df-bd0d-eeb788f55077.jpg"
+              alt="Logo"
+              className="h-8 w-8 rounded object-contain bg-white p-1"
+            />
+            <div>
+              <h2 className="font-bold text-lg">NY FASHION</h2>
+              <p className="text-xs text-blue-100">Business Management</p>
+            </div>
           </div>
           
           {/* Close button for mobile */}
@@ -80,8 +82,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="lg:hidden p-2">
-
+            className="lg:hidden p-2 text-white hover:bg-white/20 touch-manipulation"
+            aria-label="Close sidebar"
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -90,7 +93,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
         <nav className="flex-1 flex flex-col space-y-1 p-4 overflow-y-auto">
           {availableMenuItems.map((item) => {
             const isActive = location.pathname === item.path ||
-            item.path !== '/dashboard' && location.pathname.startsWith(item.path);
+              (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
 
             return (
               <NavLink
@@ -98,21 +101,41 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
                 to={item.path}
                 onClick={handleLinkClick}
                 className={cn(
-                  'px-3 py-3 lg:py-2 rounded-lg flex items-center space-x-3 transition-colors duration-200',
-                  isActive ?
-                  'bg-emerald-100 text-emerald-800' :
-                  'text-gray-700 hover:bg-gray-100'
-                )}>
-
+                  'px-4 py-3 rounded-lg flex items-center space-x-3 transition-all duration-200 touch-manipulation',
+                  isActive
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </NavLink>);
-
+                <span className="font-medium truncate">{item.label}</span>
+                {isActive && (
+                  <div className="w-2 h-2 bg-blue-600 rounded-full ml-auto"></div>
+                )}
+              </NavLink>
+            );
           })}
         </nav>
+        
+        {/* User info at bottom */}
+        <div className="p-4 border-t bg-gray-50">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <Users className="w-4 h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.name || 'User'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email}
+              </p>
+            </div>
+          </div>
+        </div>
       </aside>
-    </>);
-
+    </>
+  );
 };
 
 export default Sidebar;

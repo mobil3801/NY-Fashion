@@ -342,6 +342,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -533,6 +535,4 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
           </div>
         </div>
       </DialogContent>
-    </Dialog>;};
-
-export default ReturnExchangeModal;
+    </Dialog>;};export default ReturnExchangeModal;

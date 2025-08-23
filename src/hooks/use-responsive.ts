@@ -1,59 +1,65 @@
-
 import { useState, useEffect } from 'react';
-
-interface ResponsiveState {
-  isMobile: boolean;
-  isTablet: boolean;
-  isDesktop: boolean;
-  width: number;
-  height: number;
-}
-
-export const useResponsive = (): ResponsiveState => {
-  const [state, setState] = useState<ResponsiveState>({
-    isMobile: false,
-    isTablet: false,
-    isDesktop: false,
-    width: 0,
-    height: 0
-  });
-
-  useEffect(() => {
-    const updateSize = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-
-      setState({
-        isMobile: width < 768,
-        isTablet: width >= 768 && width < 1024,
-        isDesktop: width >= 1024,
-        width,
-        height
-      });
-    };
-
-    // Initial size
-    updateSize();
-
-    // Add event listener
-    window.addEventListener('resize', updateSize);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
-
-  return state;
-};
 
 // Breakpoint constants
 export const BREAKPOINTS = {
-  MOBILE: 768,
-  TABLET: 1024,
-  DESKTOP: 1280,
-  LARGE: 1536
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536,
 } as const;
 
-// Utility functions
-export const isMobileDevice = () => window.innerWidth < BREAKPOINTS.MOBILE;
-export const isTabletDevice = () => window.innerWidth >= BREAKPOINTS.MOBILE && window.innerWidth < BREAKPOINTS.TABLET;
-export const isDesktopDevice = () => window.innerWidth >= BREAKPOINTS.TABLET;
+export type Breakpoint = keyof typeof BREAKPOINTS;
+
+export function useResponsive() {
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768,
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    function handleResize() {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isAbove = (breakpoint: Breakpoint) => windowSize.width >= BREAKPOINTS[breakpoint];
+  const isBelow = (breakpoint: Breakpoint) => windowSize.width < BREAKPOINTS[breakpoint];
+
+  return {
+    width: windowSize.width,
+    height: windowSize.height,
+    isAbove,
+    isBelow,
+    isMobile: windowSize.width < BREAKPOINTS.md,
+    isTablet: windowSize.width >= BREAKPOINTS.md && windowSize.width < BREAKPOINTS.lg,
+    isDesktop: windowSize.width >= BREAKPOINTS.lg,
+    isXl: windowSize.width >= BREAKPOINTS.xl,
+    is2Xl: windowSize.width >= BREAKPOINTS['2xl'],
+  };
+}
+
+// Utility functions for conditional responsive behavior
+export function isMobileDevice() {
+  return typeof window !== 'undefined' && window.innerWidth < BREAKPOINTS.md;
+}
+
+export function isTabletDevice() {
+  return typeof window !== 'undefined' && 
+         window.innerWidth >= BREAKPOINTS.md && 
+         window.innerWidth < BREAKPOINTS.lg;
+}
+
+export function isDesktopDevice() {
+  return typeof window !== 'undefined' && window.innerWidth >= BREAKPOINTS.lg;
+}
+
+export default useResponsive;
