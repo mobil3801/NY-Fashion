@@ -111,7 +111,7 @@ const MainLayout: React.FC = () => {
 
         {/* Main Content Area - Fixed spacing issues */}
         <main
-          className="flex-1 w-full"
+          className="py-[0px] flex-1 w-full"
           role="main"
           aria-label="Main content"
           style={{
@@ -119,11 +119,11 @@ const MainLayout: React.FC = () => {
             minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`
           }}>
 
+          Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
 
-
-          <div className="px-4 sm:px-6">
-            <Outlet />
-          </div>
+          <div className="px-4 sm:px-6">Analytics Dashboard
+            <Outlet />Analytics Dashboard
+          </div>Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
         </main>
       </div>
 
