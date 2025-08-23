@@ -66,11 +66,11 @@ class InventoryErrorBoundary extends Component<Props, State> {
 
 
 
+
+
       // Example: Sentry, LogRocket, etc.
       // errorMonitoring.captureException(error, { extra: errorInfo });
-    } catch (monitoringError) {console.error('Failed to report error:', monitoringError);}}componentWillUnmount() {if (this.retryTimeoutId) {
-      clearTimeout(this.retryTimeoutId);
-    }
+    } catch (monitoringError) {console.error('Failed to report error:', monitoringError);}}componentWillUnmount() {if (this.retryTimeoutId) {clearTimeout(this.retryTimeoutId);}
   }
 
   handleRetry = () => {

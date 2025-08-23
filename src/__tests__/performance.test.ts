@@ -233,9 +233,9 @@ describe('Performance Optimizations', () => {
 
 
 
+
           // Mock terminate
-        }}const worker = new MockWorker();let receivedResult = false;worker.onmessage = (event) => {if (event.data.type === 'DATA_PROCESSED') {receivedResult = true;expect(event.data.result).toBeDefined();done();
-        }
+        }}const worker = new MockWorker();let receivedResult = false;worker.onmessage = (event) => {if (event.data.type === 'DATA_PROCESSED') {receivedResult = true;expect(event.data.result).toBeDefined();done();}
       };
 
       worker.postMessage({
