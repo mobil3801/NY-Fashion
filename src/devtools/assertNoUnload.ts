@@ -108,9 +108,9 @@ export function checkForExistingUnloadHandlers(): Array<{
 
 
 
+
         // getEventListeners might not be available
-      }}};
-  checkTarget(window, 'window');
+      }}};checkTarget(window, 'window');
   checkTarget(document, 'document');
   checkTarget(document.body, 'document.body');
 

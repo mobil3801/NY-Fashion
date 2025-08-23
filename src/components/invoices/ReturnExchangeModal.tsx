@@ -304,6 +304,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -413,8 +415,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <CardDescription>Choose quantities and conditions for returned items</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? <div className="text-center py-8">Loading items...</div> :
-            <div className="border rounded-lg overflow-hidden">
+              {loading ? <div className="text-center py-8">Loading items...</div> : <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -427,66 +428,65 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoiceItems.map((item) => {
-                    const returnItem = returnItems.find((ri) => ri.itemId === item.id);
-                    const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
+                      {invoiceItems.map((item) => {const returnItem = returnItems.find((ri) => ri.itemId === item.id);
+                      const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
 
-                    return (
-                      <TableRow key={item.id}>
+                      return (
+                        <TableRow key={item.id}>
                             <TableCell>
                               <div>
                                 <p className="font-medium">{item.product_name}</p>
                                 {item.sku &&
-                            <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                            }
+                              <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                              }
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{item.quantity}</TableCell>
                             <TableCell className="text-center">
                               <Input
-                            type="number"
-                            min="0"
-                            max={maxReturnQty}
-                            value={returnItem?.returnQuantity || 0}
-                            onChange={(e) =>
-                            handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
-                            }
-                            className="w-20 text-center" />
+                              type="number"
+                              min="0"
+                              max={maxReturnQty}
+                              value={returnItem?.returnQuantity || 0}
+                              onChange={(e) =>
+                              handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
+                              }
+                              className="w-20 text-center" />
 
                             </TableCell>
                             <TableCell>
                               <Select
-                            value={returnItem?.condition || 'good'}
-                            onValueChange={(value) => handleConditionChange(item.id, value)}
-                            disabled={!returnItem?.returnQuantity}>
+                              value={returnItem?.condition || 'good'}
+                              onValueChange={(value) => handleConditionChange(item.id, value)}
+                              disabled={!returnItem?.returnQuantity}>
 
                                 <SelectTrigger className="w-40">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {itemConditions.map((condition) =>
-                              <SelectItem key={condition.value} value={condition.value}>
+                                <SelectItem key={condition.value} value={condition.value}>
                                       {condition.label}
                                     </SelectItem>
-                              )}
+                                )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
                             <TableCell>
                               <Select
-                            value={returnItem?.reason || ''}
-                            onValueChange={(value) => handleReasonChange(item.id, value)}
-                            disabled={!returnItem?.returnQuantity}>
+                              value={returnItem?.reason || ''}
+                              onValueChange={(value) => handleReasonChange(item.id, value)}
+                              disabled={!returnItem?.returnQuantity}>
 
                                 <SelectTrigger className="w-40">
                                   <SelectValue placeholder="Select reason" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {returnReasons.map((reason) =>
-                              <SelectItem key={reason} value={reason}>
+                                <SelectItem key={reason} value={reason}>
                                       {reason}
                                     </SelectItem>
-                              )}
+                                )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
@@ -495,7 +495,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             </TableCell>
                           </TableRow>);
 
-                  })}
+                    })}
                     </TableBody>
                   </Table>
                 </div>

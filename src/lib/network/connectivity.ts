@@ -262,7 +262,7 @@ class ConnectivityMonitor {
 
   public getStatus(): NetStatus {
     // Ensure consecutiveFailures is always defined in returned status
-    return { 
+    return {
       ...this.status,
       consecutiveFailures: this.status.consecutiveFailures || 0
     };
@@ -279,9 +279,9 @@ class ConnectivityMonitor {
   }
 
   public getDiagnostics() {
-    return { 
+    return {
       connectivity: {
-        ...this.diagnostics, 
+        ...this.diagnostics,
         lastSuccessfulEndpoint: this.lastSuccessfulEndpoint
       }
     };

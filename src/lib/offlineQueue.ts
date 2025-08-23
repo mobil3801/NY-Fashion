@@ -82,7 +82,7 @@ class IndexedDBWrapper {
       request.onsuccess = () => {
         this.db = request.result;
         this.isAvailable = true;
-        
+
         // Verify store and indexes exist
         if (!this.db.objectStoreNames.contains(this.storeName)) {
           console.error('[OfflineQueue] Store missing after open');
@@ -92,14 +92,14 @@ class IndexedDBWrapper {
           resolve(false);
           return;
         }
-        
+
         console.log('[OfflineQueue] IndexedDB initialized successfully');
         resolve(true);
       };
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        
+
         try {
           // Handle schema migrations
           this.performSchemaUpgrade(db, event.oldVersion, event.newVersion || this.version);
@@ -144,7 +144,7 @@ class IndexedDBWrapper {
       try {
         const transaction = this.db!.transaction([this.storeName], 'readonly');
         const store = transaction.objectStore(this.storeName);
-        
+
         // Safe index access with fallback
         let request: IDBRequest;
         try {
@@ -160,7 +160,7 @@ class IndexedDBWrapper {
           const results = (request.result || []).sort((a: QueuedOperation, b: QueuedOperation) => a.createdAt - b.createdAt);
           resolve(results);
         };
-        
+
         request.onerror = () => {
           console.error('[OfflineQueue] getAll error:', request.error);
           reject(request.error);
@@ -293,10 +293,10 @@ export class OfflineQueue {
 
   private async initializeIDB(): Promise<void> {
     this.idb = new IndexedDBWrapper();
-    
+
     try {
       const success = await this.idb.init();
-      
+
       if (success) {
         // Load existing operations from IndexedDB and ensure FIFO ordering
         try {
@@ -305,12 +305,12 @@ export class OfflineQueue {
           this.memoryQueue.sort((a, b) => a.createdAt - b.createdAt);
         } catch (error) {
           console.warn('[OfflineQueue] Failed to load from IndexedDB, retrying once...', error);
-          
+
           // Retry once on NotFoundError or similar issues
           if (this.idbRetryAttempts < MAX_IDB_RETRIES) {
             this.idbRetryAttempts++;
-            await new Promise(resolve => setTimeout(resolve, IDB_RETRY_DELAY));
-            
+            await new Promise((resolve) => setTimeout(resolve, IDB_RETRY_DELAY));
+
             // Try to reopen database
             const retrySuccess = await this.idb.init();
             if (retrySuccess) {
@@ -324,7 +324,7 @@ export class OfflineQueue {
               }
             }
           }
-          
+
           // Fall back to memory-only mode
           this.fallbackToMemory();
         }
@@ -487,9 +487,9 @@ export class OfflineQueue {
   }
 
   // Development safeguards
-  getDebugInfo(): { 
-    isInitialized: boolean; 
-    useMemoryFallback: boolean; 
+  getDebugInfo(): {
+    isInitialized: boolean;
+    useMemoryFallback: boolean;
     queueSize: number;
     idbRetryAttempts: number;
   } {

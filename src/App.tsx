@@ -9,7 +9,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { InventoryProvider } from './contexts/InventoryContext';
 import { PurchaseOrderProvider } from './contexts/PurchaseOrderContext';
 import { EmployeeProvider } from '@/contexts/EmployeeContext';
-import { DebugProvider } from '@/contexts/DebugContext';
+
 import NetworkErrorBoundary from '@/components/network/NetworkErrorBoundary';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/layout/MainLayout';

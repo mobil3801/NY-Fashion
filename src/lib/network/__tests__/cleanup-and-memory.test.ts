@@ -219,9 +219,9 @@ describe('Cleanup and Memory Management Tests', () => {
         await monitor.checkNow();
       } catch {
 
+
         // Expected to fail after destroy
-      }
-      expect(listener.mock.calls.length).toBe(listenerCallsBefore);
+      }expect(listener.mock.calls.length).toBe(listenerCallsBefore);
     });
 
     it('should handle listener removal during destroy', () => {

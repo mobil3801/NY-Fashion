@@ -213,11 +213,11 @@ export function useApiRetry() {
 
 
 
+
     // Debug context not available, continue without it
   } // Cleanup on unmount
   useEffect(() => {isMountedRef.current = true;return () => {isMountedRef.current = false; // Abort all ongoing operations
-        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};
-    }, []);
+        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);
 
   const executeWithRetry = useCallback(async <T,>(
   fn: (ctx: RetryContext) => Promise<T>,
