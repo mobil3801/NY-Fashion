@@ -52,12 +52,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         OrderByField: 'first_name',
         IsAsc: true,
         Filters: [
-          {
-            name: 'status',
-            op: 'Equal',
-            value: 'active'
-          }
-        ]
+        {
+          name: 'status',
+          op: 'Equal',
+          value: 'active'
+        }]
+
       });
 
       if (error) throw error;
@@ -102,20 +102,20 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   };
 
   const paymentMethods = [
-    { value: 'cash', label: 'Cash' },
-    { value: 'credit_card', label: 'Credit Card' },
-    { value: 'debit_card', label: 'Debit Card' },
-    { value: 'mobile_payment', label: 'Mobile Payment' },
-    { value: 'gift_card', label: 'Gift Card' },
-    { value: 'store_credit', label: 'Store Credit' }
-  ];
+  { value: 'cash', label: 'Cash' },
+  { value: 'credit_card', label: 'Credit Card' },
+  { value: 'debit_card', label: 'Debit Card' },
+  { value: 'mobile_payment', label: 'Mobile Payment' },
+  { value: 'gift_card', label: 'Gift Card' },
+  { value: 'store_credit', label: 'Store Credit' }];
+
 
   const statuses = [
-    { value: 'completed', label: 'Completed' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'voided', label: 'Voided' },
-    { value: 'refunded', label: 'Refunded' }
-  ];
+  { value: 'completed', label: 'Completed' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'voided', label: 'Voided' },
+  { value: 'refunded', label: 'Refunded' }];
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -130,14 +130,14 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 className={cn(
                   "w-full justify-start text-left font-normal",
                   !filters.dateRange.from && "text-muted-foreground"
-                )}
-              >
+                )}>
+
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateRange.from ? (
-                  format(filters.dateRange.from, "PPP")
-                ) : (
-                  <span>From date</span>
-                )}
+                {filters.dateRange.from ?
+                format(filters.dateRange.from, "PPP") :
+
+                <span>From date</span>
+                }
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -145,8 +145,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 mode="single"
                 selected={filters.dateRange.from}
                 onSelect={(date) => handleDateRangeChange('from', date)}
-                initialFocus
-              />
+                initialFocus />
+
             </PopoverContent>
           </Popover>
           
@@ -157,14 +157,14 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 className={cn(
                   "w-full justify-start text-left font-normal",
                   !filters.dateRange.to && "text-muted-foreground"
-                )}
-              >
+                )}>
+
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateRange.to ? (
-                  format(filters.dateRange.to, "PPP")
-                ) : (
-                  <span>To date</span>
-                )}
+                {filters.dateRange.to ?
+                format(filters.dateRange.to, "PPP") :
+
+                <span>To date</span>
+                }
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -172,53 +172,53 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 mode="single"
                 selected={filters.dateRange.to}
                 onSelect={(date) => handleDateRangeChange('to', date)}
-                initialFocus
-              />
+                initialFocus />
+
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
       {/* Employee Filter */}
-      {canViewAllEmployees && (
-        <div className="space-y-2">
+      {canViewAllEmployees &&
+      <div className="space-y-2">
           <Label>Employee</Label>
-          <Select 
-            value={filters.employee} 
-            onValueChange={(value) => handleFilterChange('employee', value)}
-          >
+          <Select
+          value={filters.employee}
+          onValueChange={(value) => handleFilterChange('employee', value)}>
+
             <SelectTrigger>
               <SelectValue placeholder="Select employee" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Employees</SelectItem>
-              {employees.map((employee) => (
-                <SelectItem key={employee.id} value={employee.id.toString()}>
+              {employees.map((employee) =>
+            <SelectItem key={employee.id} value={employee.id.toString()}>
                   {employee.first_name} {employee.last_name}
                 </SelectItem>
-              ))}
+            )}
             </SelectContent>
           </Select>
         </div>
-      )}
+      }
 
       {/* Payment Method */}
       <div className="space-y-2">
         <Label>Payment Method</Label>
-        <Select 
-          value={filters.paymentMethod} 
-          onValueChange={(value) => handleFilterChange('paymentMethod', value)}
-        >
+        <Select
+          value={filters.paymentMethod}
+          onValueChange={(value) => handleFilterChange('paymentMethod', value)}>
+
           <SelectTrigger>
             <SelectValue placeholder="Select payment method" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Methods</SelectItem>
-            {paymentMethods.map((method) => (
-              <SelectItem key={method.value} value={method.value}>
+            {paymentMethods.map((method) =>
+            <SelectItem key={method.value} value={method.value}>
                 {method.label}
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -226,20 +226,20 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       {/* Status */}
       <div className="space-y-2">
         <Label>Status</Label>
-        <Select 
-          value={filters.status} 
-          onValueChange={(value) => handleFilterChange('status', value)}
-        >
+        <Select
+          value={filters.status}
+          onValueChange={(value) => handleFilterChange('status', value)}>
+
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Statuses</SelectItem>
-            {statuses.map((status) => (
-              <SelectItem key={status.value} value={status.value}>
+            {statuses.map((status) =>
+            <SelectItem key={status.value} value={status.value}>
                 {status.label}
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -251,8 +251,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           type="text"
           placeholder="Search customer..."
           value={filters.customer}
-          onChange={(e) => handleFilterChange('customer', e.target.value)}
-        />
+          onChange={(e) => handleFilterChange('customer', e.target.value)} />
+
       </div>
 
       {/* Amount Range */}
@@ -264,8 +264,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           value={filters.minAmount}
           onChange={(e) => handleFilterChange('minAmount', e.target.value)}
           step="0.01"
-          min="0"
-        />
+          min="0" />
+
       </div>
 
       <div className="space-y-2">
@@ -276,8 +276,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           value={filters.maxAmount}
           onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
           step="0.01"
-          min="0"
-        />
+          min="0" />
+
       </div>
 
       {/* Quick Date Filters */}
@@ -291,8 +291,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               const today = new Date();
               handleDateRangeChange('from', today);
               handleDateRangeChange('to', today);
-            }}
-          >
+            }}>
+
             Today
           </Button>
           <Button
@@ -304,8 +304,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               yesterday.setDate(yesterday.getDate() - 1);
               handleDateRangeChange('from', yesterday);
               handleDateRangeChange('to', yesterday);
-            }}
-          >
+            }}>
+
             Yesterday
           </Button>
           <Button
@@ -317,8 +317,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               weekAgo.setDate(weekAgo.getDate() - 7);
               handleDateRangeChange('from', weekAgo);
               handleDateRangeChange('to', today);
-            }}
-          >
+            }}>
+
             Last 7 Days
           </Button>
           <Button
@@ -330,8 +330,8 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               monthAgo.setDate(monthAgo.getDate() - 30);
               handleDateRangeChange('from', monthAgo);
               handleDateRangeChange('to', today);
-            }}
-          >
+            }}>
+
             Last 30 Days
           </Button>
           <Button
@@ -342,14 +342,14 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
               handleDateRangeChange('from', startOfMonth);
               handleDateRangeChange('to', today);
-            }}
-          >
+            }}>
+
             This Month
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default AdvancedFilters;

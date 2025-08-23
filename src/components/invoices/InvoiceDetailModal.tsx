@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Printer, Mail, Undo2, Download, CheckCircle, Clock, 
+import {
+  Printer, Mail, Undo2, Download, CheckCircle, Clock,
   XCircle, AlertCircle, User, Calendar, CreditCard, FileText,
-  Phone, MapPin
-} from 'lucide-react';
+  Phone, MapPin } from
+'lucide-react';
 import { format } from 'date-fns';
 
 interface InvoiceDetailModalProps {
@@ -57,22 +57,22 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
 
   const loadInvoiceItems = async () => {
     if (!invoice?.id) return;
-    
+
     try {
       setLoading(true);
-      
+
       const { data, error } = await window.ezsite.apis.tablePage(36857, {
         PageNo: 1,
         PageSize: 100,
         OrderByField: 'id',
         IsAsc: true,
         Filters: [
-          {
-            name: 'sale_id',
-            op: 'Equal',
-            value: invoice.id
-          }
-        ]
+        {
+          name: 'sale_id',
+          op: 'Equal',
+          value: invoice.id
+        }]
+
       });
 
       if (error) throw error;
@@ -83,7 +83,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
       toast({
         title: "Error",
         description: "Failed to load invoice items",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -97,16 +97,16 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
       partial: { color: 'bg-blue-100 text-blue-800', icon: AlertCircle },
       voided: { color: 'bg-red-100 text-red-800', icon: XCircle }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     const Icon = config.icon;
-    
+
     return (
       <Badge className={`${config.color} border-0 text-sm px-3 py-1`}>
         <Icon className="w-4 h-4 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
@@ -148,11 +148,11 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
             </DialogTitle>
             <div className="flex items-center space-x-2">
               {getStatusBadge(invoice.status)}
-              {isOverdue() && (
-                <Badge variant="destructive" className="text-sm px-3 py-1">
+              {isOverdue() &&
+              <Badge variant="destructive" className="text-sm px-3 py-1">
                   OVERDUE
                 </Badge>
-              )}
+              }
             </div>
           </div>
         </DialogHeader>
@@ -173,24 +173,24 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   <p className="font-semibold text-lg">
                     {invoice.customer_name || 'Walk-in Customer'}
                   </p>
-                  {invoice.customer_email && (
-                    <p className="text-gray-600 flex items-center mt-1">
+                  {invoice.customer_email &&
+                  <p className="text-gray-600 flex items-center mt-1">
                       <Mail className="w-4 h-4 mr-2" />
                       {invoice.customer_email}
                     </p>
-                  )}
-                  {invoice.customer_phone && (
-                    <p className="text-gray-600 flex items-center mt-1">
+                  }
+                  {invoice.customer_phone &&
+                  <p className="text-gray-600 flex items-center mt-1">
                       <Phone className="w-4 h-4 mr-2" />
                       {invoice.customer_phone}
                     </p>
-                  )}
-                  {invoice.customer_address && (
-                    <p className="text-gray-600 flex items-center mt-1">
+                  }
+                  {invoice.customer_address &&
+                  <p className="text-gray-600 flex items-center mt-1">
                       <MapPin className="w-4 h-4 mr-2" />
                       {invoice.customer_address}
                     </p>
-                  )}
+                  }
                 </div>
               </CardContent>
             </Card>
@@ -210,14 +210,14 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                     <p>{formatDate(invoice.created_at)}</p>
                     <p className="text-gray-500">{formatTime(invoice.created_at)}</p>
                   </div>
-                  {invoice.due_date && (
-                    <div>
+                  {invoice.due_date &&
+                  <div>
                       <p className="font-medium text-gray-600">Due Date:</p>
                       <p className={isOverdue() ? 'text-red-600 font-medium' : ''}>
                         {formatDate(invoice.due_date)}
                       </p>
                     </div>
-                  )}
+                  }
                   <div>
                     <p className="font-medium text-gray-600">Payment Method:</p>
                     <Badge variant="outline" className="capitalize">
@@ -225,12 +225,12 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                       {invoice.payment_method?.replace('_', ' ') || 'N/A'}
                     </Badge>
                   </div>
-                  {invoice.employee_name && (
-                    <div>
+                  {invoice.employee_name &&
+                  <div>
                       <p className="font-medium text-gray-600">Processed by:</p>
                       <p>{invoice.employee_name}</p>
                     </div>
-                  )}
+                  }
                 </div>
               </CardContent>
             </Card>
@@ -245,20 +245,20 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="animate-pulse flex justify-between items-center p-3 bg-gray-50 rounded">
+              {loading ?
+              <div className="space-y-3">
+                  {[1, 2, 3].map((i) =>
+                <div key={i} className="animate-pulse flex justify-between items-center p-3 bg-gray-50 rounded">
                       <div className="space-y-2 flex-1">
                         <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                         <div className="h-3 bg-gray-200 rounded w-1/4"></div>
                       </div>
                       <div className="h-4 bg-gray-200 rounded w-20"></div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="border rounded-lg overflow-hidden">
+                )}
+                </div> :
+
+              <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -270,34 +270,34 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoiceItems.map((item) => (
-                        <TableRow key={item.id}>
+                      {invoiceItems.map((item) =>
+                    <TableRow key={item.id}>
                           <TableCell>
                             <div>
                               <p className="font-medium">{item.product_name}</p>
-                              {item.sku && (
-                                <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                              )}
+                              {item.sku &&
+                          <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                          }
                             </div>
                           </TableCell>
                           <TableCell className="text-center">{item.quantity}</TableCell>
                           <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
                           <TableCell className="text-right">
-                            {item.discount_amount > 0 ? (
-                              <span className="text-red-600">-{formatCurrency(item.discount_amount)}</span>
-                            ) : (
-                              '-'
-                            )}
+                            {item.discount_amount > 0 ?
+                        <span className="text-red-600">-{formatCurrency(item.discount_amount)}</span> :
+
+                        '-'
+                        }
                           </TableCell>
                           <TableCell className="text-right font-semibold">
                             {formatCurrency(item.line_total)}
                           </TableCell>
                         </TableRow>
-                      ))}
+                    )}
                     </TableBody>
                   </Table>
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
 
@@ -312,12 +312,12 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   <span>Subtotal:</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
-                {totalDiscount > 0 && (
-                  <div className="flex justify-between text-red-600">
+                {totalDiscount > 0 &&
+                <div className="flex justify-between text-red-600">
                     <span>Total Discount:</span>
                     <span>-{formatCurrency(totalDiscount)}</span>
                   </div>
-                )}
+                }
                 <div className="flex justify-between">
                   <span>Tax:</span>
                   <span>{formatCurrency(taxAmount)}</span>
@@ -327,8 +327,8 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   <span>Total Amount:</span>
                   <span>{formatCurrency(invoice.total_amount)}</span>
                 </div>
-                {invoice.status === 'partial' && (
-                  <>
+                {invoice.status === 'partial' &&
+                <>
                     <div className="flex justify-between text-green-600">
                       <span>Amount Paid:</span>
                       <span>{formatCurrency(invoice.paid_amount || 0)}</span>
@@ -338,14 +338,14 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                       <span>{formatCurrency((invoice.total_amount || 0) - (invoice.paid_amount || 0))}</span>
                     </div>
                   </>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
 
           {/* Notes */}
-          {invoice.notes && (
-            <Card>
+          {invoice.notes &&
+          <Card>
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
@@ -353,7 +353,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                 <p className="text-gray-700">{invoice.notes}</p>
               </CardContent>
             </Card>
-          )}
+          }
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 justify-end pt-4 border-t">
@@ -361,27 +361,27 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
               <Printer className="w-4 h-4 mr-2" />
               Print Invoice
             </Button>
-            {invoice.customer_email && (
-              <Button variant="outline" onClick={onEmail}>
+            {invoice.customer_email &&
+            <Button variant="outline" onClick={onEmail}>
                 <Mail className="w-4 h-4 mr-2" />
                 Email Invoice
               </Button>
-            )}
+            }
             <Button variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Download PDF
             </Button>
-            {canProcessReturns && invoice.status === 'paid' && (
-              <Button variant="outline" onClick={onReturn}>
+            {canProcessReturns && invoice.status === 'paid' &&
+            <Button variant="outline" onClick={onReturn}>
                 <Undo2 className="w-4 h-4 mr-2" />
                 Process Return
               </Button>
-            )}
+            }
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default InvoiceDetailModal;

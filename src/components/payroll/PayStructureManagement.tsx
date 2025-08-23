@@ -35,7 +35,7 @@ const PayStructureManagement: React.FC = () => {
   const [editingEmployee, setEditingEmployee] = useState<number | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
-  
+
   const [editForm, setEditForm] = useState<Partial<PayStructure>>({});
 
   useEffect(() => {
@@ -83,7 +83,7 @@ const PayStructureManagement: React.FC = () => {
   };
 
   const startEditing = (employeeId: number) => {
-    const structure = payStructures.find(s => s.employee_id === employeeId);
+    const structure = payStructures.find((s) => s.employee_id === employeeId);
     if (structure) {
       setEditForm({ ...structure });
       setEditingEmployee(employeeId);
@@ -148,8 +148,8 @@ const PayStructureManagement: React.FC = () => {
       <Badge className={`${typeConfig.color} rounded-xl flex items-center gap-1`}>
         <IconComponent className="w-3 h-3" />
         {typeConfig.label}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const formatCurrency = (amount: number | undefined) => {
@@ -172,7 +172,7 @@ const PayStructureManagement: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Hourly Employees</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {payStructures.filter(s => s.pay_type === 'hourly').length}
+                  {payStructures.filter((s) => s.pay_type === 'hourly').length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-blue-600" />
@@ -186,7 +186,7 @@ const PayStructureManagement: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Salary Employees</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {payStructures.filter(s => s.pay_type === 'salary').length}
+                  {payStructures.filter((s) => s.pay_type === 'salary').length}
                 </p>
               </div>
               <DollarSign className="w-8 h-8 text-emerald-600" />
@@ -200,7 +200,7 @@ const PayStructureManagement: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Commission-based</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {payStructures.filter(s => s.pay_type === 'commission').length}
+                  {payStructures.filter((s) => s.pay_type === 'commission').length}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-purple-600" />
@@ -215,16 +215,16 @@ const PayStructureManagement: React.FC = () => {
           <CardDescription>Configure compensation for each employee</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Loading pay structures...</div>
-          ) : payStructures.length === 0 ? (
-            <div className="text-center py-12">
+          {loading ?
+          <div className="text-center py-8">Loading pay structures...</div> :
+          payStructures.length === 0 ?
+          <div className="text-center py-12">
               <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
               <p className="text-gray-600">Add employees to configure their pay structures</p>
-            </div>
-          ) : (
-            <Table>
+            </div> :
+
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Employee</TableHead>
@@ -237,18 +237,18 @@ const PayStructureManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payStructures.map((structure) => (
-                  <TableRow key={structure.employee_id}>
+                {payStructures.map((structure) =>
+              <TableRow key={structure.employee_id}>
                     <TableCell className="font-medium">
                       {structure.employee_name}
                     </TableCell>
                     
                     <TableCell>
-                      {editingEmployee === structure.employee_id ? (
-                        <Select 
-                          value={editForm.pay_type} 
-                          onValueChange={(value) => setEditForm({...editForm, pay_type: value as any})}
-                        >
+                      {editingEmployee === structure.employee_id ?
+                  <Select
+                    value={editForm.pay_type}
+                    onValueChange={(value) => setEditForm({ ...editForm, pay_type: value as any })}>
+
                           <SelectTrigger className="w-32 rounded-xl">
                             <SelectValue />
                           </SelectTrigger>
@@ -257,143 +257,143 @@ const PayStructureManagement: React.FC = () => {
                             <SelectItem value="salary">Salary</SelectItem>
                             <SelectItem value="commission">Commission</SelectItem>
                           </SelectContent>
-                        </Select>
-                      ) : (
-                        getPayTypeBadge(structure.pay_type)
-                      )}
+                        </Select> :
+
+                  getPayTypeBadge(structure.pay_type)
+                  }
                     </TableCell>
 
                     <TableCell>
-                      {editingEmployee === structure.employee_id ? (
-                        <div className="space-y-2">
-                          {editForm.pay_type === 'hourly' && (
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Hourly rate"
-                              className="w-24 rounded-xl"
-                              value={editForm.hourly_rate || ''}
-                              onChange={(e) => setEditForm({...editForm, hourly_rate: parseFloat(e.target.value) || 0})}
-                            />
-                          )}
-                          {editForm.pay_type === 'salary' && (
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Annual salary"
-                              className="w-32 rounded-xl"
-                              value={editForm.annual_salary || ''}
-                              onChange={(e) => setEditForm({...editForm, annual_salary: parseFloat(e.target.value) || 0})}
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div>
+                      {editingEmployee === structure.employee_id ?
+                  <div className="space-y-2">
+                          {editForm.pay_type === 'hourly' &&
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Hourly rate"
+                      className="w-24 rounded-xl"
+                      value={editForm.hourly_rate || ''}
+                      onChange={(e) => setEditForm({ ...editForm, hourly_rate: parseFloat(e.target.value) || 0 })} />
+
+                    }
+                          {editForm.pay_type === 'salary' &&
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Annual salary"
+                      className="w-32 rounded-xl"
+                      value={editForm.annual_salary || ''}
+                      onChange={(e) => setEditForm({ ...editForm, annual_salary: parseFloat(e.target.value) || 0 })} />
+
+                    }
+                        </div> :
+
+                  <div>
                           {structure.pay_type === 'hourly' && formatCurrency(structure.hourly_rate) + '/hr'}
                           {structure.pay_type === 'salary' && formatCurrency(structure.annual_salary) + '/year'}
                           {structure.pay_type === 'commission' && 'Commission-based'}
                         </div>
-                      )}
+                  }
                     </TableCell>
 
                     <TableCell>
-                      {editingEmployee === structure.employee_id ? (
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Commission %"
-                          className="w-20 rounded-xl"
-                          value={editForm.commission_rate || ''}
-                          onChange={(e) => setEditForm({...editForm, commission_rate: parseFloat(e.target.value) || 0})}
-                        />
-                      ) : (
-                        structure.commission_rate ? `${structure.commission_rate}%` : '-'
-                      )}
+                      {editingEmployee === structure.employee_id ?
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Commission %"
+                    className="w-20 rounded-xl"
+                    value={editForm.commission_rate || ''}
+                    onChange={(e) => setEditForm({ ...editForm, commission_rate: parseFloat(e.target.value) || 0 })} /> :
+
+
+                  structure.commission_rate ? `${structure.commission_rate}%` : '-'
+                  }
                     </TableCell>
 
                     <TableCell>
-                      {editingEmployee === structure.employee_id ? (
-                        <Switch
-                          checked={editForm.overtime_eligible || false}
-                          onCheckedChange={(checked) => setEditForm({...editForm, overtime_eligible: checked})}
-                        />
-                      ) : (
-                        <Badge variant={structure.overtime_eligible ? 'default' : 'secondary'} className="rounded-xl">
+                      {editingEmployee === structure.employee_id ?
+                  <Switch
+                    checked={editForm.overtime_eligible || false}
+                    onCheckedChange={(checked) => setEditForm({ ...editForm, overtime_eligible: checked })} /> :
+
+
+                  <Badge variant={structure.overtime_eligible ? 'default' : 'secondary'} className="rounded-xl">
                           {structure.overtime_eligible ? 'Eligible' : 'Not Eligible'}
                         </Badge>
-                      )}
+                  }
                     </TableCell>
 
                     <TableCell>
-                      {editingEmployee === structure.employee_id ? (
-                        <div className="space-y-2">
+                      {editingEmployee === structure.employee_id ?
+                  <div className="space-y-2">
                           <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Health insurance"
-                            className="w-24 rounded-xl text-xs"
-                            value={editForm.health_insurance_deduction || ''}
-                            onChange={(e) => setEditForm({...editForm, health_insurance_deduction: parseFloat(e.target.value) || 0})}
-                          />
+                      type="number"
+                      step="0.01"
+                      placeholder="Health insurance"
+                      className="w-24 rounded-xl text-xs"
+                      value={editForm.health_insurance_deduction || ''}
+                      onChange={(e) => setEditForm({ ...editForm, health_insurance_deduction: parseFloat(e.target.value) || 0 })} />
+
                           <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Retirement"
-                            className="w-24 rounded-xl text-xs"
-                            value={editForm.retirement_contribution || ''}
-                            onChange={(e) => setEditForm({...editForm, retirement_contribution: parseFloat(e.target.value) || 0})}
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-sm">
+                      type="number"
+                      step="0.01"
+                      placeholder="Retirement"
+                      className="w-24 rounded-xl text-xs"
+                      value={editForm.retirement_contribution || ''}
+                      onChange={(e) => setEditForm({ ...editForm, retirement_contribution: parseFloat(e.target.value) || 0 })} />
+
+                        </div> :
+
+                  <div className="text-sm">
                           <div>Health: {formatCurrency(structure.health_insurance_deduction)}</div>
                           <div className="text-gray-500">401k: {formatCurrency(structure.retirement_contribution)}</div>
                         </div>
-                      )}
+                  }
                     </TableCell>
 
                     <TableCell>
                       <div className="flex space-x-2">
-                        {editingEmployee === structure.employee_id ? (
-                          <>
+                        {editingEmployee === structure.employee_id ?
+                    <>
                             <Button
-                              size="sm"
-                              className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                              onClick={savePayStructure}
-                              disabled={loading}
-                            >
+                        size="sm"
+                        className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                        onClick={savePayStructure}
+                        disabled={loading}>
+
                               <Save className="w-4 h-4" />
                             </Button>
                             <Button
-                              variant="outline"
-                              size="sm"
-                              className="rounded-xl"
-                              onClick={cancelEditing}
-                            >
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl"
+                        onClick={cancelEditing}>
+
                               <X className="w-4 h-4" />
                             </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-xl"
-                            onClick={() => startEditing(structure.employee_id)}
-                          >
+                          </> :
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => startEditing(structure.employee_id)}>
+
                             <Edit className="w-4 h-4" />
                           </Button>
-                        )}
+                    }
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+              )}
               </TableBody>
             </Table>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PayStructureManagement;

@@ -33,47 +33,47 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
   const [pendingOperation, setPendingOperation] = useState<BulkOperation | null>(null);
 
   const operations: BulkOperation[] = [
-    {
-      type: 'export',
-      title: 'Export Selected',
-      description: 'Export invoice data to CSV',
-      icon: <Download className="w-4 h-4" />,
-      variant: 'outline',
-      requiresConfirmation: false
-    },
-    {
-      type: 'print',
-      title: 'Print All',
-      description: 'Print all selected invoices',
-      icon: <Printer className="w-4 h-4" />,
-      variant: 'outline',
-      requiresConfirmation: false
-    },
-    {
-      type: 'email',
-      title: 'Email All',
-      description: 'Send invoices via email',
-      icon: <Mail className="w-4 h-4" />,
-      variant: 'outline',
-      requiresConfirmation: true
-    },
-    {
-      type: 'markPaid',
-      title: 'Mark as Paid',
-      description: 'Mark all as paid',
-      icon: <CheckCircle className="w-4 h-4" />,
-      variant: 'default',
-      requiresConfirmation: true
-    },
-    {
-      type: 'void',
-      title: 'Void Invoices',
-      description: 'Mark invoices as voided',
-      icon: <XCircle className="w-4 h-4" />,
-      variant: 'destructive',
-      requiresConfirmation: true
-    }
-  ];
+  {
+    type: 'export',
+    title: 'Export Selected',
+    description: 'Export invoice data to CSV',
+    icon: <Download className="w-4 h-4" />,
+    variant: 'outline',
+    requiresConfirmation: false
+  },
+  {
+    type: 'print',
+    title: 'Print All',
+    description: 'Print all selected invoices',
+    icon: <Printer className="w-4 h-4" />,
+    variant: 'outline',
+    requiresConfirmation: false
+  },
+  {
+    type: 'email',
+    title: 'Email All',
+    description: 'Send invoices via email',
+    icon: <Mail className="w-4 h-4" />,
+    variant: 'outline',
+    requiresConfirmation: true
+  },
+  {
+    type: 'markPaid',
+    title: 'Mark as Paid',
+    description: 'Mark all as paid',
+    icon: <CheckCircle className="w-4 h-4" />,
+    variant: 'default',
+    requiresConfirmation: true
+  },
+  {
+    type: 'void',
+    title: 'Void Invoices',
+    description: 'Mark invoices as voided',
+    icon: <XCircle className="w-4 h-4" />,
+    variant: 'destructive',
+    requiresConfirmation: true
+  }];
+
 
   const handleOperation = async (operation: BulkOperation) => {
     if (operation.requiresConfirmation) {
@@ -94,7 +94,7 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
       let completed = 0;
 
       for (const invoiceId of selectedIds) {
-        await new Promise(resolve => setTimeout(resolve, 200)); // Simulate processing time
+        await new Promise((resolve) => setTimeout(resolve, 200)); // Simulate processing time
 
         switch (operation.type) {
           case 'export':
@@ -115,12 +115,12 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
         }
 
         completed++;
-        setProgress((completed / steps) * 100);
+        setProgress(completed / steps * 100);
       }
 
       toast({
         title: "Operation Complete",
-        description: `Successfully processed ${selectedIds.length} invoices`,
+        description: `Successfully processed ${selectedIds.length} invoices`
       });
 
       onOperationComplete();
@@ -130,7 +130,7 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
       toast({
         title: "Operation Failed",
         description: "Some operations may have failed. Please check and try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setProcessing(false);
@@ -160,16 +160,16 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
         OrderByField: 'id',
         IsAsc: true,
         Filters: [
-          {
-            name: 'id',
-            op: 'Equal',
-            value: parseInt(invoiceId)
-          }
-        ]
+        {
+          name: 'id',
+          op: 'Equal',
+          value: parseInt(invoiceId)
+        }]
+
       });
 
       if (error) throw error;
-      
+
       const invoice = data?.List?.[0];
       if (!invoice || !invoice.customer_email) {
         throw new Error(`Invoice ${invoiceId} has no email address`);
@@ -192,16 +192,16 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
         OrderByField: 'id',
         IsAsc: true,
         Filters: [
-          {
-            name: 'id',
-            op: 'Equal',
-            value: parseInt(invoiceId)
-          }
-        ]
+        {
+          name: 'id',
+          op: 'Equal',
+          value: parseInt(invoiceId)
+        }]
+
       });
 
       if (fetchError) throw fetchError;
-      
+
       const invoice = data?.List?.[0];
       if (!invoice) {
         throw new Error(`Invoice ${invoiceId} not found`);
@@ -262,8 +262,8 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          {processing ? (
-            <div className="space-y-4">
+          {processing ?
+          <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Processing invoices...</span>
                 <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
@@ -272,24 +272,24 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
               <p className="text-sm text-gray-600 text-center">
                 Please wait while we process the selected invoices
               </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {operations.map((operation) => (
-                <Button
-                  key={operation.type}
-                  variant={operation.variant}
-                  size="sm"
-                  onClick={() => handleOperation(operation)}
-                  className="flex flex-col items-center space-y-1 h-auto py-3"
-                  disabled={processing}
-                >
+            </div> :
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {operations.map((operation) =>
+            <Button
+              key={operation.type}
+              variant={operation.variant}
+              size="sm"
+              onClick={() => handleOperation(operation)}
+              className="flex flex-col items-center space-y-1 h-auto py-3"
+              disabled={processing}>
+
                   {operation.icon}
                   <span className="text-xs text-center">{operation.title}</span>
                 </Button>
-              ))}
+            )}
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -303,21 +303,21 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
             </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to {pendingOperation?.description.toLowerCase()} for {selectedIds.length} selected invoices? 
-              {pendingOperation?.type === 'markPaid' && (
-                <span className="block mt-2 text-orange-600 font-medium">
+              {pendingOperation?.type === 'markPaid' &&
+              <span className="block mt-2 text-orange-600 font-medium">
                   This will mark all selected invoices as paid with full payment amounts.
                 </span>
-              )}
-              {pendingOperation?.type === 'void' && (
-                <span className="block mt-2 text-red-600 font-medium">
+              }
+              {pendingOperation?.type === 'void' &&
+              <span className="block mt-2 text-red-600 font-medium">
                   This action cannot be undone.
                 </span>
-              )}
-              {pendingOperation?.type === 'email' && (
-                <span className="block mt-2 text-blue-600 font-medium">
+              }
+              {pendingOperation?.type === 'email' &&
+              <span className="block mt-2 text-blue-600 font-medium">
                   Emails will only be sent to invoices with customer email addresses.
                 </span>
-              )}
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -325,18 +325,18 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
             <AlertDialogAction
               onClick={() => pendingOperation && executeOperation(pendingOperation)}
               className={`${
-                pendingOperation?.variant === 'destructive' 
-                  ? 'bg-red-600 hover:bg-red-700' 
-                  : 'bg-emerald-600 hover:bg-emerald-700'
-              }`}
-            >
+              pendingOperation?.variant === 'destructive' ?
+              'bg-red-600 hover:bg-red-700' :
+              'bg-emerald-600 hover:bg-emerald-700'}`
+              }>
+
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
+    </>);
+
 };
 
 export default BulkInvoiceOperations;

@@ -33,39 +33,39 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
   const [pendingOperation, setPendingOperation] = useState<BulkOperation | null>(null);
 
   const operations: BulkOperation[] = [
-    {
-      type: 'export',
-      title: 'Export Selected',
-      description: 'Export sales data to CSV',
-      icon: <Download className="w-4 h-4" />,
-      variant: 'outline',
-      requiresConfirmation: false
-    },
-    {
-      type: 'print',
-      title: 'Print Receipts',
-      description: 'Print all selected receipts',
-      icon: <Printer className="w-4 h-4" />,
-      variant: 'outline',
-      requiresConfirmation: false
-    },
-    {
-      type: 'void',
-      title: 'Void Sales',
-      description: 'Mark selected sales as voided',
-      icon: <XCircle className="w-4 h-4" />,
-      variant: 'destructive',
-      requiresConfirmation: true
-    },
-    {
-      type: 'refund',
-      title: 'Process Refunds',
-      description: 'Initiate refund process',
-      icon: <Undo2 className="w-4 h-4" />,
-      variant: 'destructive',
-      requiresConfirmation: true
-    }
-  ];
+  {
+    type: 'export',
+    title: 'Export Selected',
+    description: 'Export sales data to CSV',
+    icon: <Download className="w-4 h-4" />,
+    variant: 'outline',
+    requiresConfirmation: false
+  },
+  {
+    type: 'print',
+    title: 'Print Receipts',
+    description: 'Print all selected receipts',
+    icon: <Printer className="w-4 h-4" />,
+    variant: 'outline',
+    requiresConfirmation: false
+  },
+  {
+    type: 'void',
+    title: 'Void Sales',
+    description: 'Mark selected sales as voided',
+    icon: <XCircle className="w-4 h-4" />,
+    variant: 'destructive',
+    requiresConfirmation: true
+  },
+  {
+    type: 'refund',
+    title: 'Process Refunds',
+    description: 'Initiate refund process',
+    icon: <Undo2 className="w-4 h-4" />,
+    variant: 'destructive',
+    requiresConfirmation: true
+  }];
+
 
   const handleOperation = async (operation: BulkOperation) => {
     if (operation.requiresConfirmation) {
@@ -87,7 +87,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
       let completed = 0;
 
       for (const saleId of selectedIds) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing time
+        await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate processing time
 
         switch (operation.type) {
           case 'export':
@@ -105,12 +105,12 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
         }
 
         completed++;
-        setProgress((completed / steps) * 100);
+        setProgress(completed / steps * 100);
       }
 
       toast({
         title: "Operation Complete",
-        description: `Successfully processed ${selectedIds.length} sales`,
+        description: `Successfully processed ${selectedIds.length} sales`
       });
 
       onOperationComplete();
@@ -120,7 +120,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
       toast({
         title: "Operation Failed",
         description: "Some operations may have failed. Please check and try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setProcessing(false);
@@ -208,8 +208,8 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          {processing ? (
-            <div className="space-y-4">
+          {processing ?
+          <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Processing...</span>
                 <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
@@ -218,24 +218,24 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
               <p className="text-sm text-gray-600 text-center">
                 Please wait while we process the selected items
               </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {operations.map((operation) => (
-                <Button
-                  key={operation.type}
-                  variant={operation.variant}
-                  size="sm"
-                  onClick={() => handleOperation(operation)}
-                  className="flex flex-col items-center space-y-1 h-auto py-3"
-                  disabled={processing}
-                >
+            </div> :
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {operations.map((operation) =>
+            <Button
+              key={operation.type}
+              variant={operation.variant}
+              size="sm"
+              onClick={() => handleOperation(operation)}
+              className="flex flex-col items-center space-y-1 h-auto py-3"
+              disabled={processing}>
+
                   {operation.icon}
                   <span className="text-xs">{operation.title}</span>
                 </Button>
-              ))}
+            )}
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -256,15 +256,15 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => pendingOperation && executeOperation(pendingOperation)}
-              className="bg-red-600 hover:bg-red-700"
-            >
+              className="bg-red-600 hover:bg-red-700">
+
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
-  );
+    </>);
+
 };
 
 export default BulkOperations;

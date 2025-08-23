@@ -7,16 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Download, 
-  FileText, 
-  BarChart3, 
-  PieChart, 
-  TrendingUp, 
+import {
+  Download,
+  FileText,
+  BarChart3,
+  PieChart,
+  TrendingUp,
   Calendar,
   Users,
-  DollarSign
-} from 'lucide-react';
+  DollarSign } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -62,7 +62,7 @@ const PayrollReports: React.FC = () => {
   const generateReport = async () => {
     try {
       setLoading(true);
-      
+
       if (!startDate || !endDate) {
         toast({
           title: 'Error',
@@ -127,35 +127,35 @@ const PayrollReports: React.FC = () => {
   };
 
   const reportTemplates = [
-    {
-      id: 'summary',
-      title: 'Payroll Summary',
-      description: 'Overview of payroll totals and key metrics',
-      icon: BarChart3,
-      color: 'emerald'
-    },
-    {
-      id: 'detailed',
-      title: 'Detailed Payroll',
-      description: 'Complete breakdown by employee',
-      icon: FileText,
-      color: 'blue'
-    },
-    {
-      id: 'tax',
-      title: 'Tax Report',
-      description: 'Tax deductions and compliance summary',
-      icon: PieChart,
-      color: 'purple'
-    },
-    {
-      id: 'department',
-      title: 'Department Analysis',
-      description: 'Payroll costs by department',
-      icon: Users,
-      color: 'amber'
-    }
-  ];
+  {
+    id: 'summary',
+    title: 'Payroll Summary',
+    description: 'Overview of payroll totals and key metrics',
+    icon: BarChart3,
+    color: 'emerald'
+  },
+  {
+    id: 'detailed',
+    title: 'Detailed Payroll',
+    description: 'Complete breakdown by employee',
+    icon: FileText,
+    color: 'blue'
+  },
+  {
+    id: 'tax',
+    title: 'Tax Report',
+    description: 'Tax deductions and compliance summary',
+    icon: PieChart,
+    color: 'purple'
+  },
+  {
+    id: 'department',
+    title: 'Department Analysis',
+    description: 'Payroll costs by department',
+    icon: Users,
+    color: 'amber'
+  }];
+
 
   return (
     <div className="space-y-6">
@@ -168,12 +168,12 @@ const PayrollReports: React.FC = () => {
 
       <Tabs value={reportType} onValueChange={setReportType} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 rounded-2xl bg-gray-100">
-          {reportTemplates.map((template) => (
-            <TabsTrigger key={template.id} value={template.id} className="rounded-xl">
+          {reportTemplates.map((template) =>
+          <TabsTrigger key={template.id} value={template.id} className="rounded-xl">
               <template.icon className="w-4 h-4 mr-2" />
               {template.title}
             </TabsTrigger>
-          ))}
+          )}
         </TabsList>
 
         {/* Report Configuration */}
@@ -207,8 +207,8 @@ const PayrollReports: React.FC = () => {
                   className="rounded-2xl"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  disabled={reportPeriod !== 'custom'}
-                />
+                  disabled={reportPeriod !== 'custom'} />
+
               </div>
 
               <div className="space-y-2">
@@ -219,8 +219,8 @@ const PayrollReports: React.FC = () => {
                   className="rounded-2xl"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  disabled={reportPeriod !== 'custom'}
-                />
+                  disabled={reportPeriod !== 'custom'} />
+
               </div>
             </div>
 
@@ -228,11 +228,11 @@ const PayrollReports: React.FC = () => {
               <div className="text-sm text-gray-600">
                 Report will cover: {startDate} to {endDate}
               </div>
-              <Button 
+              <Button
                 className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
                 onClick={generateReport}
-                disabled={loading || !startDate || !endDate}
-              >
+                disabled={loading || !startDate || !endDate}>
+
                 {loading ? 'Generating...' : 'Generate Report'}
               </Button>
             </div>
@@ -240,8 +240,8 @@ const PayrollReports: React.FC = () => {
         </Card>
 
         {/* Report Templates */}
-        {reportTemplates.map((template) => (
-          <TabsContent key={template.id} value={template.id}>
+        {reportTemplates.map((template) =>
+        <TabsContent key={template.id} value={template.id}>
             <Card className="rounded-3xl border-0 shadow-sm">
               <CardHeader>
                 <div className="flex items-center space-x-3">
@@ -255,8 +255,8 @@ const PayrollReports: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {reportData && reportData.type === template.id ? (
-                  <div className="space-y-6">
+                {reportData && reportData.type === template.id ?
+              <div className="space-y-6">
                     {/* Report Header */}
                     <div className="flex justify-between items-center pb-4 border-b">
                       <div>
@@ -267,29 +267,29 @@ const PayrollReports: React.FC = () => {
                       </div>
                       <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => downloadReport('pdf')}
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadReport('pdf')}>
+
                           <Download className="w-4 h-4 mr-2" />
                           PDF
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => downloadReport('csv')}
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadReport('csv')}>
+
                           <Download className="w-4 h-4 mr-2" />
                           CSV
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => downloadReport('excel')}
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadReport('excel')}>
+
                           <Download className="w-4 h-4 mr-2" />
                           Excel
                         </Button>
@@ -297,8 +297,8 @@ const PayrollReports: React.FC = () => {
                     </div>
 
                     {/* Summary Report Content */}
-                    {template.id === 'summary' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {template.id === 'summary' &&
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="bg-emerald-50 p-4 rounded-2xl">
                           <div className="flex items-center justify-between">
                             <div>
@@ -347,11 +347,11 @@ const PayrollReports: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    )}
+                }
 
                     {/* Detailed Report Content */}
-                    {template.id === 'detailed' && (
-                      <div className="space-y-4">
+                    {template.id === 'detailed' &&
+                <div className="space-y-4">
                         <p className="text-gray-600">Detailed employee-by-employee breakdown will be available in the downloaded report.</p>
                         <div className="bg-gray-50 p-4 rounded-2xl">
                           <h4 className="font-semibold mb-2">Report includes:</h4>
@@ -364,11 +364,11 @@ const PayrollReports: React.FC = () => {
                           </ul>
                         </div>
                       </div>
-                    )}
+                }
 
                     {/* Tax Report Content */}
-                    {template.id === 'tax' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {template.id === 'tax' &&
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-4">
                           <h4 className="font-semibold">Federal Tax Summary</h4>
                           <div className="bg-gray-50 p-4 rounded-2xl space-y-2">
@@ -405,11 +405,11 @@ const PayrollReports: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    )}
+                }
 
                     {/* Department Report Content */}
-                    {template.id === 'department' && (
-                      <div className="space-y-4">
+                    {template.id === 'department' &&
+                <div className="space-y-4">
                         <p className="text-gray-600">Department-wise payroll analysis will be available in the downloaded report.</p>
                         <div className="bg-gray-50 p-4 rounded-2xl">
                           <h4 className="font-semibold mb-2">Analysis includes:</h4>
@@ -422,23 +422,23 @@ const PayrollReports: React.FC = () => {
                           </ul>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
+                }
+                  </div> :
+
+              <div className="text-center py-12">
                     <template.icon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Generate {template.title}</h3>
                     <p className="text-gray-600 mb-4">{template.description}</p>
                     <p className="text-sm text-gray-500">Configure your report parameters above and click "Generate Report"</p>
                   </div>
-                )}
+              }
               </CardContent>
             </Card>
           </TabsContent>
-        ))}
+        )}
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PayrollReports;

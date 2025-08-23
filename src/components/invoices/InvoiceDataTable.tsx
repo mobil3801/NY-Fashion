@@ -7,11 +7,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  MoreHorizontal, Eye, Printer, Mail, Edit, Undo2, 
+import {
+  MoreHorizontal, Eye, Printer, Mail, Edit, Undo2,
   ChevronLeft, ChevronRight, RefreshCcw, CheckCircle,
-  Clock, XCircle, AlertCircle
-} from 'lucide-react';
+  Clock, XCircle, AlertCircle } from
+'lucide-react';
 import { format } from 'date-fns';
 
 interface InvoiceDataTableProps {
@@ -67,9 +67,9 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
   const loadInvoices = async () => {
     try {
       setLoading(true);
-      
+
       const apiFilters = [];
-      
+
       // Apply status filter
       if (status) {
         apiFilters.push({
@@ -78,7 +78,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
           value: status
         });
       }
-      
+
       if (filters.dateRange.from) {
         apiFilters.push({
           name: 'created_at',
@@ -86,7 +86,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
           value: filters.dateRange.from.toISOString().split('T')[0]
         });
       }
-      
+
       if (filters.dateRange.to) {
         apiFilters.push({
           name: 'created_at',
@@ -162,7 +162,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
       toast({
         title: "Error",
         description: "Failed to load invoice data",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -171,7 +171,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange(invoices.map(invoice => invoice.id.toString()));
+      onSelectionChange(invoices.map((invoice) => invoice.id.toString()));
     } else {
       onSelectionChange([]);
     }
@@ -181,7 +181,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
     if (checked) {
       onSelectionChange([...selectedItems, invoiceId]);
     } else {
-      onSelectionChange(selectedItems.filter(id => id !== invoiceId));
+      onSelectionChange(selectedItems.filter((id) => id !== invoiceId));
     }
   };
 
@@ -193,7 +193,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
       };
 
       if (newStatus === 'paid') {
-        const invoice = invoices.find(inv => inv.id === invoiceId);
+        const invoice = invoices.find((inv) => inv.id === invoiceId);
         if (invoice) {
           updateData.paid_amount = invoice.total_amount;
           updateData.payment_date = new Date().toISOString();
@@ -206,7 +206,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
 
       toast({
         title: "Status Updated",
-        description: `Invoice status changed to ${newStatus}`,
+        description: `Invoice status changed to ${newStatus}`
       });
 
       loadInvoices();
@@ -214,7 +214,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
       toast({
         title: "Update Failed",
         description: "Unable to update invoice status",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -228,7 +228,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
       voided: { color: 'bg-red-100 text-red-800', icon: XCircle },
       overdue: { color: 'bg-red-100 text-red-800', icon: AlertCircle }
     };
-    
+
     let finalStatus = status;
     let finalConfig = statusConfig.pending;
 
@@ -245,15 +245,15 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
     } else if (statusConfig[status as keyof typeof statusConfig]) {
       finalConfig = statusConfig[status as keyof typeof statusConfig];
     }
-    
+
     const Icon = finalConfig.icon;
-    
+
     return (
       <Badge className={`${finalConfig.color} border-0`}>
         <Icon className="w-3 h-3 mr-1" />
         {finalStatus.charAt(0).toUpperCase() + finalStatus.slice(1)}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
@@ -277,17 +277,17 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
   if (loading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className="animate-pulse flex items-center space-x-4 p-4">
+        {[1, 2, 3, 4, 5].map((i) =>
+        <div key={i} className="animate-pulse flex items-center space-x-4 p-4">
             <div className="h-4 w-4 bg-gray-200 rounded"></div>
             <div className="h-4 bg-gray-200 rounded w-24"></div>
             <div className="h-4 bg-gray-200 rounded w-32"></div>
             <div className="h-4 bg-gray-200 rounded w-20"></div>
             <div className="h-4 bg-gray-200 rounded w-16"></div>
           </div>
-        ))}
-      </div>
-    );
+        )}
+      </div>);
+
   }
 
   return (
@@ -301,8 +301,8 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
                 <Checkbox
                   checked={isAllSelected}
                   indeterminate={isIndeterminate}
-                  onCheckedChange={handleSelectAll}
-                />
+                  onCheckedChange={handleSelectAll} />
+
               </TableHead>
               <TableHead>Invoice #</TableHead>
               <TableHead>Customer</TableHead>
@@ -314,44 +314,44 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow 
-                key={invoice.id}
-                className={`${isOverdue(invoice) ? 'bg-red-50' : ''} cursor-pointer hover:bg-gray-50`}
-                onClick={() => onInvoiceSelect(invoice)}
-              >
+            {invoices.map((invoice) =>
+            <TableRow
+              key={invoice.id}
+              className={`${isOverdue(invoice) ? 'bg-red-50' : ''} cursor-pointer hover:bg-gray-50`}
+              onClick={() => onInvoiceSelect(invoice)}>
+
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Checkbox
-                    checked={selectedItems.includes(invoice.id.toString())}
-                    onCheckedChange={(checked) => 
-                      handleSelectItem(invoice.id.toString(), checked as boolean)
-                    }
-                  />
+                  checked={selectedItems.includes(invoice.id.toString())}
+                  onCheckedChange={(checked) =>
+                  handleSelectItem(invoice.id.toString(), checked as boolean)
+                  } />
+
                 </TableCell>
                 <TableCell className="font-mono font-medium">
                   {invoice.invoice_number}
-                  {isOverdue(invoice) && (
-                    <Badge variant="destructive" className="ml-2 text-xs">
+                  {isOverdue(invoice) &&
+                <Badge variant="destructive" className="ml-2 text-xs">
                       OVERDUE
                     </Badge>
-                  )}
+                }
                 </TableCell>
                 <TableCell>
                   <div>
                     <div className="font-medium">{invoice.customer_name || 'Walk-in Customer'}</div>
-                    {invoice.customer_email && (
-                      <div className="text-sm text-gray-500">{invoice.customer_email}</div>
-                    )}
+                    {invoice.customer_email &&
+                  <div className="text-sm text-gray-500">{invoice.customer_email}</div>
+                  }
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
                     <div className="font-semibold">{formatCurrency(invoice.total_amount)}</div>
-                    {invoice.status === 'partial' && (
-                      <div className="text-sm text-gray-500">
+                    {invoice.status === 'partial' &&
+                  <div className="text-sm text-gray-500">
                         Paid: {formatCurrency(invoice.paid_amount || 0)}
                       </div>
-                    )}
+                  }
                   </div>
                 </TableCell>
                 <TableCell>
@@ -379,103 +379,103 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
                         <Printer className="w-4 h-4 mr-2" />
                         Print Invoice
                       </DropdownMenuItem>
-                      {invoice.customer_email && (
-                        <DropdownMenuItem onClick={() => onEmailInvoice(invoice.id.toString())}>
+                      {invoice.customer_email &&
+                    <DropdownMenuItem onClick={() => onEmailInvoice(invoice.id.toString())}>
                           <Mail className="w-4 h-4 mr-2" />
                           Email Invoice
                         </DropdownMenuItem>
-                      )}
-                      {canManage && (
-                        <>
-                          {invoice.status === 'pending' && (
-                            <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'paid')}>
+                    }
+                      {canManage &&
+                    <>
+                          {invoice.status === 'pending' &&
+                      <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'paid')}>
                               <CheckCircle className="w-4 h-4 mr-2" />
                               Mark as Paid
                             </DropdownMenuItem>
-                          )}
-                          {invoice.status === 'paid' && (
-                            <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'pending')}>
+                      }
+                          {invoice.status === 'paid' &&
+                      <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'pending')}>
                               <Clock className="w-4 h-4 mr-2" />
                               Mark as Pending
                             </DropdownMenuItem>
-                          )}
+                      }
                           <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'voided')}>
                             <XCircle className="w-4 h-4 mr-2" />
                             Void Invoice
                           </DropdownMenuItem>
                         </>
-                      )}
+                    }
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
-            {invoices.length === 0 && (
-              <TableRow>
-                <TableCell 
-                  colSpan={8} 
-                  className="text-center py-12 text-gray-500"
-                >
+            )}
+            {invoices.length === 0 &&
+            <TableRow>
+                <TableCell
+                colSpan={8}
+                className="text-center py-12 text-gray-500">
+
                   No invoices found matching the current filters
                 </TableCell>
               </TableRow>
-            )}
+            }
           </TableBody>
         </Table>
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
+      {totalPages > 1 &&
+      <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
+            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
           </div>
           <div className="flex items-center space-x-2">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-            >
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage <= 1}>
+
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <div className="flex items-center space-x-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
-                    className="w-8 h-8 p-0"
-                  >
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+
+              return (
+                <Button
+                  key={pageNum}
+                  variant={currentPage === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(pageNum)}
+                  className="w-8 h-8 p-0">
+
                     {pageNum}
-                  </Button>
-                );
-              })}
+                  </Button>);
+
+            })}
             </div>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-            >
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}>
+
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      )}
+      }
 
       {/* Summary */}
       <div className="flex justify-between items-center text-sm text-gray-600 pt-4 border-t">
@@ -485,21 +485,21 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
               {formatCurrency(invoices.reduce((sum, invoice) => sum + (invoice.total_amount || 0), 0))}
             </span>
           </span>
-          {status === 'pending' && (
-            <span>
+          {status === 'pending' &&
+          <span>
               Overdue: <span className="font-semibold text-red-600">
-                {invoices.filter(inv => isOverdue(inv)).length}
+                {invoices.filter((inv) => isOverdue(inv)).length}
               </span>
             </span>
-          )}
+          }
         </div>
         <Button variant="ghost" size="sm" onClick={loadInvoices}>
           <RefreshCcw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default InvoiceDataTable;

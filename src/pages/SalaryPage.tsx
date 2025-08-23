@@ -7,16 +7,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployee } from '@/contexts/EmployeeContext';
 import { hasPermission } from '@/utils/permissions';
-import { 
-  Wallet, 
-  Calculator, 
-  Users, 
-  FileText, 
-  Settings, 
+import {
+  Wallet,
+  Calculator,
+  Users,
+  FileText,
+  Settings,
   Download,
   Clock,
-  DollarSign
-} from 'lucide-react';
+  DollarSign } from
+'lucide-react';
 
 // Import payroll components
 import PayrollRunManagement from '@/components/payroll/PayrollRunManagement';
@@ -58,15 +58,15 @@ const SalaryPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">{t('salary')}</h1>
           <p className="text-gray-600 mt-2">Comprehensive payroll management system</p>
         </div>
-        {canProcessPayroll && (
-          <Button 
-            className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
-            onClick={() => setActiveTab('payroll-runs')}
-          >
+        {canProcessPayroll &&
+        <Button
+          className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
+          onClick={() => setActiveTab('payroll-runs')}>
+
             <Calculator className="w-4 h-4 mr-2" />
             Process Payroll
           </Button>
-        )}
+        }
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -76,19 +76,19 @@ const SalaryPage: React.FC = () => {
             Overview
           </TabsTrigger>
           
-          {canProcessPayroll && (
-            <TabsTrigger value="payroll-runs" className="rounded-xl">
+          {canProcessPayroll &&
+          <TabsTrigger value="payroll-runs" className="rounded-xl">
               <Calculator className="w-4 h-4 mr-2" />
               Payroll Runs
             </TabsTrigger>
-          )}
+          }
 
-          {canManagePayStructures && (
-            <TabsTrigger value="pay-structures" className="rounded-xl">
+          {canManagePayStructures &&
+          <TabsTrigger value="pay-structures" className="rounded-xl">
               <DollarSign className="w-4 h-4 mr-2" />
               Pay Structures
             </TabsTrigger>
-          )}
+          }
 
           <TabsTrigger value="payslips" className="rounded-xl">
             <FileText className="w-4 h-4 mr-2" />
@@ -100,29 +100,29 @@ const SalaryPage: React.FC = () => {
             History
           </TabsTrigger>
 
-          {canViewReports && (
-            <TabsTrigger value="reports" className="rounded-xl">
+          {canViewReports &&
+          <TabsTrigger value="reports" className="rounded-xl">
               <Download className="w-4 h-4 mr-2" />
               Reports
             </TabsTrigger>
-          )}
+          }
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <PayrollOverview />
         </TabsContent>
 
-        {canProcessPayroll && (
-          <TabsContent value="payroll-runs" className="space-y-6">
+        {canProcessPayroll &&
+        <TabsContent value="payroll-runs" className="space-y-6">
             <PayrollRunManagement />
           </TabsContent>
-        )}
+        }
 
-        {canManagePayStructures && (
-          <TabsContent value="pay-structures" className="space-y-6">
+        {canManagePayStructures &&
+        <TabsContent value="pay-structures" className="space-y-6">
             <PayStructureManagement />
           </TabsContent>
-        )}
+        }
 
         <TabsContent value="payslips" className="space-y-6">
           <PayslipGeneration />
@@ -132,14 +132,14 @@ const SalaryPage: React.FC = () => {
           <EmployeePayrollHistory />
         </TabsContent>
 
-        {canViewReports && (
-          <TabsContent value="reports" className="space-y-6">
+        {canViewReports &&
+        <TabsContent value="reports" className="space-y-6">
             <PayrollReports />
           </TabsContent>
-        )}
+        }
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 // Overview component showing payroll summary
@@ -163,15 +163,15 @@ const PayrollOverview: React.FC = () => {
     try {
       // Load payroll statistics
       const [employeesRes, payrollRunsRes, payslipsRes] = await Promise.all([
-        window.ezsite.apis.tablePage(36859, { PageSize: 1 }), // employees
-        window.ezsite.apis.tablePage(36862, { 
-          PageSize: 1,
-          Filters: [{ name: 'status', op: 'Equal', value: 'processing' }]
-        }), // active payroll runs
-        window.ezsite.apis.tablePage(36863, { 
-          PageSize: 1,
-          Filters: [{ name: 'status', op: 'Equal', value: 'draft' }]
-        }) // pending payslips
+      window.ezsite.apis.tablePage(36859, { PageSize: 1 }), // employees
+      window.ezsite.apis.tablePage(36862, {
+        PageSize: 1,
+        Filters: [{ name: 'status', op: 'Equal', value: 'processing' }]
+      }), // active payroll runs
+      window.ezsite.apis.tablePage(36863, {
+        PageSize: 1,
+        Filters: [{ name: 'status', op: 'Equal', value: 'draft' }]
+      }) // pending payslips
       ]);
 
       setStats({
@@ -186,35 +186,35 @@ const PayrollOverview: React.FC = () => {
   };
 
   const statCards = [
-    {
-      title: 'Total Employees',
-      value: stats.totalEmployees,
-      icon: Users,
-      color: 'blue',
-      show: isAdmin || isManager
-    },
-    {
-      title: 'Active Payroll Runs',
-      value: stats.activePayrollRuns,
-      icon: Calculator,
-      color: 'emerald',
-      show: isAdmin || isManager
-    },
-    {
-      title: 'Pending Payslips',
-      value: stats.pendingPayslips,
-      icon: FileText,
-      color: 'amber',
-      show: isAdmin || isManager
-    },
-    {
-      title: 'Monthly Payroll',
-      value: `$${stats.monthlyPayroll.toLocaleString()}`,
-      icon: DollarSign,
-      color: 'purple',
-      show: isAdmin
-    }
-  ].filter(card => card.show);
+  {
+    title: 'Total Employees',
+    value: stats.totalEmployees,
+    icon: Users,
+    color: 'blue',
+    show: isAdmin || isManager
+  },
+  {
+    title: 'Active Payroll Runs',
+    value: stats.activePayrollRuns,
+    icon: Calculator,
+    color: 'emerald',
+    show: isAdmin || isManager
+  },
+  {
+    title: 'Pending Payslips',
+    value: stats.pendingPayslips,
+    icon: FileText,
+    color: 'amber',
+    show: isAdmin || isManager
+  },
+  {
+    title: 'Monthly Payroll',
+    value: `$${stats.monthlyPayroll.toLocaleString()}`,
+    icon: DollarSign,
+    color: 'purple',
+    show: isAdmin
+  }].
+  filter((card) => card.show);
 
   return (
     <div className="space-y-6">
@@ -238,8 +238,8 @@ const PayrollOverview: React.FC = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
@@ -249,47 +249,47 @@ const PayrollOverview: React.FC = () => {
           <CardDescription>Common payroll tasks</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(isAdmin || isManager) && (
-            <>
-              <Button 
-                variant="outline" 
-                className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2"
-              >
+          {(isAdmin || isManager) &&
+          <>
+              <Button
+              variant="outline"
+              className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2">
+
                 <Calculator className="w-6 h-6 text-emerald-600" />
                 <span>Start New Payroll</span>
               </Button>
               
-              <Button 
-                variant="outline"
-                className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2"
-              >
+              <Button
+              variant="outline"
+              className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2">
+
                 <FileText className="w-6 h-6 text-blue-600" />
                 <span>Generate Payslips</span>
               </Button>
             </>
-          )}
+          }
 
-          <Button 
+          <Button
             variant="outline"
-            className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2"
-          >
+            className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2">
+
             <Download className="w-6 h-6 text-purple-600" />
             <span>Download Reports</span>
           </Button>
 
-          {isAdmin && (
-            <Button 
-              variant="outline"
-              className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2"
-            >
+          {isAdmin &&
+          <Button
+            variant="outline"
+            className="h-20 rounded-2xl flex flex-col items-center justify-center space-y-2">
+
               <Settings className="w-6 h-6 text-gray-600" />
               <span>Payroll Settings</span>
             </Button>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SalaryPage;

@@ -12,10 +12,10 @@ interface SalesAnalyticsProps {
 }
 
 interface AnalyticsData {
-  dailySales: Array<{ date: string; amount: number; transactions: number }>;
-  topProducts: Array<{ name: string; quantity: number; revenue: number }>;
-  topEmployees: Array<{ name: string; sales: number; transactions: number }>;
-  paymentMethods: Array<{ method: string; amount: number; count: number }>;
+  dailySales: Array<{date: string;amount: number;transactions: number;}>;
+  topProducts: Array<{name: string;quantity: number;revenue: number;}>;
+  topEmployees: Array<{name: string;sales: number;transactions: number;}>;
+  paymentMethods: Array<{method: string;amount: number;count: number;}>;
   trends: {
     salesGrowth: number;
     transactionGrowth: number;
@@ -46,24 +46,24 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
   const loadAnalyticsData = async () => {
     try {
       setLoading(true);
-      
+
       // Get date range
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - parseInt(timeRange));
 
       const apiFilters = [
-        {
-          name: 'created_at',
-          op: 'GreaterThanOrEqual',
-          value: startDate.toISOString().split('T')[0]
-        },
-        {
-          name: 'created_at',
-          op: 'LessThanOrEqual',
-          value: endDate.toISOString().split('T')[0]
-        }
-      ];
+      {
+        name: 'created_at',
+        op: 'GreaterThanOrEqual',
+        value: startDate.toISOString().split('T')[0]
+      },
+      {
+        name: 'created_at',
+        op: 'LessThanOrEqual',
+        value: endDate.toISOString().split('T')[0]
+      }];
+
 
       // Apply additional filters
       if (filters.employee) {
@@ -121,10 +121,10 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
         }
       });
 
-      const dailySales = Array.from(dailySalesMap.entries())
-        .map(([date, data]) => ({ date, ...data }))
-        .sort((a, b) => a.date.localeCompare(b.date))
-        .slice(-30); // Last 30 days
+      const dailySales = Array.from(dailySalesMap.entries()).
+      map(([date, data]) => ({ date, ...data })).
+      sort((a, b) => a.date.localeCompare(b.date)).
+      slice(-30); // Last 30 days
 
       // Process top products
       const productMap = new Map();
@@ -133,14 +133,14 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
         const existing = productMap.get(productName) || { quantity: 0, revenue: 0 };
         productMap.set(productName, {
           quantity: existing.quantity + (item.quantity || 0),
-          revenue: existing.revenue + ((item.quantity || 0) * (item.unit_price || 0))
+          revenue: existing.revenue + (item.quantity || 0) * (item.unit_price || 0)
         });
       });
 
-      const topProducts = Array.from(productMap.entries())
-        .map(([name, data]) => ({ name, ...data }))
-        .sort((a, b) => b.revenue - a.revenue)
-        .slice(0, 10);
+      const topProducts = Array.from(productMap.entries()).
+      map(([name, data]) => ({ name, ...data })).
+      sort((a, b) => b.revenue - a.revenue).
+      slice(0, 10);
 
       // Process payment methods
       const paymentMethodMap = new Map();
@@ -153,9 +153,9 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
         });
       });
 
-      const paymentMethods = Array.from(paymentMethodMap.entries())
-        .map(([method, data]) => ({ method, ...data }))
-        .sort((a, b) => b.amount - a.amount);
+      const paymentMethods = Array.from(paymentMethodMap.entries()).
+      map(([method, data]) => ({ method, ...data })).
+      sort((a, b) => b.amount - a.amount);
 
       // Calculate trends (mock data for now)
       const trends = {
@@ -177,7 +177,7 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
       toast({
         title: "Error",
         description: "Failed to load analytics data",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -287,14 +287,14 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
             <CardDescription>Sales performance over time</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="h-64 flex items-center justify-center text-gray-500">
+            {loading ?
+            <div className="h-64 flex items-center justify-center text-gray-500">
                 Loading chart data...
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {analyticsData.dailySales.slice(-7).map((day, index) => (
-                  <div key={day.date} className="flex items-center justify-between">
+              </div> :
+
+            <div className="space-y-4">
+                {analyticsData.dailySales.slice(-7).map((day, index) =>
+              <div key={day.date} className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
                       {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </div>
@@ -304,18 +304,18 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
                         <div className="text-xs text-gray-500">{day.transactions} transactions</div>
                       </div>
                       <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-emerald-500 h-2 rounded-full"
-                          style={{ 
-                            width: `${Math.min(100, (day.amount / Math.max(...analyticsData.dailySales.map(d => d.amount))) * 100)}%` 
-                          }}
-                        />
+                        <div
+                      className="bg-emerald-500 h-2 rounded-full"
+                      style={{
+                        width: `${Math.min(100, day.amount / Math.max(...analyticsData.dailySales.map((d) => d.amount)) * 100)}%`
+                      }} />
+
                       </div>
                     </div>
                   </div>
-                ))}
+              )}
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -326,19 +326,19 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
             <CardDescription>Best performing products by revenue</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="animate-pulse flex items-center justify-between">
+            {loading ?
+            <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) =>
+              <div key={i} className="animate-pulse flex items-center justify-between">
                     <div className="h-4 bg-gray-200 rounded w-32"></div>
                     <div className="h-4 bg-gray-200 rounded w-16"></div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {analyticsData.topProducts.slice(0, 5).map((product, index) => (
-                  <div key={product.name} className="flex items-center justify-between">
+              )}
+              </div> :
+
+            <div className="space-y-4">
+                {analyticsData.topProducts.slice(0, 5).map((product, index) =>
+              <div key={product.name} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
                         <span className="text-sm font-semibold text-emerald-600">{index + 1}</span>
@@ -352,14 +352,14 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
                       {formatCurrency(product.revenue)}
                     </Badge>
                   </div>
-                ))}
-                {analyticsData.topProducts.length === 0 && (
-                  <div className="text-center text-gray-500 py-8">
+              )}
+                {analyticsData.topProducts.length === 0 &&
+              <div className="text-center text-gray-500 py-8">
                     No product data available
                   </div>
-                )}
+              }
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -370,47 +370,47 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
             <CardDescription>Revenue by payment method</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse flex items-center justify-between">
+            {loading ?
+            <div className="space-y-3">
+                {[1, 2, 3].map((i) =>
+              <div key={i} className="animate-pulse flex items-center justify-between">
                     <div className="h-4 bg-gray-200 rounded w-24"></div>
                     <div className="h-4 bg-gray-200 rounded w-20"></div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-4">
+              )}
+              </div> :
+
+            <div className="space-y-4">
                 {analyticsData.paymentMethods.map((method, index) => {
-                  const totalAmount = analyticsData.paymentMethods.reduce((sum, m) => sum + m.amount, 0);
-                  const percentage = totalAmount > 0 ? (method.amount / totalAmount * 100) : 0;
-                  
-                  return (
-                    <div key={method.method} className="space-y-2">
+                const totalAmount = analyticsData.paymentMethods.reduce((sum, m) => sum + m.amount, 0);
+                const percentage = totalAmount > 0 ? method.amount / totalAmount * 100 : 0;
+
+                return (
+                  <div key={method.method} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-medium capitalize">{method.method}</span>
                         <span className="text-sm text-gray-600">{formatCurrency(method.amount)}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-emerald-500 h-2 rounded-full transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
+                        <div
+                        className="bg-emerald-500 h-2 rounded-full transition-all"
+                        style={{ width: `${percentage}%` }} />
+
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>{method.count} transactions</span>
                         <span>{percentage.toFixed(1)}%</span>
                       </div>
-                    </div>
-                  );
-                })}
-                {analyticsData.paymentMethods.length === 0 && (
-                  <div className="text-center text-gray-500 py-8">
+                    </div>);
+
+              })}
+                {analyticsData.paymentMethods.length === 0 &&
+              <div className="text-center text-gray-500 py-8">
                     No payment data available
                   </div>
-                )}
+              }
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -438,12 +438,12 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
                 </div>
                 <div className="text-center">
                   <div className="text-xl font-semibold text-gray-900">
-                    {analyticsData.dailySales.length > 0 
-                      ? formatCurrency(
-                          analyticsData.dailySales.reduce((sum, day) => sum + day.amount, 0) / 
-                          analyticsData.dailySales.reduce((sum, day) => sum + day.transactions, 0) || 0
-                        )
-                      : '$0.00'
+                    {analyticsData.dailySales.length > 0 ?
+                    formatCurrency(
+                      analyticsData.dailySales.reduce((sum, day) => sum + day.amount, 0) /
+                      analyticsData.dailySales.reduce((sum, day) => sum + day.transactions, 0) || 0
+                    ) :
+                    '$0.00'
                     }
                   </div>
                   <div className="text-xs text-gray-600">Avg. Transaction</div>
@@ -453,8 +453,8 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SalesAnalytics;

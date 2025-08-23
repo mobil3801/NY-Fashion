@@ -14,12 +14,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Settings, Store, DollarSign, CreditCard, Globe, Shield, 
+import {
+  Settings, Store, DollarSign, CreditCard, Globe, Shield,
   Database, Upload, Save, RefreshCw, User, MapPin, Phone,
   Clock, FileText, Printer, Smartphone, Lock, Eye, Bell,
-  Download, Key, AlertTriangle
-} from 'lucide-react';
+  Download, Key, AlertTriangle } from
+'lucide-react';
 import { hasPermission } from '@/utils/permissions';
 
 interface SettingItem {
@@ -65,7 +65,7 @@ const SettingsPage: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('store');
   const [settings, setSettings] = useState<Record<string, any>>({});
@@ -95,7 +95,7 @@ const SettingsPage: React.FC = () => {
         if (!settingsMap[setting.category]) {
           settingsMap[setting.category] = {};
         }
-        
+
         let value = setting.value;
         try {
           if (setting.data_type === 'object' || setting.data_type === 'array') {
@@ -108,7 +108,7 @@ const SettingsPage: React.FC = () => {
         } catch (e) {
           console.warn('Failed to parse setting value:', setting.key, setting.value);
         }
-        
+
         settingsMap[setting.category][setting.key] = value;
       });
 
@@ -128,15 +128,15 @@ const SettingsPage: React.FC = () => {
   const updateSetting = async (category: string, key: string, value: any, dataType: string = 'string', requiredRole: string = 'Administrator') => {
     try {
       const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-      
+
       // Check if setting exists
       const { data: existingData, error: searchError } = await window.ezsite.apis.tablePage(36865, {
         PageNo: 1,
         PageSize: 1,
         Filters: [
-          { name: "category", op: "Equal", value: category },
-          { name: "key", op: "Equal", value: key }
-        ]
+        { name: "category", op: "Equal", value: category },
+        { name: "key", op: "Equal", value: key }]
+
       });
 
       if (searchError) throw new Error(searchError);
@@ -168,7 +168,7 @@ const SettingsPage: React.FC = () => {
       }
 
       // Update local state
-      setSettings(prev => ({
+      setSettings((prev) => ({
         ...prev,
         [category]: {
           ...prev[category],
@@ -184,7 +184,7 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSettingChange = (category: string, key: string, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
@@ -197,10 +197,10 @@ const SettingsPage: React.FC = () => {
   const saveSettings = async () => {
     try {
       setLoading(true);
-      
+
       // Save all settings in current tab
       const currentSettings = settings[activeTab] || {};
-      
+
       for (const [key, value] of Object.entries(currentSettings)) {
         const dataType = typeof value === 'object' ? 'object' : typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string';
         await updateSetting(activeTab, key, value, dataType);
@@ -236,7 +236,7 @@ const SettingsPage: React.FC = () => {
       if (urlError) throw new Error(urlError);
 
       handleSettingChange('store', 'logo_url', logoUrl);
-      
+
       toast({
         title: "Success",
         description: "Logo uploaded successfully"
@@ -253,28 +253,28 @@ const SettingsPage: React.FC = () => {
 
   const initializeDefaultSettings = async () => {
     const defaults = [
-      // Store settings
-      { category: 'store', key: 'name', value: 'Jackson Heights POS', dataType: 'string' },
-      { category: 'store', key: 'address', value: '123 Main Street', dataType: 'string' },
-      { category: 'store', key: 'city', value: 'Jackson Heights', dataType: 'string' },
-      { category: 'store', key: 'state', value: 'NY', dataType: 'string' },
-      { category: 'store', key: 'zip', value: '11372', dataType: 'string' },
-      { category: 'store', key: 'phone', value: '(718) 555-0123', dataType: 'string' },
-      { category: 'store', key: 'hours', value: 'Mon-Sat: 9AM-9PM, Sun: 10AM-6PM', dataType: 'string' },
-      
-      // Financial settings
-      { category: 'financial', key: 'tax_rate', value: '8.25', dataType: 'number' },
-      { category: 'financial', key: 'nyc_tax_rate', value: '8.25', dataType: 'number' },
-      { category: 'financial', key: 'currency', value: 'USD', dataType: 'string' },
-      { category: 'financial', key: 'currency_symbol', value: '$', dataType: 'string' },
-      { category: 'financial', key: 'invoice_prefix', value: 'INV', dataType: 'string' },
-      { category: 'financial', key: 'invoice_start_number', value: '1001', dataType: 'number' },
-      
-      // Security settings
-      { category: 'security', key: 'session_timeout', value: '480', dataType: 'number' },
-      { category: 'security', key: 'password_min_length', value: '8', dataType: 'number' },
-      { category: 'security', key: 'audit_log_retention', value: '90', dataType: 'number' },
-    ];
+    // Store settings
+    { category: 'store', key: 'name', value: 'Jackson Heights POS', dataType: 'string' },
+    { category: 'store', key: 'address', value: '123 Main Street', dataType: 'string' },
+    { category: 'store', key: 'city', value: 'Jackson Heights', dataType: 'string' },
+    { category: 'store', key: 'state', value: 'NY', dataType: 'string' },
+    { category: 'store', key: 'zip', value: '11372', dataType: 'string' },
+    { category: 'store', key: 'phone', value: '(718) 555-0123', dataType: 'string' },
+    { category: 'store', key: 'hours', value: 'Mon-Sat: 9AM-9PM, Sun: 10AM-6PM', dataType: 'string' },
+
+    // Financial settings
+    { category: 'financial', key: 'tax_rate', value: '8.25', dataType: 'number' },
+    { category: 'financial', key: 'nyc_tax_rate', value: '8.25', dataType: 'number' },
+    { category: 'financial', key: 'currency', value: 'USD', dataType: 'string' },
+    { category: 'financial', key: 'currency_symbol', value: '$', dataType: 'string' },
+    { category: 'financial', key: 'invoice_prefix', value: 'INV', dataType: 'string' },
+    { category: 'financial', key: 'invoice_start_number', value: '1001', dataType: 'number' },
+
+    // Security settings
+    { category: 'security', key: 'session_timeout', value: '480', dataType: 'number' },
+    { category: 'security', key: 'password_min_length', value: '8', dataType: 'number' },
+    { category: 'security', key: 'audit_log_retention', value: '90', dataType: 'number' }];
+
 
     for (const setting of defaults) {
       try {
@@ -290,8 +290,8 @@ const SettingsPage: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="w-6 h-6 animate-spin" />
         <span className="ml-2">Loading settings...</span>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -301,28 +301,28 @@ const SettingsPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
           <p className="text-gray-600 mt-2">Comprehensive system configuration and management</p>
         </div>
-        {unsavedChanges && (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+        {unsavedChanges &&
+        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
             <AlertTriangle className="w-3 h-3 mr-1" />
             Unsaved Changes
           </Badge>
-        )}
+        }
       </div>
 
       <div className="flex items-center gap-2">
-        <Button 
-          onClick={saveSettings} 
+        <Button
+          onClick={saveSettings}
           disabled={loading || !unsavedChanges}
-          className="bg-emerald-600 hover:bg-emerald-700"
-        >
+          className="bg-emerald-600 hover:bg-emerald-700">
+
           {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
           Save Settings
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={initializeDefaultSettings}
-          disabled={loading}
-        >
+          disabled={loading}>
+
           <Download className="w-4 h-4 mr-2" />
           Initialize Defaults
         </Button>
@@ -377,8 +377,8 @@ const SettingsPage: React.FC = () => {
                     id="store-name"
                     value={settings.store?.name || ''}
                     onChange={(e) => handleSettingChange('store', 'name', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="store-phone">Phone</Label>
@@ -386,8 +386,8 @@ const SettingsPage: React.FC = () => {
                     id="store-phone"
                     value={settings.store?.phone || ''}
                     onChange={(e) => handleSettingChange('store', 'phone', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
               </div>
 
@@ -398,8 +398,8 @@ const SettingsPage: React.FC = () => {
                   value={settings.store?.address || ''}
                   onChange={(e) => handleSettingChange('store', 'address', e.target.value)}
                   className="rounded-2xl"
-                  placeholder="123 Main Street"
-                />
+                  placeholder="123 Main Street" />
+
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -409,8 +409,8 @@ const SettingsPage: React.FC = () => {
                     id="store-city"
                     value={settings.store?.city || 'Jackson Heights'}
                     onChange={(e) => handleSettingChange('store', 'city', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="store-state">State</Label>
@@ -418,8 +418,8 @@ const SettingsPage: React.FC = () => {
                     id="store-state"
                     value={settings.store?.state || 'NY'}
                     onChange={(e) => handleSettingChange('store', 'state', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="store-zip">ZIP Code</Label>
@@ -427,8 +427,8 @@ const SettingsPage: React.FC = () => {
                     id="store-zip"
                     value={settings.store?.zip || '11372'}
                     onChange={(e) => handleSettingChange('store', 'zip', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
               </div>
 
@@ -440,8 +440,8 @@ const SettingsPage: React.FC = () => {
                   onChange={(e) => handleSettingChange('store', 'hours', e.target.value)}
                   className="rounded-2xl"
                   placeholder="Mon-Sat: 9AM-9PM, Sun: 10AM-6PM"
-                  rows={2}
-                />
+                  rows={2} />
+
               </div>
 
               <Separator />
@@ -454,8 +454,8 @@ const SettingsPage: React.FC = () => {
                     value={settings.store?.tax_id || ''}
                     onChange={(e) => handleSettingChange('store', 'tax_id', e.target.value)}
                     className="rounded-2xl"
-                    placeholder="XX-XXXXXXX"
-                  />
+                    placeholder="XX-XXXXXXX" />
+
                 </div>
                 <div>
                   <Label htmlFor="business-reg">Business Registration</Label>
@@ -463,21 +463,21 @@ const SettingsPage: React.FC = () => {
                     id="business-reg"
                     value={settings.store?.business_registration || ''}
                     onChange={(e) => handleSettingChange('store', 'business_registration', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
               </div>
 
               <div>
                 <Label>Store Logo</Label>
                 <div className="mt-2 flex items-center space-x-4">
-                  {settings.store?.logo_url && (
-                    <img
-                      src={settings.store.logo_url}
-                      alt="Store logo"
-                      className="h-16 w-16 object-cover rounded-lg border"
-                    />
-                  )}
+                  {settings.store?.logo_url &&
+                  <img
+                    src={settings.store.logo_url}
+                    alt="Store logo"
+                    className="h-16 w-16 object-cover rounded-lg border" />
+
+                  }
                   <div>
                     <Input
                       type="file"
@@ -486,8 +486,8 @@ const SettingsPage: React.FC = () => {
                         const file = e.target.files?.[0];
                         if (file) handleLogoUpload(file);
                       }}
-                      className="rounded-2xl"
-                    />
+                      className="rounded-2xl" />
+
                     <p className="text-xs text-gray-500 mt-1">Recommended: 200x200px, PNG/JPG</p>
                   </div>
                 </div>
@@ -517,8 +517,8 @@ const SettingsPage: React.FC = () => {
                     max="100"
                     value={settings.financial?.tax_rate || 8.25}
                     onChange={(e) => handleSettingChange('financial', 'tax_rate', parseFloat(e.target.value))}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="nyc-tax-rate">NYC Combined Tax Rate (%)</Label>
@@ -530,8 +530,8 @@ const SettingsPage: React.FC = () => {
                     max="100"
                     value={settings.financial?.nyc_tax_rate || 8.25}
                     onChange={(e) => handleSettingChange('financial', 'nyc_tax_rate', parseFloat(e.target.value))}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                   <p className="text-xs text-gray-500 mt-1">NY State (4%) + NYC (4.25%)</p>
                 </div>
               </div>
@@ -543,8 +543,8 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <Switch
                   checked={settings.financial?.auto_calculate_tax !== false}
-                  onCheckedChange={(checked) => handleSettingChange('financial', 'auto_calculate_tax', checked)}
-                />
+                  onCheckedChange={(checked) => handleSettingChange('financial', 'auto_calculate_tax', checked)} />
+
               </div>
             </CardContent>
           </Card>
@@ -560,8 +560,8 @@ const SettingsPage: React.FC = () => {
                   <Label htmlFor="currency">Currency</Label>
                   <Select
                     value={settings.financial?.currency || 'USD'}
-                    onValueChange={(value) => handleSettingChange('financial', 'currency', value)}
-                  >
+                    onValueChange={(value) => handleSettingChange('financial', 'currency', value)}>
+
                     <SelectTrigger className="rounded-2xl">
                       <SelectValue />
                     </SelectTrigger>
@@ -578,15 +578,15 @@ const SettingsPage: React.FC = () => {
                     id="currency-symbol"
                     value={settings.financial?.currency_symbol || '$'}
                     onChange={(e) => handleSettingChange('financial', 'currency_symbol', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="decimal-places">Decimal Places</Label>
                   <Select
                     value={String(settings.financial?.decimal_places || 2)}
-                    onValueChange={(value) => handleSettingChange('financial', 'decimal_places', parseInt(value))}
-                  >
+                    onValueChange={(value) => handleSettingChange('financial', 'decimal_places', parseInt(value))}>
+
                     <SelectTrigger className="rounded-2xl">
                       <SelectValue />
                     </SelectTrigger>
@@ -614,8 +614,8 @@ const SettingsPage: React.FC = () => {
                     id="invoice-prefix"
                     value={settings.financial?.invoice_prefix || 'INV'}
                     onChange={(e) => handleSettingChange('financial', 'invoice_prefix', e.target.value)}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="invoice-start">Starting Number</Label>
@@ -625,8 +625,8 @@ const SettingsPage: React.FC = () => {
                     min="1"
                     value={settings.financial?.invoice_start_number || 1001}
                     onChange={(e) => handleSettingChange('financial', 'invoice_start_number', parseInt(e.target.value))}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
               </div>
             </CardContent>
@@ -648,8 +648,8 @@ const SettingsPage: React.FC = () => {
                     max="100"
                     value={settings.financial?.discount_threshold_cashier || 5}
                     onChange={(e) => handleSettingChange('financial', 'discount_threshold_cashier', parseFloat(e.target.value))}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
                 <div>
                   <Label htmlFor="manager-discount">Manager Max Discount (%)</Label>
@@ -660,8 +660,8 @@ const SettingsPage: React.FC = () => {
                     max="100"
                     value={settings.financial?.discount_threshold_manager || 20}
                     onChange={(e) => handleSettingChange('financial', 'discount_threshold_manager', parseFloat(e.target.value))}
-                    className="rounded-2xl"
-                  />
+                    className="rounded-2xl" />
+
                 </div>
               </div>
             </CardContent>
@@ -679,24 +679,24 @@ const SettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { key: 'cash', label: 'Cash', icon: '💵' },
-                { key: 'credit_card', label: 'Credit Card', icon: '💳' },
-                { key: 'debit_card', label: 'Debit Card', icon: '💳' },
-                { key: 'mobile_payment', label: 'Mobile Payment', icon: '📱' },
-                { key: 'gift_card', label: 'Gift Card', icon: '🎁' },
-                { key: 'store_credit', label: 'Store Credit', icon: '🏪' }
-              ].map((method) => (
-                <div key={method.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+              { key: 'cash', label: 'Cash', icon: '💵' },
+              { key: 'credit_card', label: 'Credit Card', icon: '💳' },
+              { key: 'debit_card', label: 'Debit Card', icon: '💳' },
+              { key: 'mobile_payment', label: 'Mobile Payment', icon: '📱' },
+              { key: 'gift_card', label: 'Gift Card', icon: '🎁' },
+              { key: 'store_credit', label: 'Store Credit', icon: '🏪' }].
+              map((method) =>
+              <div key={method.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">{method.icon}</span>
                     <Label>{method.label}</Label>
                   </div>
                   <Switch
-                    checked={settings.payment?.[`${method.key}_enabled`] !== false}
-                    onCheckedChange={(checked) => handleSettingChange('payment', `${method.key}_enabled`, checked)}
-                  />
+                  checked={settings.payment?.[`${method.key}_enabled`] !== false}
+                  onCheckedChange={(checked) => handleSettingChange('payment', `${method.key}_enabled`, checked)} />
+
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 
@@ -717,16 +717,16 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <Switch
                     checked={settings.payment?.auto_open_drawer !== false}
-                    onCheckedChange={(checked) => handleSettingChange('payment', 'auto_open_drawer', checked)}
-                  />
+                    onCheckedChange={(checked) => handleSettingChange('payment', 'auto_open_drawer', checked)} />
+
                 </div>
 
                 <div>
                   <Label htmlFor="receipt-printer">Receipt Printer</Label>
                   <Select
                     value={settings.payment?.receipt_printer || 'none'}
-                    onValueChange={(value) => handleSettingChange('payment', 'receipt_printer', value)}
-                  >
+                    onValueChange={(value) => handleSettingChange('payment', 'receipt_printer', value)}>
+
                     <SelectTrigger className="rounded-2xl">
                       <SelectValue />
                     </SelectTrigger>
@@ -746,8 +746,8 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <Switch
                     checked={settings.payment?.auto_print_receipt !== false}
-                    onCheckedChange={(checked) => handleSettingChange('payment', 'auto_print_receipt', checked)}
-                  />
+                    onCheckedChange={(checked) => handleSettingChange('payment', 'auto_print_receipt', checked)} />
+
                 </div>
               </div>
             </CardContent>
@@ -772,8 +772,8 @@ const SettingsPage: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
-                  className="rounded-2xl"
-                >
+                  className="rounded-2xl">
+
                   {language === 'en' ? 'Switch to বাংলা' : 'Switch to English'}
                 </Button>
               </div>
@@ -787,16 +787,16 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <Switch
                   checked={settings.i18n?.use_bengali_numerals === true}
-                  onCheckedChange={(checked) => handleSettingChange('i18n', 'use_bengali_numerals', checked)}
-                />
+                  onCheckedChange={(checked) => handleSettingChange('i18n', 'use_bengali_numerals', checked)} />
+
               </div>
 
               <div>
                 <Label htmlFor="date-format">Date Format</Label>
                 <Select
                   value={settings.i18n?.date_format || 'MM/dd/yyyy'}
-                  onValueChange={(value) => handleSettingChange('i18n', 'date_format', value)}
-                >
+                  onValueChange={(value) => handleSettingChange('i18n', 'date_format', value)}>
+
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
@@ -813,8 +813,8 @@ const SettingsPage: React.FC = () => {
                 <Label htmlFor="time-format">Time Format</Label>
                 <Select
                   value={settings.i18n?.time_format || '12h'}
-                  onValueChange={(value) => handleSettingChange('i18n', 'time_format', value)}
-                >
+                  onValueChange={(value) => handleSettingChange('i18n', 'time_format', value)}>
+
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
@@ -829,8 +829,8 @@ const SettingsPage: React.FC = () => {
                 <Label htmlFor="currency-position">Currency Symbol Position</Label>
                 <Select
                   value={settings.i18n?.currency_position || 'before'}
-                  onValueChange={(value) => handleSettingChange('i18n', 'currency_position', value)}
-                >
+                  onValueChange={(value) => handleSettingChange('i18n', 'currency_position', value)}>
+
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
@@ -847,8 +847,8 @@ const SettingsPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
-          {!isAdmin && (
-            <Card className="rounded-3xl border-0 shadow-sm bg-yellow-50">
+          {!isAdmin &&
+          <Card className="rounded-3xl border-0 shadow-sm bg-yellow-50">
               <CardContent className="pt-6">
                 <div className="flex items-center">
                   <Lock className="w-5 h-5 text-yellow-600 mr-2" />
@@ -856,7 +856,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
+          }
 
           <Card className="rounded-3xl border-0 shadow-sm">
             <CardHeader>
@@ -877,8 +877,8 @@ const SettingsPage: React.FC = () => {
                   value={settings.security?.session_timeout || 480}
                   onChange={(e) => handleSettingChange('security', 'session_timeout', parseInt(e.target.value))}
                   className="rounded-2xl"
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
                 <p className="text-xs text-gray-500 mt-1">Default: 8 hours (480 minutes)</p>
               </div>
 
@@ -890,8 +890,8 @@ const SettingsPage: React.FC = () => {
                 <Switch
                   checked={settings.security?.force_password_change === true}
                   onCheckedChange={(checked) => handleSettingChange('security', 'force_password_change', checked)}
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
 
               <div className="flex items-center justify-between">
@@ -902,8 +902,8 @@ const SettingsPage: React.FC = () => {
                 <Switch
                   checked={settings.security?.require_2fa === true}
                   onCheckedChange={(checked) => handleSettingChange('security', 'require_2fa', checked)}
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
             </CardContent>
           </Card>
@@ -924,25 +924,25 @@ const SettingsPage: React.FC = () => {
                   value={settings.security?.password_min_length || 8}
                   onChange={(e) => handleSettingChange('security', 'password_min_length', parseInt(e.target.value))}
                   className="rounded-2xl"
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
 
               {[
-                { key: 'require_uppercase', label: 'Require Uppercase Letters' },
-                { key: 'require_lowercase', label: 'Require Lowercase Letters' },
-                { key: 'require_numbers', label: 'Require Numbers' },
-                { key: 'require_special_chars', label: 'Require Special Characters' }
-              ].map((rule) => (
-                <div key={rule.key} className="flex items-center justify-between">
+              { key: 'require_uppercase', label: 'Require Uppercase Letters' },
+              { key: 'require_lowercase', label: 'Require Lowercase Letters' },
+              { key: 'require_numbers', label: 'Require Numbers' },
+              { key: 'require_special_chars', label: 'Require Special Characters' }].
+              map((rule) =>
+              <div key={rule.key} className="flex items-center justify-between">
                   <Label>{rule.label}</Label>
                   <Switch
-                    checked={settings.security?.[rule.key] === true}
-                    onCheckedChange={(checked) => handleSettingChange('security', rule.key, checked)}
-                    disabled={!isAdmin}
-                  />
+                  checked={settings.security?.[rule.key] === true}
+                  onCheckedChange={(checked) => handleSettingChange('security', rule.key, checked)}
+                  disabled={!isAdmin} />
+
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 
@@ -965,8 +965,8 @@ const SettingsPage: React.FC = () => {
                   value={settings.security?.audit_log_retention || 90}
                   onChange={(e) => handleSettingChange('security', 'audit_log_retention', parseInt(e.target.value))}
                   className="rounded-2xl"
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
 
               <div className="flex items-center justify-between">
@@ -977,8 +977,8 @@ const SettingsPage: React.FC = () => {
                 <Switch
                   checked={settings.security?.log_failed_logins !== false}
                   onCheckedChange={(checked) => handleSettingChange('security', 'log_failed_logins', checked)}
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
 
               <div className="flex items-center justify-between">
@@ -989,8 +989,8 @@ const SettingsPage: React.FC = () => {
                 <Switch
                   checked={settings.security?.log_data_changes !== false}
                   onCheckedChange={(checked) => handleSettingChange('security', 'log_data_changes', checked)}
-                  disabled={!isAdmin}
-                />
+                  disabled={!isAdmin} />
+
               </div>
             </CardContent>
           </Card>
@@ -1013,8 +1013,8 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <Switch
                   checked={settings.system?.auto_backup !== false}
-                  onCheckedChange={(checked) => handleSettingChange('system', 'auto_backup', checked)}
-                />
+                  onCheckedChange={(checked) => handleSettingChange('system', 'auto_backup', checked)} />
+
               </div>
 
               <div>
@@ -1024,8 +1024,8 @@ const SettingsPage: React.FC = () => {
                   type="time"
                   value={settings.system?.backup_time || '02:00'}
                   onChange={(e) => handleSettingChange('system', 'backup_time', e.target.value)}
-                  className="rounded-2xl"
-                />
+                  className="rounded-2xl" />
+
               </div>
 
               <div>
@@ -1037,8 +1037,8 @@ const SettingsPage: React.FC = () => {
                   max="365"
                   value={settings.system?.backup_retention || 30}
                   onChange={(e) => handleSettingChange('system', 'backup_retention', parseInt(e.target.value))}
-                  className="rounded-2xl"
-                />
+                  className="rounded-2xl" />
+
               </div>
             </CardContent>
           </Card>
@@ -1053,22 +1053,22 @@ const SettingsPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { key: 'low_stock_alerts', label: 'Low Stock Alerts', desc: 'Alert when inventory runs low' },
-                { key: 'high_value_transactions', label: 'High Value Transactions', desc: 'Alert for transactions over $500' },
-                { key: 'failed_login_alerts', label: 'Failed Login Alerts', desc: 'Alert on suspicious login attempts' },
-                { key: 'system_errors', label: 'System Error Notifications', desc: 'Alert on system errors' }
-              ].map((notification) => (
-                <div key={notification.key} className="flex items-center justify-between">
+              { key: 'low_stock_alerts', label: 'Low Stock Alerts', desc: 'Alert when inventory runs low' },
+              { key: 'high_value_transactions', label: 'High Value Transactions', desc: 'Alert for transactions over $500' },
+              { key: 'failed_login_alerts', label: 'Failed Login Alerts', desc: 'Alert on suspicious login attempts' },
+              { key: 'system_errors', label: 'System Error Notifications', desc: 'Alert on system errors' }].
+              map((notification) =>
+              <div key={notification.key} className="flex items-center justify-between">
                   <div>
                     <Label>{notification.label}</Label>
                     <p className="text-sm text-gray-600">{notification.desc}</p>
                   </div>
                   <Switch
-                    checked={settings.system?.[notification.key] !== false}
-                    onCheckedChange={(checked) => handleSettingChange('system', notification.key, checked)}
-                  />
+                  checked={settings.system?.[notification.key] !== false}
+                  onCheckedChange={(checked) => handleSettingChange('system', notification.key, checked)} />
+
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 
@@ -1089,8 +1089,8 @@ const SettingsPage: React.FC = () => {
                   value={settings.system?.email_api_key || ''}
                   onChange={(e) => handleSettingChange('system', 'email_api_key', e.target.value)}
                   className="rounded-2xl"
-                  placeholder="Enter API key for email notifications"
-                />
+                  placeholder="Enter API key for email notifications" />
+
               </div>
 
               <div>
@@ -1101,8 +1101,8 @@ const SettingsPage: React.FC = () => {
                   value={settings.system?.sms_api_key || ''}
                   onChange={(e) => handleSettingChange('system', 'sms_api_key', e.target.value)}
                   className="rounded-2xl"
-                  placeholder="Enter API key for SMS notifications"
-                />
+                  placeholder="Enter API key for SMS notifications" />
+
               </div>
 
               <div className="flex items-center justify-between">
@@ -1112,8 +1112,8 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <Switch
                   checked={settings.system?.email_notifications === true}
-                  onCheckedChange={(checked) => handleSettingChange('system', 'email_notifications', checked)}
-                />
+                  onCheckedChange={(checked) => handleSettingChange('system', 'email_notifications', checked)} />
+
               </div>
 
               <div className="flex items-center justify-between">
@@ -1123,16 +1123,16 @@ const SettingsPage: React.FC = () => {
                 </div>
                 <Switch
                   checked={settings.system?.sms_notifications === true}
-                  onCheckedChange={(checked) => handleSettingChange('system', 'sms_notifications', checked)}
-                />
+                  onCheckedChange={(checked) => handleSettingChange('system', 'sms_notifications', checked)} />
+
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {unsavedChanges && (
-        <div className="fixed bottom-6 right-6 z-50">
+      {unsavedChanges &&
+      <div className="fixed bottom-6 right-6 z-50">
           <Card className="bg-white shadow-lg rounded-2xl">
             <CardContent className="pt-4">
               <div className="flex items-center space-x-3">
@@ -1149,9 +1149,9 @@ const SettingsPage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default SettingsPage;

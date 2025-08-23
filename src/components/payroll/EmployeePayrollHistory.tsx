@@ -86,9 +86,9 @@ const EmployeePayrollHistory: React.FC = () => {
   const loadPayrollHistory = async () => {
     try {
       setLoading(true);
-      
+
       const filters = [];
-      
+
       // Employee role filter - only see own payroll history
       if (isEmployee && !isManager && !isAdmin) {
         filters.push({ name: 'employee_id', op: 'Equal', value: user?.employee_id || 0 });
@@ -116,13 +116,13 @@ const EmployeePayrollHistory: React.FC = () => {
       });
 
       if (error) throw error;
-      
+
       const history = data?.List || [];
       setPayrollHistory(history);
-      
+
       // Calculate summary
       calculateSummary(history);
-      
+
     } catch (error) {
       console.error('Failed to load payroll history:', error);
       toast({
@@ -195,31 +195,31 @@ const EmployeePayrollHistory: React.FC = () => {
 
   const downloadHistoryCSV = () => {
     const headers = [
-      'Pay Period Start',
-      'Pay Period End',
-      'Regular Hours',
-      'Overtime Hours',
-      'Gross Pay',
-      'Commission',
-      'Total Deductions',
-      'Net Pay',
-      'Status'
-    ];
+    'Pay Period Start',
+    'Pay Period End',
+    'Regular Hours',
+    'Overtime Hours',
+    'Gross Pay',
+    'Commission',
+    'Total Deductions',
+    'Net Pay',
+    'Status'];
+
 
     const csvContent = [
-      headers.join(','),
-      ...payrollHistory.map(entry => [
-        format(new Date(entry.pay_period_start), 'yyyy-MM-dd'),
-        format(new Date(entry.pay_period_end), 'yyyy-MM-dd'),
-        entry.regular_hours?.toString() || '0',
-        entry.overtime_hours?.toString() || '0',
-        entry.gross_total?.toString() || '0',
-        entry.commission?.toString() || '0',
-        entry.total_deductions?.toString() || '0',
-        entry.net_pay?.toString() || '0',
-        entry.status
-      ].join(','))
-    ].join('\n');
+    headers.join(','),
+    ...payrollHistory.map((entry) => [
+    format(new Date(entry.pay_period_start), 'yyyy-MM-dd'),
+    format(new Date(entry.pay_period_end), 'yyyy-MM-dd'),
+    entry.regular_hours?.toString() || '0',
+    entry.overtime_hours?.toString() || '0',
+    entry.gross_total?.toString() || '0',
+    entry.commission?.toString() || '0',
+    entry.total_deductions?.toString() || '0',
+    entry.net_pay?.toString() || '0',
+    entry.status].
+    join(','))].
+    join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -251,12 +251,12 @@ const EmployeePayrollHistory: React.FC = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <Badge className={`${config.color} rounded-xl`}>
         {config.label}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   return (
@@ -267,35 +267,35 @@ const EmployeePayrollHistory: React.FC = () => {
           <p className="text-gray-600">View historical payroll data</p>
         </div>
         
-        {payrollHistory.length > 0 && (
-          <Button 
-            variant="outline" 
-            className="rounded-2xl"
-            onClick={downloadHistoryCSV}
-          >
+        {payrollHistory.length > 0 &&
+        <Button
+          variant="outline"
+          className="rounded-2xl"
+          onClick={downloadHistoryCSV}>
+
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </Button>
-        )}
+        }
       </div>
 
       <div className="flex gap-4">
-        {(isAdmin || isManager) && (
-          <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+        {(isAdmin || isManager) &&
+        <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
             <SelectTrigger className="w-64 rounded-2xl">
               <SelectValue placeholder="Select employee" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Employees</SelectItem>
               <SelectItem value="current">Current User</SelectItem>
-              {employees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id.toString()}>
+              {employees.map((emp) =>
+            <SelectItem key={emp.id} value={emp.id.toString()}>
                   {emp.first_name} {emp.last_name}
                 </SelectItem>
-              ))}
+            )}
             </SelectContent>
           </Select>
-        )}
+        }
 
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-48 rounded-2xl">
@@ -383,28 +383,28 @@ const EmployeePayrollHistory: React.FC = () => {
         <CardHeader>
           <CardTitle>Payroll History</CardTitle>
           <CardDescription>
-            {payrollHistory.length > 0 
-              ? `Showing ${payrollHistory.length} payroll entries`
-              : 'No payroll history found for selected criteria'
+            {payrollHistory.length > 0 ?
+            `Showing ${payrollHistory.length} payroll entries` :
+            'No payroll history found for selected criteria'
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Loading payroll history...</div>
-          ) : payrollHistory.length === 0 ? (
-            <div className="text-center py-12">
+          {loading ?
+          <div className="text-center py-8">Loading payroll history...</div> :
+          payrollHistory.length === 0 ?
+          <div className="text-center py-12">
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No payroll history found</h3>
               <p className="text-gray-600">Try selecting a different time period or employee</p>
-            </div>
-          ) : (
-            <Table>
+            </div> :
+
+          <Table>
               <TableHeader>
                 <TableRow>
-                  {(isAdmin || isManager) && selectedEmployee === 'all' && (
-                    <TableHead>Employee</TableHead>
-                  )}
+                  {(isAdmin || isManager) && selectedEmployee === 'all' &&
+                <TableHead>Employee</TableHead>
+                }
                   <TableHead>Pay Period</TableHead>
                   <TableHead>Hours</TableHead>
                   <TableHead className="text-right">Gross Pay</TableHead>
@@ -415,13 +415,13 @@ const EmployeePayrollHistory: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payrollHistory.map((entry) => (
-                  <TableRow key={entry.id}>
-                    {(isAdmin || isManager) && selectedEmployee === 'all' && (
-                      <TableCell className="font-medium">
+                {payrollHistory.map((entry) =>
+              <TableRow key={entry.id}>
+                    {(isAdmin || isManager) && selectedEmployee === 'all' &&
+                <TableCell className="font-medium">
                         {entry.employee_name}
                       </TableCell>
-                    )}
+                }
                     <TableCell>
                       <div className="text-sm">
                         <div>{format(new Date(entry.pay_period_start), 'MMM dd')}</div>
@@ -433,19 +433,19 @@ const EmployeePayrollHistory: React.FC = () => {
                     <TableCell>
                       <div className="text-sm">
                         <div>Reg: {entry.regular_hours || 0}h</div>
-                        {entry.overtime_hours > 0 && (
-                          <div className="text-amber-600">OT: {entry.overtime_hours}h</div>
-                        )}
+                        {entry.overtime_hours > 0 &&
+                    <div className="text-amber-600">OT: {entry.overtime_hours}h</div>
+                    }
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="text-sm">
                         <div>{formatCurrency(entry.gross_total)}</div>
-                        {entry.commission > 0 && (
-                          <div className="text-green-600 text-xs">
+                        {entry.commission > 0 &&
+                    <div className="text-green-600 text-xs">
                             +{formatCurrency(entry.commission)} comm
                           </div>
-                        )}
+                    }
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -459,22 +459,22 @@ const EmployeePayrollHistory: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-xl"
-                      >
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl">
+
                         <Eye className="w-4 h-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
+              )}
               </TableBody>
             </Table>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default EmployeePayrollHistory;

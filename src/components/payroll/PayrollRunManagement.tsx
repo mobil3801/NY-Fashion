@@ -48,8 +48,8 @@ const PayrollRunManagement: React.FC = () => {
     try {
       setLoading(true);
       const filters = selectedStatus !== 'all' ? [
-        { name: 'status', op: 'Equal', value: selectedStatus }
-      ] : [];
+      { name: 'status', op: 'Equal', value: selectedStatus }] :
+      [];
 
       const { data, error } = await window.ezsite.apis.tablePage(36862, {
         PageNo: 1,
@@ -158,12 +158,12 @@ const PayrollRunManagement: React.FC = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <Badge className={`${config.color} rounded-xl`}>
         {config.label}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   return (
@@ -197,8 +197,8 @@ const PayrollRunManagement: React.FC = () => {
                   className="rounded-2xl"
                   placeholder="e.g., December 2024 - Bi-weekly"
                   value={newPayrollRun.name}
-                  onChange={(e) => setNewPayrollRun({...newPayrollRun, name: e.target.value})}
-                />
+                  onChange={(e) => setNewPayrollRun({ ...newPayrollRun, name: e.target.value })} />
+
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -209,8 +209,8 @@ const PayrollRunManagement: React.FC = () => {
                     type="date"
                     className="rounded-2xl"
                     value={newPayrollRun.start_date}
-                    onChange={(e) => setNewPayrollRun({...newPayrollRun, start_date: e.target.value})}
-                  />
+                    onChange={(e) => setNewPayrollRun({ ...newPayrollRun, start_date: e.target.value })} />
+
                 </div>
 
                 <div className="space-y-2">
@@ -220,15 +220,15 @@ const PayrollRunManagement: React.FC = () => {
                     type="date"
                     className="rounded-2xl"
                     value={newPayrollRun.end_date}
-                    onChange={(e) => setNewPayrollRun({...newPayrollRun, end_date: e.target.value})}
-                  />
+                    onChange={(e) => setNewPayrollRun({ ...newPayrollRun, end_date: e.target.value })} />
+
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="pay_period_type">Pay Period Type</Label>
-                <Select value={newPayrollRun.pay_period_type} onValueChange={(value) => 
-                  setNewPayrollRun({...newPayrollRun, pay_period_type: value})}>
+                <Select value={newPayrollRun.pay_period_type} onValueChange={(value) =>
+                setNewPayrollRun({ ...newPayrollRun, pay_period_type: value })}>
                   <SelectTrigger className="rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
@@ -243,18 +243,18 @@ const PayrollRunManagement: React.FC = () => {
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="rounded-2xl"
-                onClick={() => setShowCreateDialog(false)}
-              >
+                onClick={() => setShowCreateDialog(false)}>
+
                 Cancel
               </Button>
-              <Button 
+              <Button
                 className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
                 onClick={createPayrollRun}
-                disabled={loading}
-              >
+                disabled={loading}>
+
                 Create Payroll Run
               </Button>
             </div>
@@ -283,16 +283,16 @@ const PayrollRunManagement: React.FC = () => {
           <CardDescription>Manage payroll processing for different pay periods</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Loading payroll runs...</div>
-          ) : payrollRuns.length === 0 ? (
-            <div className="text-center py-12">
+          {loading ?
+          <div className="text-center py-8">Loading payroll runs...</div> :
+          payrollRuns.length === 0 ?
+          <div className="text-center py-12">
               <CalendarDays className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No payroll runs found</h3>
               <p className="text-gray-600 mb-4">Create your first payroll run to get started</p>
-            </div>
-          ) : (
-            <Table>
+            </div> :
+
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
@@ -304,8 +304,8 @@ const PayrollRunManagement: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payrollRuns.map((run) => (
-                  <TableRow key={run.id}>
+                {payrollRuns.map((run) =>
+              <TableRow key={run.id}>
                     <TableCell className="font-medium">{run.name}</TableCell>
                     <TableCell>
                       <div className="text-sm">
@@ -321,34 +321,34 @@ const PayrollRunManagement: React.FC = () => {
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl">
+
                           <Eye className="w-4 h-4" />
                         </Button>
                         
-                        {run.status === 'draft' && (
-                          <Button
-                            size="sm"
-                            className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => processPayrollRun(run.id)}
-                            disabled={loading}
-                          >
+                        {run.status === 'draft' &&
+                    <Button
+                      size="sm"
+                      className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => processPayrollRun(run.id)}
+                      disabled={loading}>
+
                             <Play className="w-4 h-4" />
                           </Button>
-                        )}
+                    }
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+              )}
               </TableBody>
             </Table>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PayrollRunManagement;

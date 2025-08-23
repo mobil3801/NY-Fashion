@@ -63,29 +63,29 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
   const loadInvoiceItems = async () => {
     if (!invoice?.id) return;
-    
+
     try {
       setLoading(true);
-      
+
       const { data, error } = await window.ezsite.apis.tablePage(36857, {
         PageNo: 1,
         PageSize: 100,
         OrderByField: 'id',
         IsAsc: true,
         Filters: [
-          {
-            name: 'sale_id',
-            op: 'Equal',
-            value: invoice.id
-          }
-        ]
+        {
+          name: 'sale_id',
+          op: 'Equal',
+          value: invoice.id
+        }]
+
       });
 
       if (error) throw error;
-      
+
       const items = data?.List || [];
       setInvoiceItems(items);
-      
+
       // Initialize return items
       setReturnItems(items.map((item: InvoiceItem) => ({
         itemId: item.id,
@@ -100,7 +100,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       toast({
         title: "Error",
         description: "Failed to load invoice items",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -108,56 +108,56 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   };
 
   const handleReturnQuantityChange = (itemId: number, quantity: number) => {
-    const item = invoiceItems.find(i => i.id === itemId);
+    const item = invoiceItems.find((i) => i.id === itemId);
     if (!item) return;
 
     const maxQuantity = item.quantity - (item.returnedQuantity || 0);
     const validQuantity = Math.min(Math.max(0, quantity), maxQuantity);
-    
-    setReturnItems(prev => 
-      prev.map(returnItem => 
-        returnItem.itemId === itemId 
-          ? {
-              ...returnItem,
-              returnQuantity: validQuantity,
-              refundAmount: validQuantity * item.unit_price
-            }
-          : returnItem
-      )
+
+    setReturnItems((prev) =>
+    prev.map((returnItem) =>
+    returnItem.itemId === itemId ?
+    {
+      ...returnItem,
+      returnQuantity: validQuantity,
+      refundAmount: validQuantity * item.unit_price
+    } :
+    returnItem
+    )
     );
   };
 
   const handleReasonChange = (itemId: number, reason: string) => {
-    setReturnItems(prev => 
-      prev.map(returnItem => 
-        returnItem.itemId === itemId 
-          ? { ...returnItem, reason }
-          : returnItem
-      )
+    setReturnItems((prev) =>
+    prev.map((returnItem) =>
+    returnItem.itemId === itemId ?
+    { ...returnItem, reason } :
+    returnItem
+    )
     );
   };
 
   const handleConditionChange = (itemId: number, condition: string) => {
-    setReturnItems(prev => 
-      prev.map(returnItem => 
-        returnItem.itemId === itemId 
-          ? { ...returnItem, condition }
-          : returnItem
-      )
+    setReturnItems((prev) =>
+    prev.map((returnItem) =>
+    returnItem.itemId === itemId ?
+    { ...returnItem, condition } :
+    returnItem
+    )
     );
   };
 
   const processReturn = async () => {
     try {
       setProcessing(true);
-      
-      const itemsToReturn = returnItems.filter(item => item.returnQuantity > 0);
-      
+
+      const itemsToReturn = returnItems.filter((item) => item.returnQuantity > 0);
+
       if (itemsToReturn.length === 0) {
         toast({
           title: "No Items Selected",
           description: "Please select at least one item to return",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -166,7 +166,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
         toast({
           title: "Missing Information",
           description: "Please provide a return reason",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -175,7 +175,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
         toast({
           title: "Missing Information",
           description: "Please select a refund method",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
@@ -203,7 +203,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
       // Create return items
       for (const returnItem of itemsToReturn) {
-        const invoiceItem = invoiceItems.find(item => item.id === returnItem.itemId);
+        const invoiceItem = invoiceItems.find((item) => item.id === returnItem.itemId);
         if (!invoiceItem) continue;
 
         await window.ezsite.apis.tableCreate(36858, { // Assuming return items table exists
@@ -218,15 +218,15 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
         // Update stock if returning to inventory
         if (returnItem.condition === 'good') {
+
+
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
-        }
-      }
+        }} // Update original sale if fully returned
+      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);
 
-      // Update original sale if fully returned
-      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);
-      const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);
-      
       if (totalReturnQuantity === totalOriginalQuantity) {
         await window.ezsite.apis.tableUpdate(36856, {
           ID: invoice.id,
@@ -238,7 +238,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
       toast({
         title: "Return Processed",
-        description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}`,
+        description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}`
       });
 
       onComplete();
@@ -248,7 +248,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
       toast({
         title: "Process Failed",
         description: "Unable to process the return/exchange",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setProcessing(false);
@@ -258,32 +258,32 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
 
   const returnReasons = [
-    'Defective/Damaged',
-    'Wrong Size/Color',
-    'Customer Changed Mind',
-    'Not as Described',
-    'Duplicate Order',
-    'Quality Issues',
-    'Other'
-  ];
+  'Defective/Damaged',
+  'Wrong Size/Color',
+  'Customer Changed Mind',
+  'Not as Described',
+  'Duplicate Order',
+  'Quality Issues',
+  'Other'];
+
 
   const refundMethods = [
-    'Original Payment Method',
-    'Cash',
-    'Store Credit',
-    'Gift Card',
-    'Bank Transfer'
-  ];
+  'Original Payment Method',
+  'Cash',
+  'Store Credit',
+  'Gift Card',
+  'Bank Transfer'];
+
 
   const itemConditions = [
-    { value: 'good', label: 'Good - Can Resell' },
-    { value: 'damaged', label: 'Damaged - Cannot Resell' },
-    { value: 'opened', label: 'Opened - May Resell' },
-    { value: 'defective', label: 'Defective - Return to Supplier' }
-  ];
+  { value: 'good', label: 'Good - Can Resell' },
+  { value: 'damaged', label: 'Damaged - Cannot Resell' },
+  { value: 'opened', label: 'Opened - May Resell' },
+  { value: 'defective', label: 'Defective - Return to Supplier' }];
+
 
   const totalRefundAmount = returnItems.reduce((sum, item) => sum + item.refundAmount, 0);
-  const selectedItemsCount = returnItems.filter(item => item.returnQuantity > 0).length;
+  const selectedItemsCount = returnItems.filter((item) => item.returnQuantity > 0).length;
 
   if (!invoice) return null;
 
@@ -309,16 +309,16 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                 <Button
                   variant={returnType === 'return' ? 'default' : 'outline'}
                   onClick={() => setReturnType('return')}
-                  className="h-20 flex flex-col"
-                >
+                  className="h-20 flex flex-col">
+
                   <Undo2 className="w-6 h-6 mb-2" />
                   <span>Return for Refund</span>
                 </Button>
                 <Button
                   variant={returnType === 'exchange' ? 'default' : 'outline'}
                   onClick={() => setReturnType('exchange')}
-                  className="h-20 flex flex-col"
-                >
+                  className="h-20 flex flex-col">
+
                   <RefreshCcw className="w-6 h-6 mb-2" />
                   <span>Exchange</span>
                 </Button>
@@ -340,32 +340,32 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       <SelectValue placeholder="Select reason" />
                     </SelectTrigger>
                     <SelectContent>
-                      {returnReasons.map(reason => (
-                        <SelectItem key={reason} value={reason}>
+                      {returnReasons.map((reason) =>
+                      <SelectItem key={reason} value={reason}>
                           {reason}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {returnType === 'return' && (
-                  <div>
+                {returnType === 'return' &&
+                <div>
                     <Label htmlFor="refund-method">Refund Method *</Label>
                     <Select value={refundMethod} onValueChange={setRefundMethod}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select refund method" />
                       </SelectTrigger>
                       <SelectContent>
-                        {refundMethods.map(method => (
-                          <SelectItem key={method} value={method}>
+                        {refundMethods.map((method) =>
+                      <SelectItem key={method} value={method}>
                             {method}
                           </SelectItem>
-                        ))}
+                      )}
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                }
 
                 <div>
                   <Label htmlFor="notes">Additional Notes</Label>
@@ -374,8 +374,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     placeholder="Any additional notes about the return..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                  />
+                    rows={3} />
+
                 </div>
               </CardContent>
             </Card>
@@ -411,10 +411,10 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <CardDescription>Choose quantities and conditions for returned items</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8">Loading items...</div>
-              ) : (
-                <div className="border rounded-lg overflow-hidden">
+              {loading ?
+              <div className="text-center py-8">Loading items...</div> :
+
+              <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -428,78 +428,78 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     </TableHeader>
                     <TableBody>
                       {invoiceItems.map((item) => {
-                        const returnItem = returnItems.find(ri => ri.itemId === item.id);
-                        const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
-                        
-                        return (
-                          <TableRow key={item.id}>
+                      const returnItem = returnItems.find((ri) => ri.itemId === item.id);
+                      const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
+
+                      return (
+                        <TableRow key={item.id}>
                             <TableCell>
                               <div>
                                 <p className="font-medium">{item.product_name}</p>
-                                {item.sku && (
-                                  <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                                )}
+                                {item.sku &&
+                              <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                              }
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{item.quantity}</TableCell>
                             <TableCell className="text-center">
                               <Input
-                                type="number"
-                                min="0"
-                                max={maxReturnQty}
-                                value={returnItem?.returnQuantity || 0}
-                                onChange={(e) => 
-                                  handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
-                                }
-                                className="w-20 text-center"
-                              />
+                              type="number"
+                              min="0"
+                              max={maxReturnQty}
+                              value={returnItem?.returnQuantity || 0}
+                              onChange={(e) =>
+                              handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
+                              }
+                              className="w-20 text-center" />
+
                             </TableCell>
                             <TableCell>
                               <Select
-                                value={returnItem?.condition || 'good'}
-                                onValueChange={(value) => handleConditionChange(item.id, value)}
-                                disabled={!returnItem?.returnQuantity}
-                              >
+                              value={returnItem?.condition || 'good'}
+                              onValueChange={(value) => handleConditionChange(item.id, value)}
+                              disabled={!returnItem?.returnQuantity}>
+
                                 <SelectTrigger className="w-40">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {itemConditions.map(condition => (
-                                    <SelectItem key={condition.value} value={condition.value}>
+                                  {itemConditions.map((condition) =>
+                                <SelectItem key={condition.value} value={condition.value}>
                                       {condition.label}
                                     </SelectItem>
-                                  ))}
+                                )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
                             <TableCell>
                               <Select
-                                value={returnItem?.reason || ''}
-                                onValueChange={(value) => handleReasonChange(item.id, value)}
-                                disabled={!returnItem?.returnQuantity}
-                              >
+                              value={returnItem?.reason || ''}
+                              onValueChange={(value) => handleReasonChange(item.id, value)}
+                              disabled={!returnItem?.returnQuantity}>
+
                                 <SelectTrigger className="w-40">
                                   <SelectValue placeholder="Select reason" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {returnReasons.map(reason => (
-                                    <SelectItem key={reason} value={reason}>
+                                  {returnReasons.map((reason) =>
+                                <SelectItem key={reason} value={reason}>
                                       {reason}
                                     </SelectItem>
-                                  ))}
+                                )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
                             <TableCell className="text-right font-semibold">
                               {formatCurrency(returnItem?.refundAmount || 0)}
                             </TableCell>
-                          </TableRow>
-                        );
-                      })}
+                          </TableRow>);
+
+                    })}
                     </TableBody>
                   </Table>
                 </div>
-              )}
+              }
             </CardContent>
           </Card>
 
@@ -516,23 +516,23 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <Button
                 onClick={processReturn}
                 disabled={processing || selectedItemsCount === 0}
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                {processing ? (
-                  <>Processing...</>
-                ) : (
-                  <>
+                className="bg-emerald-600 hover:bg-emerald-700">
+
+                {processing ?
+                <>Processing...</> :
+
+                <>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Process {returnType === 'return' ? 'Return' : 'Exchange'}
                   </>
-                )}
+                }
               </Button>
             </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default ReturnExchangeModal;

@@ -62,18 +62,18 @@ const PayslipGeneration: React.FC = () => {
   const loadPayslips = async () => {
     try {
       setLoading(true);
-      
+
       const filters = [];
-      
+
       // Employee role filter - only see own payslips
       if (isEmployee && !isManager && !isAdmin) {
         filters.push({ name: 'employee_id', op: 'Equal', value: user?.employee_id || 0 });
       }
-      
+
       if (filterStatus !== 'all') {
         filters.push({ name: 'status', op: 'Equal', value: filterStatus });
       }
-      
+
       if (filterEmployee !== 'all' && (isManager || isAdmin)) {
         filters.push({ name: 'employee_id', op: 'Equal', value: parseInt(filterEmployee) });
       }
@@ -103,7 +103,7 @@ const PayslipGeneration: React.FC = () => {
   const previewPayslip = (payslip: Payslip) => {
     setSelectedPayslip(payslip);
     setShowPreviewDialog(true);
-    
+
     // Mark as viewed if employee is viewing their own payslip
     if (isEmployee && payslip.status === 'generated') {
       updatePayslipStatus(payslip.id, 'viewed');
@@ -191,12 +191,12 @@ const PayslipGeneration: React.FC = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <Badge className={`${config.color} rounded-xl`}>
         {config.label}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const formatCurrency = (amount: number) => {
@@ -229,8 +229,8 @@ const PayslipGeneration: React.FC = () => {
           </SelectContent>
         </Select>
 
-        {(isManager || isAdmin) && (
-          <Select value={filterEmployee} onValueChange={setFilterEmployee}>
+        {(isManager || isAdmin) &&
+        <Select value={filterEmployee} onValueChange={setFilterEmployee}>
             <SelectTrigger className="w-48 rounded-2xl">
               <SelectValue placeholder="Filter by employee" />
             </SelectTrigger>
@@ -239,7 +239,7 @@ const PayslipGeneration: React.FC = () => {
               {/* Add employee options here */}
             </SelectContent>
           </Select>
-        )}
+        }
       </div>
 
       <Card className="rounded-3xl border-0 shadow-sm">
@@ -248,16 +248,16 @@ const PayslipGeneration: React.FC = () => {
           <CardDescription>Generated payslips for employees</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8">Loading payslips...</div>
-          ) : payslips.length === 0 ? (
-            <div className="text-center py-12">
+          {loading ?
+          <div className="text-center py-8">Loading payslips...</div> :
+          payslips.length === 0 ?
+          <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No payslips found</h3>
               <p className="text-gray-600">Process payroll runs to generate payslips</p>
-            </div>
-          ) : (
-            <Table>
+            </div> :
+
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Employee</TableHead>
@@ -269,8 +269,8 @@ const PayslipGeneration: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payslips.map((payslip) => (
-                  <TableRow key={payslip.id}>
+                {payslips.map((payslip) =>
+              <TableRow key={payslip.id}>
                     <TableCell className="font-medium">
                       {payslip.employee_name}
                     </TableCell>
@@ -292,39 +292,39 @@ const PayslipGeneration: React.FC = () => {
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => previewPayslip(payslip)}
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => previewPayslip(payslip)}>
+
                           <Eye className="w-4 h-4" />
                         </Button>
                         
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => downloadPayslip(payslip)}
-                        >
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl"
+                      onClick={() => downloadPayslip(payslip)}>
+
                           <Download className="w-4 h-4" />
                         </Button>
 
-                        {(isManager || isAdmin) && payslip.status === 'generated' && (
-                          <Button
-                            size="sm"
-                            className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                            onClick={() => sendPayslip(payslip.id)}
-                          >
+                        {(isManager || isAdmin) && payslip.status === 'generated' &&
+                    <Button
+                      size="sm"
+                      className="rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => sendPayslip(payslip.id)}>
+
                             <Send className="w-4 h-4" />
                           </Button>
-                        )}
+                    }
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+              )}
               </TableBody>
             </Table>
-          )}
+          }
         </CardContent>
       </Card>
 
@@ -338,8 +338,8 @@ const PayslipGeneration: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          {selectedPayslip && (
-            <div className="space-y-6 py-4">
+          {selectedPayslip &&
+          <div className="space-y-6 py-4">
               {/* Header */}
               <div className="text-center border-b pb-4">
                 <h2 className="text-2xl font-bold">Company Name</h2>
@@ -370,18 +370,18 @@ const PayslipGeneration: React.FC = () => {
                     <span>Regular Hours ({selectedPayslip.regular_hours} hrs @ {formatCurrency(selectedPayslip.regular_rate)}/hr)</span>
                     <span>{formatCurrency(selectedPayslip.regular_hours * selectedPayslip.regular_rate)}</span>
                   </div>
-                  {selectedPayslip.overtime_hours > 0 && (
-                    <div className="flex justify-between">
+                  {selectedPayslip.overtime_hours > 0 &&
+                <div className="flex justify-between">
                       <span>Overtime Hours ({selectedPayslip.overtime_hours} hrs @ {formatCurrency(selectedPayslip.overtime_rate)}/hr)</span>
                       <span>{formatCurrency(selectedPayslip.overtime_hours * selectedPayslip.overtime_rate)}</span>
                     </div>
-                  )}
-                  {selectedPayslip.commission > 0 && (
-                    <div className="flex justify-between">
+                }
+                  {selectedPayslip.commission > 0 &&
+                <div className="flex justify-between">
                       <span>Commission</span>
                       <span>{formatCurrency(selectedPayslip.commission)}</span>
                     </div>
-                  )}
+                }
                   <div className="flex justify-between font-semibold border-t pt-2">
                     <span>Gross Total</span>
                     <span>{formatCurrency(selectedPayslip.gross_total)}</span>
@@ -411,18 +411,18 @@ const PayslipGeneration: React.FC = () => {
                     <span>Medicare</span>
                     <span>-{formatCurrency(selectedPayslip.medicare)}</span>
                   </div>
-                  {selectedPayslip.health_insurance > 0 && (
-                    <div className="flex justify-between">
+                  {selectedPayslip.health_insurance > 0 &&
+                <div className="flex justify-between">
                       <span>Health Insurance</span>
                       <span>-{formatCurrency(selectedPayslip.health_insurance)}</span>
                     </div>
-                  )}
-                  {selectedPayslip.retirement_contribution > 0 && (
-                    <div className="flex justify-between">
+                }
+                  {selectedPayslip.retirement_contribution > 0 &&
+                <div className="flex justify-between">
                       <span>401(k) Contribution</span>
                       <span>-{formatCurrency(selectedPayslip.retirement_contribution)}</span>
                     </div>
-                  )}
+                }
                   <div className="flex justify-between font-semibold border-t pt-2">
                     <span>Total Deductions</span>
                     <span>-{formatCurrency(selectedPayslip.total_deductions)}</span>
@@ -443,27 +443,27 @@ const PayslipGeneration: React.FC = () => {
               {/* Actions */}
               <div className="flex justify-end space-x-2 pt-4 border-t">
                 <Button
-                  variant="outline"
-                  className="rounded-2xl"
-                  onClick={() => downloadPayslip(selectedPayslip)}
-                >
+                variant="outline"
+                className="rounded-2xl"
+                onClick={() => downloadPayslip(selectedPayslip)}>
+
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </Button>
                 <Button
-                  variant="outline"
-                  className="rounded-2xl"
-                  onClick={() => setShowPreviewDialog(false)}
-                >
+                variant="outline"
+                className="rounded-2xl"
+                onClick={() => setShowPreviewDialog(false)}>
+
                   Close
                 </Button>
               </div>
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PayslipGeneration;
