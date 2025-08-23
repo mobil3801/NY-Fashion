@@ -16,7 +16,7 @@ interface ContrastIssue {
  * Development-only accessibility audit component
  * Helps identify and fix WCAG 2.1 AA issues
  */
-const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }) => {
+const AccessibilityAudit: React.FC<{enabled?: boolean;}> = ({ enabled = false }) => {
   const [issues, setIssues] = useState<ContrastIssue[]>([]);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -28,17 +28,17 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
 
     // Target specific problematic selectors from the requirements
     const problematicSelectors = [
-      'div#placeholder',
-      'div[class*="bg-primary"][class*="text-primary-foreground"]',
-      'div[class*="text-sm"][class*="font-semibold"]',
-      'div[class*="opacity-90"]',
-      '.text-xs.font-semibold',
-      '[class*="opacity-"]:not([class*="opacity-100"])'
-    ];
+    'div#placeholder',
+    'div[class*="bg-primary"][class*="text-primary-foreground"]',
+    'div[class*="text-sm"][class*="font-semibold"]',
+    'div[class*="opacity-90"]',
+    '.text-xs.font-semibold',
+    '[class*="opacity-"]:not([class*="opacity-100"])'];
+
 
     for (const selector of problematicSelectors) {
       const elements = document.querySelectorAll(selector);
-      
+
       elements.forEach((element) => {
         if (element instanceof HTMLElement) {
           const computedStyle = getComputedStyle(element);
@@ -77,7 +77,7 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
 
   const fixIssue = useCallback((issue: ContrastIssue) => {
     const element = issue.element;
-    
+
     // Apply automatic fixes based on the issue type
     if (issue.selector.includes('opacity-90')) {
       element.classList.remove('opacity-90');
@@ -87,7 +87,7 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
     } else if (issue.selector.includes('font-semibold')) {
       element.classList.add('label-default');
     }
-    
+
     // Re-scan after fixing
     setTimeout(scanForIssues, 100);
   }, [scanForIssues]);
@@ -99,11 +99,11 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
   useEffect(() => {
     if (enabled && import.meta.env.DEV) {
       scanForIssues();
-      
+
       // Re-scan when DOM changes
       const observer = new MutationObserver(scanForIssues);
       observer.observe(document.body, { childList: true, subtree: true });
-      
+
       return () => observer.disconnect();
     }
   }, [enabled, scanForIssues]);
@@ -117,32 +117,32 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
           <h3 className="font-semibold text-red-800">
             🚨 Accessibility Issues ({issues.length})
           </h3>
-          <Button 
-            size="sm" 
-            onClick={scanForIssues} 
+          <Button
+            size="sm"
+            onClick={scanForIssues}
             disabled={isScanning}
-            className="text-xs"
-          >
+            className="text-xs">
+
             {isScanning ? 'Scanning...' : 'Re-scan'}
           </Button>
         </div>
 
-        {issues.length === 0 ? (
-          <div className="text-green-600 text-sm">
+        {issues.length === 0 ?
+        <div className="text-green-600 text-sm">
             ✅ No accessibility issues detected!
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <Button 
-              onClick={applyAllFixes}
-              className="w-full text-xs"
-              variant="destructive"
-            >
+          </div> :
+
+        <div className="space-y-3">
+            <Button
+            onClick={applyAllFixes}
+            className="w-full text-xs"
+            variant="destructive">
+
               🛠️ Auto-fix All Issues
             </Button>
             
-            {issues.map((issue, index) => (
-              <div key={index} className="border rounded p-2 bg-red-50">
+            {issues.map((issue, index) =>
+          <div key={index} className="border rounded p-2 bg-red-50">
                 <div className="flex items-center justify-between mb-1">
                   <code className="text-xs text-red-700 bg-red-100 px-1 rounded">
                     {issue.selector}
@@ -155,24 +155,24 @@ const AccessibilityAudit: React.FC<{ enabled?: boolean }> = ({ enabled = false }
                   {issue.recommendation}
                 </div>
                 <Button
-                  size="sm"
-                  onClick={() => fixIssue(issue)}
-                  className="text-xs w-full"
-                >
+              size="sm"
+              onClick={() => fixIssue(issue)}
+              className="text-xs w-full">
+
                   Fix This
                 </Button>
               </div>
-            ))}
+          )}
           </div>
-        )}
+        }
 
         <div className="mt-3 text-xs text-gray-500 border-t pt-2">
           <div>Target: WCAG 2.1 AA (≥4.5:1 contrast)</div>
           <div>This panel only shows in development</div>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default AccessibilityAudit;

@@ -48,11 +48,11 @@ export function useModernLifecycle(options: ModernLifecycleOptions = {}) {
 
   const handleVisibilityChange = useCallback(() => {
     const isVisible = document.visibilityState === 'visible';
-    
+
     if (!isVisible && !hasHandledLeave.current) {
       onBeforePageLeave?.();
     }
-    
+
     onVisibilityChange?.(isVisible);
   }, [onVisibilityChange, onBeforePageLeave]);
 
@@ -76,7 +76,7 @@ export function useModernLifecycle(options: ModernLifecycleOptions = {}) {
       const originalRemoveEventListener = window.removeEventListener;
 
       // Warn about deprecated event usage in development
-      window.addEventListener = function(type: string, ...args: any[]) {
+      window.addEventListener = function (type: string, ...args: any[]) {
         if (type === 'unload' || type === 'beforeunload') {
           console.warn(
             `⚠️  Deprecated: ${type} event listener detected. Use useModernLifecycle hook instead.`,
@@ -115,10 +115,10 @@ export function replaceUnloadListeners() {
 
   // Remove any existing unload listeners
   const events = ['unload', 'beforeunload'];
-  events.forEach(eventType => {
+  events.forEach((eventType) => {
     // Clone the window to remove all listeners
     const newWindow = window.cloneNode ? (window as any).cloneNode(false) : window;
-    
+
     // Note: We can't actually remove existing listeners without references,
     // but we can warn about their usage and provide better alternatives
     if (import.meta.env.DEV) {

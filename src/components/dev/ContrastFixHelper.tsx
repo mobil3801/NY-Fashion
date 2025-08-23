@@ -16,17 +16,17 @@ const ContrastFixHelper: React.FC<ContrastFixHelperProps> = ({ enabled = false }
     const checkContrast = () => {
       // Target the specific elements mentioned in the requirements
       const selectors = [
-        'div#placeholder',
-        'div[class*="bg-primary"][class*="text-primary-foreground"]',
-        'div[class*="text-sm"][class*="font-semibold"]',
-        'div[class*="text-sm"][class*="opacity-90"]',
-        '.badge',
-        '[class*="opacity-"]'
-      ];
+      'div#placeholder',
+      'div[class*="bg-primary"][class*="text-primary-foreground"]',
+      'div[class*="text-sm"][class*="font-semibold"]',
+      'div[class*="text-sm"][class*="opacity-90"]',
+      '.badge',
+      '[class*="opacity-"]'];
 
-      selectors.forEach(selector => {
+
+      selectors.forEach((selector) => {
         const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
+        elements.forEach((el) => {
           if (el instanceof HTMLElement) {
             createContrastChecker(el);
           }
@@ -56,8 +56,8 @@ const ContrastFixHelper: React.FC<ContrastFixHelperProps> = ({ enabled = false }
       <div className="text-yellow-700">
         Checking for WCAG AA compliance...
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ContrastFixHelper;

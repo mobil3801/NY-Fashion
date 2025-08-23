@@ -152,8 +152,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) =>
-                  <SelectItem key={category.id} value={category.id.toString()}>
+                  {/* Fashion categories for women's clothing store */}
+                  <SelectItem value="1">Saree</SelectItem>
+                  <SelectItem value="2">Salwar Kameez/Three‑Piece</SelectItem>
+                  <SelectItem value="3">Kurti/Tunic</SelectItem>
+                  <SelectItem value="4">Lehenga/Bridal</SelectItem>
+                  <SelectItem value="5">Abaya</SelectItem>
+                  <SelectItem value="6">Hijab/Scarf</SelectItem>
+                  <SelectItem value="7">Orna/Dupatta</SelectItem>
+                  <SelectItem value="8">Blouse</SelectItem>
+                  <SelectItem value="9">Petticoat</SelectItem>
+                  <SelectItem value="10">Palazzo/Pant</SelectItem>
+                  <SelectItem value="11">Skirt</SelectItem>
+                  <SelectItem value="12">Shawl/Stole</SelectItem>
+                  <SelectItem value="13">Winterwear</SelectItem>
+                  <SelectItem value="14">Nightwear</SelectItem>
+                  <SelectItem value="15">Maternity</SelectItem>
+                  <SelectItem value="16">Kids (Girls) ethnic</SelectItem>
+                  <SelectItem value="17">Accessories</SelectItem>
+                  <SelectItem value="18">Tailoring</SelectItem>
+                  
+                  {/* Include any existing database categories if available */}
+                  {categories && categories.length > 0 && categories.map((category) =>
+                  <SelectItem key={`db-${category.id}`} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   )}

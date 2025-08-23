@@ -224,9 +224,9 @@ describe('Performance Optimizations', () => {
 
         terminate() {
 
+
           // Mock terminate
         }}
-
       const worker = new MockWorker();
       let receivedResult = false;
 

@@ -142,13 +142,13 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
-  }, []);const handleMouseDown = useCallback((event: MouseEvent) => {
-      // Handle drag initiation if needed
+  }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
     }, []); // Set up throttled event listeners
-  useThrottledMouseMove(containerRef.current, handleMouseMove);
-  useThrottledClick(containerRef.current, handleClick);
+  useThrottledMouseMove(containerRef.current, handleMouseMove);useThrottledClick(containerRef.current, handleClick);
   useThrottledMouseDown(containerRef.current, handleMouseDown);
 
   // Animation loop for smooth updates (if needed)
@@ -157,9 +157,9 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
     if (chartRef.current?.isAnimating) {
 
 
+
       // Chart handles its own animation, this is just for coordination
-    }}, []);
-  const { start: startAnimation, stop: stopAnimation } = useRafLoop({
+    }}, []);const { start: startAnimation, stop: stopAnimation } = useRafLoop({
     onFrame: handleAnimationFrame,
     autoStart: false
   });
