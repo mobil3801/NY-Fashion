@@ -52,31 +52,25 @@ const MainLayout: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isSidebarOpen, toggleSidebar, closeSidebar]);
 
-  // Fixed header heights for consistent spacing (16-24px range)
+  // Fixed header heights for consistent spacing
   const MOBILE_HEADER_HEIGHT = 64; // 16 * 4 = 64px
   const DESKTOP_HEADER_HEIGHT = 80; // 20 * 4 = 80px
 
-  // Top spacing normalization (16-24px as requested)
-  const topSpacing = isDesktop ? 20 : 16; // 20px desktop, 16px mobile
+  // Calculate top spacing for main content
+  const mainContentTopSpacing = isDesktop ? DESKTOP_HEADER_HEIGHT + 24 : MOBILE_HEADER_HEIGHT + 16;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
-        onClose={closeSidebar} />
-
-
-
+        onClose={closeSidebar} 
+      />
 
       <div className={`min-h-screen flex flex-col ${isDesktop ? 'lg:ml-64' : ''}`}>
         {/* Mobile/Tablet Header Bar */}
-        {(isMobile || isTablet) &&
-        <div
-          className="flex items-center justify-between fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm h-16">
-
-
-
+        {(isMobile || isTablet) && (
+          <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
                 <span className="text-white font-bold text-sm">NY</span>
@@ -87,67 +81,58 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible:outline-none"
-            aria-label="Toggle navigation menu"
-            aria-expanded={isSidebarOpen}
-            aria-controls="sidebar-navigation">
-
-
-
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible:outline-none"
+              aria-label="Toggle navigation menu"
+              aria-expanded={isSidebarOpen}
+              aria-controls="sidebar-navigation"
+            >
               <Menu className="w-5 h-5" />
             </Button>
           </div>
-        }
+        )}
 
         {/* Desktop Header */}
-        {isDesktop &&
-        <div className="fixed top-0 left-64 right-0 z-30">
+        {isDesktop && (
+          <div className="fixed top-0 left-64 right-0 z-30">
             <Header />
           </div>
-        }
+        )}
 
-        {/* Main Content Area - Fixed spacing issues */}
+        {/* Main Content Area - Clean implementation */}
         <main
-          className="py-[0px] flex-1 w-full"
+          className="flex-1 w-full main-content"
           role="main"
           aria-label="Main content"
           style={{
-            paddingTop: `${(isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT) + topSpacing}px`,
-            minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`,
-            padding: 0
-          }}>
-
-          Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
-
-          <div className="">Analytics Dashboard
-            <Outlet />Analytics Dashboard
-          </div>Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
+            paddingTop: `${mainContentTopSpacing}px`,
+            minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`
+          }}
+        >
+          <Outlet />
         </main>
       </div>
 
-      {/* Overlay for mobile sidebar - Fixed JSX syntax */}
-      {(isMobile || isTablet) && isSidebarOpen &&
-      <div
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-        onClick={closeSidebar}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            closeSidebar();
-          }
-        }}
-        aria-hidden="true"
-        role="button"
-        tabIndex={0} />
-
-
-
-      }
-    </div>);
-
+      {/* Overlay for mobile sidebar */}
+      {(isMobile || isTablet) && isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+          onClick={closeSidebar}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              closeSidebar();
+            }
+          }}
+          aria-hidden="true"
+          role="button"
+          tabIndex={0}
+        />
+      )}
+    </div>
+  );
 };
 
 export default MainLayout;

@@ -248,12 +248,12 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
-      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);if (totalReturnQuantity === totalOriginalQuantity) {await window.ezsite.apis.tableUpdate(36856, { ID: invoice.id, status: 'refunded', refunded_amount: totalRefund, refunded_at: new Date().toISOString() });}toast({ title: "Return Processed", description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}` });onComplete();} catch (error) {console.error('Error processing return:', error);toast({ title: "Process Failed", description: "Unable to process the return/exchange", variant: "destructive" });} finally {setProcessing(false);
-    }
-  };
+      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);if (totalReturnQuantity === totalOriginalQuantity) {await window.ezsite.apis.tableUpdate(36856, { ID: invoice.id, status: 'refunded', refunded_amount: totalRefund, refunded_at: new Date().toISOString() });}toast({ title: "Return Processed", description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}` });onComplete();} catch (error) {console.error('Error processing return:', error);toast({ title: "Process Failed", description: "Unable to process the return/exchange", variant: "destructive" });} finally {setProcessing(false);}};
 
   const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
 

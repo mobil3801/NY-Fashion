@@ -12,10 +12,19 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
+  // Test user for layout testing - REMOVE IN PRODUCTION
+  const testUser = {
+    id: '1',
+    email: 'admin@nyfashion.com',
+    name: 'Admin User',
+    role: 'Admin' as const,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+  };
+
   const [authState, setAuthState] = useState<AuthState>({
-    user: null,
+    user: testUser,
     isLoading: true,
-    isAuthenticated: false
+    isAuthenticated: true
   });
   const { toast } = useToast();
 
