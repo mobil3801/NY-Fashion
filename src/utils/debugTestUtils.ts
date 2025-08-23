@@ -256,9 +256,9 @@ options: {
         bandwidth.uploadMbps = testData.size * 8 / (uploadDuration / 1000) / (1024 * 1024);
       } catch {
 
+
         // Upload test failed, keep upload as 0
-      }}
-  } catch (error) {
+      }}} catch (error) {
     console.warn('Bandwidth test failed:', error);
   }
 

@@ -24,8 +24,8 @@ const MainLayout: React.FC = () => {
 
       {/* Debug Tools - Development Only */}
       <DebugFloatingButton />
-    </div>
-  );
+    </div>);
+
 };
 
 export default MainLayout;

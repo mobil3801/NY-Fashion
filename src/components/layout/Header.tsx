@@ -23,8 +23,8 @@ const Header: React.FC = () => {
         type="text"
         placeholder={t('search')}
         className="border rounded-lg px-3 py-1 w-64"
-        aria-label={t('search')}
-      />
+        aria-label={t('search')} />
+
 
       {/* Right side actions */}
       <div className="flex items-center gap-4">
@@ -40,7 +40,7 @@ const Header: React.FC = () => {
         </Button>
 
         {/* Simple Avatar */}
-        <div 
+        <div
           className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center"
           title={user?.name || 'User'}
           aria-label="User avatar">
@@ -49,8 +49,8 @@ const Header: React.FC = () => {
           </span>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };
 
 export default Header;

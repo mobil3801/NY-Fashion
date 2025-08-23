@@ -201,9 +201,9 @@ export function useApiRetry() {
     debugContext = useContext(DebugContext);
   } catch {
 
+
     // Debug context not available, continue without it
-  }
-  // Cleanup on unmount
+  } // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true;
 

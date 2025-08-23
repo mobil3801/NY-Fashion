@@ -78,9 +78,9 @@ const ApiDebugDashboard: React.FC = () => {
     const interval = setInterval(() => {
 
 
+
       // Force re-render to show updated timestamps
-    }, 5000);return () => clearInterval(interval);
-  }, [isAutoRefresh]);
+    }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);
 
   const callStats = {
     total: apiCalls.length,
