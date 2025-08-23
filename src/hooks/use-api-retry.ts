@@ -220,11 +220,11 @@ export function useApiRetry() {
 
 
 
+
     // Debug context not available, continue without it
   } // Cleanup on unmount
   useEffect(() => {isMountedRef.current = true;return () => {isMountedRef.current = false; // Abort all ongoing operations
-        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);const executeWithRetry = useCallback(async <T,>(fn: (ctx: RetryContext) => Promise<T>, options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;}): Promise<T> => {if (!isMountedRef.current) {
-        throw new Error('Component is unmounted');
+        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);const executeWithRetry = useCallback(async <T,>(fn: (ctx: RetryContext) => Promise<T>, options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;}): Promise<T> => {if (!isMountedRef.current) {throw new Error('Component is unmounted');
       }
 
       const controller = new AbortController();

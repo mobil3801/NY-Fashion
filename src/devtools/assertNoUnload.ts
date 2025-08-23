@@ -115,9 +115,9 @@ export function checkForExistingUnloadHandlers(): Array<{
 
 
 
+
         // getEventListeners might not be available
-      }}};checkTarget(window, 'window');checkTarget(document, 'document');checkTarget(document.body, 'document.body');return results;}
-export function reportUnloadHandlers() {
+      }}};checkTarget(window, 'window');checkTarget(document, 'document');checkTarget(document.body, 'document.body');return results;}export function reportUnloadHandlers() {
   const handlers = checkForExistingUnloadHandlers();
 
   if (handlers.length > 0) {
