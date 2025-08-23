@@ -242,7 +242,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     return { latency: avgLatency, bandwidth: avgBandwidth };
   }, []);
 
-  // Initialize network monitoring
+  // Initialize network monitoring with modern lifecycle patterns
   useEffect(() => {
     if (!debugSettings.enabled) return;
 
@@ -251,8 +251,29 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     const handleOnline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: true }));
     const handleOffline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: false }));
 
+    // Use modern event patterns - no unload handlers
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Use pagehide instead of unload for cleanup
+    const handlePageHide = () => {
+      // Flush any pending debug data
+      if (debugSettings.enabled && apiCalls.length > 0) {
+        const debugData = {
+          timestamp: Date.now(),
+          apiCalls: apiCalls.slice(0, 10), // Last 10 calls
+          networkStatus
+        };
+
+        // Use sendBeacon for reliable data transmission
+        if (navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify(debugData)], { type: 'application/json' });
+          navigator.sendBeacon(`${window.location.origin}/api/debug/flush`, blob);
+        }
+      }
+    };
+
+    window.addEventListener('pagehide', handlePageHide, { capture: true });
 
     // Periodic network checks
     networkCheckRef.current = window.setInterval(checkNetworkStatus, 30000);
@@ -260,10 +281,11 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('pagehide', handlePageHide);
       if (networkCheckRef.current) clearInterval(networkCheckRef.current);
       if (simulationTimeoutRef.current) clearTimeout(simulationTimeoutRef.current);
     };
-  }, [debugSettings.enabled, checkNetworkStatus]);
+  }, [debugSettings.enabled, checkNetworkStatus, apiCalls, networkStatus]);
 
   const value: DebugContextType = {
     networkStatus,

@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { POSState, CartItem, Customer, PaymentMethod, Product, ProductVariant } from '@/types/pos';
+import { toast } from '@/hooks/use-toast';
+import { usePageLifecycle } from '@/hooks/usePageLifecycle';
 
 interface POSContextType {
   state: POSState;
@@ -163,6 +165,102 @@ const POSContext = createContext<POSContextType | undefined>(undefined);
 
 export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
   const [state, dispatch] = useReducer(posReducer, initialState);
+
+  // Use modern lifecycle management for cart persistence
+  const { flushData } = usePageLifecycle({
+    persistenceKey: 'ny-fashion-pos-cart',
+    autoFlushData: {
+      url: '/api/pos/persist-cart',
+      getData: () => ({
+        cart: state.cart,
+        selectedCustomer: state.customer,
+        timestamp: Date.now()
+      })
+    },
+    onPageHide: () => {
+      // Save cart state when page is hidden/unloaded
+      if (state.cart.length > 0) {
+        const cartData = {
+          cart: state.cart,
+          selectedCustomer: state.customer,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        // Also save to sessionStorage for more immediate access
+        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+      }
+    },
+    onVisibilityChange: (isVisible) => {
+      if (!isVisible && state.cart.length > 0) {
+        // Auto-save when page becomes hidden
+        const cartData = {
+          cart: state.cart,
+          selectedCustomer: state.customer,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        // sessionStorage is cleared when the session ends (tab close)
+        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+      }
+    }
+  });
+
+  // Load cart from storage on mount
+  useEffect(() => {
+    const loadPersistedCart = () => {
+      // Try to load from session storage first (most recent)
+      const sessionCart = sessionStorage.getItem('ny-fashion-pos-cart-session');
+      if (sessionCart) {
+        try {
+          const { cart: savedCart, selectedCustomer: savedCustomer } = JSON.parse(sessionCart);
+          setCart(savedCart || []);
+          setSelectedCustomer(savedCustomer || null);
+          return;
+        } catch (error) {
+          console.warn('Error loading session cart:', error);
+        }
+      }
+
+      // Then try localStorage backup
+      const backupCart = localStorage.getItem('ny-fashion-pos-cart-backup');
+      if (backupCart) {
+        try {
+          const { cart: savedCart, selectedCustomer: savedCustomer, timestamp } = JSON.parse(backupCart);
+          // Only restore if backup is less than 1 hour old
+          if (Date.now() - timestamp < 3600000) {
+            setCart(savedCart || []);
+            setSelectedCustomer(savedCustomer || null);
+            return;
+          }
+        } catch (error) {
+          console.warn('Error loading backup cart:', error);
+        }
+      }
+
+      // Fallback to legacy cart storage
+      const legacyCart = localStorage.getItem('posCart');
+      if (legacyCart) {
+        try {
+          const parsedCart = JSON.parse(legacyCart);
+          setCart(parsedCart || []);
+          // Clean up legacy storage
+          localStorage.removeItem('posCart');
+
+          // Migrate to new format
+          const cartData = {
+            cart: parsedCart || [],
+            selectedCustomer: null,
+            timestamp: Date.now()
+          };
+          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        } catch (error) {
+          console.error('Error loading legacy cart:', error);
+        }
+      }
+    };
+
+    loadPersistedCart();
+  }, []);
 
   const addToCart = (product: Product, variant?: ProductVariant, quantity: number = 1) => {
     dispatch({ type: 'ADD_TO_CART', payload: { product, variant, quantity } });

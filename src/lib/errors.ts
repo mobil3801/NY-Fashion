@@ -115,7 +115,7 @@ const RETRYABLE_HTTP_CODES = new Set([
 508, // Loop Detected
 509, // Bandwidth Limit Exceeded
 510, // Not Extended
-511  // Network Authentication Required
+511 // Network Authentication Required
 ]);
 
 /**
@@ -156,13 +156,13 @@ export function normalizeError(error: unknown, operation?: string): ApiError {
   }
 
   // Handle TypeError and network errors (including ERR_NETWORK)
-  if (error instanceof TypeError || 
-      (error instanceof Error && (
-        error.message.includes('fetch') ||
-        error.message.includes('ERR_NETWORK') ||
-        error.message.includes('NetworkError') ||
-        error.message.includes('Failed to fetch')
-      ))) {
+  if (error instanceof TypeError ||
+  error instanceof Error && (
+  error.message.includes('fetch') ||
+  error.message.includes('ERR_NETWORK') ||
+  error.message.includes('NetworkError') ||
+  error.message.includes('Failed to fetch')))
+  {
     const message = error instanceof Error ? error.message : String(error);
     return new ApiError(
       'Network connection issue',

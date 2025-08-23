@@ -108,11 +108,11 @@ export class ConnectivityMonitor {
       // Health check endpoint with fallbacks
       const healthEndpoint = process.env.NEXT_PUBLIC_HEALTH_ENDPOINT || '/v1/health';
       const endpoints = [
-        `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
-        `${window.location.origin}/favicon.ico`, // Static resource fallback
-        `${window.location.origin}/`, // Home page fallback
-        'https://httpbin.org/status/200', // External fallback
-        'https://www.google.com/favicon.ico' // Ultimate fallback
+      `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
+      `${window.location.origin}/favicon.ico`, // Static resource fallback
+      `${window.location.origin}/`, // Home page fallback
+      'https://httpbin.org/status/200', // External fallback
+      'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;

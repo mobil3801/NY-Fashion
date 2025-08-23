@@ -296,6 +296,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -364,17 +366,15 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                           </SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
-              }
+                  </div>}
 
                 <div>
                   <Label htmlFor="notes">Additional Notes</Label>
-                  <Textarea
-                  id="notes"
-                  placeholder="Any additional notes about the return..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3} />
+                  <Textarea id="notes"
+                placeholder="Any additional notes about the return..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3} />
 
                 </div>
               </CardContent>
