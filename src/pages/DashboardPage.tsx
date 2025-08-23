@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { RetryBanner } from '@/components/ui/retry-banner';
 import LoadingState from '@/components/common/LoadingState';
 import ProductionErrorBoundary from '@/components/common/ProductionErrorBoundary';
+import PerformanceWidget from '@/components/monitoring/PerformanceWidget';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import productionApi from '@/services/api';
@@ -565,6 +566,11 @@ const DashboardPage: React.FC = () => {
             {isRetrying ? 'Retrying...' : 'Refresh'}
           </Button>
         </div>
+      </div>
+
+      {/* Performance Widget */}
+      <div className="mb-6">
+        <PerformanceWidget showDetailedView={true} />
       </div>
 
       {/* KPI Cards */}

@@ -165,15 +165,14 @@ export function createConnectivity(config?: Partial<ConnectivityConfig>): Connec
 
 // Backoff delay calculation utility function
 export default function calculateBackoffDelay(
-  attempt: number,
-  baseDelayMs: number = 300,
-  maxDelayMs: number = 10000,
-  factor: number = 2
-): number {
+attempt: number,
+baseDelayMs: number = 300,
+maxDelayMs: number = 10000,
+factor: number = 2)
+: number {
   // Exponential backoff with full jitter
   const exponentialDelay = Math.min(baseDelayMs * Math.pow(factor, attempt), maxDelayMs);
   // Add full jitter (0 to exponentialDelay)
   const jitter = Math.random() * exponentialDelay;
   return Math.floor(jitter);
 }
-

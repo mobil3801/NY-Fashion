@@ -19,7 +19,7 @@ class ProductionConnectivityManager implements ProductionConnectivity {
 
   async checkConnection(): Promise<boolean> {
     const now = Date.now();
-    
+
     // Use cached result if recent (within 30 seconds)
     if (now - this.lastConnectionCheck < 30000) {
       return this.isConnectedCache;
@@ -27,23 +27,23 @@ class ProductionConnectivityManager implements ProductionConnectivity {
 
     try {
       const startTime = performance.now();
-      
+
       // Use a simple fetch to check connectivity
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       const response = await fetch(window.location.origin + '/sw.js', {
         method: 'HEAD',
         cache: 'no-cache',
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       this.cachedLatency = performance.now() - startTime;
       this.isConnectedCache = response.ok;
       this.lastConnectionCheck = now;
-      
+
       return this.isConnectedCache;
     } catch (error) {
       this.isConnectedCache = false;

@@ -55,25 +55,25 @@ export class ReactErrorBoundary extends Component<Props, State> {
               Try Again
             </Button>
             
-            <Button 
-              onClick={() => window.location.reload()} 
-              variant="secondary"
-            >
+            <Button
+              onClick={() => window.location.reload()}
+              variant="secondary">
+
               Reload Page
             </Button>
           </div>
 
-          {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-            <details className="mt-4 p-2 bg-gray-100 rounded text-xs">
+          {process.env.NODE_ENV === 'development' && this.state.errorInfo &&
+          <details className="mt-4 p-2 bg-gray-100 rounded text-xs">
               <summary>Error Details (Development)</summary>
               <pre className="mt-2 whitespace-pre-wrap">
                 {this.state.error?.stack}
                 {this.state.errorInfo.componentStack}
               </pre>
             </details>
-          )}
-        </div>
-      );
+          }
+        </div>);
+
     }
 
     return this.props.children;

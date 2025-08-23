@@ -24,16 +24,16 @@ import SettingsPage from '@/pages/SettingsPage';
 import NotFound from '@/pages/NotFound';
 
 // Lazy load debug components only in development
-const NetworkDebugPage = React.lazy(() => 
-  isProduction() 
-    ? Promise.resolve({ default: () => <div>Debug not available in production</div> })
-    : import('@/pages/debug/NetworkDebugPage')
+const NetworkDebugPage = React.lazy(() =>
+isProduction() ?
+Promise.resolve({ default: () => <div>Debug not available in production</div> }) :
+import('@/pages/debug/NetworkDebugPage')
 );
 
 const TestingPage = React.lazy(() =>
-  isProduction()
-    ? Promise.resolve({ default: () => <div>Testing not available in production</div> })
-    : import('@/pages/TestingPage')
+isProduction() ?
+Promise.resolve({ default: () => <div>Testing not available in production</div> }) :
+import('@/pages/TestingPage')
 );
 
 interface ProductionAppProps {
@@ -70,24 +70,24 @@ const ProductionApp: React.FC<ProductionAppProps> = () => {
           <Route path="/settings" element={<MainLayout><SettingsPage /></MainLayout>} />
 
           {/* Debug routes - only in development */}
-          {!isProduction() && (
-            <>
+          {!isProduction() &&
+          <>
               <Route path="/debug/network" element={
-                <MainLayout>
+            <MainLayout>
                   <Suspense fallback={<LoadingState />}>
                     <NetworkDebugPage />
                   </Suspense>
                 </MainLayout>
-              } />
+            } />
               <Route path="/testing" element={
-                <MainLayout>
+            <MainLayout>
                   <Suspense fallback={<LoadingState />}>
                     <TestingPage />
                   </Suspense>
                 </MainLayout>
-              } />
+            } />
             </>
-          )}
+          }
 
           {/* Catch all route */}
           <Route path="*" element={<NotFound />} />
@@ -96,8 +96,8 @@ const ProductionApp: React.FC<ProductionAppProps> = () => {
       
       {/* Global toast notifications */}
       <Toaster />
-    </ProductionErrorBoundary>
-  );
+    </ProductionErrorBoundary>);
+
 };
 
 export default ProductionApp;

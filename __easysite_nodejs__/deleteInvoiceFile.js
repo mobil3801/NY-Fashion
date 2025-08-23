@@ -43,10 +43,10 @@ async function deleteInvoiceFile(invoiceId) {
 
 
 
+
+
         // Note: EasySite storage delete API not available yet
         // await window.ezsite.apis.deleteFile(invoice.file_id);
       } catch (error) {console.warn('Could not delete file from storage:', error.message); // Continue with database deletion even if storage deletion fails
       }} // Delete from database
-    const deleteQuery = `DELETE FROM purchase_order_invoices WHERE id = $1`;await window.ezsite.db.query(deleteQuery, [parseInt(invoiceId)]);return { message: 'Invoice deleted successfully', deletedInvoiceId: invoiceId, fileName: invoice.file_name };} catch (error) {console.error('Delete invoice file error:', error);throw new Error(`Failed to delete invoice: ${error.message}`);
-  }
-}
+    const deleteQuery = `DELETE FROM purchase_order_invoices WHERE id = $1`;await window.ezsite.db.query(deleteQuery, [parseInt(invoiceId)]);return { message: 'Invoice deleted successfully', deletedInvoiceId: invoiceId, fileName: invoice.file_name };} catch (error) {console.error('Delete invoice file error:', error);throw new Error(`Failed to delete invoice: ${error.message}`);}}

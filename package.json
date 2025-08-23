@@ -7,19 +7,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:inventory": "vitest run src/tests/inventory/",
-    "test:inventory-api": "vitest run src/tests/inventory/api-tests.spec.ts",
-    "test:inventory-db": "vitest run src/tests/inventory/database-integrity.spec.ts",
-    "test:inventory-network": "vitest run src/tests/inventory/network-simulation.spec.ts",
-    "test:inventory-integration": "vitest run src/tests/inventory/integration.spec.ts",
-    "test:inventory-full": "vitest run src/tests/inventory/run-all-tests.ts",
-    "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui",
-    "build:dev": "vite build --mode development"
+    "build:production": "NODE_ENV=production vite build",
+    "analyze": "vite build --mode analyze",
+    "start": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

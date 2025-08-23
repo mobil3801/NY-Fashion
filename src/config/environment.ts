@@ -57,7 +57,7 @@ export const ENV_CONFIG = {
 // Validation function
 export const validateEnvironment = () => {
   const validation = environmentValidator.validateAll();
-  
+
   console.log('Environment Validation Result:', {
     environment: validation.environment,
     isValid: validation.isValid,

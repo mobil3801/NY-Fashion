@@ -131,6 +131,15 @@ export const PRODUCTION_CONFIG = {
     enableSourceMaps: process.env.NODE_ENV === 'development'
   },
 
+  // Sync Configuration - CRITICAL: Missing configuration that was causing runtime errors
+  sync: {
+    enableAutoSync: process.env.NODE_ENV === 'production',
+    syncInterval: parseInt(process.env.VITE_SYNC_INTERVAL || '300000'), // 5 minutes
+    enableBackgroundSync: true,
+    maxRetries: 3,
+    retryDelay: 5000
+  },
+
   // File Upload Configuration
   fileUpload: {
     maxFileSize: 10 * 1024 * 1024, // 10MB

@@ -394,45 +394,47 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
     return diagnostics;
   };
 
-  // Update queue count periodically
+  // Update queue count periodically - Fixed implementation
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const updateQueueSize = async () => {
       try {
         // Simplified queue size management for production
         if (isProduction()) {
           // In production, just set to 0 to avoid complex queue management
           setQueuedOperations(0);
-        } else {
-          // Try to get queue size from connectivity
-          if (connectivity && typeof (connectivity as any).getQueueSize === 'function') {
-            const queueSize = await (connectivity as any).getQueueSize();
+          return;
+        }
+
+        // Development mode - safely check queue size
+        try {
+          const { offlineQueue } = await import('@/lib/offlineQueue');
+          if (offlineQueue && typeof offlineQueue.sizeSync === 'function') {
+            const queueSize = offlineQueue.sizeSync();
+            setQueuedOperations(queueSize);
+          } else if (offlineQueue && typeof offlineQueue.size === 'function') {
+            const queueSize = await offlineQueue.size();
             setQueuedOperations(queueSize);
           } else {
-            // Fallback to offlineQueue direct access
-            try {
-              const { offlineQueue } = await import('@/lib/offlineQueue');
-              if (offlineQueue && typeof offlineQueue.size === 'function') {
-                const queueSize = await offlineQueue.size();
-                setQueuedOperations(queueSize);
-              } else if (offlineQueue && typeof offlineQueue.sizeSync === 'function') {
-                const queueSize = offlineQueue.sizeSync();
-                setQueuedOperations(queueSize);
-              } else {
-                setQueuedOperations(0);
-              }
-            } catch (fallbackError) {
-              setQueuedOperations(0);
-            }
+            setQueuedOperations(0);
           }
+        } catch (importError) {
+          // Queue not available - set to 0
+          setQueuedOperations(0);
         }
       } catch (error) {
-        // Final fallback - set to 0
+        // Any error - set to 0 and log
+        console.warn('[NetworkContext] Queue size update failed:', error);
         setQueuedOperations(0);
       }
-    }, 5000);
+    };
 
+    // Initial update
+    updateQueueSize();
+
+    // Periodic updates every 5 seconds
+    const interval = setInterval(updateQueueSize, 5000);
     return () => clearInterval(interval);
-  }, [connectivity]);
+  }, []);
 
   const contextValue: NetworkContextType = {
     // Connection state

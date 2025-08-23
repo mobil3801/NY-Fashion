@@ -7,6 +7,7 @@ import EnhancedNetworkErrorBoundary from '@/components/network/EnhancedNetworkEr
 import { SkipLink } from '@/components/ui/skip-link';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import ErrorMonitoringWidget from './ErrorMonitoringWidget';
 
 const MainLayout: React.FC = () => {
   return (

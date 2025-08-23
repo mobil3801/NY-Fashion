@@ -46,11 +46,11 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   }, []);
 
   const addListener = useCallback((
-    element: EventTarget,
-    event: string,
-    handler: EventListener,
-    options?: AddEventListenerOptions
-  ) => {
+  element: EventTarget,
+  event: string,
+  handler: EventListener,
+  options?: AddEventListenerOptions) =>
+  {
     element.addEventListener(event, handler, options);
     listenersRef.current.push({ element, event, handler });
   }, []);

@@ -6,19 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
-  Database, 
-  Globe, 
-  Server, 
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Database,
+  Globe,
+  Server,
   Shield,
   Zap,
   RefreshCw,
   Download,
-  Trash2
-} from 'lucide-react';
+  Trash2 } from
+'lucide-react';
 import { productionHealthMonitor, HealthMetrics } from '@/utils/production-health-monitor';
 import { useErrorTracking } from '@/components/monitoring/ErrorTrackingService';
 import { logger } from '@/utils/production-logger';
@@ -38,7 +38,7 @@ const HealthMonitorDashboard: React.FC = () => {
 
     // Set up alert listener
     const unsubscribe = productionHealthMonitor.onAlert((alert) => {
-      setAlerts(prev => [alert, ...prev].slice(0, 10)); // Keep last 10 alerts
+      setAlerts((prev) => [alert, ...prev].slice(0, 10)); // Keep last 10 alerts
     });
 
     // Load initial data
@@ -71,19 +71,19 @@ const HealthMonitorDashboard: React.FC = () => {
 
   const getStatusColor = (status: 'healthy' | 'warning' | 'critical') => {
     switch (status) {
-      case 'healthy': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'healthy':return 'text-green-600';
+      case 'warning':return 'text-yellow-600';
+      case 'critical':return 'text-red-600';
+      default:return 'text-gray-600';
     }
   };
 
   const getStatusIcon = (status: 'healthy' | 'warning' | 'critical') => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="w-4 h-4" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4" />;
-      case 'critical': return <AlertTriangle className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
+      case 'healthy':return <CheckCircle className="w-4 h-4" />;
+      case 'warning':return <AlertTriangle className="w-4 h-4" />;
+      case 'critical':return <AlertTriangle className="w-4 h-4" />;
+      default:return <Activity className="w-4 h-4" />;
     }
   };
 
@@ -95,9 +95,9 @@ const HealthMonitorDashboard: React.FC = () => {
     try {
       const healthReport = await productionHealthMonitor.generateHealthReport();
       const errorReport = await getErrorReport();
-      
+
       const fullReport = `${healthReport}\n\n${errorReport}`;
-      
+
       const blob = new Blob([fullReport], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -138,8 +138,8 @@ const HealthMonitorDashboard: React.FC = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
+          {[1, 2, 3, 4].map((i) =>
+          <Card key={i}>
               <CardHeader className="pb-2">
                 <div className="w-6 h-6 bg-gray-200 rounded animate-pulse" />
                 <div className="w-20 h-4 bg-gray-200 rounded animate-pulse" />
@@ -148,10 +148,10 @@ const HealthMonitorDashboard: React.FC = () => {
                 <div className="w-16 h-8 bg-gray-200 rounded animate-pulse" />
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -160,11 +160,11 @@ const HealthMonitorDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Health Monitor</h2>
-          {lastUpdated && (
-            <p className="text-sm text-gray-600 mt-1">
+          {lastUpdated &&
+          <p className="text-sm text-gray-600 mt-1">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </p>
-          )}
+          }
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
@@ -179,8 +179,8 @@ const HealthMonitorDashboard: React.FC = () => {
       </div>
 
       {/* Alerts */}
-      {alerts.length > 0 && (
-        <Alert className="border-yellow-200 bg-yellow-50">
+      {alerts.length > 0 &&
+      <Alert className="border-yellow-200 bg-yellow-50">
           <AlertTriangle className="w-4 h-4 text-yellow-600" />
           <AlertDescription className="flex items-center justify-between">
             <span>
@@ -191,11 +191,11 @@ const HealthMonitorDashboard: React.FC = () => {
             </Button>
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* System Overview Cards */}
-      {healthMetrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {healthMetrics &&
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">System</CardTitle>
@@ -272,7 +272,7 @@ const HealthMonitorDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      )}
+      }
 
       {/* Detailed Tabs */}
       <Tabs defaultValue="metrics" className="w-full">
@@ -284,8 +284,8 @@ const HealthMonitorDashboard: React.FC = () => {
         </TabsList>
 
         <TabsContent value="metrics" className="space-y-4">
-          {healthMetrics && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {healthMetrics &&
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -347,7 +347,7 @@ const HealthMonitorDashboard: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="errors" className="space-y-4">
@@ -374,8 +374,8 @@ const HealthMonitorDashboard: React.FC = () => {
                     {errorMetrics.criticalErrors}
                   </Badge>
                 </div>
-                {errorMetrics.lastError && (
-                  <div>
+                {errorMetrics.lastError &&
+                <div>
                     <span className="text-sm font-medium">Last Error</span>
                     <div className="mt-1 p-2 bg-red-50 rounded text-xs">
                       <div className="font-medium text-red-800">{errorMetrics.lastError.message}</div>
@@ -384,7 +384,7 @@ const HealthMonitorDashboard: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
 
@@ -393,27 +393,27 @@ const HealthMonitorDashboard: React.FC = () => {
                 <CardTitle>Error Distribution</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {Object.entries(errorMetrics.errorsByType).length > 0 ? (
-                  Object.entries(errorMetrics.errorsByType)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5)
-                    .map(([type, count]) => (
-                      <div key={type} className="flex justify-between items-center">
+                {Object.entries(errorMetrics.errorsByType).length > 0 ?
+                Object.entries(errorMetrics.errorsByType).
+                sort((a, b) => b[1] - a[1]).
+                slice(0, 5).
+                map(([type, count]) =>
+                <div key={type} className="flex justify-between items-center">
                         <span className="text-sm font-medium">{type}</span>
                         <Badge variant="secondary">{count}</Badge>
                       </div>
-                    ))
-                ) : (
-                  <p className="text-sm text-gray-600">No errors recorded</p>
-                )}
+                ) :
+
+                <p className="text-sm text-gray-600">No errors recorded</p>
+                }
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          {healthMetrics && (
-            <Card>
+          {healthMetrics &&
+          <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="w-5 h-5" />
@@ -437,7 +437,7 @@ const HealthMonitorDashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-4">
@@ -447,18 +447,18 @@ const HealthMonitorDashboard: React.FC = () => {
                 <AlertTriangle className="w-5 h-5" />
                 Recent Alerts
               </CardTitle>
-              {alerts.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={handleClearAlerts}>
+              {alerts.length > 0 &&
+              <Button variant="ghost" size="sm" onClick={handleClearAlerts}>
                   <Trash2 className="w-4 h-4 mr-2" />
                   Clear All
                 </Button>
-              )}
+              }
             </CardHeader>
             <CardContent>
-              {alerts.length > 0 ? (
-                <div className="space-y-3">
-                  {alerts.map((alert, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
+              {alerts.length > 0 ?
+              <div className="space-y-3">
+                  {alerts.map((alert, index) =>
+                <div key={index} className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
                       <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
@@ -473,17 +473,17 @@ const HealthMonitorDashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-600">No alerts</p>
-              )}
+                )}
+                </div> :
+
+              <p className="text-sm text-gray-600">No alerts</p>
+              }
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default HealthMonitorDashboard;

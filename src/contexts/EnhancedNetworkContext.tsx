@@ -168,11 +168,11 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
 
   const getSignalStrength = (effectiveType: string): number => {
     switch (effectiveType) {
-      case '4g': return 100;
-      case '3g': return 75;
-      case '2g': return 50;
-      case 'slow-2g': return 25;
-      default: return 0;
+      case '4g':return 100;
+      case '3g':return 75;
+      case '2g':return 50;
+      case 'slow-2g':return 25;
+      default:return 0;
     }
   };
 
@@ -457,8 +457,8 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   return (
     <NetworkContext.Provider value={contextValue}>
       {children}
-    </NetworkContext.Provider>
-  );
+    </NetworkContext.Provider>);
+
 };
 
 export default NetworkProvider;

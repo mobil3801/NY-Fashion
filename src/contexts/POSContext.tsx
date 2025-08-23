@@ -20,14 +20,14 @@ interface POSContextType {
 }
 
 type POSAction =
-| { type: 'ADD_TO_CART'; payload: { product: Product; variant?: ProductVariant; quantity: number; }; }
-| { type: 'UPDATE_QUANTITY'; payload: { itemId: string; quantity: number; }; }
-| { type: 'REMOVE_FROM_CART'; payload: { itemId: string; }; }
-| { type: 'APPLY_LINE_DISCOUNT'; payload: { itemId: string; discount: number; type: 'percentage' | 'fixed'; }; }
-| { type: 'APPLY_ORDER_DISCOUNT'; payload: { discount: number; type: 'percentage' | 'fixed'; }; }
-| { type: 'SET_CUSTOMER'; payload: { customer: Customer | undefined; }; }
-| { type: 'SET_PAYMENT_METHOD'; payload: { method: PaymentMethod; }; }
-| { type: 'CLEAR_CART'; };
+{type: 'ADD_TO_CART';payload: {product: Product;variant?: ProductVariant;quantity: number;};} |
+{type: 'UPDATE_QUANTITY';payload: {itemId: string;quantity: number;};} |
+{type: 'REMOVE_FROM_CART';payload: {itemId: string;};} |
+{type: 'APPLY_LINE_DISCOUNT';payload: {itemId: string;discount: number;type: 'percentage' | 'fixed';};} |
+{type: 'APPLY_ORDER_DISCOUNT';payload: {discount: number;type: 'percentage' | 'fixed';};} |
+{type: 'SET_CUSTOMER';payload: {customer: Customer | undefined;};} |
+{type: 'SET_PAYMENT_METHOD';payload: {method: PaymentMethod;};} |
+{type: 'CLEAR_CART';};
 
 const initialState: POSState = {
   cart: [],
@@ -36,7 +36,7 @@ const initialState: POSState = {
 };
 
 // NYC Tax calculation - apparel under $110 is exempt
-const calculateTax = (items: CartItem[]): { taxableAmount: number; taxAmount: number; exemptAmount: number; } => {
+const calculateTax = (items: CartItem[]): {taxableAmount: number;taxAmount: number;exemptAmount: number;} => {
   let taxableAmount = 0;
   let exemptAmount = 0;
   const NYCTaxRate = 0.08375; // NYC sales tax rate
@@ -56,59 +56,59 @@ const calculateTax = (items: CartItem[]): { taxableAmount: number; taxAmount: nu
 
 const posReducer = (state: POSState, action: POSAction): POSState => {
   switch (action.type) {
-    case 'ADD_TO_CART': {
-      const { product, variant, quantity } = action.payload;
-      const existingItemIndex = state.cart.findIndex(
-        (item) => item.product.id === product.id &&
-        item.variant?.id === variant?.id
-      );
+    case 'ADD_TO_CART':{
+        const { product, variant, quantity } = action.payload;
+        const existingItemIndex = state.cart.findIndex(
+          (item) => item.product.id === product.id &&
+          item.variant?.id === variant?.id
+        );
 
-      if (existingItemIndex >= 0) {
-        const updatedCart = [...state.cart];
-        updatedCart[existingItemIndex].quantity += quantity;
-        updatedCart[existingItemIndex].subtotal =
+        if (existingItemIndex >= 0) {
+          const updatedCart = [...state.cart];
+          updatedCart[existingItemIndex].quantity += quantity;
+          updatedCart[existingItemIndex].subtotal =
           updatedCart[existingItemIndex].quantity * updatedCart[existingItemIndex].unitPrice;
-        return { ...state, cart: updatedCart };
+          return { ...state, cart: updatedCart };
+        }
+
+        const unitPrice = product.basePrice + (variant?.priceAdjustment || 0);
+        const newItem: CartItem = {
+          id: `${product.id}-${variant?.id || 'default'}-${Date.now()}`,
+          product,
+          variant,
+          quantity,
+          unitPrice,
+          lineDiscount: 0,
+          lineDiscountType: 'percentage',
+          subtotal: unitPrice * quantity
+        };
+
+        return { ...state, cart: [...state.cart, newItem] };
       }
 
-      const unitPrice = product.basePrice + (variant?.priceAdjustment || 0);
-      const newItem: CartItem = {
-        id: `${product.id}-${variant?.id || 'default'}-${Date.now()}`,
-        product,
-        variant,
-        quantity,
-        unitPrice,
-        lineDiscount: 0,
-        lineDiscountType: 'percentage',
-        subtotal: unitPrice * quantity
-      };
+    case 'UPDATE_QUANTITY':{
+        const { itemId, quantity } = action.payload;
+        if (quantity <= 0) {
+          return { ...state, cart: state.cart.filter((item) => item.id !== itemId) };
+        }
 
-      return { ...state, cart: [...state.cart, newItem] };
-    }
-
-    case 'UPDATE_QUANTITY': {
-      const { itemId, quantity } = action.payload;
-      if (quantity <= 0) {
-        return { ...state, cart: state.cart.filter((item) => item.id !== itemId) };
-      }
-
-      const updatedCart = state.cart.map((item) => {
-        if (item.id === itemId) {
-          const baseSubtotal = item.unitPrice * quantity;
-          const discountAmount = item.lineDiscountType === 'percentage' ?
+        const updatedCart = state.cart.map((item) => {
+          if (item.id === itemId) {
+            const baseSubtotal = item.unitPrice * quantity;
+            const discountAmount = item.lineDiscountType === 'percentage' ?
             baseSubtotal * (item.lineDiscount / 100) :
             item.lineDiscount;
-          return {
-            ...item,
-            quantity,
-            subtotal: baseSubtotal - discountAmount
-          };
-        }
-        return item;
-      });
+            return {
+              ...item,
+              quantity,
+              subtotal: baseSubtotal - discountAmount
+            };
+          }
+          return item;
+        });
 
-      return { ...state, cart: updatedCart };
-    }
+        return { ...state, cart: updatedCart };
+      }
 
     case 'REMOVE_FROM_CART':
       return {
@@ -116,26 +116,26 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
         cart: state.cart.filter((item) => item.id !== action.payload.itemId)
       };
 
-    case 'APPLY_LINE_DISCOUNT': {
-      const { itemId, discount, type } = action.payload;
-      const updatedCart = state.cart.map((item) => {
-        if (item.id === itemId) {
-          const baseSubtotal = item.unitPrice * item.quantity;
-          const discountAmount = type === 'percentage' ?
+    case 'APPLY_LINE_DISCOUNT':{
+        const { itemId, discount, type } = action.payload;
+        const updatedCart = state.cart.map((item) => {
+          if (item.id === itemId) {
+            const baseSubtotal = item.unitPrice * item.quantity;
+            const discountAmount = type === 'percentage' ?
             baseSubtotal * (discount / 100) :
             discount;
-          return {
-            ...item,
-            lineDiscount: discount,
-            lineDiscountType: type,
-            subtotal: baseSubtotal - discountAmount
-          };
-        }
-        return item;
-      });
+            return {
+              ...item,
+              lineDiscount: discount,
+              lineDiscountType: type,
+              subtotal: baseSubtotal - discountAmount
+            };
+          }
+          return item;
+        });
 
-      return { ...state, cart: updatedCart };
-    }
+        return { ...state, cart: updatedCart };
+      }
 
     case 'APPLY_ORDER_DISCOUNT':
       return {
@@ -163,7 +163,7 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
 
 const POSContext = createContext<POSContextType | undefined>(undefined);
 
-export const POSProvider: React.FC<{ children: ReactNode; }> = ({ children }) => {
+export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
   const [state, dispatch] = useReducer(posReducer, initialState);
 
   // Use modern lifecycle management for cart persistence
@@ -340,8 +340,8 @@ export const POSProvider: React.FC<{ children: ReactNode; }> = ({ children }) =>
     const subtotal = getCartSubtotal();
     const tax = getTaxAmount();
     const orderDiscountAmount = state.orderDiscountType === 'percentage' ?
-      subtotal * (state.orderDiscount / 100) :
-      state.orderDiscount;
+    subtotal * (state.orderDiscount / 100) :
+    state.orderDiscount;
     return subtotal + tax - orderDiscountAmount;
   }, [getCartSubtotal, getTaxAmount, state.orderDiscount, state.orderDiscountType]);
 
@@ -359,25 +359,25 @@ export const POSProvider: React.FC<{ children: ReactNode; }> = ({ children }) =>
     getCartSubtotal,
     getTaxAmount
   }), [
-    state,
-    addToCart,
-    updateCartItemQuantity,
-    removeFromCart,
-    applyLineDiscount,
-    applyOrderDiscount,
-    setCustomer,
-    setPaymentMethod,
-    clearCart,
-    getCartTotal,
-    getCartSubtotal,
-    getTaxAmount
-  ]);
+  state,
+  addToCart,
+  updateCartItemQuantity,
+  removeFromCart,
+  applyLineDiscount,
+  applyOrderDiscount,
+  setCustomer,
+  setPaymentMethod,
+  clearCart,
+  getCartTotal,
+  getCartSubtotal,
+  getTaxAmount]
+  );
 
   return (
     <POSContext.Provider value={contextValue}>
       {children}
-    </POSContext.Provider>
-  );
+    </POSContext.Provider>);
+
 };
 
 export const usePOS = () => {

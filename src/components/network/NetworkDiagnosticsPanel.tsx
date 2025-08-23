@@ -142,11 +142,11 @@ export function NetworkDiagnosticsPanel() {
 
 
 
+
+
           // EasySite API might not be available or user not logged in
           // This is not necessarily a connection error
-        }break;case 'WebSocket Support':if (!('WebSocket' in window)) {throw new Error('WebSocket not supported');}break;case 'Local Storage':localStorage.setItem('diagnostics_test', 'test');const value = localStorage.getItem('diagnostics_test');localStorage.removeItem('diagnostics_test');if (value !== 'test') {throw new Error('Local storage not working');}break;case 'IndexedDB':
-        if (!('indexedDB' in window)) {
-          throw new Error('IndexedDB not supported');
+        }break;case 'WebSocket Support':if (!('WebSocket' in window)) {throw new Error('WebSocket not supported');}break;case 'Local Storage':localStorage.setItem('diagnostics_test', 'test');const value = localStorage.getItem('diagnostics_test');localStorage.removeItem('diagnostics_test');if (value !== 'test') {throw new Error('Local storage not working');}break;case 'IndexedDB':if (!('indexedDB' in window)) {throw new Error('IndexedDB not supported');
         }
         // Test basic IndexedDB functionality
         const dbRequest = indexedDB.open('diagnostics_test', 1);

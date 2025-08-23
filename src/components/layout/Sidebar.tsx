@@ -13,7 +13,8 @@ import {
   Settings,
   Network,
   TestTube,
-  Activity } from
+  Activity,
+  AlertTriangle } from
 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -107,6 +108,32 @@ const Sidebar: React.FC = () => {
           }>
             <TestTube className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">API Testing</span>
+          </NavLink>
+        }
+        {isAdmin &&
+        <NavLink
+          to="/errors"
+          className={({ isActive }) =>
+          cn(
+            "px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-3 text-gray-700 transition-colors duration-200",
+            isActive && "bg-emerald-100 text-emerald-800"
+          )
+          }>
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">Error Monitoring</span>
+          </NavLink>
+        }
+        {isAdmin &&
+        <NavLink
+          to="/performance-monitoring"
+          className={({ isActive }) =>
+          cn(
+            "px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-3 text-gray-700 transition-colors duration-200",
+            isActive && "bg-emerald-100 text-emerald-800"
+          )
+          }>
+            <Activity className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">Performance</span>
           </NavLink>
         }
       </nav>

@@ -43,9 +43,9 @@ interface ErrorTrackingProviderProps {
   userId?: string;
 }
 
-export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({ 
-  children, 
-  userId 
+export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
+  children,
+  userId
 }) => {
   const [metrics, setMetrics] = React.useState<ErrorMetrics>({
     totalErrors: 0,
@@ -61,13 +61,13 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
   useEffect(() => {
     // Load existing metrics from storage
     loadMetricsFromStorage();
-    
+
     // Set up global error handlers
     setupGlobalErrorHandlers();
-    
+
     // Set up periodic error reporting
     const reportInterval = setInterval(
-      flushErrorBuffer, 
+      flushErrorBuffer,
       ENHANCED_PRODUCTION_CONFIG.monitoring.errorReportingInterval || 30000
     );
 
@@ -81,7 +81,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
       const storedMetrics = localStorage.getItem('error_tracking_metrics');
       if (storedMetrics) {
         const parsed = JSON.parse(storedMetrics);
-        setMetrics(prev => ({ ...prev, ...parsed }));
+        setMetrics((prev) => ({ ...prev, ...parsed }));
       }
     } catch (error) {
       logger.logWarn('Failed to load error metrics from storage', error);
@@ -106,7 +106,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
         lineno,
         colno
       });
-      
+
       if (originalOnError) {
         return originalOnError(message, source, lineno, colno, error);
       }
@@ -120,7 +120,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
         event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
         { source: 'unhandled_rejection' }
       );
-      
+
       if (originalOnUnhandledRejection) {
         return originalOnUnhandledRejection(event);
       }
@@ -131,7 +131,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
     window.fetch = async (input, init) => {
       try {
         const response = await originalFetch(input, init);
-        
+
         if (!response.ok) {
           trackError(new Error(`HTTP ${response.status}: ${response.statusText}`), {
             source: 'network_error',
@@ -140,7 +140,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
             status: response.status
           });
         }
-        
+
         return response;
       } catch (error) {
         trackError(error as Error, {
@@ -168,10 +168,10 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
     };
 
     // Add to error buffer for batch processing
-    setErrorBuffer(prev => [...prev, errorData].slice(-100)); // Keep last 100 errors
+    setErrorBuffer((prev) => [...prev, errorData].slice(-100)); // Keep last 100 errors
 
     // Update metrics
-    setMetrics(prev => {
+    setMetrics((prev) => {
       const newMetrics = {
         ...prev,
         totalErrors: prev.totalErrors + 1,
@@ -216,11 +216,11 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
   const trackCriticalError = React.useCallback((error: Error, context: any = {}) => {
     // Mark as critical
     const criticalContext = { ...context, severity: 'critical', critical: true };
-    
+
     trackError(error, criticalContext);
 
     // Update critical error count
-    setMetrics(prev => {
+    setMetrics((prev) => {
       const newMetrics = {
         ...prev,
         criticalErrors: prev.criticalErrors + 1
@@ -262,7 +262,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
     setMetrics(clearedMetrics);
     setErrorBuffer([]);
     saveMetricsToStorage(clearedMetrics);
-    
+
     logger.logInfo('Error metrics cleared');
   }, []);
 
@@ -288,7 +288,7 @@ export const ErrorTrackingProvider: React.FC<ErrorTrackingProviderProps> = ({
     } catch (error) {
       logger.logWarn('Failed to flush error buffer', error);
       // Put errors back in buffer
-      setErrorBuffer(prev => [...errors, ...prev]);
+      setErrorBuffer((prev) => [...errors, ...prev]);
     }
   }, [errorBuffer]);
 
@@ -312,25 +312,25 @@ ${metrics.lastError ? `
 ` : 'No errors recorded'}
 
 ## Errors by Type
-${Object.entries(metrics.errorsByType)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 10)
-  .map(([type, count]) => `- **${type}**: ${count}`)
-  .join('\n')}
+${Object.entries(metrics.errorsByType).
+    sort((a, b) => b[1] - a[1]).
+    slice(0, 10).
+    map(([type, count]) => `- **${type}**: ${count}`).
+    join('\n')}
 
 ## Errors by Page
-${Object.entries(metrics.errorsByPage)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 10)
-  .map(([page, count]) => `- **${page}**: ${count}`)
-  .join('\n')}
+${Object.entries(metrics.errorsByPage).
+    sort((a, b) => b[1] - a[1]).
+    slice(0, 10).
+    map(([page, count]) => `- **${page}**: ${count}`).
+    join('\n')}
 
 ## Recent Errors
-${errorBuffer
-  .slice(-5)
-  .reverse()
-  .map(error => `- **${error.timestamp}**: ${error.message} (${error.page})`)
-  .join('\n')}
+${errorBuffer.
+    slice(-5).
+    reverse().
+    map((error) => `- **${error.timestamp}**: ${error.message} (${error.page})`).
+    join('\n')}
     `.trim();
 
     return report;
@@ -348,8 +348,8 @@ ${errorBuffer
   return (
     <ErrorTrackingContext.Provider value={contextValue}>
       {children}
-    </ErrorTrackingContext.Provider>
-  );
+    </ErrorTrackingContext.Provider>);
+
 };
 
 export default ErrorTrackingProvider;

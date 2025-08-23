@@ -64,12 +64,12 @@ export const ProductionProvider: React.FC<ProductionProviderProps> = ({ children
 
     // Set up periodic sync if enabled
     let syncInterval: NodeJS.Timeout;
-    if (PRODUCTION_CONFIG.sync.enableAutoSync) {
+    if (PRODUCTION_CONFIG?.sync?.enableAutoSync) {
       syncInterval = setInterval(() => {
         if (isOnline && isAuthenticated) {
           performBackgroundSync();
         }
-      }, PRODUCTION_CONFIG.sync.syncInterval);
+      }, PRODUCTION_CONFIG?.sync?.syncInterval || 300000); // Default 5 minutes
     }
 
     return () => {

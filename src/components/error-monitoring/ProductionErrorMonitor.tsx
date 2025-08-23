@@ -19,7 +19,7 @@ interface ProductionErrorState {
 
 interface ProductionErrorMonitorProps {
   children: React.ReactNode;
-  fallback?: React.ComponentType<{ error: Error; errorId: string; retry: () => void }>;
+  fallback?: React.ComponentType<{error: Error;errorId: string;retry: () => void;}>;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   maxErrors?: number;
   resetTimeWindow?: number;
@@ -27,14 +27,14 @@ interface ProductionErrorMonitorProps {
 
 export class ProductionErrorMonitor extends Component<
   ProductionErrorMonitorProps,
-  ProductionErrorState
-> {
+  ProductionErrorState>
+{
   private errorResetTimer: NodeJS.Timeout | null = null;
   private performanceObserver: PerformanceObserver | null = null;
 
   constructor(props: ProductionErrorMonitorProps) {
     super(props);
-    
+
     this.state = {
       hasError: false,
       errorId: '',
@@ -75,7 +75,7 @@ export class ProductionErrorMonitor extends Component<
 
   static getDerivedStateFromError(error: Error): Partial<ProductionErrorState> {
     const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return {
       hasError: true,
       errorId,
@@ -86,7 +86,7 @@ export class ProductionErrorMonitor extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { errorId } = this.state;
-    
+
     // Enhanced error logging
     this.logProductionError(error, errorInfo, errorId);
 
@@ -130,7 +130,7 @@ export class ProductionErrorMonitor extends Component<
         type: 'unhandledRejection',
         promise: event.promise
       });
-      
+
       // Prevent console error in production
       if (ENHANCED_PRODUCTION_CONFIG.errorHandling.preventUnhandledRejectionConsoleError) {
         event.preventDefault();
@@ -212,7 +212,7 @@ export class ProductionErrorMonitor extends Component<
       timestamp: new Date().toISOString(),
       url: window.location.href,
       userAgent: navigator.userAgent,
-      
+
       // Browser information
       browser: {
         language: navigator.language,
@@ -276,7 +276,7 @@ export class ProductionErrorMonitor extends Component<
     const now = Date.now();
 
     // Update error count
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       errorCount: prevState.errorCount + 1,
       lastErrorTime: now
     }));
@@ -348,9 +348,9 @@ export class ProductionErrorMonitor extends Component<
           <FallbackComponent
             error={new Error('Application error occurred')}
             errorId={this.state.errorId}
-            retry={this.handleRetry}
-          />
-        );
+            retry={this.handleRetry} />);
+
+
       }
 
       // Default fallback UI
@@ -360,8 +360,8 @@ export class ProductionErrorMonitor extends Component<
             <div className="bg-white rounded-lg shadow-lg p-6">
               <div className="text-red-500 mb-4">
                 <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -374,14 +374,14 @@ export class ProductionErrorMonitor extends Component<
                 <button
                   onClick={this.handleRetry}
                   className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  disabled={this.state.errorCount >= (this.props.maxErrors || 5)}
-                >
+                  disabled={this.state.errorCount >= (this.props.maxErrors || 5)}>
+
                   {this.state.errorCount >= (this.props.maxErrors || 5) ? 'Maximum retries reached' : 'Try again'}
                 </button>
                 <button
                   onClick={() => window.location.reload()}
-                  className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                >
+                  className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+
                   Reload page
                 </button>
               </div>
@@ -390,8 +390,8 @@ export class ProductionErrorMonitor extends Component<
               </div>
             </div>
           </div>
-        </div>
-      );
+        </div>);
+
     }
 
     return this.props.children;

@@ -10,7 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { isProduction } from '@/utils/env-validator';
 import { logger } from '@/utils/production-logger';
 
-// Lazy load pages
+// Import the main layout component
+import MainLayout from '@/components/layout/MainLayout';
+import EnhancedErrorBoundary from '@/components/common/EnhancedErrorBoundary';
+
+// Lazy load pages for optimal bundle splitting
 const HomePage = React.lazy(() => import('@/pages/HomePage'));
 const LoginPage = React.lazy(() => import('@/pages/auth/LoginPage'));
 const RegisterPage = React.lazy(() => import('@/pages/auth/RegisterPage'));
@@ -26,20 +30,8 @@ const AdminPage = React.lazy(() => import('@/pages/AdminPage'));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
-// Conditionally load debug pages
-const NetworkDebugPage = React.lazy(() => 
-  isProduction() 
-    ? Promise.resolve({ default: () => <Navigate to="/" replace /> })
-    : import('@/pages/debug/NetworkDebugPage')
-);
-const TestingPage = React.lazy(() => 
-  isProduction() 
-    ? Promise.resolve({ default: () => <Navigate to="/" replace /> })
-    : import('@/pages/TestingPage')
-);
-
 // Protected Route Component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -54,7 +46,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 // Public Route Component (redirect if authenticated)
-const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PublicRoute: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -68,58 +60,83 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-// Error Fallback Component
-const AppErrorFallback: React.FC<{ error: Error; errorId: string; retry: () => void }> = ({
+// Production Error Fallback Component
+const ProductionErrorFallback = React.lazy(() => import('@/components/common/ProductionErrorFallback'));
+
+// Error Fallback Component - Production optimized
+const AppErrorFallback: React.FC<{error: Error; errorId: string; retry: () => void;}> = ({
   error,
   errorId,
   retry
-}) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-    <div className="max-w-md w-full text-center">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-red-500 mb-4">
-          <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
+}) => {
+  if (isProduction()) {
+    return (
+      <React.Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">Loading error handler...</div>
         </div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">
-          Application Error
-        </h2>
-        <p className="text-gray-600 mb-4">
-          The application encountered an unexpected error. Our team has been notified and is working on a fix.
-        </p>
-        <div className="space-y-2">
-          <button
-            onClick={retry}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Try again
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-          >
-            Reload page
-          </button>
-        </div>
-        <div className="mt-4 text-xs text-gray-500">
-          Error ID: {errorId}
+      }>
+        <ProductionErrorFallback 
+          error={error} 
+          errorId={errorId} 
+          resetError={retry}
+        />
+      </React.Suspense>
+    );
+  }
+
+  // Development fallback (lightweight)
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md w-full text-center">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="text-red-500 mb-4">
+            <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Application Error
+          </h2>
+          <p className="text-gray-600 mb-4">
+            The application encountered an unexpected error.
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={retry}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              Try again
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+              Reload page
+            </button>
+          </div>
+          <div className="mt-4 text-xs text-gray-500">
+            Error ID: {errorId}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   React.useEffect(() => {
-    // Log app initialization
-    logger.logInfo('App component mounted');
-    logger.logComponentLifecycle('App', 'mounted');
+    if (!isProduction()) {
+      logger.logInfo('App component mounted');
+      logger.logComponentLifecycle('App', 'mounted');
+    }
   }, []);
 
   return (
-    <GlobalErrorBoundary>
+    <EnhancedErrorBoundary 
+      componentName="App"
+      category="application"
+      maxRetries={3}
+    >
       <ErrorTrackingProvider>
         <ProductionErrorMonitor fallback={AppErrorFallback}>
           <Router>
@@ -127,84 +144,106 @@ function App() {
               <Suspense fallback={<LoadingState />}>
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/" element={<HomePage />} />
+                  <Route path="/" element={
+                    <EnhancedErrorBoundary componentName="HomePage">
+                      <HomePage />
+                    </EnhancedErrorBoundary>
+                  } />
                   <Route path="/login" element={
                     <PublicRoute>
-                      <LoginPage />
+                      <EnhancedErrorBoundary componentName="LoginPage">
+                        <LoginPage />
+                      </EnhancedErrorBoundary>
                     </PublicRoute>
                   } />
                   <Route path="/register" element={
                     <PublicRoute>
-                      <RegisterPage />
+                      <EnhancedErrorBoundary componentName="RegisterPage">
+                        <RegisterPage />
+                      </EnhancedErrorBoundary>
                     </PublicRoute>
                   } />
 
-                  {/* Protected Routes */}
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <DashboardPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/pos" element={
-                    <ProtectedRoute>
-                      <POSPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/inventory" element={
-                    <ProtectedRoute>
-                      <InventoryPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/purchase" element={
-                    <ProtectedRoute>
-                      <PurchasePage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/employees" element={
-                    <ProtectedRoute>
-                      <EmployeesPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/salary" element={
-                    <ProtectedRoute>
-                      <SalaryPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/sales" element={
-                    <ProtectedRoute>
-                      <SalesPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/invoices" element={
-                    <ProtectedRoute>
-                      <InvoicesPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <AdminPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/settings" element={
-                    <ProtectedRoute>
-                      <SettingsPage />
-                    </ProtectedRoute>
-                  } />
-
-                  {/* Debug Routes (Development only) */}
-                  <Route path="/debug/network" element={
-                    <ProtectedRoute>
-                      <NetworkDebugPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/performance" element={
-                    <ProtectedRoute>
-                      <TestingPage />
-                    </ProtectedRoute>
-                  } />
+                  {/* Protected Routes with Main Layout */}
+                  <Route element={<MainLayout />}>  
+                    <Route path="/dashboard" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="DashboardPage">
+                          <DashboardPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/sales" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="SalesPage">
+                          <SalesPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/invoices" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="InvoicesPage">
+                          <InvoicesPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/inventory" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="InventoryPage">
+                          <InventoryPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/employees" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="EmployeesPage">
+                          <EmployeesPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/payroll" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="SalaryPage">
+                          <SalaryPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="AdminPage">
+                          <AdminPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/settings" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="SettingsPage">
+                          <SettingsPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/pos" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="POSPage">
+                          <POSPage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/purchase" element={
+                      <ProtectedRoute>
+                        <EnhancedErrorBoundary componentName="PurchasePage">
+                          <PurchasePage />
+                        </EnhancedErrorBoundary>
+                      </ProtectedRoute>
+                    } />
+                  </Route>
 
                   {/* 404 Route */}
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="*" element={
+                    <EnhancedErrorBoundary componentName="NotFound">
+                      <NotFound />
+                    </EnhancedErrorBoundary>
+                  } />
                 </Routes>
               </Suspense>
 
@@ -214,7 +253,7 @@ function App() {
           </Router>
         </ProductionErrorMonitor>
       </ErrorTrackingProvider>
-    </GlobalErrorBoundary>
+    </EnhancedErrorBoundary>
   );
 }
 

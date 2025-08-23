@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
-  Database, 
-  Globe, 
-  Server, 
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Database,
+  Globe,
+  Server,
   Shield,
   Zap,
   RefreshCw,
@@ -21,8 +21,8 @@ import {
   Trash2,
   Monitor,
   BarChart3,
-  Bug
-} from 'lucide-react';
+  Bug } from
+'lucide-react';
 import { useErrorTracking } from '@/components/monitoring/ErrorTrackingService';
 import { logger } from '@/utils/production-logger';
 import { auditLogger } from '@/utils/audit-logger';
@@ -43,10 +43,10 @@ const TestingPage: React.FC = () => {
   };
 
   const handleTestNetworkError = () => {
-    fetch('/api/non-existent-endpoint')
-      .catch(error => {
-        trackError(error, { source: 'network_test', endpoint: '/api/non-existent-endpoint' });
-      });
+    fetch('/api/non-existent-endpoint').
+    catch((error) => {
+      trackError(error, { source: 'network_test', endpoint: '/api/non-existent-endpoint' });
+    });
   };
 
   const handleClearStorage = () => {
@@ -83,7 +83,7 @@ const TestingPage: React.FC = () => {
       result += Math.random();
     }
     const end = performance.now();
-    
+
     logger.logPerformance('test', 'heavy_computation', end - start, true, {
       iterations: 1000000,
       result: result
@@ -204,25 +204,25 @@ const TestingPage: React.FC = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button 
+                  <Button
                     onClick={handleTestError}
                     variant="outline"
-                    className="w-full"
-                  >
+                    className="w-full">
+
                     Generate Test Error
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleTestCriticalError}
                     variant="destructive"
-                    className="w-full"
-                  >
+                    className="w-full">
+
                     Generate Critical Error
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleTestNetworkError}
                     variant="outline"
-                    className="w-full"
-                  >
+                    className="w-full">
+
                     Test Network Error
                   </Button>
                 </CardContent>
@@ -233,8 +233,8 @@ const TestingPage: React.FC = () => {
                   <CardTitle>Error Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {metrics.lastError ? (
-                    <Alert>
+                  {metrics.lastError ?
+                  <Alert>
                       <AlertTriangle className="w-4 h-4" />
                       <AlertDescription>
                         <div className="font-medium">Last Error:</div>
@@ -243,27 +243,27 @@ const TestingPage: React.FC = () => {
                           {metrics.lastError.page} • {new Date(metrics.lastError.timestamp).toLocaleString()}
                         </div>
                       </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <p className="text-sm text-gray-600">No errors recorded</p>
-                  )}
+                    </Alert> :
 
-                  {Object.entries(metrics.errorsByType).length > 0 && (
-                    <div>
+                  <p className="text-sm text-gray-600">No errors recorded</p>
+                  }
+
+                  {Object.entries(metrics.errorsByType).length > 0 &&
+                  <div>
                       <h4 className="font-medium mb-2">Error Types:</h4>
                       <div className="space-y-2">
-                        {Object.entries(metrics.errorsByType)
-                          .sort((a, b) => b[1] - a[1])
-                          .slice(0, 5)
-                          .map(([type, count]) => (
-                            <div key={type} className="flex justify-between items-center">
+                        {Object.entries(metrics.errorsByType).
+                      sort((a, b) => b[1] - a[1]).
+                      slice(0, 5).
+                      map(([type, count]) =>
+                      <div key={type} className="flex justify-between items-center">
                               <span className="text-sm">{type}</span>
                               <Badge variant="secondary">{count}</Badge>
                             </div>
-                          ))}
+                      )}
                       </div>
                     </div>
-                  )}
+                  }
                 </CardContent>
               </Card>
             </div>
@@ -282,11 +282,11 @@ const TestingPage: React.FC = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button 
+                  <Button
                     onClick={handleTestPerformance}
                     variant="outline"
-                    className="w-full"
-                  >
+                    className="w-full">
+
                     Run Performance Test
                   </Button>
                   
@@ -297,9 +297,9 @@ const TestingPage: React.FC = () => {
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold">
-                        {(performance as any).memory ? 
-                          Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024) : 
-                          'N/A'
+                        {(performance as any).memory ?
+                        Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024) :
+                        'N/A'
                         }MB
                       </div>
                       <div className="text-xs text-gray-600">Memory Used</div>
@@ -343,8 +343,8 @@ const TestingPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>);
+
 };
 
 export default TestingPage;

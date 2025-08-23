@@ -51,9 +51,9 @@ export const getEnvVar = (name: string, defaultValue: any = undefined): any => {
       if (value !== undefined) return value;
     }
   } catch (error) {
+
     // Ignore errors in production
-  }
-  return defaultValue;
+  }return defaultValue;
 };
 
 // Production-safe configuration
@@ -61,19 +61,19 @@ export const PRODUCTION_ENV_CONFIG = {
   NODE_ENV: getCurrentEnvironment(),
   IS_PRODUCTION: isProductionEnv(),
   IS_DEVELOPMENT: isDevelopmentEnv(),
-  
+
   // API Configuration
   API_BASE_URL: getEnvVar('API_BASE_URL', typeof window !== 'undefined' ? window.location.origin : ''),
   API_TIMEOUT: parseInt(getEnvVar('API_TIMEOUT', '30000')),
-  
+
   // Feature Flags
   ENABLE_DEBUG: getEnvVar('ENABLE_DEBUG', !isProductionEnv()),
   ENABLE_CONSOLE_LOGGING: getEnvVar('ENABLE_CONSOLE_LOGGING', !isProductionEnv()),
   ENABLE_SOURCE_MAPS: getEnvVar('ENABLE_SOURCE_MAPS', !isProductionEnv()),
-  
+
   // Security
   ENABLE_SECURITY_HEADERS: getEnvVar('ENABLE_SECURITY_HEADERS', isProductionEnv()),
-  ENABLE_HTTPS_ENFORCEMENT: getEnvVar('ENABLE_HTTPS_ENFORCEMENT', isProductionEnv()),
+  ENABLE_HTTPS_ENFORCEMENT: getEnvVar('ENABLE_HTTPS_ENFORCEMENT', isProductionEnv())
 };
 
 // Override global process.env if it doesn't exist (for compatibility)
