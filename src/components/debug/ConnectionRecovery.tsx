@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { useDebug } from '@/contexts/DebugContext';
+import { useDebug } from '@/debug';
 import { useToast } from '@/hooks/use-toast';
 
 const ConnectionRecovery: React.FC = () => {

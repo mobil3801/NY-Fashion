@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { useDebug } from '@/contexts/DebugContext';
+import { useDebug } from '@/debug';
 
 const NetworkStatusMonitor: React.FC = () => {
   const { networkStatus, checkNetworkStatus, runNetworkBenchmark } = useDebug();

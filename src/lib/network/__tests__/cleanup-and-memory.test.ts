@@ -222,9 +222,9 @@ describe('Cleanup and Memory Management Tests', () => {
 
 
 
+
         // Expected to fail after destroy
-      }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});
-    it('should handle listener removal during destroy', () => {
+      }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});it('should handle listener removal during destroy', () => {
       monitor = new ConnectivityMonitor();
 
       const listeners: (() => void)[] = [];

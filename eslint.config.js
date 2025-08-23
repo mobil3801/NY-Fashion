@@ -24,7 +24,20 @@ export default tseslint.config(
       { allowConstantExport: true }],
 
       "@typescript-eslint/no-unused-vars": "off",
-      "no-undef": "error"
+      "no-undef": "error",
+
+      // Prevent importing from wrong debug context paths
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": ["@/contexts/DebugContext", "@/debug/DebugProvider"],
+              "message": "Import debug functionality from '@/debug' instead to use the consolidated context."
+            }
+          ]
+        }
+      ]
     }
   }
 );

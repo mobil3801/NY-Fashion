@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useDebug } from '@/contexts/DebugContext';
+import { useDebug } from '@/debug';
 import { useToast } from '@/hooks/use-toast';
 
 const DebugSettingsPanel: React.FC = () => {

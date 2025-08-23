@@ -216,83 +216,83 @@ export function useApiRetry() {
 
 
 
+
     // Debug context not available, continue without it
   } // Cleanup on unmount
   useEffect(() => {isMountedRef.current = true;return () => {isMountedRef.current = false; // Abort all ongoing operations
-        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);const executeWithRetry = useCallback(async <T,>(
-  fn: (ctx: RetryContext) => Promise<T>,
-  options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;})
-  : Promise<T> => {
-    if (!isMountedRef.current) {
-      throw new Error('Component is unmounted');
-    }
+        abortControllersRef.current.forEach((controller) => {if (!controller.signal.aborted) {controller.abort();}});abortControllersRef.current.clear();};}, []);const executeWithRetry = useCallback(async <T,>(fn: (ctx: RetryContext) => Promise<T>,
+    options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;})
+    : Promise<T> => {
+      if (!isMountedRef.current) {
+        throw new Error('Component is unmounted');
+      }
 
-    const controller = new AbortController();
-    abortControllersRef.current.add(controller);
+      const controller = new AbortController();
+      abortControllersRef.current.add(controller);
 
-    // Track API call in debug system if available
-    let debugCallId: string | null = null;
-    if (debugContext?.addApiCall) {
-      debugCallId = debugContext.addApiCall({
-        timestamp: new Date(),
-        operation: options?.operation || 'unknown',
-        method: options?.method || 'GET',
-        url: options?.url || 'unknown',
-        attempt: 1,
-        duration: null,
-        status: 'pending'
-      });
-    }
-
-    try {
-      const result = await executeWithRetry(fn, {
-        ...DEFAULT_RETRY_OPTIONS,
-        ...options,
-        signal: controller.signal,
-        onAttempt: (info) => {
-          if (isMountedRef.current) {
-            // Update debug tracking
-            if (debugCallId && debugContext?.updateApiCall) {
-              debugContext.updateApiCall(debugCallId, {
-                attempt: info.attempt,
-                status: info.error ? 'retrying' : 'pending',
-                error: info.error
-              });
-            }
-            options?.onAttempt?.(info);
-          }
-        },
-        onGiveUp: (error) => {
-          if (isMountedRef.current) {
-            // Update debug tracking
-            if (debugCallId && debugContext?.updateApiCall) {
-              debugContext.updateApiCall(debugCallId, {
-                status: 'error',
-                error: normalizeError(error),
-                duration: performance.now()
-              });
-            }
-            options?.onGiveUp?.(error);
-          }
-        }
-      } as RetryOptions);
-
-      // Update debug tracking on success
-      if (debugCallId && debugContext?.updateApiCall) {
-        debugContext.updateApiCall(debugCallId, {
-          status: 'success',
-          duration: performance.now()
+      // Track API call in debug system if available
+      let debugCallId: string | null = null;
+      if (debugContext?.addApiCall) {
+        debugCallId = debugContext.addApiCall({
+          timestamp: new Date(),
+          operation: options?.operation || 'unknown',
+          method: options?.method || 'GET',
+          url: options?.url || 'unknown',
+          attempt: 1,
+          duration: null,
+          status: 'pending'
         });
       }
 
-      return result;
-    } finally {
-      abortControllersRef.current.delete(controller);
-      if (!controller.signal.aborted) {
-        controller.abort();
+      try {
+        const result = await executeWithRetry(fn, {
+          ...DEFAULT_RETRY_OPTIONS,
+          ...options,
+          signal: controller.signal,
+          onAttempt: (info) => {
+            if (isMountedRef.current) {
+              // Update debug tracking
+              if (debugCallId && debugContext?.updateApiCall) {
+                debugContext.updateApiCall(debugCallId, {
+                  attempt: info.attempt,
+                  status: info.error ? 'retrying' : 'pending',
+                  error: info.error
+                });
+              }
+              options?.onAttempt?.(info);
+            }
+          },
+          onGiveUp: (error) => {
+            if (isMountedRef.current) {
+              // Update debug tracking
+              if (debugCallId && debugContext?.updateApiCall) {
+                debugContext.updateApiCall(debugCallId, {
+                  status: 'error',
+                  error: normalizeError(error),
+                  duration: performance.now()
+                });
+              }
+              options?.onGiveUp?.(error);
+            }
+          }
+        } as RetryOptions);
+
+        // Update debug tracking on success
+        if (debugCallId && debugContext?.updateApiCall) {
+          debugContext.updateApiCall(debugCallId, {
+            status: 'success',
+            duration: performance.now()
+          });
+        }
+
+        return result;
+      } finally {
+        abortControllersRef.current.delete(controller);
+        if (!controller.signal.aborted) {
+          controller.abort();
+        }
       }
-    }
-  }, []);
+    }, []);
 
   const abortAll = useCallback(() => {
     abortControllersRef.current.forEach((controller) => {

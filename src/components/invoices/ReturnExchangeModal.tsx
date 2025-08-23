@@ -310,6 +310,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -436,9 +438,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             <TableCell>
                               <div>
                                 <p className="font-medium">{item.product_name}</p>
-                                {item.sku &&
-                            <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                            }
+                                {item.sku && <p className="text-sm text-gray-500">SKU: {item.sku}</p>}
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{item.quantity}</TableCell>

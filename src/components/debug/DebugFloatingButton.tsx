@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { useDebug } from '@/contexts/DebugContext';
+import { useDebug } from '@/debug';
 
 const DebugFloatingButton: React.FC = () => {
   const navigate = useNavigate();

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDebug } from '@/contexts/DebugContext';
+import { useDebug } from '@/debug';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ApiCallFilters {
@@ -93,6 +93,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -136,9 +137,8 @@ const ApiDebugDashboard: React.FC = () => {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center gap-3">
-            <Select
-            value={filters.status}
-            onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}>
+            <Select value={filters.status}
+          onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}>
 
               <SelectTrigger className="w-32">
                 <SelectValue />

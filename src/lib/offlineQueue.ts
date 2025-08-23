@@ -111,22 +111,22 @@ class IndexedDBWrapper {
         try {
           // Handle schema migrations with enhanced error handling
           this.performSchemaUpgrade(db, event.oldVersion, event.newVersion || this.version);
-          
+
           // Verify the upgrade was successful
           if (!db.objectStoreNames.contains(this.storeName)) {
             throw new Error('Store was not created during upgrade');
           }
-          
+
           console.log('[OfflineQueue] Schema upgrade completed successfully');
         } catch (error) {
           console.error('[OfflineQueue] Schema upgrade failed:', error);
-          
+
           // Attempt emergency recovery
           try {
             if (db.objectStoreNames.contains(this.storeName)) {
               db.deleteObjectStore(this.storeName);
             }
-            
+
             const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
             store.createIndex('createdAt', 'createdAt', { unique: false });
             store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
@@ -137,14 +137,14 @@ class IndexedDBWrapper {
             return;
           }
         }
-        
+
         // Set up transaction error handling
         if (transaction) {
           transaction.onerror = () => {
             console.error('[OfflineQueue] Upgrade transaction error:', transaction.error);
             resolve(false);
           };
-          
+
           transaction.onabort = () => {
             console.error('[OfflineQueue] Upgrade transaction aborted');
             resolve(false);
@@ -175,18 +175,18 @@ class IndexedDBWrapper {
     if (oldVersion < 2 && newVersion >= 2) {
       // Get existing store
       const transaction = (db as any).transaction || null;
-      
+
       try {
         // Check if we're in an upgrade transaction
         if (transaction && transaction.objectStore) {
           const store = transaction.objectStore(this.storeName);
-          
+
           // Add createdAt index if it doesn't exist
           if (!store.indexNames.contains('createdAt')) {
             store.createIndex('createdAt', 'createdAt', { unique: false });
             console.log('[OfflineQueue] Added missing createdAt index in v2 migration');
           }
-          
+
           // Ensure idempotencyKey index exists
           if (!store.indexNames.contains('idempotencyKey')) {
             store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
@@ -197,7 +197,7 @@ class IndexedDBWrapper {
           if (db.objectStoreNames.contains(this.storeName)) {
             db.deleteObjectStore(this.storeName);
           }
-          
+
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
           store.createIndex('createdAt', 'createdAt', { unique: false });
           store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
@@ -209,13 +209,13 @@ class IndexedDBWrapper {
         if (db.objectStoreNames.contains(this.storeName)) {
           db.deleteObjectStore(this.storeName);
         }
-        
+
         const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
         store.createIndex('createdAt', 'createdAt', { unique: false });
         store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
         console.log('[OfflineQueue] Fallback: Recreated store completely in v2 migration');
       }
-      
+
       console.log('[OfflineQueue] Applied v2 migration successfully');
     }
   }
