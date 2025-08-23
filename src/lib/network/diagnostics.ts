@@ -47,7 +47,7 @@ export class NetworkDiagnostics {
     // Test DNS resolution using local resources
     try {
       const dnsStart = performance.now();
-      
+
       // Test DNS resolution by fetching a local resource with cache busting
       const response = await fetch(`${window.location.origin}/favicon.ico?t=${Date.now()}`, {
         method: 'HEAD',

@@ -294,7 +294,7 @@ const LowStockAlerts = () => {
   // Accessible stock badge with WCAG compliant colors
   const getStockBadge = useCallback((level: string) => {
     const badgeProps = {
-      className: "badge-aa text-xs font-semibold px-2.5 py-0.5 rounded-md focus-aa",
+      className: "badge-aa text-xs font-semibold px-2.5 py-0.5 rounded-md focus-visible-aa",
       role: "status",
       "aria-label": `Stock level: ${level}`
     };
@@ -304,8 +304,7 @@ const LowStockAlerts = () => {
         return (
           <Badge
             {...badgeProps}
-            className={`${badgeProps.className} status-critical-aa`}>
-
+            className={`${badgeProps.className} badge-error-aa`}>
             Out of Stock
           </Badge>);
 
@@ -313,8 +312,7 @@ const LowStockAlerts = () => {
         return (
           <Badge
             {...badgeProps}
-            className={`${badgeProps.className} status-critical-aa`}>
-
+            className={`${badgeProps.className} badge-error-aa`}>
             Critical
           </Badge>);
 
@@ -322,8 +320,7 @@ const LowStockAlerts = () => {
         return (
           <Badge
             {...badgeProps}
-            className={`${badgeProps.className} status-warning-aa`}>
-
+            className={`${badgeProps.className} badge-warning-aa`}>
             Low Stock
           </Badge>);
 
@@ -331,8 +328,7 @@ const LowStockAlerts = () => {
         return (
           <Badge
             {...badgeProps}
-            className={`${badgeProps.className} status-good-aa`}>
-
+            className={`${badgeProps.className} badge-success-aa`}>
             Good
           </Badge>);
 

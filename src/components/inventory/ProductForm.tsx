@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FormField } from '@/components/ui/form-field';
 import { useInventory } from '@/contexts/InventoryContext';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
@@ -385,36 +386,43 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
 
         <TabsContent value="basic" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Product Name *</Label>
-              <Input
-                id="name"
-                {...register('name', { required: 'Product name is required' })}
-                placeholder="e.g., Cotton Saree" />
+            <FormField
+              label="Product Name"
+              error={errors.name?.message}
+              required
+              description="Enter the product name as it will appear to customers">
 
-              {errors.name &&
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-              }
-            </div>
+              <Input
+                {...register('name', { required: 'Product name is required' })}
+                placeholder="e.g., Cotton Saree"
+                className="focus-visible-aa" />
+
+            </FormField>
 
             {/* Bengali name field removed - English only */}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <FormField
+            label="Description"
+            description="Provide a detailed description of the product for customers">
+
             <Textarea
-              id="description"
               {...register('description')}
               placeholder="Detailed product description..."
-              rows={3} />
+              rows={3}
+              className="focus-visible-aa" />
 
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category_id">Category *</Label>
+            <FormField
+              label="Category"
+              error={errors.category_id?.message}
+              required
+              description="Choose the appropriate product category">
+
               <Select onValueChange={(value) => setValue('category_id', parseInt(value))}>
-                <SelectTrigger>
+                <SelectTrigger className="focus-visible-aa">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -446,16 +454,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                   )}
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="brand">Brand</Label>
+            <FormField
+              label="Brand"
+              description="Enter the brand name (optional)">
+
               <Input
-                id="brand"
                 {...register('brand')}
-                placeholder="Brand name" />
+                placeholder="Brand name"
+                className="focus-visible-aa" />
 
-            </div>
+            </FormField>
           </div>
 
           <div className="grid grid-cols-3 gap-4">

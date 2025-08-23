@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { FormField } from '@/components/ui/form-field';
 import { useEmployee } from '@/contexts/EmployeeContext';
 import { Employee } from '@/types/employee';
 import { useDropzone } from 'react-dropzone';
@@ -119,15 +120,19 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 {...getRootProps()}
                 className={`
                   border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
+                  focus-visible-aa interactive-aa
                   ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-                `}>
+                `}
+                role="button"
+                tabIndex={0}
+                aria-label="Upload profile picture">
 
                 <input {...getInputProps()} />
-                <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-aa" aria-hidden="true" />
+                <p className="text-small-aa">
                   {isDragActive ? 'Drop image here' : 'Click or drag image here'}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                <p className="text-xs-aa mt-1">PNG, JPG up to 5MB</p>
               </div>
               
               {profileImage &&
@@ -155,53 +160,53 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="employee_id">Employee ID</Label>
-                <Input
-                  id="employee_id"
-                  {...register('employee_id')}
-                  placeholder="Auto-generated if empty" />
+              <FormField
+                label="Employee ID"
+                description="Leave empty for auto-generation">
 
-              </div>
-              
-              <div>
-                <Label htmlFor="email">Email *</Label>
                 <Input
-                  id="email"
+                  {...register('employee_id')}
+                  placeholder="Auto-generated if empty"
+                  className="focus-visible-aa" />
+
+              </FormField>
+              
+              <FormField
+                label="Email"
+                error={errors.email?.message}
+                required
+                description="Work email address for notifications">
+
+                <Input
                   type="email"
                   {...register('email', { required: 'Email is required' })}
-                  className={errors.email ? 'border-red-500' : ''} />
+                  className="focus-visible-aa" />
 
-                {errors.email &&
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-                }
-              </div>
+              </FormField>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="first_name">First Name *</Label>
+              <FormField
+                label="First Name"
+                error={errors.first_name?.message}
+                required>
+
                 <Input
-                  id="first_name"
                   {...register('first_name', { required: 'First name is required' })}
-                  className={errors.first_name ? 'border-red-500' : ''} />
+                  className="focus-visible-aa" />
 
-                {errors.first_name &&
-                <p className="text-red-500 text-sm mt-1">{errors.first_name.message}</p>
-                }
-              </div>
+              </FormField>
               
-              <div>
-                <Label htmlFor="last_name">Last Name *</Label>
-                <Input
-                  id="last_name"
-                  {...register('last_name', { required: 'Last name is required' })}
-                  className={errors.last_name ? 'border-red-500' : ''} />
+              <FormField
+                label="Last Name"
+                error={errors.last_name?.message}
+                required>
 
-                {errors.last_name &&
-                <p className="text-red-500 text-sm mt-1">{errors.last_name.message}</p>
-                }
-              </div>
+                <Input
+                  {...register('last_name', { required: 'Last name is required' })}
+                  className="focus-visible-aa" />
+
+              </FormField>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -360,12 +365,23 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
       {/* Actions */}
       <div className="flex justify-end space-x-4">
         {onCancel &&
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          className="btn-outline-aa focus-visible-aa touch-target-aa">
+
             Cancel
           </Button>
         }
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="focus-visible-aa touch-target-aa"
+          aria-describedby={loading ? "saving-status" : undefined}>
+
           {loading ? 'Saving...' : employee ? 'Update Employee' : 'Create Employee'}
+          {loading && <span id="saving-status" className="sr-only">Form is being saved</span>}
         </Button>
       </div>
     </form>);
