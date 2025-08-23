@@ -1,13 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Shield, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { NetworkStatusIndicator } from '@/components/network/NetworkStatusIndicator';
+import ConnectionVerificationPanel from '@/components/network/ConnectionVerificationPanel';
 
 const Header: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const [verificationOpen, setVerificationOpen] = useState(false);
 
   return (
     <header
@@ -23,6 +27,24 @@ const Header: React.FC = () => {
 
       {/* Right side actions */}
       <div className="flex items-center gap-4">
+        {/* Connection Verification Button */}
+        <Dialog open={verificationOpen} onOpenChange={setVerificationOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1 text-xs"
+              title="Connection Security Check">
+
+              <Shield className="h-3 w-3" />
+              Verify
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
+            <ConnectionVerificationPanel onClose={() => setVerificationOpen(false)} />
+          </DialogContent>
+        </Dialog>
+
         {/* Network Status Indicator */}
         <NetworkStatusIndicator />
 
