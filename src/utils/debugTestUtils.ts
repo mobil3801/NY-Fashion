@@ -264,9 +264,9 @@ options: {
 
 
 
+
         // Upload test failed, keep upload as 0
-      }}} catch (error) {console.warn('Bandwidth test failed:', error);}const result: BenchmarkResult = { latency, bandwidth, reliability
-  };
+      }}} catch (error) {console.warn('Bandwidth test failed:', error);}const result: BenchmarkResult = { latency, bandwidth, reliability };
 
   console.log('📊 Benchmark completed:', result);
   return result;

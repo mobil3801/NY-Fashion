@@ -1,3 +1,4 @@
+
 import React from "react";
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
@@ -9,6 +10,11 @@ import './index.css';
 // Initialize debug utilities
 if (process.env.NODE_ENV === 'development') {
   initConsoleDebugUtils();
+}
+
+// Set up global network context reference for toast actions
+if (typeof window !== 'undefined') {
+  (window as any).networkContext = null;
 }
 
 createRoot(document.getElementById("root")!).render(
