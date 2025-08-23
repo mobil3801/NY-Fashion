@@ -97,7 +97,7 @@ function getProducts(filters = {}) {
 
     // Add ordering with validation
     const orderBy = filters.order_by || 'name';
-    const orderDir = (filters.order_dir === 'desc') ? 'DESC' : 'ASC';
+    const orderDir = filters.order_dir === 'desc' ? 'DESC' : 'ASC';
 
     // Validate order_by field to prevent SQL injection
     const validOrderFields = ['name', 'brand', 'selling_price', 'price_cents', 'current_stock', 'created_at', 'updated_at'];
@@ -132,104 +132,104 @@ function getProducts(filters = {}) {
     }
 
     // Format and validate the results
-    const products = result
-      .filter(product => product && typeof product === 'object')
-      .map((product) => {
-        try {
-          // Parse image URLs safely
-          let imageUrls = [];
-          if (product.image_urls) {
-            try {
-              imageUrls = Array.isArray(product.image_urls) 
-                ? product.image_urls 
-                : JSON.parse(product.image_urls || '[]');
-            } catch (parseError) {
-              console.warn('Failed to parse image URLs for product:', product.id, parseError);
-              imageUrls = [];
-            }
+    const products = result.
+    filter((product) => product && typeof product === 'object').
+    map((product) => {
+      try {
+        // Parse image URLs safely
+        let imageUrls = [];
+        if (product.image_urls) {
+          try {
+            imageUrls = Array.isArray(product.image_urls) ?
+            product.image_urls :
+            JSON.parse(product.image_urls || '[]');
+          } catch (parseError) {
+            console.warn('Failed to parse image URLs for product:', product.id, parseError);
+            imageUrls = [];
           }
-
-          // Safely convert numeric values
-          const currentStock = Math.max(0, parseInt(product.current_stock) || 0);
-          const minStockLevel = Math.max(1, parseInt(product.min_stock_level) || 5);
-          const maxStockLevel = Math.max(minStockLevel + 1, parseInt(product.max_stock_level) || 20);
-          
-          // Handle pricing - prefer new fields over legacy cent fields
-          let sellingPrice = parseFloat(product.selling_price) || 0;
-          let costPrice = parseFloat(product.cost_price) || 0;
-          
-          // Fallback to cents fields if needed and convert
-          if (sellingPrice === 0 && product.price_cents) {
-            sellingPrice = Math.round((parseInt(product.price_cents) || 0) / 100 * 100) / 100;
-          }
-          if (costPrice === 0 && product.cost_cents) {
-            costPrice = Math.round((parseInt(product.cost_cents) || 0) / 100 * 100) / 100;
-          }
-
-          return {
-            id: parseInt(product.id) || 0,
-            name: (product.name || '').toString().trim(),
-            description: (product.description || '').toString().trim(),
-            brand: (product.brand || '').toString().trim(),
-            category_id: parseInt(product.category_id) || null,
-            category_name: (product.category_name || '').toString().trim(),
-            sku: (product.sku || '').toString().trim(),
-            barcode: (product.barcode || '').toString().trim(),
-            unit: (product.unit || 'pcs').toString().trim(),
-            size: (product.size || '').toString().trim(),
-            color: (product.color || '').toString().trim(),
-            weight: parseFloat(product.weight) || 0,
-
-            // Multilingual support
-            name_bn: (product.bn_name || '').toString().trim(),
-            bn_name: (product.bn_name || '').toString().trim(), // For backwards compatibility
-            description_bn: (product.bn_description || '').toString().trim(),
-            bn_description: (product.bn_description || '').toString().trim(), // For backwards compatibility
-
-            // Stock information (multiple field names for compatibility)
-            current_stock: currentStock,
-            total_stock: currentStock, // For frontend compatibility
-            min_stock_level: minStockLevel,
-            max_stock_level: maxStockLevel,
-
-            // Pricing (multiple field names for compatibility)
-            selling_price: sellingPrice,
-            price: sellingPrice, // For frontend compatibility
-            cost_price: costPrice,
-            cost: costPrice, // For frontend compatibility
-            costCents: parseInt(product.cost_cents) || Math.round(costPrice * 100),
-            priceCents: parseInt(product.price_cents) || Math.round(sellingPrice * 100),
-            cost_cents: parseInt(product.cost_cents) || Math.round(costPrice * 100),
-            price_cents: parseInt(product.price_cents) || Math.round(sellingPrice * 100),
-
-            // Other attributes
-            tax_rate: parseFloat(product.tax_rate) || 0,
-            taxExempt: Boolean(product.tax_rate === 0), // For compatibility
-            images: imageUrls,
-            image_urls: imageUrls,
-            is_active: Boolean(product.is_active),
-            is_trackable: Boolean(product.is_trackable),
-
-            // Timestamps
-            created_at: product.created_at,
-            updated_at: product.updated_at,
-
-            // Calculate stock status for frontend
-            stock_status: currentStock === 0 ? 'out_of_stock' : 
-                         currentStock <= minStockLevel ? 'low_stock' : 'in_stock'
-          };
-        } catch (formatError) {
-          console.error('Error formatting product data:', product.id, formatError);
-          return null;
         }
-      })
-      .filter(product => product !== null); // Remove any failed formatting attempts
+
+        // Safely convert numeric values
+        const currentStock = Math.max(0, parseInt(product.current_stock) || 0);
+        const minStockLevel = Math.max(1, parseInt(product.min_stock_level) || 5);
+        const maxStockLevel = Math.max(minStockLevel + 1, parseInt(product.max_stock_level) || 20);
+
+        // Handle pricing - prefer new fields over legacy cent fields
+        let sellingPrice = parseFloat(product.selling_price) || 0;
+        let costPrice = parseFloat(product.cost_price) || 0;
+
+        // Fallback to cents fields if needed and convert
+        if (sellingPrice === 0 && product.price_cents) {
+          sellingPrice = Math.round((parseInt(product.price_cents) || 0) / 100 * 100) / 100;
+        }
+        if (costPrice === 0 && product.cost_cents) {
+          costPrice = Math.round((parseInt(product.cost_cents) || 0) / 100 * 100) / 100;
+        }
+
+        return {
+          id: parseInt(product.id) || 0,
+          name: (product.name || '').toString().trim(),
+          description: (product.description || '').toString().trim(),
+          brand: (product.brand || '').toString().trim(),
+          category_id: parseInt(product.category_id) || null,
+          category_name: (product.category_name || '').toString().trim(),
+          sku: (product.sku || '').toString().trim(),
+          barcode: (product.barcode || '').toString().trim(),
+          unit: (product.unit || 'pcs').toString().trim(),
+          size: (product.size || '').toString().trim(),
+          color: (product.color || '').toString().trim(),
+          weight: parseFloat(product.weight) || 0,
+
+          // Multilingual support
+          name_bn: (product.bn_name || '').toString().trim(),
+          bn_name: (product.bn_name || '').toString().trim(), // For backwards compatibility
+          description_bn: (product.bn_description || '').toString().trim(),
+          bn_description: (product.bn_description || '').toString().trim(), // For backwards compatibility
+
+          // Stock information (multiple field names for compatibility)
+          current_stock: currentStock,
+          total_stock: currentStock, // For frontend compatibility
+          min_stock_level: minStockLevel,
+          max_stock_level: maxStockLevel,
+
+          // Pricing (multiple field names for compatibility)
+          selling_price: sellingPrice,
+          price: sellingPrice, // For frontend compatibility
+          cost_price: costPrice,
+          cost: costPrice, // For frontend compatibility
+          costCents: parseInt(product.cost_cents) || Math.round(costPrice * 100),
+          priceCents: parseInt(product.price_cents) || Math.round(sellingPrice * 100),
+          cost_cents: parseInt(product.cost_cents) || Math.round(costPrice * 100),
+          price_cents: parseInt(product.price_cents) || Math.round(sellingPrice * 100),
+
+          // Other attributes
+          tax_rate: parseFloat(product.tax_rate) || 0,
+          taxExempt: Boolean(product.tax_rate === 0), // For compatibility
+          images: imageUrls,
+          image_urls: imageUrls,
+          is_active: Boolean(product.is_active),
+          is_trackable: Boolean(product.is_trackable),
+
+          // Timestamps
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+
+          // Calculate stock status for frontend
+          stock_status: currentStock === 0 ? 'out_of_stock' :
+          currentStock <= minStockLevel ? 'low_stock' : 'in_stock'
+        };
+      } catch (formatError) {
+        console.error('Error formatting product data:', product.id, formatError);
+        return null;
+      }
+    }).
+    filter((product) => product !== null); // Remove any failed formatting attempts
 
     return products;
 
   } catch (error) {
     console.error('getProducts error:', error);
-    
+
     // Provide user-friendly error messages
     let userMessage = 'Failed to fetch products.';
     if (error.message.includes('Database connection')) {
@@ -239,7 +239,7 @@ function getProducts(filters = {}) {
     } else if (error.message.includes('network') || error.message.includes('timeout')) {
       userMessage = 'Network error occurred. Please check your connection and try again.';
     }
-    
+
     throw new Error(userMessage);
   }
 }

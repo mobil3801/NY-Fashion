@@ -137,11 +137,11 @@ function healthCheckInventory() {
     }
 
     // Overall health status
-    const isHealthy = results.database_connection && 
-                     results.tables_exist.products && 
-                     results.tables_exist.categories &&
-                     results.api_functions.getProducts &&
-                     results.api_functions.getLowStockProducts;
+    const isHealthy = results.database_connection &&
+    results.tables_exist.products &&
+    results.tables_exist.categories &&
+    results.api_functions.getProducts &&
+    results.api_functions.getLowStockProducts;
 
     results.overall_health = isHealthy ? 'HEALTHY' : 'NEEDS_ATTENTION';
 

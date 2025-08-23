@@ -5,16 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Database, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Database,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   Activity,
   Package,
-  Settings
-} from 'lucide-react';
+  Settings } from
+'lucide-react';
 import { useInventory } from '@/contexts/InventoryContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,7 +30,7 @@ const InventoryDebugPanel = () => {
     try {
       const result = await healthCheck();
       setHealthStatus(result);
-      
+
       if (result.overall_health === 'HEALTHY') {
         toast({
           title: "System Healthy",
@@ -65,7 +65,7 @@ const InventoryDebugPanel = () => {
     try {
       const result = await seedData();
       setSeedResult(result);
-      
+
       toast({
         title: "Data Seeding Complete",
         description: `Added ${result.products_inserted || 0} products to the inventory.`,
@@ -134,27 +134,27 @@ const InventoryDebugPanel = () => {
           <TabsContent value="health" className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">System Health Check</h3>
-              <Button 
+              <Button
                 onClick={runHealthCheck}
                 disabled={isRunningHealthCheck}
-                className="flex items-center gap-2"
-              >
-                {isRunningHealthCheck ? (
-                  <>
+                className="flex items-center gap-2">
+
+                {isRunningHealthCheck ?
+                <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
                     Checking...
-                  </>
-                ) : (
-                  <>
+                  </> :
+
+                <>
                     <Activity className="h-4 w-4" />
                     Run Health Check
                   </>
-                )}
+                }
               </Button>
             </div>
 
-            {healthStatus && (
-              <Card className={`border-2 ${getHealthStatusColor(healthStatus.overall_health)}`}>
+            {healthStatus &&
+            <Card className={`border-2 ${getHealthStatusColor(healthStatus.overall_health)}`}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -202,36 +202,36 @@ const InventoryDebugPanel = () => {
                     </div>
                   </div>
 
-                  {healthStatus.issues && healthStatus.issues.length > 0 && (
-                    <Alert className="mb-4">
+                  {healthStatus.issues && healthStatus.issues.length > 0 &&
+                <Alert className="mb-4">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription>
                         <div className="font-semibold mb-2">Issues Found:</div>
                         <ul className="list-disc list-inside space-y-1">
-                          {healthStatus.issues.map((issue: string, index: number) => (
-                            <li key={index} className="text-sm">{issue}</li>
-                          ))}
+                          {healthStatus.issues.map((issue: string, index: number) =>
+                      <li key={index} className="text-sm">{issue}</li>
+                      )}
                         </ul>
                       </AlertDescription>
                     </Alert>
-                  )}
+                }
 
-                  {healthStatus.recommendations && healthStatus.recommendations.length > 0 && (
-                    <Alert>
+                  {healthStatus.recommendations && healthStatus.recommendations.length > 0 &&
+                <Alert>
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
                         <div className="font-semibold mb-2">Recommendations:</div>
                         <ul className="list-disc list-inside space-y-1">
-                          {healthStatus.recommendations.map((rec: string, index: number) => (
-                            <li key={index} className="text-sm">{rec}</li>
-                          ))}
+                          {healthStatus.recommendations.map((rec: string, index: number) =>
+                      <li key={index} className="text-sm">{rec}</li>
+                      )}
                         </ul>
                       </AlertDescription>
                     </Alert>
-                  )}
+                }
                 </CardContent>
               </Card>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="data" className="space-y-4">
@@ -249,32 +249,32 @@ const InventoryDebugPanel = () => {
                         Add sample products and categories to test the system
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={runSeedData}
                       disabled={isSeedingData}
-                      variant="outline"
-                    >
-                      {isSeedingData ? (
-                        <>
+                      variant="outline">
+
+                      {isSeedingData ?
+                      <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Seeding...
-                        </>
-                      ) : (
-                        <>
+                        </> :
+
+                      <>
                           <Database className="h-4 w-4 mr-2" />
                           Seed Data
                         </>
-                      )}
+                      }
                     </Button>
                   </div>
 
-                  {seedResult && (
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  {seedResult &&
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                       <pre className="text-sm overflow-x-auto">
                         {JSON.stringify(seedResult, null, 2)}
                       </pre>
                     </div>
-                  )}
+                  }
                 </CardContent>
               </Card>
 
@@ -287,10 +287,10 @@ const InventoryDebugPanel = () => {
                         Reload product data from the database
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => fetchProducts()}
-                      variant="outline"
-                    >
+                      variant="outline">
+
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Refresh
                     </Button>
@@ -307,10 +307,10 @@ const InventoryDebugPanel = () => {
                         Clear any cached error states in the inventory system
                       </p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={clearError}
-                      variant="outline"
-                    >
+                      variant="outline">
+
                       <XCircle className="h-4 w-4 mr-2" />
                       Clear Errors
                     </Button>
@@ -345,8 +345,8 @@ const InventoryDebugPanel = () => {
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default InventoryDebugPanel;

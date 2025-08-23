@@ -32,6 +32,7 @@ import SettingsPage from '@/pages/SettingsPage';
 import POSPage from '@/pages/POSPage';
 import NotFound from '@/pages/NotFound';
 import NetworkDebugPage from '@/pages/debug/NetworkDebugPage';
+import TestingPage from '@/pages/TestingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -151,14 +152,23 @@ function App() {
 
                   {/* Debug Routes - Development Only */}
                   {process.env.NODE_ENV === 'development' &&
-                            <Route
-                              path="debug/network"
-                              element={
-                              <ProtectedRoute resource="admin">
-                          <NetworkDebugPage />
-                        </ProtectedRoute>
-                              } />
-
+                            <>
+                              <Route
+                                path="debug/network"
+                                element={
+                                <ProtectedRoute resource="admin">
+                                  <NetworkDebugPage />
+                                </ProtectedRoute>
+                                } />
+                              
+                              <Route
+                                path="testing"
+                                element={
+                                <ProtectedRoute resource="admin">
+                                  <TestingPage />
+                                </ProtectedRoute>
+                                } />
+                            </>
                             }
 
                 </Route>

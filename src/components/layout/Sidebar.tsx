@@ -10,7 +10,9 @@ import {
   Users,
   Wallet,
   Shield,
-  Settings } from
+  Settings,
+  Network,
+  TestTube } from
 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,6 +68,12 @@ const Sidebar: React.FC = () => {
             <span className="truncate">{item.label}</span>
           </NavLink>
         )}
+        {hasPermission(user, 'view_debug') &&
+        <NavLink to="/debug/network" icon={<Network />} label={t('debug.title')} />
+        }
+        {hasPermission(user, 'view_debug') &&
+        <NavLink to="/testing" icon={<TestTube />} label="API Testing" />
+        }
       </nav>
     </aside>);
 
