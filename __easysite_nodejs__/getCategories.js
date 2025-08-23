@@ -13,7 +13,7 @@ function getCategories(filters = {}) {
       LEFT JOIN products p ON c.id = p.category_id
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramIndex = 1;
 
@@ -40,7 +40,7 @@ function getCategories(filters = {}) {
     // Add ordering
     const orderBy = filters.order_by || 'name';
     const orderDir = filters.order_dir === 'desc' ? 'DESC' : 'ASC';
-    
+
     // Validate order_by to prevent SQL injection
     const validOrderFields = ['name', 'slug', 'product_count'];
     if (validOrderFields.includes(orderBy)) {
@@ -57,21 +57,21 @@ function getCategories(filters = {}) {
     if (filters.limit) {
       const limit = parseInt(filters.limit);
       const offset = parseInt(filters.offset) || 0;
-      
-      if (limit > 0 && limit <= 1000) { // Reasonable limit
+
+      if (limit > 0 && limit <= 1000) {// Reasonable limit
         query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
       }
     }
 
     const result = window.ezsite.db.query(query, params);
-    
+
     if (!result) {
       return [];
     }
 
     // Format the results
-    const categories = result.map(category => ({
+    const categories = result.map((category) => ({
       id: category.id,
       name: category.name || '',
       slug: category.slug || '',
@@ -81,7 +81,7 @@ function getCategories(filters = {}) {
     }));
 
     return categories;
-    
+
   } catch (error) {
     console.error('Get categories error:', error);
     throw new Error(`Failed to fetch categories: ${error.message}`);

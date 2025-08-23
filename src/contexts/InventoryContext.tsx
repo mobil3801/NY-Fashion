@@ -121,6 +121,8 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Initialize retry functionality
@@ -365,7 +367,7 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const value: InventoryContextType = {
     products,
     categories,
-    loading: loading || apiRetry.loading,
+    loading: loading || loadingProducts || loadingCategories || apiRetry.loading,
     selectedProduct,
     fetchProducts,
     fetchCategories,

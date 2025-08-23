@@ -51,16 +51,16 @@ function searchProducts(searchTerm, limit = 20) {
     const limitInt = Math.min(parseInt(limit) || 20, 100); // Cap at 100 results
 
     const result = window.ezsite.db.query(query, [searchPattern, exactTerm, limitInt]);
-    
+
     if (!result || !Array.isArray(result)) {
       return [];
     }
 
     // Format the results
-    const products = result.map(row => {
+    const products = result.map((row) => {
       const basePrice = parseInt(row.price_override_cents) || parseInt(row.price_cents) || 0;
-      const images = row.images ? (Array.isArray(row.images) ? row.images : JSON.parse(row.images || '[]')) : [];
-      
+      const images = row.images ? Array.isArray(row.images) ? row.images : JSON.parse(row.images || '[]') : [];
+
       return {
         id: row.id,
         variantId: row.variant_id || null,
@@ -82,7 +82,7 @@ function searchProducts(searchTerm, limit = 20) {
     });
 
     return products;
-    
+
   } catch (error) {
     console.error('Search products error:', error);
     throw new Error(`Failed to search products: ${error.message}`);

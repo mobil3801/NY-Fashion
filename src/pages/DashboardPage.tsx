@@ -117,6 +117,8 @@ const DashboardPage: React.FC = () => {
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Refs for chart containers to prevent mounting errors
   const salesTrendRef = useRef<HTMLDivElement>(null);
@@ -155,19 +157,56 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const fetchAnalytics = async (attempt = 0) => {
+  const fetchAnalytics = async (forceRetry = false) => {
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Don't retry if we've already hit the max attempts unless forced
+    if (!forceRetry && retryCount >= 3) {
+      console.log('Max retry attempts reached, skipping fetch');
+      return;
+    }
+
     try {
       setLoading(true);
+      setError(null);
+
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
+
       const dateParams = getDateRangeParams();
 
-      const { data, error } = await window.ezsite.apis.run({
+      // Create timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Request timeout after 15 seconds'));
+        }, 15000);
+
+        // Clear timeout if request is aborted
+        signal.addEventListener('abort', () => {
+          clearTimeout(timeoutId);
+        });
+      });
+
+      // Race between API call and timeout
+      const apiPromise = window.ezsite.apis.run({
         path: 'getDashboardAnalytics',
         param: [dateParams, true] // Include previous period for comparison
       });
 
-      if (error) {
-        console.error('Analytics API error:', error);
-        throw new Error(typeof error === 'string' ? error : 'Failed to fetch analytics data');
+      const { data, error: apiError } = await Promise.race([apiPromise, timeoutPromise]);
+
+      // Check if request was aborted
+      if (signal.aborted) {
+        console.log('Analytics request was aborted');
+        return;
+      }
+
+      if (apiError) {
+        throw new Error(typeof apiError === 'string' ? apiError : 'Failed to fetch analytics data');
       }
 
       // Validate data structure before setting
@@ -194,26 +233,51 @@ const DashboardPage: React.FC = () => {
           }
         });
       }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
+    } catch (fetchError) {
+      // Don't process error if request was aborted
+      if (abortControllerRef.current?.signal.aborted) {
+        console.log('Ignoring error from aborted request');
+        return;
+      }
 
-      // Implement exponential backoff retry logic
-      if (attempt < 3) {
-        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s delays
-        setTimeout(() => {
-          setRetryCount(attempt + 1);
-          fetchAnalytics(attempt + 1);
-        }, delay);
+      const errorMessage = fetchError instanceof Error ? fetchError.message : 'Failed to fetch analytics data';
+      console.error('Error fetching analytics:', errorMessage);
+
+      setError(fetchError instanceof Error ? fetchError : new Error(errorMessage));
+
+      // Only retry if we haven't hit max attempts and this isn't a 4xx error
+      if (retryCount < 3 && !errorMessage.includes('4')) {
+        const newRetryCount = retryCount + 1;
+        const delay = Math.min(Math.pow(2, newRetryCount - 1) * 1000, 8000); // Exponential backoff capped at 8s
+
+        setRetryCount(newRetryCount);
 
         toast({
-          title: "Retrying...",
-          description: `Failed to load dashboard analytics. Retrying in ${delay / 1000}s (${attempt + 1}/3)`,
+          title: "Retrying Analytics...",
+          description: `Attempt ${newRetryCount}/3. Retrying in ${delay / 1000}s`,
           variant: "default"
         });
+
+        // Schedule retry with timeout
+        const retryTimeout = setTimeout(() => {
+          if (!abortControllerRef.current?.signal.aborted) {
+            fetchAnalytics();
+          }
+        }, delay);
+
+        // Clear retry timeout if component unmounts or request is aborted
+        if (abortControllerRef.current) {
+          abortControllerRef.current.signal.addEventListener('abort', () => {
+            clearTimeout(retryTimeout);
+          });
+        }
       } else {
+        // Max attempts reached or non-retryable error
+        setRetryCount(3); // Prevent further auto-retries
+
         toast({
-          title: "Analytics Error",
-          description: error.message || "Failed to load dashboard analytics. Please try again.",
+          title: "Analytics Unavailable",
+          description: "Unable to load dashboard analytics. Please check your connection and try refreshing.",
           variant: "destructive"
         });
 
@@ -237,10 +301,7 @@ const DashboardPage: React.FC = () => {
         });
       }
     } finally {
-      if (attempt === 0) {
-        // Only set loading false on initial attempt
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
@@ -249,10 +310,22 @@ const DashboardPage: React.FC = () => {
     setIsClient(true);
   }, []);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cancel any ongoing requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   // Fetch analytics when component mounts or filters change
   useEffect(() => {
     if (isClient) {
-      fetchAnalytics();
+      // Reset retry count when filters change
+      setRetryCount(0);
+      fetchAnalytics(true); // Force retry on filter change
     }
   }, [isClient, dateRange, customDateRange]);
 
@@ -260,12 +333,15 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     if (autoRefresh && isClient) {
       const interval = setInterval(() => {
-        fetchAnalytics();
-      }, 30000); // Refresh every 30 seconds
+        // Only auto-refresh if we're not already at max retries
+        if (retryCount < 3) {
+          fetchAnalytics();
+        }
+      }, 60000); // Refresh every 60 seconds (reduced from 30s)
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, isClient, dateRange, customDateRange]);
+  }, [autoRefresh, isClient, dateRange, customDateRange, retryCount]);
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -286,7 +362,7 @@ const DashboardPage: React.FC = () => {
     return (
       <Card className="rounded-3xl border-0 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-semibold text-gray-700">
             {title}
           </CardTitle>
           <div className={`p-2 rounded-2xl ${color.replace('text-', 'bg-').replace('-600', '-100')}`}>
@@ -305,7 +381,7 @@ const DashboardPage: React.FC = () => {
               <span className={isPositive ? 'text-emerald-600' : 'text-red-600'}>
                 {Math.abs(change).toFixed(1)}%
               </span>
-              <span className="text-gray-500 ml-1">vs previous period</span>
+              <span className="text-gray-600 ml-1">vs previous period</span>
             </div>
           }
         </CardContent>
@@ -324,8 +400,8 @@ const DashboardPage: React.FC = () => {
           {[1, 2, 3, 4].map((i) =>
           <Card key={i} className="rounded-3xl border-0 shadow-sm animate-pulse">
               <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
+                <div className="h-8 bg-gray-300 rounded w-3/4"></div>
               </CardContent>
             </Card>
           )}
@@ -334,8 +410,8 @@ const DashboardPage: React.FC = () => {
           {[1, 2].map((i) =>
           <Card key={i} className="rounded-3xl border-0 shadow-sm animate-pulse">
               <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="h-64 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-300 rounded w-1/3 mb-4"></div>
+                <div className="h-64 bg-gray-300 rounded"></div>
               </CardContent>
             </Card>
           )}
@@ -372,7 +448,7 @@ const DashboardPage: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-700 mt-2 font-medium">
             Welcome back, {user?.name}! Here's your business overview.
           </p>
         </div>
@@ -422,7 +498,10 @@ const DashboardPage: React.FC = () => {
           }
 
           <Button
-            onClick={() => fetchAnalytics()}
+            onClick={() => {
+              setRetryCount(0); // Reset retry count on manual refresh
+              fetchAnalytics(true); // Force refresh
+            }}
             variant="outline"
             size="sm"
             disabled={loading}
@@ -481,15 +560,16 @@ const DashboardPage: React.FC = () => {
               {isClient && analyticsData?.charts?.salesTrend?.length > 0 ?
               <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={analyticsData.charts.salesTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis
                     dataKey="sale_date"
+                    tick={{ fill: '#374151', fontSize: 12 }}
                     tickFormatter={(date) => format(new Date(date), 'MMM dd')} />
 
 
 
-                    <YAxis yAxisId="revenue" orientation="left" tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
-                    <YAxis yAxisId="count" orientation="right" />
+                    <YAxis yAxisId="revenue" orientation="left" tick={{ fill: '#374151', fontSize: 12 }} tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
+                    <YAxis yAxisId="count" orientation="right" tick={{ fill: '#374151', fontSize: 12 }} />
                     <Tooltip
                     formatter={(value, name) => {
                       if (name === 'daily_revenue') return [formatCurrency(value as number), 'Revenue'];
@@ -524,13 +604,13 @@ const DashboardPage: React.FC = () => {
                   </LineChart>
                 </ResponsiveContainer> :
 
-              <div className="h-64 flex items-center justify-center text-gray-500">
+              <div className="h-64 flex items-center justify-center text-gray-600">
                   <div className="text-center">
                     <div className="animate-pulse space-y-3">
-                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
                     </div>
-                    <p className="mt-4">Loading chart data...</p>
+                    <p className="mt-4 font-medium">Loading chart data...</p>
                   </div>
                 </div>
               }
@@ -641,7 +721,7 @@ const DashboardPage: React.FC = () => {
                 <div key={method.payment_method} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="font-medium capitalize">{method.payment_method}</span>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-700 font-medium">
                         {method.transaction_count} ({percentage.toFixed(1)}%)
                       </div>
                     </div>
@@ -649,13 +729,13 @@ const DashboardPage: React.FC = () => {
                   </div>);
 
             }) :
-            <div className="flex items-center justify-center h-32 text-gray-500">
+            <div className="flex items-center justify-center h-32 text-gray-600">
                   <div className="text-center">
                     <div className="animate-pulse space-y-3">
-                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
-                      <div className="h-2 bg-gray-200 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+                      <div className="h-2 bg-gray-300 rounded w-32 mx-auto"></div>
                     </div>
-                    <p className="mt-4 text-sm">Loading payment data...</p>
+                    <p className="mt-4 text-sm font-medium">Loading payment data...</p>
                   </div>
                 </div>
 
@@ -683,7 +763,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex-1">
                       <p className="font-medium text-sm">{item.product_name}</p>
                       {(item.size || item.color) &&
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-700 font-medium">
                           {[item.size, item.color].filter(Boolean).join(' - ')}
                         </p>
                   }
@@ -693,7 +773,7 @@ const DashboardPage: React.FC = () => {
                     </Badge>
                   </div>
               ) :
-              <p className="text-gray-500 text-center py-8">No low stock alerts</p>
+              <p className="text-gray-600 text-center py-8 font-medium">No low stock alerts</p>
 
               }
             </div>
@@ -716,7 +796,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-sm">{product.name}</p>
-                      <p className="text-xs text-gray-600">{product.total_qty} units sold</p>
+                      <p className="text-xs text-gray-700 font-medium">{product.total_qty} units sold</p>
                     </div>
                   </div>
                   <div className="text-right">

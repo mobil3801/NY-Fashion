@@ -12,7 +12,7 @@ function getCustomers(filters = {}) {
       FROM customers
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramIndex = 1;
 
@@ -36,7 +36,7 @@ function getCustomers(filters = {}) {
     // Add ordering
     const orderBy = filters.order_by || 'name';
     const orderDir = filters.order_dir === 'desc' ? 'DESC' : 'ASC';
-    
+
     // Validate order_by to prevent SQL injection
     const validOrderFields = ['name', 'phone', 'email', 'created_at'];
     if (validOrderFields.includes(orderBy)) {
@@ -49,7 +49,7 @@ function getCustomers(filters = {}) {
     if (filters.limit) {
       const limit = parseInt(filters.limit);
       const offset = parseInt(filters.offset) || 0;
-      
+
       if (limit > 0 && limit <= 1000) {
         query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
@@ -57,13 +57,13 @@ function getCustomers(filters = {}) {
     }
 
     const result = window.ezsite.db.query(query, params);
-    
+
     if (!result) {
       return [];
     }
 
     // Format the results
-    const customers = result.map(customer => ({
+    const customers = result.map((customer) => ({
       id: customer.id,
       name: customer.name || '',
       phone: customer.phone || '',
@@ -73,7 +73,7 @@ function getCustomers(filters = {}) {
     }));
 
     return customers;
-    
+
   } catch (error) {
     console.error('Get customers error:', error);
     throw new Error(`Failed to fetch customers: ${error.message}`);

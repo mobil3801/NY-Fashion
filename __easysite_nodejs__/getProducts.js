@@ -19,7 +19,7 @@ function getProducts(filters = {}) {
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE 1=1
     `;
-    
+
     const params = [];
     let paramIndex = 1;
 
@@ -62,7 +62,7 @@ function getProducts(filters = {}) {
     // Add ordering
     const orderBy = filters.order_by || 'name';
     const orderDir = filters.order_dir === 'desc' ? 'DESC' : 'ASC';
-    
+
     // Validate order_by to prevent SQL injection
     const validOrderFields = ['name', 'brand', 'price_cents', 'cost_cents', 'created_at'];
     if (validOrderFields.includes(orderBy)) {
@@ -75,21 +75,21 @@ function getProducts(filters = {}) {
     if (filters.limit) {
       const limit = parseInt(filters.limit);
       const offset = parseInt(filters.offset) || 0;
-      
-      if (limit > 0 && limit <= 1000) { // Reasonable limit
+
+      if (limit > 0 && limit <= 1000) {// Reasonable limit
         query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
       }
     }
 
     const result = window.ezsite.db.query(query, params);
-    
+
     if (!result) {
       return [];
     }
 
     // Format the results
-    const products = result.map(product => ({
+    const products = result.map((product) => ({
       id: product.id,
       name: product.name || '',
       description: product.description || '',
@@ -101,13 +101,13 @@ function getProducts(filters = {}) {
       taxExempt: Boolean(product.tax_exempt),
       barcode: product.barcode || '',
       sku: product.sku || '',
-      images: product.images ? (Array.isArray(product.images) ? product.images : JSON.parse(product.images || '[]')) : [],
+      images: product.images ? Array.isArray(product.images) ? product.images : JSON.parse(product.images || '[]') : [],
       categoryName: product.category_name || '',
       categoryId: product.category_id || null
     }));
 
     return products;
-    
+
   } catch (error) {
     console.error('Get products error:', error);
     throw new Error(`Failed to fetch products: ${error.message}`);

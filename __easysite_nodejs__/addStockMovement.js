@@ -21,7 +21,7 @@ async function addStockMovement(movementData) {
 
     const vId = parseInt(variant_id);
     const deltaValue = parseInt(delta);
-    
+
     if (isNaN(vId) || isNaN(deltaValue)) {
       throw new Error('Invalid variant ID or delta value');
     }
@@ -42,16 +42,16 @@ async function addStockMovement(movementData) {
     `;
 
     const createdAt = new Date().toISOString();
-    
+
     const result = window.ezsite.db.query(query, [
-      vId,
-      deltaValue,
-      type,
-      ref_id || null,
-      reason || '',
-      created_by || null,
-      createdAt
-    ]);
+    vId,
+    deltaValue,
+    type,
+    ref_id || null,
+    reason || '',
+    created_by || null,
+    createdAt]
+    );
 
     if (!result || result.length === 0) {
       throw new Error('Failed to create stock movement');
@@ -65,7 +65,7 @@ async function addStockMovement(movementData) {
           path: "updateStock",
           param: [vId, deltaValue, reason, result[0].id, created_by]
         });
-        
+
         if (updateError) {
           console.warn('Stock update warning:', updateError);
         }

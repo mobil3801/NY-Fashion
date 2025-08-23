@@ -87,6 +87,8 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
       const result = await retryManagerRef.current.executeWithRetry(operation, {
         ...retryOptions,
         operationId,
+        maxAttempts,
+        timeout,
         onRetry: (attempt, retryError) => {
           if (!mountedRef.current) return;
 
@@ -94,10 +96,6 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
           setIsRetrying(true);
           setError(retryError);
           setCanRetry(true);
-
-          if (showBanner) {
-            banner.showRetrying(retryError);
-          }
 
           retryOptions.onRetry?.(attempt, retryError);
         },
@@ -112,10 +110,6 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
 
           setCanRetry(false);
           setIsRetrying(false);
-
-          if (showBanner) {
-            banner.showError(maxError);
-          }
 
           retryOptions.onMaxAttemptsReached?.(maxError);
         }
@@ -136,17 +130,13 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
       setLoading(false);
       setIsRetrying(false);
 
-      // Determine if we can retry
-      const canRetryNow = finalError instanceof RetryableError ? finalError.canRetry : true;
-      setCanRetry(canRetryNow && autoRetry);
-
-      if (showBanner) {
-        banner.showError(finalError);
-      }
+      // Determine if we can retry based on error type and autoRetry setting
+      const canRetryNow = autoRetry && !(finalError instanceof RetryableError && !finalError.canRetry);
+      setCanRetry(canRetryNow);
 
       throw finalError;
     }
-  }, [maxAttempts, timeout, retryOptions, autoRetry, showBanner, banner, resetState]);
+  }, [maxAttempts, timeout, retryOptions, autoRetry, showBanner, resetState]);
 
   const retry = useCallback(async (): Promise<void> => {
     if (!lastOperationRef.current) {
@@ -199,10 +189,10 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
     canRetry,
     isRetrying,
     bannerProps: {
-      error: showBanner ? banner.error : null,
-      isRetrying: showBanner ? banner.isRetrying : isRetrying,
-      onRetry: canRetry || error instanceof RetryableError && !error.canRetry ? handleBannerRetry : undefined,
-      onDismiss: showBanner ? handleBannerDismiss : undefined
+      error: error,
+      isRetrying: isRetrying,
+      onRetry: canRetry ? handleBannerRetry : undefined,
+      onDismiss: handleBannerDismiss
     }
   };
 }

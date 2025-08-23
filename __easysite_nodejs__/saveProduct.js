@@ -50,18 +50,18 @@ function saveProduct(productData) {
       `;
 
       const result = window.ezsite.db.query(query, [
-        name,
-        description || '',
-        brand || '',
-        categoryId,
-        costCents,
-        priceCents,
-        taxExempt,
-        barcode || '',
-        sku || '',
-        imagesJson,
-        parseInt(id)
-      ]);
+      name,
+      description || '',
+      brand || '',
+      categoryId,
+      costCents,
+      priceCents,
+      taxExempt,
+      barcode || '',
+      sku || '',
+      imagesJson,
+      parseInt(id)]
+      );
 
       if (!result || result.length === 0) {
         throw new Error('Product not found or could not be updated');
@@ -81,17 +81,17 @@ function saveProduct(productData) {
       `;
 
       const result = window.ezsite.db.query(query, [
-        name,
-        description || '',
-        brand || '',
-        categoryId,
-        costCents,
-        priceCents,
-        taxExempt,
-        barcode || '',
-        sku || '',
-        imagesJson
-      ]);
+      name,
+      description || '',
+      brand || '',
+      categoryId,
+      costCents,
+      priceCents,
+      taxExempt,
+      barcode || '',
+      sku || '',
+      imagesJson]
+      );
 
       if (!result || result.length === 0) {
         throw new Error('Failed to create product');

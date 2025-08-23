@@ -3,7 +3,7 @@ function getDashboardAnalytics(dateRange = 'today') {
   try {
     const now = new Date();
     let startDate, endDate;
-    
+
     // Calculate date range
     switch (dateRange) {
       case 'today':
@@ -43,7 +43,7 @@ function getDashboardAnalytics(dateRange = 'today') {
         AND created_at >= $1 
         AND created_at < $2
     `;
-    
+
     const salesResult = window.ezsite.db.query(salesQuery, [startISO, endISO]);
     const salesData = salesResult.length > 0 ? salesResult[0] : {
       total_transactions: 0,
@@ -57,7 +57,7 @@ function getDashboardAnalytics(dateRange = 'today') {
       FROM returns 
       WHERE created_at >= $1 AND created_at < $2
     `;
-    
+
     const returnsResult = window.ezsite.db.query(returnsQuery, [startISO, endISO]);
     const returnsCount = returnsResult.length > 0 ? returnsResult[0].total_returns : 0;
 
@@ -73,7 +73,7 @@ function getDashboardAnalytics(dateRange = 'today') {
         AND created_at < $2
       GROUP BY payment_method
     `;
-    
+
     const paymentResult = window.ezsite.db.query(paymentQuery, [startISO, endISO]);
     const paymentMethods = paymentResult || [];
 
@@ -94,7 +94,7 @@ function getDashboardAnalytics(dateRange = 'today') {
       ORDER BY quantity_sold DESC
       LIMIT 5
     `;
-    
+
     const topProductsResult = window.ezsite.db.query(topProductsQuery, [startISO, endISO]);
     const topProducts = topProductsResult || [];
 
@@ -116,7 +116,7 @@ function getDashboardAnalytics(dateRange = 'today') {
       ORDER BY quantity_sold DESC
       LIMIT 5
     `;
-    
+
     const topCategoriesResult = window.ezsite.db.query(topCategoriesQuery, [startISO, endISO]);
     const topCategories = topCategoriesResult || [];
 
@@ -136,7 +136,7 @@ function getDashboardAnalytics(dateRange = 'today') {
       ORDER BY sales_total_cents DESC
       LIMIT 5
     `;
-    
+
     const employeeResult = window.ezsite.db.query(employeeQuery, [startISO, endISO]);
     const topEmployees = employeeResult || [];
 
@@ -155,14 +155,14 @@ function getDashboardAnalytics(dateRange = 'today') {
       ORDER BY COALESCE(il.qty_on_hand, 0) ASC
       LIMIT 10
     `;
-    
+
     const lowStockResult = window.ezsite.db.query(lowStockQuery, []);
     const lowStockItems = lowStockResult || [];
 
     // Calculate return rate
     const totalTransactions = parseInt(salesData.total_transactions) || 0;
     const totalReturns = parseInt(returnsCount) || 0;
-    const returnRate = totalTransactions > 0 ? (totalReturns / totalTransactions) * 100 : 0;
+    const returnRate = totalTransactions > 0 ? totalReturns / totalTransactions * 100 : 0;
 
     // Format response
     const analytics = {
@@ -172,27 +172,27 @@ function getDashboardAnalytics(dateRange = 'today') {
         averageBasket: Math.round((parseInt(salesData.avg_basket_cents) || 0) / 100),
         returnRate: Math.round(returnRate * 100) / 100
       },
-      paymentMethods: paymentMethods.map(pm => ({
+      paymentMethods: paymentMethods.map((pm) => ({
         method: pm.payment_method,
         count: parseInt(pm.count) || 0,
         total: Math.round((parseInt(pm.total_cents) || 0) / 100)
       })),
-      topProducts: topProducts.map(tp => ({
+      topProducts: topProducts.map((tp) => ({
         name: tp.name,
         quantitySold: parseInt(tp.quantity_sold) || 0,
         revenue: Math.round((parseInt(tp.revenue_cents) || 0) / 100)
       })),
-      topCategories: topCategories.map(tc => ({
+      topCategories: topCategories.map((tc) => ({
         name: tc.name,
         quantitySold: parseInt(tc.quantity_sold) || 0,
         revenue: Math.round((parseInt(tc.revenue_cents) || 0) / 100)
       })),
-      topEmployees: topEmployees.map(te => ({
+      topEmployees: topEmployees.map((te) => ({
         name: te.name,
         salesCount: parseInt(te.sales_count) || 0,
         salesTotal: Math.round((parseInt(te.sales_total_cents) || 0) / 100)
       })),
-      lowStockItems: lowStockItems.map(lsi => ({
+      lowStockItems: lowStockItems.map((lsi) => ({
         name: lsi.name,
         variant: `${lsi.size || ''} ${lsi.color || ''}`.trim(),
         stockLevel: parseInt(lsi.stock_level) || 0
@@ -200,7 +200,7 @@ function getDashboardAnalytics(dateRange = 'today') {
     };
 
     return analytics;
-    
+
   } catch (error) {
     console.error('Dashboard analytics error:', error);
     throw new Error(`Failed to fetch dashboard analytics: ${error.message}`);
