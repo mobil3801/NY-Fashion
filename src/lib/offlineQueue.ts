@@ -5,6 +5,13 @@ const DB_VERSION = 2;
 const STORE_NAME = 'operations';
 const DB_NAME = 'offline-queue';
 
+// Type definitions for better type safety
+interface IDBUpgradeEvent extends Event {
+  target: IDBOpenDBRequest;
+  oldVersion: number;
+  newVersion: number | null;
+}
+
 // Retry constants
 const MAX_IDB_RETRIES = 1;
 const IDB_RETRY_DELAY = 100;
@@ -99,13 +106,49 @@ class IndexedDBWrapper {
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
+        const transaction = (event.target as IDBOpenDBRequest).transaction;
 
         try {
-          // Handle schema migrations
+          // Handle schema migrations with enhanced error handling
           this.performSchemaUpgrade(db, event.oldVersion, event.newVersion || this.version);
+          
+          // Verify the upgrade was successful
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            throw new Error('Store was not created during upgrade');
+          }
+          
+          console.log('[OfflineQueue] Schema upgrade completed successfully');
         } catch (error) {
           console.error('[OfflineQueue] Schema upgrade failed:', error);
-          resolve(false);
+          
+          // Attempt emergency recovery
+          try {
+            if (db.objectStoreNames.contains(this.storeName)) {
+              db.deleteObjectStore(this.storeName);
+            }
+            
+            const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+            store.createIndex('createdAt', 'createdAt', { unique: false });
+            store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+            console.log('[OfflineQueue] Emergency recovery: Created fresh store');
+          } catch (recoveryError) {
+            console.error('[OfflineQueue] Emergency recovery failed:', recoveryError);
+            resolve(false);
+            return;
+          }
+        }
+        
+        // Set up transaction error handling
+        if (transaction) {
+          transaction.onerror = () => {
+            console.error('[OfflineQueue] Upgrade transaction error:', transaction.error);
+            resolve(false);
+          };
+          
+          transaction.onabort = () => {
+            console.error('[OfflineQueue] Upgrade transaction aborted');
+            resolve(false);
+          };
         }
       };
 
@@ -124,14 +167,56 @@ class IndexedDBWrapper {
       const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
       store.createIndex('createdAt', 'createdAt', { unique: false });
       store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
-      console.log('[OfflineQueue] Created initial schema');
+      console.log('[OfflineQueue] Created initial schema with all indexes');
       return;
     }
 
-    // Handle version 1 to 2 migration (if needed)
+    // Handle version 1 to 2 migration - add missing createdAt index
     if (oldVersion < 2 && newVersion >= 2) {
-      // Migration logic for future schema changes
-      console.log('[OfflineQueue] Applied v2 migration');
+      // Get existing store
+      const transaction = (db as any).transaction || null;
+      
+      try {
+        // Check if we're in an upgrade transaction
+        if (transaction && transaction.objectStore) {
+          const store = transaction.objectStore(this.storeName);
+          
+          // Add createdAt index if it doesn't exist
+          if (!store.indexNames.contains('createdAt')) {
+            store.createIndex('createdAt', 'createdAt', { unique: false });
+            console.log('[OfflineQueue] Added missing createdAt index in v2 migration');
+          }
+          
+          // Ensure idempotencyKey index exists
+          if (!store.indexNames.contains('idempotencyKey')) {
+            store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+            console.log('[OfflineQueue] Added missing idempotencyKey index in v2 migration');
+          }
+        } else {
+          // Alternative approach - recreate store if transaction method doesn't work
+          if (db.objectStoreNames.contains(this.storeName)) {
+            db.deleteObjectStore(this.storeName);
+          }
+          
+          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+          store.createIndex('createdAt', 'createdAt', { unique: false });
+          store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+          console.log('[OfflineQueue] Recreated store with proper indexes in v2 migration');
+        }
+      } catch (error) {
+        console.error('[OfflineQueue] Error during v2 migration:', error);
+        // Fallback: recreate the store completely
+        if (db.objectStoreNames.contains(this.storeName)) {
+          db.deleteObjectStore(this.storeName);
+        }
+        
+        const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+        store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
+        console.log('[OfflineQueue] Fallback: Recreated store completely in v2 migration');
+      }
+      
+      console.log('[OfflineQueue] Applied v2 migration successfully');
     }
   }
 

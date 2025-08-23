@@ -92,6 +92,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -99,8 +100,7 @@ const ApiDebugDashboard: React.FC = () => {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">API Dashboard</CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsAutoRefresh(!isAutoRefresh)}
-            className={isAutoRefresh ? 'bg-green-50 border-green-200' : ''}>
+            <Button variant="outline" size="sm" onClick={() => setIsAutoRefresh(!isAutoRefresh)} className={isAutoRefresh ? 'bg-green-50 border-green-200' : ''}>
 
               <RefreshCw className={`h-3 w-3 mr-1 ${isAutoRefresh ? 'animate-spin' : ''}`} />
               Auto

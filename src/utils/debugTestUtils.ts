@@ -270,9 +270,9 @@ options: {
 
 
 
+
         // Upload test failed, keep upload as 0
-      }}} catch (error) {console.warn('Bandwidth test failed:', error);}const result: BenchmarkResult = { latency, bandwidth, reliability };console.log('📊 Benchmark completed:', result);return result;}
-/**
+      }}} catch (error) {console.warn('Bandwidth test failed:', error);}const result: BenchmarkResult = { latency, bandwidth, reliability };console.log('📊 Benchmark completed:', result);return result;} /**
  * Test DNS resolution speed
  */
 export async function testDnsResolution(domains: string[] = ['google.com', 'cloudflare.com']): Promise<{

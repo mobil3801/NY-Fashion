@@ -9,6 +9,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { InventoryProvider } from './contexts/InventoryContext';
 import { PurchaseOrderProvider } from './contexts/PurchaseOrderContext';
 import { EmployeeProvider } from '@/contexts/EmployeeContext';
+import { DebugProvider } from '@/debug/DebugProvider';
 
 import NetworkErrorBoundary from '@/components/network/NetworkErrorBoundary';
 import ProtectedRoute from '@/components/ProtectedRoute';
