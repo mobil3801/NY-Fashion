@@ -148,6 +148,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -159,10 +161,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
-
         // Chart handles its own animation, this is just for coordination
-      }}, []);const { start: startAnimation, stop: stopAnimation } = useRafLoop({ onFrame: handleAnimationFrame, autoStart: false
-    });
+      }}, []);const { start: startAnimation, stop: stopAnimation } = useRafLoop({ onFrame: handleAnimationFrame, autoStart: false });
 
   // Start/stop animation based on chart state
   useEffect(() => {

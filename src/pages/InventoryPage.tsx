@@ -1,11 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, AlertTriangle, FileText, BarChart3, Upload, Download, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryProvider } from '@/contexts/InventoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+// Import accessibility utilities for dev mode
+if (import.meta.env.DEV) {
+  import('@/utils/contrast-checker').then(({ reportContrastIssues }) => {
+    // Auto-run contrast check in dev mode after component mounts
+    setTimeout(() => {
+      reportContrastIssues();
+    }, 2000);
+  });
+}
 
 import ProductManagement from '@/components/inventory/ProductManagement';
 import StockMovement from '@/components/inventory/StockMovement';
@@ -23,51 +33,103 @@ const InventoryPage = () => {
   return (
     <InventoryProvider>
       <div className="space-y-6">
-        {/* Header */}
+        {/* Header with enhanced accessibility */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('inventory')}</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-3xl font-bold tracking-tight text-default-aa">
+              {t('inventory')}
+            </h1>
+            <p className="text-muted-aa mt-2">
               Comprehensive inventory management for Bangladeshi women's wear
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowCSVImport(true)}>
-              <Upload className="h-4 w-4 mr-2" />
+          <div className="flex gap-2" role="toolbar" aria-label="Inventory actions">
+            <Button
+              variant="outline"
+              onClick={() => setShowCSVImport(true)}
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Import products from CSV file">
+
+
+
+              <Upload className="h-4 w-4 mr-2" aria-hidden="true" />
               Import CSV
             </Button>
-            <Button variant="outline" onClick={() => setShowBarcodeGen(true)}>
-              <QrCode className="h-4 w-4 mr-2" />
+            <Button
+              variant="outline"
+              onClick={() => setShowBarcodeGen(true)}
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Generate barcode labels for products">
+
+
+
+              <QrCode className="h-4 w-4 mr-2" aria-hidden="true" />
               Generate Labels
             </Button>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
+            <Button
+              variant="outline"
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Export inventory data">
+
+
+
+              <Download className="h-4 w-4 mr-2" aria-hidden="true" />
               Export
             </Button>
           </div>
         </div>
 
-        {/* Main Inventory Interface */}
+        {/* Main Inventory Interface with enhanced accessibility */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-5" role="tablist" aria-label="Inventory management sections">
+            <TabsTrigger
+              value="products"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Manage products and variants">
+
+
+
+              <Package className="h-4 w-4" aria-hidden="true" />
               Products
             </TabsTrigger>
-            <TabsTrigger value="stock" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+            <TabsTrigger
+              value="stock"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="View and manage stock movements">
+
+
+
+              <BarChart3 className="h-4 w-4" aria-hidden="true" />
               Stock Movement
             </TabsTrigger>
-            <TabsTrigger value="adjustments" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger
+              value="adjustments"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Make inventory adjustments">
+
+
+
+              <FileText className="h-4 w-4" aria-hidden="true" />
               Adjustments
             </TabsTrigger>
-            <TabsTrigger value="alerts" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
+            <TabsTrigger
+              value="alerts"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="View low stock alerts and critical items">
+
+
+
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               Low Stock
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
+            <TabsTrigger
+              value="reports"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Generate inventory reports and analytics">
+
+
+
+              <BarChart3 className="h-4 w-4" aria-hidden="true" />
               Reports
             </TabsTrigger>
           </TabsList>
@@ -88,19 +150,19 @@ const InventoryPage = () => {
             <LowStockAlerts />
           </TabsContent>
 
-          <TabsContent value="reports">
+          <TabsContent value="reports" role="tabpanel" aria-labelledby="reports-tab">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-default-aa">
+                  <BarChart3 className="h-5 w-5" aria-hidden="true" />
                   Inventory Reports
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-aa">
                   Generate comprehensive inventory reports and analytics
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" role="region" aria-label="Available reports">
                   <Card className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base">Stock Valuation Report</CardTitle>
