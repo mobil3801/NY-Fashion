@@ -37,14 +37,14 @@ class ConnectionVerifier {
   async verifyCurrentConnection(): Promise<ConnectionVerificationResult> {
     const url = window.location.href;
     const cached = this.verificationCache.get(url);
-    
+
     if (cached) {
       return cached;
     }
 
     const result = await this.performSecurityChecks();
     this.verificationCache.set(url, result);
-    
+
     return result;
   }
 
@@ -98,8 +98,8 @@ class ConnectionVerifier {
     }
 
     const isSecure = window.location.protocol === 'https:';
-    const hasValidCertificate = checks.find(c => c.name === 'certificate')?.passed ?? true;
-    const hasMixedContent = !checks.find(c => c.name === 'mixedContent')?.passed;
+    const hasValidCertificate = checks.find((c) => c.name === 'certificate')?.passed ?? true;
+    const hasMixedContent = !checks.find((c) => c.name === 'mixedContent')?.passed;
 
     let connectionType: 'http' | 'https' | 'mixed' = 'http';
     if (isSecure && !hasMixedContent) {
@@ -125,9 +125,9 @@ class ConnectionVerifier {
     return {
       name: 'https',
       passed: isHTTPS,
-      message: isHTTPS 
-        ? 'Connection is using HTTPS' 
-        : 'Connection is using insecure HTTP protocol',
+      message: isHTTPS ?
+      'Connection is using HTTPS' :
+      'Connection is using insecure HTTP protocol',
       severity: isHTTPS ? 'info' : 'error'
     };
   }
@@ -148,7 +148,7 @@ class ConnectionVerifier {
     const httpResources: string[] = [];
 
     // Check scripts
-    document.querySelectorAll('script[src]').forEach(script => {
+    document.querySelectorAll('script[src]').forEach((script) => {
       const src = (script as HTMLScriptElement).src;
       if (src.startsWith('http://')) {
         httpResources.push(`Script: ${src}`);
@@ -156,7 +156,7 @@ class ConnectionVerifier {
     });
 
     // Check stylesheets
-    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+    document.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
       const href = (link as HTMLLinkElement).href;
       if (href.startsWith('http://')) {
         httpResources.push(`Stylesheet: ${href}`);
@@ -164,7 +164,7 @@ class ConnectionVerifier {
     });
 
     // Check images
-    document.querySelectorAll('img[src]').forEach(img => {
+    document.querySelectorAll('img[src]').forEach((img) => {
       const src = (img as HTMLImageElement).src;
       if (src.startsWith('http://')) {
         httpResources.push(`Image: ${src}`);
@@ -172,13 +172,13 @@ class ConnectionVerifier {
     });
 
     const hasMixedContent = httpResources.length > 0;
-    
+
     return {
       name: 'mixedContent',
       passed: !hasMixedContent,
-      message: hasMixedContent 
-        ? `Mixed content detected: ${httpResources.length} HTTP resources on HTTPS page`
-        : 'No mixed content detected',
+      message: hasMixedContent ?
+      `Mixed content detected: ${httpResources.length} HTTP resources on HTTPS page` :
+      'No mixed content detected',
       severity: hasMixedContent ? 'error' : 'info'
     };
   }
@@ -204,17 +204,17 @@ class ConnectionVerifier {
     } catch (error) {
       // If fetch fails, might be certificate issue
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const isCertError = errorMessage.includes('certificate') || 
-                         errorMessage.includes('SSL') ||
-                         errorMessage.includes('TLS') ||
-                         errorMessage.includes('security');
+      const isCertError = errorMessage.includes('certificate') ||
+      errorMessage.includes('SSL') ||
+      errorMessage.includes('TLS') ||
+      errorMessage.includes('security');
 
       return {
         name: 'certificate',
         passed: false,
-        message: isCertError 
-          ? 'SSL certificate validation failed'
-          : 'Connection test failed (may be certificate-related)',
+        message: isCertError ?
+        'SSL certificate validation failed' :
+        'Connection test failed (may be certificate-related)',
         severity: 'error'
       };
     }
@@ -247,9 +247,9 @@ class ConnectionVerifier {
       return {
         name: 'securityHeaders',
         passed: missingHeaders.length === 0,
-        message: missingHeaders.length === 0 
-          ? 'Security headers are configured'
-          : `Missing security headers: ${missingHeaders.join(', ')}`,
+        message: missingHeaders.length === 0 ?
+        'Security headers are configured' :
+        `Missing security headers: ${missingHeaders.join(', ')}`,
         severity: 'warning'
       };
     } catch (error) {
@@ -284,9 +284,9 @@ class ConnectionVerifier {
     return {
       name: 'cspViolations',
       passed: violationIndicators.length === 0,
-      message: violationIndicators.length === 0 
-        ? 'No obvious CSP violations detected'
-        : `Potential CSP issues: ${violationIndicators.join(', ')}`,
+      message: violationIndicators.length === 0 ?
+      'No obvious CSP violations detected' :
+      `Potential CSP issues: ${violationIndicators.join(', ')}`,
       severity: violationIndicators.length > 0 ? 'warning' : 'info'
     };
   }
@@ -312,13 +312,13 @@ class ConnectionVerifier {
       try {
         this.securityObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             if (entry.name.includes('security') || entry.name.includes('certificate')) {
               console.log('Security-related performance entry:', entry);
             }
           });
         });
-        
+
         this.securityObserver.observe({ entryTypes: ['resource', 'navigation'] });
       } catch (error) {
         console.log('Performance monitoring not available');
@@ -376,5 +376,4 @@ export const connectionVerifier = ConnectionVerifier.getInstance();
 
 export type {
   ConnectionVerificationResult,
-  SecurityCheck
-};
+  SecurityCheck };

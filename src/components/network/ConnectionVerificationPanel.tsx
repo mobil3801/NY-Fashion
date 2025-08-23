@@ -43,18 +43,18 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
     try {
       // Simulate progress updates for better UX
       const checks = [
-        'Checking HTTPS configuration...',
-        'Verifying SSL certificate...',
-        'Scanning for mixed content...',
-        'Checking security headers...',
-        'Validating CSP policies...',
-        'Finalizing report...'
-      ];
+      'Checking HTTPS configuration...',
+      'Verifying SSL certificate...',
+      'Scanning for mixed content...',
+      'Checking security headers...',
+      'Validating CSP policies...',
+      'Finalizing report...'];
+
 
       for (let i = 0; i < checks.length; i++) {
         setCurrentCheck(checks[i]);
-        setProgress(((i + 1) / checks.length) * 100);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        setProgress((i + 1) / checks.length * 100);
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       const result = await connectionVerifier.verifyCurrentConnection();
@@ -63,20 +63,20 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
       if (result.errors.length === 0) {
         toast({
           title: "Connection Verified",
-          description: "Your connection is secure and properly configured.",
+          description: "Your connection is secure and properly configured."
         });
       } else {
         toast({
           title: "Connection Issues Found",
           description: `Found ${result.errors.length} issue(s) that may affect connectivity.`,
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Verification Failed",
         description: "Could not complete connection verification.",
-        variant: "destructive",
+        variant: "destructive"
       });
       console.error('Connection verification failed:', error);
     } finally {
@@ -89,7 +89,7 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
     connectionVerifier.clearCache();
     toast({
       title: "Cache Cleared",
-      description: "Browser cache and verification cache have been cleared.",
+      description: "Browser cache and verification cache have been cleared."
     });
     handleVerifyConnection();
   };
@@ -98,10 +98,10 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
     if (!verificationResult) return;
 
     const httpResources: string[] = [];
-    
+
     // Collect HTTP resources on HTTPS pages
     if (window.location.protocol === 'https:') {
-      document.querySelectorAll('script[src], link[href], img[src]').forEach(element => {
+      document.querySelectorAll('script[src], link[href], img[src]').forEach((element) => {
         const url = (element as any).src || (element as any).href;
         if (url && url.startsWith('http://')) {
           httpResources.push(url);
@@ -111,32 +111,32 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
 
     if (httpResources.length > 0) {
       console.group('Mixed Content Resources Found:');
-      httpResources.forEach(url => console.log(`- ${url}`));
+      httpResources.forEach((url) => console.log(`- ${url}`));
       console.groupEnd();
-      
+
       toast({
         title: "Mixed Content Details",
         description: `Found ${httpResources.length} HTTP resources. Check browser console for details.`,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
 
   const getSecurityBadgeVariant = (connectionType: string) => {
     switch (connectionType) {
-      case 'https': return 'default';
-      case 'mixed': return 'destructive';
-      case 'http': return 'destructive';
-      default: return 'secondary';
+      case 'https':return 'default';
+      case 'mixed':return 'destructive';
+      case 'http':return 'destructive';
+      default:return 'secondary';
     }
   };
 
   const getSecurityIcon = (connectionType: string) => {
     switch (connectionType) {
-      case 'https': return <CheckCircle className="h-4 w-4" />;
-      case 'mixed': return <AlertTriangle className="h-4 w-4" />;
-      case 'http': return <AlertTriangle className="h-4 w-4" />;
-      default: return <Shield className="h-4 w-4" />;
+      case 'https':return <CheckCircle className="h-4 w-4" />;
+      case 'mixed':return <AlertTriangle className="h-4 w-4" />;
+      case 'http':return <AlertTriangle className="h-4 w-4" />;
+      default:return <Shield className="h-4 w-4" />;
     }
   };
 
@@ -153,11 +153,11 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
               Diagnose and fix HTTPS certificate and connection issues
             </CardDescription>
           </div>
-          {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose}>
+          {onClose &&
+          <Button variant="ghost" size="sm" onClick={onClose}>
               ×
             </Button>
-          )}
+          }
         </div>
       </CardHeader>
 
@@ -172,57 +172,57 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
           <TabsContent value="overview" className="space-y-4">
             {/* Verification Controls */}
             <div className="flex gap-2">
-              <Button 
-                onClick={handleVerifyConnection} 
+              <Button
+                onClick={handleVerifyConnection}
                 disabled={isVerifying}
-                className="flex items-center gap-2"
-              >
+                className="flex items-center gap-2">
+
                 <RefreshCw className={`h-4 w-4 ${isVerifying ? 'animate-spin' : ''}`} />
                 {isVerifying ? 'Verifying...' : 'Re-verify Connection'}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleClearCache}
-                className="flex items-center gap-2"
-              >
+                className="flex items-center gap-2">
+
                 <RefreshCw className="h-4 w-4" />
                 Clear Cache
               </Button>
             </div>
 
             {/* Progress Indicator */}
-            {isVerifying && (
-              <div className="space-y-2">
+            {isVerifying &&
+            <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span>{currentCheck}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="w-full" />
               </div>
-            )}
+            }
 
             {/* Verification Results */}
-            {verificationResult && (
-              <div className="space-y-4">
+            {verificationResult &&
+            <div className="space-y-4">
                 {/* Security Status Overview */}
                 <Alert className={verificationResult.errors.length === 0 ? 'border-green-200' : 'border-red-200'}>
                   <div className="flex items-center gap-2">
                     {getSecurityIcon(verificationResult.connectionType)}
                     <AlertTitle>
                       Connection Status: 
-                      <Badge 
-                        variant={getSecurityBadgeVariant(verificationResult.connectionType)}
-                        className="ml-2"
-                      >
+                      <Badge
+                      variant={getSecurityBadgeVariant(verificationResult.connectionType)}
+                      className="ml-2">
+
                         {verificationResult.connectionType.toUpperCase()}
                       </Badge>
                     </AlertTitle>
                   </div>
                   <AlertDescription className="mt-2">
-                    {verificationResult.errors.length === 0 
-                      ? "Your connection is secure and properly configured."
-                      : `Found ${verificationResult.errors.length} security issue(s) that may cause connection problems.`
-                    }
+                    {verificationResult.errors.length === 0 ?
+                  "Your connection is secure and properly configured." :
+                  `Found ${verificationResult.errors.length} security issue(s) that may cause connection problems.`
+                  }
                   </AlertDescription>
                 </Alert>
 
@@ -251,40 +251,40 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                 </div>
 
                 {/* Errors and Recommendations */}
-                {verificationResult.errors.length > 0 && (
-                  <Alert variant="destructive">
+                {verificationResult.errors.length > 0 &&
+              <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>Security Issues Found</AlertTitle>
                     <AlertDescription>
                       <ul className="mt-2 list-disc pl-6">
-                        {verificationResult.errors.map((error, index) => (
-                          <li key={index}>{error}</li>
-                        ))}
+                        {verificationResult.errors.map((error, index) =>
+                    <li key={index}>{error}</li>
+                    )}
                       </ul>
                     </AlertDescription>
                   </Alert>
-                )}
+              }
 
-                {verificationResult.recommendations.length > 0 && (
-                  <Alert>
+                {verificationResult.recommendations.length > 0 &&
+              <Alert>
                     <Settings className="h-4 w-4" />
                     <AlertTitle>Recommendations</AlertTitle>
                     <AlertDescription>
                       <ul className="mt-2 list-disc pl-6">
-                        {verificationResult.recommendations.map((rec, index) => (
-                          <li key={index}>{rec}</li>
-                        ))}
+                        {verificationResult.recommendations.map((rec, index) =>
+                    <li key={index}>{rec}</li>
+                    )}
                       </ul>
                     </AlertDescription>
                   </Alert>
-                )}
+              }
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="details" className="space-y-4">
-            {verificationResult && (
-              <ScrollArea className="h-96">
+            {verificationResult &&
+            <ScrollArea className="h-96">
                 <div className="space-y-4">
                   <div className="text-sm space-y-2">
                     <h3 className="font-medium">Connection Details</h3>
@@ -312,18 +312,18 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                   <div className="space-y-2">
                     <h3 className="font-medium">Performance Timing</h3>
                     <div className="text-xs">
-                      {performance.timing && (
-                        <div className="space-y-1">
+                      {performance.timing &&
+                    <div className="space-y-1">
                           <div>DNS Lookup: <code className="bg-gray-100 px-1 rounded">{performance.timing.domainLookupEnd - performance.timing.domainLookupStart}ms</code></div>
                           <div>Connect: <code className="bg-gray-100 px-1 rounded">{performance.timing.connectEnd - performance.timing.connectStart}ms</code></div>
                           <div>SSL: <code className="bg-gray-100 px-1 rounded">{performance.timing.secureConnectionStart > 0 ? performance.timing.connectEnd - performance.timing.secureConnectionStart : 'N/A'}ms</code></div>
                         </div>
-                      )}
+                    }
                     </div>
                   </div>
                 </div>
               </ScrollArea>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="fixes" className="space-y-4">
@@ -331,11 +331,11 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
               <h3 className="font-medium">Quick Fix Actions</h3>
               
               <div className="grid gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto p-4"
-                  onClick={() => window.location.reload()}
-                >
+                  onClick={() => window.location.reload()}>
+
                   <RefreshCw className="h-4 w-4 mr-2" />
                   <div className="text-left">
                     <div className="font-medium">Force Page Reload</div>
@@ -343,11 +343,11 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto p-4"
-                  onClick={handleFixMixedContent}
-                >
+                  onClick={handleFixMixedContent}>
+
                   <Eye className="h-4 w-4 mr-2" />
                   <div className="text-left">
                     <div className="font-medium">Scan Mixed Content</div>
@@ -355,21 +355,21 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto p-4"
                   onClick={() => {
                     if ('serviceWorker' in navigator) {
-                      navigator.serviceWorker.getRegistrations().then(registrations => {
-                        registrations.forEach(registration => registration.unregister());
+                      navigator.serviceWorker.getRegistrations().then((registrations) => {
+                        registrations.forEach((registration) => registration.unregister());
                         toast({
                           title: "Service Workers Cleared",
-                          description: "All service workers have been unregistered.",
+                          description: "All service workers have been unregistered."
                         });
                       });
                     }
-                  }}
-                >
+                  }}>
+
                   <Settings className="h-4 w-4 mr-2" />
                   <div className="text-left">
                     <div className="font-medium">Clear Service Workers</div>
@@ -377,11 +377,11 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                   </div>
                 </Button>
 
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="justify-start h-auto p-4"
-                  onClick={() => window.open('https://www.ssllabs.com/ssltest/', '_blank')}
-                >
+                  onClick={() => window.open('https://www.ssllabs.com/ssltest/', '_blank')}>
+
                   <ExternalLink className="h-4 w-4 mr-2" />
                   <div className="text-left">
                     <div className="font-medium">Test SSL Certificate</div>
@@ -390,27 +390,27 @@ export function ConnectionVerificationPanel({ onClose }: ConnectionVerificationP
                 </Button>
               </div>
 
-              {verificationResult && verificationResult.recommendations.length > 0 && (
-                <div className="mt-6">
+              {verificationResult && verificationResult.recommendations.length > 0 &&
+              <div className="mt-6">
                   <h4 className="font-medium mb-2">Specific Recommendations</h4>
                   <Alert>
                     <AlertTitle>Action Items</AlertTitle>
                     <AlertDescription>
                       <ul className="mt-2 list-decimal pl-6">
-                        {connectionVerifier.getFixRecommendations(verificationResult).map((rec, index) => (
-                          <li key={index} className="mb-1">{rec}</li>
-                        ))}
+                        {connectionVerifier.getFixRecommendations(verificationResult).map((rec, index) =>
+                      <li key={index} className="mb-1">{rec}</li>
+                      )}
                       </ul>
                     </AlertDescription>
                   </Alert>
                 </div>
-              )}
+              }
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 }
 
 export default ConnectionVerificationPanel;

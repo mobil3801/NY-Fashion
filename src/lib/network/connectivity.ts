@@ -132,9 +132,8 @@ class ConnectivityMonitor {
       const endpoints = [
       `${window.location.origin}/`, // EasySite home page (most reliable)
       `${window.location.origin}/favicon.ico`, // Static resource fallback
-      '/api/health', // If available
-      'https://httpbin.org/status/200', // External fallback
-      'https://www.google.com/favicon.ico' // Ultimate fallback
+      `${window.location.origin}/robots.txt`, // Static resource fallback
+      '/api/health' // If available
       ];
 
       let success = false;

@@ -133,22 +133,30 @@ const NetworkDiagnosticsHelper: React.FC = () => {
     const startTime = performance.now();
 
     try {
-      // Test DNS resolution by fetching a known external resource
-      const response = await fetch('https://www.google.com/favicon.ico', {
+      // Test DNS resolution using local resources with cache busting
+      const response = await fetch(`${window.location.origin}/robots.txt?t=${Date.now()}`, {
         method: 'HEAD',
-        mode: 'no-cors',
         cache: 'no-cache',
         signal: AbortSignal.timeout(3000)
       });
 
       const latency = performance.now() - startTime;
 
-      return {
-        test: 'DNS Resolution',
-        status: 'success',
-        message: 'DNS resolution is working correctly',
-        latency: Math.round(latency)
-      };
+      if (response.ok) {
+        return {
+          test: 'DNS Resolution',
+          status: 'success',
+          message: 'DNS resolution is working correctly',
+          latency: Math.round(latency)
+        };
+      } else {
+        return {
+          test: 'DNS Resolution',
+          status: 'warning',
+          message: `DNS resolution working but server returned ${response.status}`,
+          latency: Math.round(latency)
+        };
+      }
     } catch (error: any) {
       const latency = performance.now() - startTime;
 
