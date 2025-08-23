@@ -374,7 +374,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
   const commonMaterials = ['Cotton', 'Silk', 'Chiffon', 'Georgette', 'Crepe', 'Linen', 'Polyester', 'Rayon'];
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6">
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -844,11 +844,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end space-x-4 pt-6 border-t">
-        <Button type="button" variant="outline" onClick={onClose}>
+      <div className="flex flex-col space-y-2 sm:flex-row sm:justify-end sm:space-y-0 sm:space-x-4 pt-6 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onClose}
+          className="w-full sm:w-auto">
+
+
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full sm:w-auto">
+
+
           {loading ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
         </Button>
       </div>

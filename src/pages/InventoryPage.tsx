@@ -49,16 +49,16 @@ const InventoryPage = () => {
     <InventoryProvider>
       <div className="space-y-6">
         {/* Header with enhanced accessibility */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-default-aa">
+            <h1 className="text-xl lg:text-2xl font-bold tracking-tight text-default-aa">
               {t('inventory')}
             </h1>
-            <p className="text-muted-aa mt-2">
-              Comprehensive inventory management for Bangladeshi women's wear
+            <p className="text-muted-aa mt-1 text-sm lg:text-base">
+              Manage your products and stock levels
             </p>
           </div>
-          <div className="flex gap-2" role="toolbar" aria-label="Inventory actions">
+          <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Inventory actions">
             <Button
               variant="outline"
               onClick={() => setShowCSVImport(true)}

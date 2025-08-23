@@ -105,6 +105,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -206,8 +207,7 @@ const ApiDebugDashboard: React.FC = () => {
                         {call.method}
                       </Badge>
                       <span className="font-medium text-sm">{call.operation}</span>
-                      {call.attempt > 1 &&
-                    <Badge variant="secondary" className="text-xs">
+                      {call.attempt > 1 && <Badge variant="secondary" className="text-xs">
                           Attempt {call.attempt}
                         </Badge>
                     }

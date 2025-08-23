@@ -52,19 +52,20 @@ const SalaryPage: React.FC = () => {
   const canViewReports = isAdmin || isManager;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('salary')}</h1>
-          <p className="text-gray-600 mt-2">Comprehensive payroll management system</p>
+          <h1 className="text-xl lg:text-3xl font-bold text-gray-900">{t('salary')}</h1>
+          <p className="text-gray-600 mt-2 text-sm lg:text-base">Comprehensive payroll management system</p>
         </div>
         {canProcessPayroll &&
         <Button
-          className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
+          className="rounded-2xl bg-emerald-600 hover:bg-emerald-700 lg:size-default"
+          size="sm"
           onClick={() => setActiveTab('payroll-runs')}>
-
             <Calculator className="w-4 h-4 mr-2" />
-            Process Payroll
+            <span className="hidden sm:inline">Process Payroll</span>
+            <span className="sm:hidden">Payroll</span>
           </Button>
         }
       </div>

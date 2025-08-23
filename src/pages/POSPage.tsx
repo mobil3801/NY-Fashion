@@ -82,7 +82,7 @@ const POSPage: React.FC = () => {
             </Card>
 
             {/* Shopping Cart */}
-            <ShoppingCartComponent />
+            <ShoppingCart />
           </div>
 
           {/* Right Column - Customer and Payment */}

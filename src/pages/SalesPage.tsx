@@ -255,12 +255,12 @@ const SalesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900">{t('sales')}</h1>
+            <h1 className="text-xl lg:text-3xl font-bold text-gray-900">{t('sales')}</h1>
             {!online &&
             <Badge variant="secondary" className="flex items-center gap-1">
                 <WifiOff className="h-3 w-3" />

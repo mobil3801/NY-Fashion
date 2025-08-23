@@ -278,38 +278,41 @@ const InvoicesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('invoices')}</h1>
-          <p className="text-gray-600 mt-2">Manage invoices and billing</p>
+          <h1 className="text-xl lg:text-3xl font-bold text-gray-900">{t('invoices')}</h1>
+          <p className="text-gray-600 mt-2 text-sm lg:text-base">Manage invoices and billing</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {canExportData &&
           <Button
             variant="outline"
-            className="rounded-2xl"
+            size="sm"
+            className="rounded-2xl lg:size-default"
             onClick={() => {/* Handle export */}}>
-
               <Download className="w-4 h-4 mr-2" />
-              Export
+              <span className="hidden sm:inline">Export</span>
+              <span className="sm:hidden">Export</span>
             </Button>
           }
           <Button
             variant="outline"
-            className="rounded-2xl"
+            size="sm"
+            className="rounded-2xl lg:size-default"
             onClick={() => setShowFilters(!showFilters)}>
-
             <Filter className="w-4 h-4 mr-2" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
+            <span className="sm:hidden">Filters</span>
           </Button>
           <Button
             className="rounded-2xl bg-emerald-600 hover:bg-emerald-700"
+            size="sm"
             onClick={() => window.location.href = '/pos'}>
-
             <Plus className="w-4 h-4 mr-2" />
-            New Sale
+            <span className="hidden sm:inline">New Sale</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
       </div>

@@ -106,8 +106,10 @@ const ShoppingCart: React.FC = () => {
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>Shopping Cart</span>
-          <Badge variant="secondary">{state.cart.length} items</Badge>
+          <span>{t('pos.cart.title', 'Shopping Cart')}</span>
+          <Badge variant="secondary">
+            {state.cart.length} {t('pos.cart.items', 'items')}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">

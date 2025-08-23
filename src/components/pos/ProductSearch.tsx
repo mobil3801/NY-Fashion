@@ -130,10 +130,10 @@ const ProductSearch: React.FC = () => {
     <div className="space-y-4">
       {/* Search Section */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-2 mb-4">
+        <CardContent className="p-4 lg:p-6">
+          <div className="flex flex-col gap-2 mb-4 lg:flex-row lg:gap-4">
             <Select value={searchType} onValueChange={(value: 'name' | 'sku' | 'barcode') => setSearchType(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full lg:w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

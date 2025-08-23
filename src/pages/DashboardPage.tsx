@@ -482,7 +482,7 @@ const DashboardPage: React.FC = () => {
   undefined;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Error Banner - Only show for significant errors */}
       {error && error.code !== 'VALIDATION_ERROR' &&
       <RetryBanner
@@ -498,8 +498,8 @@ const DashboardPage: React.FC = () => {
       {/* Header with Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-700 mt-2 font-medium">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <p className="text-gray-700 mt-2 font-medium text-sm lg:text-base">
             Welcome back, {user?.name}! Here's your business overview.
           </p>
         </div>
@@ -559,7 +559,7 @@ const DashboardPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {renderKPICard(
           'Total Revenue',
           formatCurrency(analyticsData?.kpis.todaySales.total_revenue || 0),

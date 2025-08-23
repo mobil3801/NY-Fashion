@@ -296,11 +296,11 @@ const SettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('settings')}</h1>
-          <p className="text-gray-600 mt-2">Comprehensive system configuration and management</p>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('settings')}</h1>
+          <p className="text-gray-600 mt-1 text-sm lg:text-base">Configure your preferences</p>
         </div>
         {unsavedChanges &&
         <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
@@ -310,11 +310,12 @@ const SettingsPage: React.FC = () => {
         }
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           onClick={saveSettings}
           disabled={loading || !unsavedChanges}
-          className="bg-emerald-600 hover:bg-emerald-700">
+          className="bg-emerald-600 hover:bg-emerald-700"
+          size="sm">
 
           {loading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
           Save Settings
@@ -322,12 +323,18 @@ const SettingsPage: React.FC = () => {
         <Button
           variant="outline"
           onClick={initializeDefaultSettings}
-          disabled={loading}>
+          disabled={loading}
+          size="sm">
 
           <Download className="w-4 h-4 mr-2" />
           Initialize Defaults
         </Button>
-        <Button variant="outline" onClick={loadSettings} disabled={loading}>
+        <Button
+          variant="outline"
+          onClick={loadSettings}
+          disabled={loading}
+          size="sm">
+
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>

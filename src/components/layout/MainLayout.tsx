@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DebugFloatingButton from '@/components/debug/DebugFloatingButton';
 import ConnectionQualityIndicator from '@/components/network/ConnectionQualityIndicator';
@@ -8,6 +8,32 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 
 const MainLayout: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (!mobile && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [sidebarOpen]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
   return (
     <EnhancedNetworkErrorBoundary>
       <div className="flex h-screen bg-gray-50">
@@ -15,12 +41,21 @@ const MainLayout: React.FC = () => {
         <OfflineBanner />
         
         {/* Sidebar */}
-        <Sidebar />
+        <Sidebar
+          isOpen={isMobile ? sidebarOpen : true}
+          onClose={closeSidebar}
+          className={isMobile ? 'lg:translate-x-0' : ''} />
+
+
 
         {/* Main content wrapper */}
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 lg:ml-0">
           {/* Header */}
-          <Header />
+          <Header
+            onToggleSidebar={toggleSidebar}
+            sidebarOpen={sidebarOpen} />
+
+
 
           {/* Main content with enhanced error boundary */}
           <main

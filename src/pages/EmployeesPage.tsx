@@ -14,17 +14,18 @@ const EmployeesPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('employees')}</h1>
-          <p className="text-gray-600 mt-2">Manage your team members</p>
+          <h1 className="text-xl lg:text-3xl font-bold text-gray-900">{t('employees')}</h1>
+          <p className="text-gray-600 mt-2 text-sm lg:text-base">Manage your team members</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-2xl bg-emerald-600 hover:bg-emerald-700">
+            <Button size="sm" className="lg:size-default rounded-2xl bg-emerald-600 hover:bg-emerald-700">
               <UserPlus className="w-4 h-4 mr-2" />
-              Add Employee
+              <span className="hidden sm:inline">Add Employee</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
