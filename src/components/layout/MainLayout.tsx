@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useResponsive } from '@/hooks/use-responsive';
+import DebugFloatingButton from '@/components/debug/DebugFloatingButton';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
@@ -57,13 +58,13 @@ const MainLayout: React.FC = () => {
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
-        onClose={closeSidebar}
-      />
+        onClose={closeSidebar} />
+
 
       <div className={`min-h-screen flex flex-col ${isDesktop ? 'lg:ml-64' : ''}`}>
         {/* Mobile/Tablet Header Bar */}
-        {(isMobile || isTablet) && (
-          <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm h-16">
+        {(isMobile || isTablet) &&
+        <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
                 <span className="text-white font-bold text-sm">NY</span>
@@ -74,54 +75,57 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible:outline-none"
-              aria-label="Toggle navigation menu"
-              aria-expanded={isSidebarOpen}
-              aria-controls="sidebar-navigation"
-            >
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible:outline-none"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isSidebarOpen}
+            aria-controls="sidebar-navigation">
+
               <Menu className="w-5 h-5" />
             </Button>
           </div>
-        )}
+        }
 
         {/* Desktop Header */}
-        {isDesktop && (
-          <div className="fixed top-0 left-64 right-0 z-30">
+        {isDesktop &&
+        <div className="fixed top-0 left-64 right-0 z-30">
             <Header />
           </div>
-        )}
+        }
 
         {/* Main Content Area */}
         <main
           className={`flex-1 ${isDesktop ? 'pt-20' : 'pt-16'} p-4 lg:p-6`}
           role="main"
-          aria-label="Main content"
-        >
+          aria-label="Main content">
+
           <Outlet />
         </main>
       </div>
 
       {/* Overlay for mobile sidebar */}
-      {(isMobile || isTablet) && isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-          onClick={closeSidebar}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              closeSidebar();
-            }
-          }}
-          aria-hidden="true"
-          role="button"
-          tabIndex={0}
-        />
-      )}
-    </div>
-  );
+      {(isMobile || isTablet) && isSidebarOpen &&
+      <div
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+        onClick={closeSidebar}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            closeSidebar();
+          }
+        }}
+        aria-hidden="true"
+        role="button"
+        tabIndex={0} />
+
+      }
+
+      {/* Debug Tools - Development Only */}
+      <DebugFloatingButton />
+    </div>);
+
 };
 
 export default MainLayout;

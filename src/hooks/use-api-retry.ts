@@ -1,5 +1,5 @@
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useContext } from 'react';
 import { normalizeError, isRetryable, logApiEvent, type ApiError } from '@/lib/errors';
 
 export interface RetryOptions {
@@ -191,6 +191,17 @@ options: RetryOptions)
 export function useApiRetry() {
   const abortControllersRef = useRef<Set<AbortController>>(new Set());
   const isMountedRef = useRef(true);
+  
+  // Try to get debug context, but don't fail if it's not available
+  let debugContext: any = null;
+  try {
+    // We can't directly import useDebug here due to circular dependency
+    // Instead, we'll access it through React context if available
+    const DebugContext = require('@/contexts/DebugContext').DebugContext;
+    debugContext = useContext(DebugContext);
+  } catch {
+    // Debug context not available, continue without it
+  }
 
   // Cleanup on unmount
   useEffect(() => {
@@ -210,7 +221,7 @@ export function useApiRetry() {
 
   const executeWithRetry = useCallback(async <T,>(
   fn: (ctx: RetryContext) => Promise<T>,
-  options?: Partial<RetryOptions>)
+  options?: Partial<RetryOptions> & { operation?: string; url?: string; method?: string })
   : Promise<T> => {
     if (!isMountedRef.current) {
       throw new Error('Component is unmounted');
@@ -219,6 +230,20 @@ export function useApiRetry() {
     const controller = new AbortController();
     abortControllersRef.current.add(controller);
 
+    // Track API call in debug system if available
+    let debugCallId: string | null = null;
+    if (debugContext?.addApiCall) {
+      debugCallId = debugContext.addApiCall({
+        timestamp: new Date(),
+        operation: options?.operation || 'unknown',
+        method: options?.method || 'GET',
+        url: options?.url || 'unknown',
+        attempt: 1,
+        duration: null,
+        status: 'pending'
+      });
+    }
+
     try {
       const result = await executeWithRetry(fn, {
         ...DEFAULT_RETRY_OPTIONS,
@@ -226,15 +251,39 @@ export function useApiRetry() {
         signal: controller.signal,
         onAttempt: (info) => {
           if (isMountedRef.current) {
+            // Update debug tracking
+            if (debugCallId && debugContext?.updateApiCall) {
+              debugContext.updateApiCall(debugCallId, {
+                attempt: info.attempt,
+                status: info.error ? 'retrying' : 'pending',
+                error: info.error
+              });
+            }
             options?.onAttempt?.(info);
           }
         },
         onGiveUp: (error) => {
           if (isMountedRef.current) {
+            // Update debug tracking
+            if (debugCallId && debugContext?.updateApiCall) {
+              debugContext.updateApiCall(debugCallId, {
+                status: 'error',
+                error: normalizeError(error),
+                duration: performance.now()
+              });
+            }
             options?.onGiveUp?.(error);
           }
         }
       } as RetryOptions);
+
+      // Update debug tracking on success
+      if (debugCallId && debugContext?.updateApiCall) {
+        debugContext.updateApiCall(debugCallId, {
+          status: 'success',
+          duration: performance.now()
+        });
+      }
 
       return result;
     } finally {

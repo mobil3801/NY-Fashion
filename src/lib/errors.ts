@@ -309,17 +309,187 @@ export function logApiEvent(event: ApiEventLog): void {
 }
 
 /**
- * Creates a detailed error report for debugging
+ * Enhanced network diagnostics for error reports
+ */
+interface NetworkDiagnostics {
+  isOnline: boolean;
+  connectionType?: string;
+  downlink?: number;
+  rtt?: number;
+  dnsResolution?: {
+    success: boolean;
+    time: number;
+  };
+  pingTest?: {
+    success: boolean;
+    latency: number;
+  };
+}
+
+/**
+ * Perform DNS resolution test
+ */
+async function testDnsResolution(): Promise<{ success: boolean; time: number }> {
+  const startTime = performance.now();
+  try {
+    // Use a simple image request to test DNS resolution
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject();
+      img.src = `https://www.google.com/favicon.ico?${Date.now()}`;
+      
+      // Timeout after 5 seconds
+      setTimeout(() => reject(new Error('DNS timeout')), 5000);
+    });
+    
+    return {
+      success: true,
+      time: performance.now() - startTime
+    };
+  } catch {
+    return {
+      success: false,
+      time: performance.now() - startTime
+    };
+  }
+}
+
+/**
+ * Perform ping test to measure latency
+ */
+async function testPing(): Promise<{ success: boolean; latency: number }> {
+  const startTime = performance.now();
+  try {
+    const response = await fetch(`${window.location.origin}/favicon.ico`, {
+      method: 'HEAD',
+      cache: 'no-cache'
+    });
+    
+    return {
+      success: response.ok,
+      latency: performance.now() - startTime
+    };
+  } catch {
+    return {
+      success: false,
+      latency: performance.now() - startTime
+    };
+  }
+}
+
+/**
+ * Gather comprehensive network diagnostics
+ */
+async function gatherNetworkDiagnostics(): Promise<NetworkDiagnostics> {
+  const connection = (navigator as any).connection;
+  
+  const diagnostics: NetworkDiagnostics = {
+    isOnline: navigator.onLine,
+    connectionType: connection?.effectiveType,
+    downlink: connection?.downlink,
+    rtt: connection?.rtt
+  };
+
+  // Run diagnostic tests
+  try {
+    const [dnsTest, pingTest] = await Promise.allSettled([
+      testDnsResolution(),
+      testPing()
+    ]);
+
+    if (dnsTest.status === 'fulfilled') {
+      diagnostics.dnsResolution = dnsTest.value;
+    }
+
+    if (pingTest.status === 'fulfilled') {
+      diagnostics.pingTest = pingTest.value;
+    }
+  } catch (error) {
+    console.warn('Failed to gather network diagnostics:', error);
+  }
+
+  return diagnostics;
+}
+
+/**
+ * Browser compatibility check
+ */
+function getBrowserCompatibility(): Record<string, boolean> {
+  return {
+    fetch: typeof fetch !== 'undefined',
+    promise: typeof Promise !== 'undefined',
+    websocket: typeof WebSocket !== 'undefined',
+    localStorage: (() => {
+      try {
+        return typeof localStorage !== 'undefined' && localStorage !== null;
+      } catch {
+        return false;
+      }
+    })(),
+    serviceWorker: 'serviceWorker' in navigator,
+    navigator: typeof navigator !== 'undefined',
+    connection: typeof (navigator as any).connection !== 'undefined'
+  };
+}
+
+/**
+ * Creates a detailed error report for debugging with enhanced diagnostics
  */
 export function createErrorReport(error: unknown, context: Record<string, unknown> = {}): Record<string, unknown> {
   const normalizedError = normalizeError(error);
 
-  return {
+  const report = {
     ...normalizedError,
     context,
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
     url: typeof window !== 'undefined' ? window.location.href : 'Unknown',
     retryable: isRetryable(error),
-    userFriendlyMessage: getUserFriendlyMessage(error)
+    userFriendlyMessage: getUserFriendlyMessage(error),
+    
+    // Enhanced diagnostics
+    viewport: typeof window !== 'undefined' ? {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio
+    } : null,
+    
+    browserCompatibility: getBrowserCompatibility(),
+    
+    memory: (performance as any).memory ? {
+      usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
+      totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+      jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit
+    } : null,
+    
+    timing: typeof performance !== 'undefined' ? {
+      navigationStart: performance.timeOrigin,
+      now: performance.now()
+    } : null
   };
+
+  return report;
+}
+
+/**
+ * Creates an enhanced error report with network diagnostics (async)
+ */
+export async function createEnhancedErrorReport(
+  error: unknown, 
+  context: Record<string, unknown> = {}
+): Promise<Record<string, unknown>> {
+  const baseReport = createErrorReport(error, context);
+  
+  try {
+    const networkDiagnostics = await gatherNetworkDiagnostics();
+    return {
+      ...baseReport,
+      networkDiagnostics
+    };
+  } catch (diagnosticError) {
+    return {
+      ...baseReport,
+      diagnosticError: String(diagnosticError)
+    };
+  }
 }
