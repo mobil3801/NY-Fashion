@@ -194,11 +194,11 @@ class ProductionMemoryManager implements MemoryManager {
 
 
 
+
+
         // URLs are tracked separately by the browser, but we can encourage cleanup
         // This would require tracking blob URLs separately in the application
-      }}}getMemoryUsage(): MemoryInfo | null {if (typeof performance !== 'undefined' && (performance as any).memory) {const memory = (performance as any).memory;return { usedJSHeapSize: memory.usedJSHeapSize,
-        totalJSHeapSize: memory.totalJSHeapSize,
-        jsHeapSizeLimit: memory.jsHeapSizeLimit,
+      }}}getMemoryUsage(): MemoryInfo | null {if (typeof performance !== 'undefined' && (performance as any).memory) {const memory = (performance as any).memory;return { usedJSHeapSize: memory.usedJSHeapSize, totalJSHeapSize: memory.totalJSHeapSize, jsHeapSizeLimit: memory.jsHeapSizeLimit,
         percentage: memory.usedJSHeapSize / memory.jsHeapSizeLimit * 100
       };
     }
