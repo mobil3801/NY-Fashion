@@ -30,7 +30,7 @@ export interface UsePageLifecycleReturn {
 export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLifecycleReturn {
   const [isVisible, setIsVisible] = React.useState(!document.hidden);
   const [isPageActive, setIsPageActive] = React.useState(document.hasFocus());
-  
+
   const listenersRef = React.useRef<Array<{
     element: EventTarget;
     event: string;
@@ -46,11 +46,11 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   }, []);
 
   const addListener = React.useCallback((
-    element: EventTarget,
-    event: string,
-    handler: EventListener,
-    options?: AddEventListenerOptions
-  ) => {
+  element: EventTarget,
+  event: string,
+  handler: EventListener,
+  options?: AddEventListenerOptions) =>
+  {
     element.addEventListener(event, handler, options);
     listenersRef.current.push({ element, event, handler });
   }, []);
@@ -58,7 +58,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   // Flush data utility
   const flushData = React.useCallback(async (url: string, data: Record<string, any>): Promise<boolean> => {
     const payload = JSON.stringify(data);
-    
+
     // Try sendBeacon first
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: 'application/json' });
@@ -93,7 +93,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   // Persistence utilities
   const getPersistedData = React.useCallback(() => {
     if (!config.persistenceKey) return null;
-    
+
     try {
       const stored = localStorage.getItem(config.persistenceKey);
       return stored ? JSON.parse(stored) : null;
@@ -111,7 +111,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
 
   const persistData = React.useCallback((data: any) => {
     if (!config.persistenceKey) return;
-    
+
     try {
       const payload = {
         timestamp: Date.now(),
@@ -128,7 +128,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
     const handlePageHide = (event: PageTransitionEvent) => {
       config.onPageHide?.(event);
       handleAutoFlush();
-      
+
       if (config.persistenceKey && config.autoFlushData) {
         persistData(config.autoFlushData.getData());
       }
@@ -137,7 +137,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
     // Page show handler (for BFCache restoration)
     const handlePageShow = (event: PageTransitionEvent) => {
       config.onPageShow?.(event);
-      
+
       // Update state when page is restored from BFCache
       setIsVisible(!document.hidden);
       setIsPageActive(document.hasFocus());
@@ -147,14 +147,14 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
     const handleVisibilityChange = () => {
       const wasVisible = isVisible;
       const newVisible = document.visibilityState === 'visible';
-      
+
       setIsVisible(newVisible);
       config.onVisibilityChange?.(newVisible);
-      
+
       // If page became hidden, flush data
       if (wasVisible && !newVisible) {
         handleAutoFlush();
-        
+
         if (config.persistenceKey && config.autoFlushData) {
           persistData(config.autoFlushData.getData());
         }

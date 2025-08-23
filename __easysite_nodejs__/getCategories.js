@@ -6,7 +6,6 @@ function getCategories(filters = {}) {
         c.id,
         c.name,
         c.slug,
-        c.bn_name,
         c.tax_exempt,
         COUNT(p.id) as product_count
       FROM categories c
@@ -21,7 +20,6 @@ function getCategories(filters = {}) {
     if (filters.search) {
       query += ` AND (
         LOWER(c.name) LIKE LOWER($${paramIndex}) OR 
-        LOWER(c.bn_name) LIKE LOWER($${paramIndex}) OR
         LOWER(c.slug) LIKE LOWER($${paramIndex})
       )`;
       params.push(`%${filters.search}%`);
@@ -35,7 +33,7 @@ function getCategories(filters = {}) {
     }
 
     // Group by for COUNT to work
-    query += ` GROUP BY c.id, c.name, c.slug, c.bn_name, c.tax_exempt`;
+    query += ` GROUP BY c.id, c.name, c.slug, c.tax_exempt`;
 
     // Add ordering
     const orderBy = filters.order_by || 'name';
@@ -75,7 +73,6 @@ function getCategories(filters = {}) {
       id: category.id,
       name: category.name || '',
       slug: category.slug || '',
-      bnName: category.bn_name || '',
       taxExempt: Boolean(category.tax_exempt),
       productCount: parseInt(category.product_count) || 0
     }));

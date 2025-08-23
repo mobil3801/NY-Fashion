@@ -24,7 +24,7 @@ export interface PersistenceData {
 export class PageLifecycleManager {
   private config: LifecycleConfig;
   private isVisible: boolean = !document.hidden;
-  private listeners: Array<{element: EventTarget; event: string; handler: EventListener}> = [];
+  private listeners: Array<{element: EventTarget;event: string;handler: EventListener;}> = [];
   private isDestroyed = false;
 
   constructor(config: LifecycleConfig) {
@@ -37,7 +37,7 @@ export class PageLifecycleManager {
     if (this.config.onPageHide || this.config.sendBeacon || this.config.persistenceKey) {
       const pageHideHandler = (event: PageTransitionEvent) => {
         if (this.isDestroyed) return;
-        
+
         this.config.onPageHide?.(event);
         this.handleDataPersistence();
       };
@@ -49,15 +49,15 @@ export class PageLifecycleManager {
     if (this.config.onVisibilityChange || this.config.sendBeacon || this.config.persistenceKey) {
       const visibilityHandler = () => {
         if (this.isDestroyed) return;
-        
+
         const wasVisible = this.isVisible;
         this.isVisible = document.visibilityState === 'visible';
-        
+
         if (wasVisible && !this.isVisible) {
           // Page became hidden - handle persistence
           this.handleDataPersistence();
         }
-        
+
         this.config.onVisibilityChange?.(this.isVisible);
       };
 
@@ -86,18 +86,18 @@ export class PageLifecycleManager {
   }
 
   private addListener(
-    element: EventTarget, 
-    event: string, 
-    handler: EventListener,
-    options?: AddEventListenerOptions
-  ): void {
+  element: EventTarget,
+  event: string,
+  handler: EventListener,
+  options?: AddEventListenerOptions)
+  : void {
     element.addEventListener(event, handler, options);
     this.listeners.push({ element, event, handler });
   }
 
   private persistToStorage(): void {
     if (!this.config.persistenceKey) return;
-    
+
     try {
       const data: PersistenceData = {
         timestamp: Date.now(),
@@ -110,18 +110,18 @@ export class PageLifecycleManager {
   }
 
   public async flushWithBeacon(url: string, body: BodyInit | Record<string, any>): Promise<boolean> {
-    const payload = typeof body === 'string' 
-      ? body 
-      : body instanceof FormData || body instanceof Blob || body instanceof ArrayBuffer
-        ? body
-        : JSON.stringify(body);
+    const payload = typeof body === 'string' ?
+    body :
+    body instanceof FormData || body instanceof Blob || body instanceof ArrayBuffer ?
+    body :
+    JSON.stringify(body);
 
     // Try sendBeacon first (most reliable)
     if (navigator.sendBeacon) {
-      const blob = payload instanceof Blob 
-        ? payload 
-        : new Blob([payload as string], { type: 'application/json' });
-      
+      const blob = payload instanceof Blob ?
+      payload :
+      new Blob([payload as string], { type: 'application/json' });
+
       if (navigator.sendBeacon(url, blob)) {
         return true;
       }
@@ -132,9 +132,9 @@ export class PageLifecycleManager {
       const response = await fetch(url, {
         method: 'POST',
         body: payload,
-        headers: payload instanceof FormData || payload instanceof Blob 
-          ? {} 
-          : { 'Content-Type': 'application/json' },
+        headers: payload instanceof FormData || payload instanceof Blob ?
+        {} :
+        { 'Content-Type': 'application/json' },
         keepalive: true
       });
       return response.ok;
@@ -160,7 +160,7 @@ export class PageLifecycleManager {
 
   public getPersistedData(): PersistenceData | null {
     if (!this.config.persistenceKey) return null;
-    
+
     try {
       const stored = localStorage.getItem(this.config.persistenceKey);
       return stored ? JSON.parse(stored) : null;

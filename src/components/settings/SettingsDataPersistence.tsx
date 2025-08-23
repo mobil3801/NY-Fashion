@@ -71,14 +71,14 @@ export function SettingsDataPersistence() {
 
       if (success) {
         setHasUnsavedChanges(false);
-        setSettings(prev => ({
+        setSettings((prev) => ({
           ...prev,
           lastSync: new Date().toISOString()
         }));
-        
+
         toast({
           title: "Settings auto-saved",
-          description: "Your settings have been automatically saved.",
+          description: "Your settings have been automatically saved."
         });
       }
     } catch (error) {
@@ -87,7 +87,7 @@ export function SettingsDataPersistence() {
   }, [hasUnsavedChanges, settings, flushData, toast]);
 
   const handleSettingChange = (key: keyof SettingsData, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
     setHasUnsavedChanges(true);
   };
 
@@ -97,10 +97,10 @@ export function SettingsDataPersistence() {
 
   const handleExportSettings = () => {
     const dataStr = JSON.stringify(settings, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = `ny-fashion-settings-${new Date().toISOString().split('T')[0]}.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -117,10 +117,10 @@ export function SettingsDataPersistence() {
         const importedSettings = JSON.parse(e.target?.result as string);
         setSettings(importedSettings);
         setHasUnsavedChanges(true);
-        
+
         toast({
           title: "Settings imported",
-          description: "Settings have been imported successfully.",
+          description: "Settings have been imported successfully."
         });
       } catch (error) {
         toast({
@@ -137,7 +137,7 @@ export function SettingsDataPersistence() {
     clearPersistedData();
     toast({
       title: "Cache cleared",
-      description: "Local settings cache has been cleared.",
+      description: "Local settings cache has been cleared."
     });
   };
 
@@ -147,16 +147,16 @@ export function SettingsDataPersistence() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             Data Persistence
-            {hasUnsavedChanges && (
-              <Badge variant="outline" className="text-orange-600">
+            {hasUnsavedChanges &&
+            <Badge variant="outline" className="text-orange-600">
                 Unsaved Changes
               </Badge>
-            )}
-            {!isVisible && (
-              <Badge variant="secondary">
+            }
+            {!isVisible &&
+            <Badge variant="secondary">
                 Page Hidden
               </Badge>
-            )}
+            }
           </CardTitle>
           <CardDescription>
             Modern data persistence using pagehide + visibilitychange events.
@@ -168,8 +168,8 @@ export function SettingsDataPersistence() {
             <Switch
               id="auto-save"
               checked={settings.autoSave}
-              onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
-            />
+              onCheckedChange={(checked) => handleSettingChange('autoSave', checked)} />
+
             <Label htmlFor="auto-save">Enable auto-save</Label>
           </div>
 
@@ -177,9 +177,9 @@ export function SettingsDataPersistence() {
             <div>
               <Label>Last sync:</Label>
               <p className="text-sm text-muted-foreground">
-                {settings.lastSync 
-                  ? new Date(settings.lastSync).toLocaleString()
-                  : 'Never'
+                {settings.lastSync ?
+                new Date(settings.lastSync).toLocaleString() :
+                'Never'
                 }
               </p>
             </div>
@@ -207,8 +207,8 @@ export function SettingsDataPersistence() {
               type="file"
               accept=".json"
               className="hidden"
-              onChange={handleImportSettings}
-            />
+              onChange={handleImportSettings} />
+
             
             <Button variant="outline" onClick={handleClearPersistedData}>
               <Trash2 className="w-4 h-4 mr-2" />
@@ -226,8 +226,8 @@ export function SettingsDataPersistence() {
         </CardContent>
       </Card>
 
-      {import.meta.env.DEV && (
-        <Card>
+      {import.meta.env.DEV &&
+      <Card>
           <CardHeader>
             <CardTitle>Development Tools</CardTitle>
             <CardDescription>
@@ -235,28 +235,28 @@ export function SettingsDataPersistence() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                import('@/devtools/assertNoUnload').then(({ reportUnloadHandlers }) => {
-                  const handlers = reportUnloadHandlers();
-                  toast({
-                    title: "Unload Handlers Check",
-                    description: handlers.length > 0 
-                      ? `Found ${handlers.length} problematic handlers`
-                      : "No problematic unload handlers found",
-                    variant: handlers.length > 0 ? "destructive" : "default"
-                  });
+            <Button
+            variant="outline"
+            onClick={() => {
+              import('@/devtools/assertNoUnload').then(({ reportUnloadHandlers }) => {
+                const handlers = reportUnloadHandlers();
+                toast({
+                  title: "Unload Handlers Check",
+                  description: handlers.length > 0 ?
+                  `Found ${handlers.length} problematic handlers` :
+                  "No problematic unload handlers found",
+                  variant: handlers.length > 0 ? "destructive" : "default"
                 });
-              }}
-            >
+              });
+            }}>
+
               Check for Unload Handlers
             </Button>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
 
 export default SettingsDataPersistence;

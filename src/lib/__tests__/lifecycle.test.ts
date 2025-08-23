@@ -140,7 +140,7 @@ describe('PageLifecycleManager', () => {
 
   it('should clean up listeners on destroy', () => {
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-    
+
     manager = new PageLifecycleManager({
       onPageHide: mockPageHide
     });
@@ -259,9 +259,9 @@ describe('Unload Protection', () => {
   });
 
   it('should allow unload handlers from allowed origins', () => {
-    enableUnloadProtection({ 
+    enableUnloadProtection({
       allowedOrigins: ['easysite.ai'],
-      throwOnUnload: true 
+      throwOnUnload: true
     });
 
     // This is difficult to test directly since we can't easily mock the stack trace

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,11 +7,7 @@ import { NetworkStatusIndicator } from '@/components/network/NetworkStatusIndica
 
 const Header: React.FC = () => {
   const { user } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
-
-  const handleLanguageToggle = () => {
-    setLanguage(language === 'en' ? 'bn' : 'en');
-  };
+  const { t } = useLanguage();
 
   return (
     <header
@@ -26,22 +21,10 @@ const Header: React.FC = () => {
         className="border rounded-lg px-3 py-1 w-64"
         aria-label={t('search')} />
 
-
       {/* Right side actions */}
       <div className="flex items-center gap-4">
         {/* Network Status Indicator */}
         <NetworkStatusIndicator />
-
-        {/* Language Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLanguageToggle}
-          className="text-sm"
-          aria-label={`Switch to ${language === 'en' ? 'বাংলা' : 'English'}`}>
-          <Globe className="w-4 h-4 mr-2" aria-hidden="true" />
-          <span>{language === 'en' ? 'বাংলা' : 'English'}</span>
-        </Button>
 
         {/* Simple Avatar */}
         <div
@@ -53,8 +36,8 @@ const Header: React.FC = () => {
           </span>
         </div>
       </div>
-    </header>);
-
+    </header>
+  );
 };
 
 export default Header;

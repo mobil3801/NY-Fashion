@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserRole } from '@/types/auth';
-import { Globe } from 'lucide-react';
+// Globe icon removed as language toggle is no longer needed
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +20,7 @@ const RegisterPage: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,9 +37,7 @@ const RegisterPage: React.FC = () => {
     }
   };
 
-  const handleLanguageToggle = () => {
-    setLanguage(language === 'en' ? 'bn' : 'en');
-  };
+  // Language toggle removed - English only
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100 p-4">
@@ -123,17 +121,7 @@ const RegisterPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="mt-4 text-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLanguageToggle}
-                className="rounded-2xl">
-
-                <Globe className="w-4 h-4 mr-2" />
-                {language === 'en' ? 'বাংলা' : 'English'}
-              </Button>
-            </div>
+            {/* Language toggle removed - application now supports English only */}
           </CardContent>
         </Card>
       </div>

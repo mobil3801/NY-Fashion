@@ -9,14 +9,14 @@ export const LanguageProvider: React.FC<{children: React.ReactNode;}> = ({ child
   const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations.en] || key;
+    return translations.en[key as keyof typeof translations.en] || key;
   };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
-    </LanguageContext.Provider>);
-
+    </LanguageContext.Provider>
+  );
 };
 
 export const useLanguage = () => {

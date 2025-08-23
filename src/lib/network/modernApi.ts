@@ -80,7 +80,7 @@ export class ModernApiClient {
       const stored = localStorage.getItem(this.persistenceKey);
       if (stored) {
         const { requests, timestamp } = JSON.parse(stored);
-        
+
         // Only restore requests that are less than 1 hour old
         if (Date.now() - timestamp < 3600000) {
           requests.forEach((request: PersistedRequest) => {
@@ -98,9 +98,9 @@ export class ModernApiClient {
 
   private async retryPersistedRequests() {
     const requests = Array.from(this.pendingRequests.values());
-    
+
     for (const request of requests) {
-      if (request.attempts < 3) { // Max 3 attempts
+      if (request.attempts < 3) {// Max 3 attempts
         try {
           await this.makeRequest(request.options);
           this.pendingRequests.delete(request.id);
@@ -114,7 +114,7 @@ export class ModernApiClient {
 
   async makeRequest(options: ApiRequestOptions): Promise<any> {
     const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Add to pending requests if persistence is enabled
     if (options.persistenceKey) {
       this.pendingRequests.set(requestId, {
@@ -127,9 +127,9 @@ export class ModernApiClient {
 
     try {
       const controller = new AbortController();
-      const timeoutId = options.timeout 
-        ? setTimeout(() => controller.abort(), options.timeout)
-        : null;
+      const timeoutId = options.timeout ?
+      setTimeout(() => controller.abort(), options.timeout) :
+      null;
 
       const response = await fetch(options.url, {
         method: options.method || 'GET',
@@ -148,10 +148,10 @@ export class ModernApiClient {
       }
 
       const result = await response.json();
-      
+
       // Remove from pending requests on success
       this.pendingRequests.delete(requestId);
-      
+
       return result;
     } catch (error) {
       if (options.persistenceKey) {

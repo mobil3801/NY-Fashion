@@ -63,7 +63,7 @@ interface FinancialSettings {
 }
 
 const SettingsPage: React.FC = () => {
-  const { t, language, setLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -349,7 +349,7 @@ const SettingsPage: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="i18n" className="rounded-xl">
             <Globe className="w-4 h-4 mr-2" />
-            Language
+            Localization
           </TabsTrigger>
           <TabsTrigger value="security" className="rounded-xl">
             <Shield className="w-4 h-4 mr-2" />
@@ -760,37 +760,22 @@ const SettingsPage: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Globe className="w-5 h-5 mr-2" />
-                Language & Localization
+                Localization
               </CardTitle>
-              <CardDescription>Configure language and regional settings</CardDescription>
+              <CardDescription>Configure regional settings and formatting preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Current Language</Label>
-                  <p className="text-sm text-gray-600">Interface display language</p>
+                  <p className="text-sm text-gray-600">Interface display language: English</p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
-                  className="rounded-2xl">
-
-                  {language === 'en' ? 'Switch to বাংলা' : 'Switch to English'}
-                </Button>
+                <Badge variant="secondary" className="rounded-xl">
+                  English Only
+                </Badge>
               </div>
 
               <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Bengali Numerals</Label>
-                  <p className="text-sm text-gray-600">Use Bengali numerals (১২৩) instead of Arabic (123)</p>
-                </div>
-                <Switch
-                  checked={settings.i18n?.use_bengali_numerals === true}
-                  onCheckedChange={(checked) => handleSettingChange('i18n', 'use_bengali_numerals', checked)} />
-
-              </div>
 
               <div>
                 <Label htmlFor="date-format">Date Format</Label>
@@ -805,7 +790,6 @@ const SettingsPage: React.FC = () => {
                     <SelectItem value="MM/dd/yyyy">MM/dd/yyyy (US)</SelectItem>
                     <SelectItem value="dd/MM/yyyy">dd/MM/yyyy (International)</SelectItem>
                     <SelectItem value="yyyy-MM-dd">yyyy-MM-dd (ISO)</SelectItem>
-                    <SelectItem value="dd-MM-yyyy">dd-MM-yyyy (Bengali)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

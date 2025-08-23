@@ -5,7 +5,6 @@ function createInventoryTables() {
   `CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
-            name_bn TEXT,
             description TEXT,
             parent_id INTEGER,
             is_active BOOLEAN DEFAULT 1,
@@ -18,7 +17,6 @@ function createInventoryTables() {
   `CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            name_bn TEXT,
             description TEXT,
             category_id INTEGER NOT NULL,
             brand TEXT,
@@ -146,31 +144,29 @@ function createInventoryTables() {
             FOREIGN KEY (user_id) REFERENCES users(id)
         )`];
 
-
   // Execute table creation
   tables.forEach((sql) => {
     window.ezsite.db.exec(sql);
   });
 
-  // Insert default categories for Bangladeshi women's wear
+  // Insert default categories for women's wear (English only)
   const categories = [
-  { name: 'Saree', name_bn: 'শাড়ি', description: 'Traditional Bengali sarees' },
-  { name: 'Salwar Kameez', name_bn: 'সালোয়ার কামিজ', description: 'Three-piece outfit with dupatta' },
-  { name: 'Kurti', name_bn: 'কুর্তি', description: 'Long tunic tops' },
-  { name: 'Lehenga', name_bn: 'লেহেঙ্গা', description: 'Flared skirt with choli and dupatta' },
-  { name: 'Churidar', name_bn: 'চুড়িদার', description: 'Fitted trouser with kurta' },
-  { name: 'Palazzo Set', name_bn: 'প্যালাজো সেট', description: 'Wide-leg pants with kurta' },
-  { name: 'Anarkali', name_bn: 'আনারকলি', description: 'Flared kurta dress' },
-  { name: 'Sharara', name_bn: 'শরারা', description: 'Flared pants with kurta' },
-  { name: 'Abaya', name_bn: 'আবায়া', description: 'Long flowing gown' },
-  { name: 'Hijab & Accessories', name_bn: 'হিজাব ও আনুষাঙ্গিক', description: 'Head covering and accessories' }];
-
+  { name: 'Saree', description: 'Traditional sarees' },
+  { name: 'Salwar Kameez', description: 'Three-piece outfit with dupatta' },
+  { name: 'Kurti', description: 'Long tunic tops' },
+  { name: 'Lehenga', description: 'Flared skirt with choli and dupatta' },
+  { name: 'Churidar', description: 'Fitted trouser with kurta' },
+  { name: 'Palazzo Set', description: 'Wide-leg pants with kurta' },
+  { name: 'Anarkali', description: 'Flared kurta dress' },
+  { name: 'Sharara', description: 'Flared pants with kurta' },
+  { name: 'Abaya', description: 'Long flowing gown' },
+  { name: 'Hijab & Accessories', description: 'Head covering and accessories' }];
 
   categories.forEach((category) => {
     try {
       window.ezsite.db.exec(
-        `INSERT OR IGNORE INTO categories (name, name_bn, description) VALUES (?, ?, ?)`,
-        [category.name, category.name_bn, category.description]
+        `INSERT OR IGNORE INTO categories (name, description) VALUES (?, ?)`,
+        [category.name, category.description]
       );
     } catch (error) {
       console.log(`Category ${category.name} already exists`);

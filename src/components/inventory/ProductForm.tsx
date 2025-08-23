@@ -28,7 +28,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
   const { register, control, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: product?.name || '',
-      name_bn: product?.name_bn || '',
       description: product?.description || '',
       category_id: product?.category_id || '',
       brand: product?.brand || '',
@@ -132,14 +131,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               }
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="name_bn">Product Name (Bengali)</Label>
-              <Input
-                id="name_bn"
-                {...register('name_bn')}
-                placeholder="e.g., কটন শাড়ি" />
-
-            </div>
+            {/* Bengali name field removed - English only */}
           </div>
 
           <div className="space-y-2">
@@ -162,7 +154,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 <SelectContent>
                   {categories.map((category) =>
                   <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name} ({category.name_bn})
+                      {category.name}
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -261,7 +253,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
         <TabsContent value="pricing" className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="cost_price">Cost Price (৳) *</Label>
+              <Label htmlFor="cost_price">Cost Price ($) *</Label>
               <Input
                 id="cost_price"
                 type="number"
@@ -275,7 +267,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="selling_price">Selling Price (৳) *</Label>
+              <Label htmlFor="selling_price">Selling Price ($) *</Label>
               <Input
                 id="selling_price"
                 type="number"
@@ -289,7 +281,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="msrp">MSRP (৳)</Label>
+              <Label htmlFor="msrp">MSRP ($)</Label>
               <Input
                 id="msrp"
                 type="number"
@@ -445,7 +437,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
 
                     <div className="grid grid-cols-4 gap-4">
                       <div className="space-y-2">
-                        <Label>Cost Price (৳)</Label>
+                        <Label>Cost Price ($)</Label>
                         <Input
                       type="number"
                       step="0.01"
@@ -455,7 +447,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Selling Price (৳)</Label>
+                        <Label>Selling Price ($)</Label>
                         <Input
                       type="number"
                       step="0.01"
@@ -465,7 +457,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                       </div>
 
                       <div className="space-y-2">
-                        <Label>MSRP (৳)</Label>
+                        <Label>MSRP ($)</Label>
                         <Input
                       type="number"
                       step="0.01"
