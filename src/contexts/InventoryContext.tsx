@@ -104,7 +104,7 @@ interface InventoryContextType {
   adjustStock: (adjustments: any[]) => Promise<void>;
 
   // Low stock alerts
-  getLowStockProducts: () => Promise<Product[]>;
+  getLowStockProducts: (filters?: any) => Promise<Product[]>;
 
   // Import/Export
   importProductsFromCSV: (csvData: string) => Promise<void>;
@@ -113,6 +113,10 @@ interface InventoryContextType {
   // Manual retry and error handling
   retry: () => void;
   clearError: () => void;
+
+  // Health check
+  healthCheck: () => Promise<any>;
+  seedData: () => Promise<any>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
@@ -424,6 +428,46 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     }
   }, [clearError, fetchProducts, fetchCategories]);
 
+  const healthCheck = useCallback(async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: "healthCheckInventory",
+        param: []
+      });
+
+      if (error) {
+        throw new Error(typeof error === 'string' ? error : 'Health check failed');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Health check error:', error);
+      throw error;
+    }
+  }, []);
+
+  const seedData = useCallback(async () => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: "seedInventoryData",
+        param: []
+      });
+
+      if (error) {
+        throw new Error(typeof error === 'string' ? error : 'Data seeding failed');
+      }
+
+      // Refresh products after seeding
+      await fetchProducts();
+      await fetchCategories();
+
+      return data;
+    } catch (error) {
+      console.error('Seed data error:', error);
+      throw error;
+    }
+  }, [fetchProducts, fetchCategories]);
+
   // Stub implementations for other methods (keeping existing behavior)
   const deleteProduct = useCallback(async (id: number) => {
     try {
@@ -475,7 +519,7 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     }
   }, [fetchProducts, handleError]);
 
-  const getLowStockProducts = useCallback(async (): Promise<Product[]> => {
+  const getLowStockProducts = useCallback(async (filters?: any): Promise<Product[]> => {
     if (!isMountedRef.current) return [];
 
     try {
@@ -483,9 +527,7 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
         async (ctx: RetryContext) => {
           const { data, error } = await window.ezsite.apis.run({
             path: 'getLowStockProducts',
-            param: [{
-              limit: 100
-            }]
+            param: [filters || { limit: 100 }]
           });
 
           if (error) {
@@ -562,7 +604,9 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     importProductsFromCSV,
     exportProductsToCSV,
     retry,
-    clearError
+    clearError,
+    healthCheck,
+    seedData
   };
 
   return (

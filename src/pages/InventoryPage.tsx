@@ -25,6 +25,7 @@ import LowStockAlerts from '@/components/inventory/LowStockAlerts';
 import CSVImport from '@/components/inventory/CSVImport';
 import BarcodeGeneration from '@/components/inventory/BarcodeGeneration';
 import NetworkDiagnosticsHelper from '@/components/network/NetworkDiagnosticsHelper';
+import InventoryDebugPanel from '@/components/inventory/InventoryDebugPanel';
 
 const InventoryPage = () => {
   const { t } = useLanguage();
@@ -95,7 +96,7 @@ const InventoryPage = () => {
 
         {/* Main Inventory Interface with enhanced accessibility */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6" role="tablist" aria-label="Inventory management sections">
+          <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
             <TabsTrigger
               value="products"
               className="flex items-center gap-2 focus-aa text-default-aa"
@@ -155,6 +156,16 @@ const InventoryPage = () => {
 
               <Package className="h-4 w-4" aria-hidden="true" />
               Diagnostics
+            </TabsTrigger>
+            <TabsTrigger
+              value="debug"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Inventory debug panel">
+
+
+
+              <Package className="h-4 w-4" aria-hidden="true" />
+              Debug
             </TabsTrigger>
           </TabsList>
 
@@ -265,6 +276,10 @@ const InventoryPage = () => {
 
           <TabsContent value="diagnostics" role="tabpanel" aria-labelledby="diagnostics-tab">
             <NetworkDiagnosticsHelper />
+          </TabsContent>
+          
+          <TabsContent value="debug" role="tabpanel" aria-labelledby="debug-tab">
+            <InventoryDebugPanel />
           </TabsContent>
         </Tabs>
 

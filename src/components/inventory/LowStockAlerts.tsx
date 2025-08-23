@@ -119,7 +119,9 @@ const LowStockAlerts = () => {
       const { data, error } = await window.ezsite.apis.run({
         path: "getLowStockProducts",
         param: [{
-          limit: 100
+          limit: 100,
+          search: "",
+          category_id: null
         }]
       });
 
@@ -127,7 +129,8 @@ const LowStockAlerts = () => {
         throw new Error(typeof error === 'string' ? error : 'Failed to fetch low stock products');
       }
 
-      const rawProducts = Array.isArray(data) ? data : [];
+      // Handle both array response and direct data
+      const rawProducts = Array.isArray(data) ? data : data?.products ? data.products : [];
       const validatedProducts = validateProductData(rawProducts);
 
       setLowStockProducts(validatedProducts);
@@ -149,8 +152,13 @@ const LowStockAlerts = () => {
     } catch (fetchError: any) {
       devLog('Error fetching low stock products', fetchError);
 
-      // Enhanced error handling
-      if (cachedData.length > 0 && !online) {
+      // Enhanced error handling with better network detection
+      const isNetworkError = !online ||
+      fetchError?.message?.includes('network') ||
+      fetchError?.message?.includes('connection') ||
+      fetchError?.message?.includes('fetch');
+
+      if (cachedData.length > 0 && (isNetworkError || !online)) {
         setLowStockProducts(cachedData);
         devLog('Using cached data after fetch error', { count: cachedData.length });
 
@@ -167,7 +175,7 @@ const LowStockAlerts = () => {
         if (showToast) {
           const errorMessage = errorDetails?.userMessage ||
           fetchError?.message ||
-          "Unable to fetch low stock alerts. Please try again.";
+          "Unable to fetch low stock alerts. Please check your connection and try again.";
 
           toast({
             title: "Failed to Load Data",

@@ -5,19 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   Clock,
   Activity,
   Globe,
   Server,
-  Database
-} from 'lucide-react';
+  Database } from
+'lucide-react';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,13 +30,13 @@ interface DiagnosticResult {
 }
 
 const NetworkDiagnosticsHelper: React.FC = () => {
-  const { 
-    online, 
-    connectionState, 
-    retryNow, 
+  const {
+    online,
+    connectionState,
+    retryNow,
     getDiagnostics,
     status,
-    errorDetails 
+    errorDetails
   } = useNetwork();
 
   const [isRunning, setIsRunning] = useState(false);
@@ -51,7 +51,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
   // Test functions
   const testBasicConnectivity = useCallback(async (): Promise<DiagnosticResult> => {
     const startTime = performance.now();
-    
+
     try {
       const response = await fetch(window.location.origin, {
         method: 'HEAD',
@@ -60,7 +60,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
       });
 
       const latency = performance.now() - startTime;
-      
+
       if (response.ok) {
         return {
           test: 'Basic Connectivity',
@@ -90,7 +90,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
 
   const testApiEndpoint = useCallback(async (): Promise<DiagnosticResult> => {
     const startTime = performance.now();
-    
+
     try {
       // Test the categories API as it's simple and reliable
       const { data, error } = await window.ezsite.apis.run({
@@ -131,7 +131,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
 
   const testDNSResolution = useCallback(async (): Promise<DiagnosticResult> => {
     const startTime = performance.now();
-    
+
     try {
       // Test DNS resolution by fetching a known external resource
       const response = await fetch('https://www.google.com/favicon.ico', {
@@ -142,7 +142,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
       });
 
       const latency = performance.now() - startTime;
-      
+
       return {
         test: 'DNS Resolution',
         status: 'success',
@@ -151,7 +151,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
       };
     } catch (error: any) {
       const latency = performance.now() - startTime;
-      
+
       if (error.message.includes('timeout')) {
         return {
           test: 'DNS Resolution',
@@ -160,7 +160,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
           latency: Math.round(latency)
         };
       }
-      
+
       return {
         test: 'DNS Resolution',
         status: 'error',
@@ -173,7 +173,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
 
   const testInventoryAPI = useCallback(async (): Promise<DiagnosticResult> => {
     const startTime = performance.now();
-    
+
     try {
       // Test the specific inventory API that's causing issues
       const { data, error } = await window.ezsite.apis.run({
@@ -215,7 +215,7 @@ const NetworkDiagnosticsHelper: React.FC = () => {
 
   const testLowStockAPI = useCallback(async (): Promise<DiagnosticResult> => {
     const startTime = performance.now();
-    
+
     try {
       const { data, error } = await window.ezsite.apis.run({
         path: "getLowStockProducts",
@@ -258,14 +258,14 @@ const NetworkDiagnosticsHelper: React.FC = () => {
   const runDiagnostics = useCallback(async () => {
     setIsRunning(true);
     setResults([]);
-    
+
     const tests = [
-      testBasicConnectivity,
-      testDNSResolution,
-      testApiEndpoint,
-      testInventoryAPI,
-      testLowStockAPI
-    ];
+    testBasicConnectivity,
+    testDNSResolution,
+    testApiEndpoint,
+    testInventoryAPI,
+    testLowStockAPI];
+
 
     const testResults: DiagnosticResult[] = [];
 
@@ -287,9 +287,9 @@ const NetworkDiagnosticsHelper: React.FC = () => {
 
     // Calculate summary
     const total = testResults.length;
-    const passed = testResults.filter(r => r.status === 'success').length;
-    const warnings = testResults.filter(r => r.status === 'warning').length;
-    const failed = testResults.filter(r => r.status === 'error').length;
+    const passed = testResults.filter((r) => r.status === 'success').length;
+    const warnings = testResults.filter((r) => r.status === 'warning').length;
+    const failed = testResults.filter((r) => r.status === 'error').length;
 
     setSummary({ total, passed, warnings, failed });
     setIsRunning(false);
@@ -372,22 +372,22 @@ const NetworkDiagnosticsHelper: React.FC = () => {
               Connection: {connectionState}
             </Badge>
           </div>
-          <Button 
+          <Button
             onClick={runDiagnostics}
             disabled={isRunning}
-            size="sm"
-          >
-            {isRunning ? (
-              <>
+            size="sm">
+
+            {isRunning ?
+            <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Running...
-              </>
-            ) : (
-              <>
+              </> :
+
+            <>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Run Diagnostics
               </>
-            )}
+            }
           </Button>
         </div>
       </CardHeader>
@@ -401,8 +401,8 @@ const NetworkDiagnosticsHelper: React.FC = () => {
           </TabsList>
 
           <TabsContent value="results" className="space-y-4">
-            {results.length === 0 && !isRunning && (
-              <div className="text-center py-8">
+            {results.length === 0 && !isRunning &&
+            <div className="text-center py-8">
                 <Globe className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium mb-2">Ready to Test</h3>
                 <p className="text-gray-600 mb-4">
@@ -413,12 +413,12 @@ const NetworkDiagnosticsHelper: React.FC = () => {
                   Start Diagnostics
                 </Button>
               </div>
-            )}
+            }
 
-            {(results.length > 0 || isRunning) && (
-              <div className="space-y-3">
-                {results.map((result, index) => (
-                  <Card key={index} className="p-4">
+            {(results.length > 0 || isRunning) &&
+            <div className="space-y-3">
+                {results.map((result, index) =>
+              <Card key={index} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(result.status)}
@@ -428,23 +428,23 @@ const NetworkDiagnosticsHelper: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {result.latency && (
-                          <Badge variant="outline" className="text-xs">
+                        {result.latency &&
+                    <Badge variant="outline" className="text-xs">
                             {result.latency}ms
                           </Badge>
-                        )}
+                    }
                         {getStatusBadge(result.status)}
                       </div>
                     </div>
                   </Card>
-                ))}
+              )}
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="summary" className="space-y-4">
-            {summary.total > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {summary.total > 0 &&
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="p-4 text-center">
                   <div className="text-2xl font-bold text-blue-600">{summary.total}</div>
                   <div className="text-sm text-gray-600">Total Tests</div>
@@ -462,20 +462,20 @@ const NetworkDiagnosticsHelper: React.FC = () => {
                   <div className="text-sm text-gray-600">Failed</div>
                 </Card>
               </div>
-            )}
+            }
 
-            {summary.total > 0 && (
-              <div className="space-y-2">
+            {summary.total > 0 &&
+            <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Overall Health</span>
-                  <span>{Math.round((summary.passed / summary.total) * 100)}%</span>
+                  <span>{Math.round(summary.passed / summary.total * 100)}%</span>
                 </div>
-                <Progress 
-                  value={(summary.passed / summary.total) * 100}
-                  className="h-2"
-                />
+                <Progress
+                value={summary.passed / summary.total * 100}
+                className="h-2" />
+
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="details" className="space-y-4">
@@ -513,8 +513,8 @@ const NetworkDiagnosticsHelper: React.FC = () => {
                   Error Information
                 </h4>
                 <div className="space-y-2 text-sm">
-                  {errorDetails ? (
-                    <>
+                  {errorDetails ?
+                  <>
                       <div className="flex justify-between">
                         <span>Error Type:</span>
                         <span className="text-red-600">{errorDetails.type}</span>
@@ -526,18 +526,18 @@ const NetworkDiagnosticsHelper: React.FC = () => {
                       <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
                         {errorDetails.userMessage}
                       </div>
-                    </>
-                  ) : (
-                    <div className="text-gray-600">No current errors</div>
-                  )}
+                    </> :
+
+                  <div className="text-gray-600">No current errors</div>
+                  }
                 </div>
               </Card>
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default NetworkDiagnosticsHelper;

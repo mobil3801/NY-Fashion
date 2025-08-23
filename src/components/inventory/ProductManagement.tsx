@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, Package, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Package, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,18 +11,21 @@ import { useInventory } from '@/contexts/InventoryContext';
 import ProductForm from './ProductForm';
 
 const ProductManagement = () => {
-  const { products, categories, loading, fetchProducts, deleteProduct, setSelectedProduct } = useInventory();
+  const { products, categories, loading, fetchProducts, deleteProduct, setSelectedProduct, error } = useInventory();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsRefreshing(true);
     fetchProducts({
-      search: searchTerm,
-      category_id: selectedCategory || undefined
-    });
+      search: searchTerm.trim(),
+      category_id: selectedCategory || undefined,
+      include_inactive: false
+    }).finally(() => setIsRefreshing(false));
   };
 
   const handleEdit = (product: any) => {
@@ -33,7 +36,16 @@ const ProductManagement = () => {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      await deleteProduct(id);
+      try {
+        await deleteProduct(id);
+        // Refresh the products list after deletion
+        await fetchProducts({
+          search: searchTerm.trim(),
+          category_id: selectedCategory || undefined
+        });
+      } catch (error) {
+        console.error('Failed to delete product:', error);
+      }
     }
   };
 
@@ -44,9 +56,12 @@ const ProductManagement = () => {
   };
 
   const getStockStatus = (product: any) => {
-    const stock = product.total_stock || 0;
+    // Handle multiple field names for stock information
+    const stock = product.total_stock ?? product.current_stock ?? 0;
+    const minLevel = product.min_stock_level ?? 5;
+
     if (stock === 0) return { status: 'Out of Stock', color: 'destructive' };
-    if (stock <= product.min_stock_level) return { status: 'Low Stock', color: 'secondary' };
+    if (stock <= minLevel) return { status: 'Low Stock', color: 'secondary' };
     return { status: 'In Stock', color: 'default' };
   };
 
@@ -126,8 +141,34 @@ const ProductManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Error Display */}
+      {error && !loading &&
+      <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-3">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div>
+                <h3 className="font-medium text-red-800">Failed to Load Products</h3>
+                <p className="text-sm text-red-700">
+                  {error.message || 'Unable to fetch products. Please check your connection and try again.'}
+                </p>
+                <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => fetchProducts()}>
+
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      }
+
       {/* Products Grid */}
-      {loading ?
+      {loading || isRefreshing ?
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) =>
         <Card key={i} className="animate-pulse">
@@ -195,15 +236,15 @@ const ProductManagement = () => {
                     <span className="text-muted-foreground">Stock:</span>
                     <span className="flex items-center gap-1">
                       <Package className="h-3 w-3" />
-                      {product.total_stock || 0} {product.unit}
-                      {(product.total_stock || 0) <= product.min_stock_level &&
+                      {product.total_stock ?? product.current_stock ?? 0} {product.unit || 'pcs'}
+                      {(product.total_stock ?? product.current_stock ?? 0) <= (product.min_stock_level ?? 5) &&
                     <AlertTriangle className="h-3 w-3 text-yellow-500" />
                     }
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Price:</span>
-                    <span className="font-semibold">৳{product.selling_price}</span>
+                    <span className="font-semibold">৳{product.selling_price ?? product.price ?? 0}</span>
                   </div>
                   {product.has_variants &&
                 <div className="flex justify-between text-sm">

@@ -104,6 +104,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -196,8 +197,7 @@ const ApiDebugDashboard: React.FC = () => {
         <CardContent className="p-0">
           <ScrollArea className="h-96">
             <div className="space-y-2 p-4">
-              {filteredCalls.map((call) => <div key={call.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => setSelectedCall(call.id)}>
+              {filteredCalls.map((call) => <div key={call.id} className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => setSelectedCall(call.id)}>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
