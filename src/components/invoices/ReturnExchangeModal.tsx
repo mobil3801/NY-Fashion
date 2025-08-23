@@ -306,6 +306,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -428,9 +430,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {invoiceItems.map((item) => {const returnItem = returnItems.find((ri) => ri.itemId === item.id);
-                      const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
-
+                      {invoiceItems.map((item) => {const returnItem = returnItems.find((ri) => ri.itemId === item.id);const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
                       return (
                         <TableRow key={item.id}>
                             <TableCell>
