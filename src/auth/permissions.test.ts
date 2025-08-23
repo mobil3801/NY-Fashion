@@ -9,8 +9,8 @@ import {
   hasAnyPermission,
   hasAllPermissions,
   getRoleLabel,
-  RoleLabels
-} from './permissions';
+  RoleLabels } from
+'./permissions';
 
 describe('Auth Permissions System', () => {
   describe('normalizeRole', () => {
@@ -200,7 +200,7 @@ describe('Auth Permissions System', () => {
 
     it('should have all role types covered', () => {
       const roles: Role[] = ['admin', 'manager', 'employee'];
-      roles.forEach(role => {
+      roles.forEach((role) => {
         expect(RoleLabels[role]).toBeDefined();
         expect(typeof RoleLabels[role]).toBe('string');
         expect(RoleLabels[role].length).toBeGreaterThan(0);
@@ -212,11 +212,11 @@ describe('Auth Permissions System', () => {
     it('should ensure admin has more permissions than manager', () => {
       const adminPerms = getRolePermissions('admin');
       const managerPerms = getRolePermissions('manager');
-      
+
       expect(adminPerms.length).toBeGreaterThan(managerPerms.length);
-      
+
       // Manager permissions should be subset of admin
-      managerPerms.forEach(perm => {
+      managerPerms.forEach((perm) => {
         expect(adminPerms).toContain(perm);
       });
     });
@@ -224,11 +224,11 @@ describe('Auth Permissions System', () => {
     it('should ensure manager has more permissions than employee', () => {
       const managerPerms = getRolePermissions('manager');
       const employeePerms = getRolePermissions('employee');
-      
+
       expect(managerPerms.length).toBeGreaterThan(employeePerms.length);
-      
+
       // Employee permissions should be subset of manager
-      employeePerms.forEach(perm => {
+      employeePerms.forEach((perm) => {
         expect(managerPerms).toContain(perm);
       });
     });
@@ -237,17 +237,17 @@ describe('Auth Permissions System', () => {
       const adminPerms = getRolePermissions('admin');
       const managerPerms = getRolePermissions('manager');
       const employeePerms = getRolePermissions('employee');
-      
+
       expect(adminPerms.length).toBeGreaterThan(managerPerms.length);
       expect(managerPerms.length).toBeGreaterThan(employeePerms.length);
-      
+
       // Admin should have exclusive permissions
-      const adminOnlyPerms = adminPerms.filter(p => !managerPerms.includes(p));
+      const adminOnlyPerms = adminPerms.filter((p) => !managerPerms.includes(p));
       expect(adminOnlyPerms.length).toBeGreaterThan(0);
       expect(adminOnlyPerms).toContain('admin:system');
-      
+
       // Manager should have exclusive permissions not available to employee
-      const managerOnlyPerms = managerPerms.filter(p => !employeePerms.includes(p));
+      const managerOnlyPerms = managerPerms.filter((p) => !employeePerms.includes(p));
       expect(managerOnlyPerms.length).toBeGreaterThan(0);
       expect(managerOnlyPerms).toContain('edit:sales');
     });
@@ -257,7 +257,7 @@ describe('Auth Permissions System', () => {
     it('should have proper TypeScript types', () => {
       const role: Role = 'admin';
       const permission: Permission = 'view:dashboard';
-      
+
       expect(typeof role).toBe('string');
       expect(typeof permission).toBe('string');
       expect(hasPermission(role, permission)).toBeDefined();

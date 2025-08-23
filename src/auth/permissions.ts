@@ -8,99 +8,99 @@
 
 export type Role = 'admin' | 'manager' | 'employee';
 
-export type Permission = 
-  | 'view:dashboard'
-  | 'view:sales' 
-  | 'view:inventory'
-  | 'view:products'
-  | 'view:invoices'
-  | 'view:purchases'
-  | 'view:employees'
-  | 'view:salary'
-  | 'view:reports'
-  | 'view:settings'
-  | 'view:lowstock'
-  | 'edit:sales'
-  | 'edit:inventory'
-  | 'edit:products'
-  | 'edit:invoices'
-  | 'edit:purchases'
-  | 'edit:employees'
-  | 'edit:salary'
-  | 'edit:settings'
-  | 'delete:sales'
-  | 'delete:inventory'
-  | 'delete:products'
-  | 'delete:invoices'
-  | 'admin:users'
-  | 'admin:roles'
-  | 'admin:system';
+export type Permission =
+'view:dashboard' |
+'view:sales' |
+'view:inventory' |
+'view:products' |
+'view:invoices' |
+'view:purchases' |
+'view:employees' |
+'view:salary' |
+'view:reports' |
+'view:settings' |
+'view:lowstock' |
+'edit:sales' |
+'edit:inventory' |
+'edit:products' |
+'edit:invoices' |
+'edit:purchases' |
+'edit:employees' |
+'edit:salary' |
+'edit:settings' |
+'delete:sales' |
+'delete:inventory' |
+'delete:products' |
+'delete:invoices' |
+'admin:users' |
+'admin:roles' |
+'admin:system';
 
 // Display labels for UI (Title case)
 export const RoleLabels: Record<Role, string> = {
   admin: 'Admin',
-  manager: 'Manager', 
+  manager: 'Manager',
   employee: 'Employee'
 };
 
 // Permission mappings for each role
 const RolePermissions: Record<Role, Permission[]> = {
   admin: [
-    // Full access - all permissions
-    'view:dashboard',
-    'view:sales',
-    'view:inventory', 
-    'view:products',
-    'view:invoices',
-    'view:purchases',
-    'view:employees',
-    'view:salary',
-    'view:reports',
-    'view:settings',
-    'view:lowstock',
-    'edit:sales',
-    'edit:inventory',
-    'edit:products', 
-    'edit:invoices',
-    'edit:purchases',
-    'edit:employees',
-    'edit:salary',
-    'edit:settings',
-    'delete:sales',
-    'delete:inventory',
-    'delete:products',
-    'delete:invoices',
-    'admin:users',
-    'admin:roles',
-    'admin:system'
-  ],
+  // Full access - all permissions
+  'view:dashboard',
+  'view:sales',
+  'view:inventory',
+  'view:products',
+  'view:invoices',
+  'view:purchases',
+  'view:employees',
+  'view:salary',
+  'view:reports',
+  'view:settings',
+  'view:lowstock',
+  'edit:sales',
+  'edit:inventory',
+  'edit:products',
+  'edit:invoices',
+  'edit:purchases',
+  'edit:employees',
+  'edit:salary',
+  'edit:settings',
+  'delete:sales',
+  'delete:inventory',
+  'delete:products',
+  'delete:invoices',
+  'admin:users',
+  'admin:roles',
+  'admin:system'],
+
   manager: [
-    // View all + edit core business functions
-    'view:dashboard',
-    'view:sales',
-    'view:inventory',
-    'view:products', 
-    'view:invoices',
-    'view:purchases',
-    'view:employees',
-    'view:salary',
-    'view:reports',
-    'view:lowstock',
-    'edit:sales',
-    'edit:inventory',
-    'edit:products',
-    'edit:invoices',
-    'edit:purchases'
-  ],
+  // View all + edit core business functions
+  'view:dashboard',
+  'view:sales',
+  'view:inventory',
+  'view:products',
+  'view:invoices',
+  'view:purchases',
+  'view:employees',
+  'view:salary',
+  'view:reports',
+  'view:lowstock',
+  'edit:sales',
+  'edit:inventory',
+  'edit:products',
+  'edit:invoices',
+  'edit:purchases'],
+
   employee: [
-    // Read-only access to basic operations
-    'view:dashboard',
-    'view:sales',
-    'view:inventory',
-    'view:products',
-    'view:invoices', 
-    'view:lowstock'
-  ]
+  // Read-only access to basic operations
+  'view:dashboard',
+  'view:sales',
+  'view:inventory',
+  'view:products',
+  'view:invoices',
+  'view:lowstock']
+
 };
 
 /**
@@ -115,7 +115,7 @@ export function normalizeRole(input: string | undefined | null): Role {
   }
 
   const normalized = input.toLowerCase().trim();
-  
+
   // Direct mappings
   switch (normalized) {
     case 'admin':
@@ -165,7 +165,7 @@ export function getRolePermissions(role: string | undefined | null): Permission[
  * @returns true if role has at least one permission
  */
 export function hasAnyPermission(role: string | undefined | null, permissions: Permission[]): boolean {
-  return permissions.some(permission => hasPermission(role, permission));
+  return permissions.some((permission) => hasPermission(role, permission));
 }
 
 /**
@@ -175,7 +175,7 @@ export function hasAnyPermission(role: string | undefined | null, permissions: P
  * @returns true if role has all permissions
  */
 export function hasAllPermissions(role: string | undefined | null, permissions: Permission[]): boolean {
-  return permissions.every(permission => hasPermission(role, permission));
+  return permissions.every((permission) => hasPermission(role, permission));
 }
 
 /**

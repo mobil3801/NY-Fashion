@@ -1,16 +1,16 @@
 
 import { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Permission, 
+import {
+  Permission,
   Role,
-  normalizeRole, 
-  hasPermission, 
+  normalizeRole,
+  hasPermission,
   getRolePermissions,
   hasAnyPermission,
   hasAllPermissions,
-  getRoleLabel
-} from './permissions';
+  getRoleLabel } from
+'./permissions';
 
 interface UsePermissionsReturn {
   /** Normalized user role */
@@ -38,7 +38,7 @@ interface UsePermissionsReturn {
  */
 export function usePermissions(): UsePermissionsReturn {
   const { user, isAuthenticated } = useAuth();
-  
+
   const role = useMemo(() => {
     if (!isAuthenticated || !user?.role) {
       return normalizeRole(null); // Returns 'employee' as secure default
@@ -47,29 +47,29 @@ export function usePermissions(): UsePermissionsReturn {
   }, [isAuthenticated, user?.role]);
 
   const roleLabel = useMemo(() => getRoleLabel(role), [role]);
-  
+
   const permissions = useMemo(() => getRolePermissions(role), [role]);
 
-  const can = useMemo(() => 
-    (permission: Permission) => hasPermission(role, permission),
-    [role]
+  const can = useMemo(() =>
+  (permission: Permission) => hasPermission(role, permission),
+  [role]
   );
 
   const canAny = useMemo(() =>
-    (perms: Permission[]) => hasAnyPermission(role, perms),
-    [role]
+  (perms: Permission[]) => hasAnyPermission(role, perms),
+  [role]
   );
 
   const canAll = useMemo(() =>
-    (perms: Permission[]) => hasAllPermissions(role, perms),
-    [role]
+  (perms: Permission[]) => hasAllPermissions(role, perms),
+  [role]
   );
 
   const isAdmin = useMemo(() => role === 'admin', [role]);
-  
-  const isManagerOrAdmin = useMemo(() => 
-    role === 'admin' || role === 'manager', 
-    [role]
+
+  const isManagerOrAdmin = useMemo(() =>
+  role === 'admin' || role === 'manager',
+  [role]
   );
 
   return {
@@ -88,16 +88,16 @@ export function usePermissions(): UsePermissionsReturn {
  * Higher-order component for permission-based rendering
  */
 export function withPermissions<T extends object>(
-  Component: React.ComponentType<T>,
-  requiredPermissions: Permission | Permission[],
-  fallback?: React.ReactNode
-) {
+Component: React.ComponentType<T>,
+requiredPermissions: Permission | Permission[],
+fallback?: React.ReactNode)
+{
   return function PermissionWrappedComponent(props: T) {
     const { can, canAny } = usePermissions();
-    
-    const hasAccess = Array.isArray(requiredPermissions) 
-      ? canAny(requiredPermissions)
-      : can(requiredPermissions);
+
+    const hasAccess = Array.isArray(requiredPermissions) ?
+    canAny(requiredPermissions) :
+    can(requiredPermissions);
 
     if (!hasAccess) {
       return fallback ? <>{fallback}</> : null;
