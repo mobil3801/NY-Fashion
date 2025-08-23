@@ -149,7 +149,7 @@ const Header: React.FC = () => {
 
 
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatar} alt={user?.name || 'User avatar'} />
+                    <AvatarImage src={user?.avatar} alt={user?.name || 'User avatar'} className="aspect-square h-full w-full" />
                     <AvatarFallback className="bg-emerald-100 text-emerald-700 text-sm font-medium">
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
