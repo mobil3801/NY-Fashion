@@ -8,7 +8,7 @@ export interface RetryOptions {
   maxDelayMs: number;
   isRetryable: (e: unknown) => boolean;
   signal?: AbortSignal;
-  onAttempt?: (info: { attempt: number; error?: ApiError }) => void;
+  onAttempt?: (info: {attempt: number;error?: ApiError;}) => void;
   onGiveUp?: (e: unknown) => void;
 }
 
@@ -25,7 +25,7 @@ const DEFAULT_RETRY_OPTIONS: Partial<RetryOptions> = {
   attempts: 3,
   baseDelayMs: 300,
   maxDelayMs: 10000,
-  isRetryable: isRetryable,
+  isRetryable: isRetryable
 };
 
 /**
@@ -72,19 +72,19 @@ function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number
  */
 function createCompositeAbortController(signals: (AbortSignal | undefined)[]): AbortController {
   const controller = new AbortController();
-  
-  const validSignals = signals.filter((signal): signal is AbortSignal => 
-    signal !== undefined && !signal.aborted
+
+  const validSignals = signals.filter((signal): signal is AbortSignal =>
+  signal !== undefined && !signal.aborted
   );
 
   // If any signal is already aborted, abort immediately
-  if (validSignals.some(signal => signal.aborted)) {
+  if (validSignals.some((signal) => signal.aborted)) {
     controller.abort();
     return controller;
   }
 
   // Listen to all signals
-  const abortHandlers = validSignals.map(signal => {
+  const abortHandlers = validSignals.map((signal) => {
     const handler = () => {
       if (!controller.signal.aborted) {
         controller.abort();
@@ -108,20 +108,20 @@ function createCompositeAbortController(signals: (AbortSignal | undefined)[]): A
  * Execute a function with retry logic using exponential backoff and full jitter
  */
 export async function executeWithRetry<T>(
-  fn: (ctx: RetryContext) => Promise<T>,
-  options: RetryOptions
-): Promise<T> {
+fn: (ctx: RetryContext) => Promise<T>,
+options: RetryOptions)
+: Promise<T> {
   const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
   const { attempts, baseDelayMs, maxDelayMs, isRetryable: shouldRetry, signal, onAttempt, onGiveUp } = opts;
 
   // Create composite abort controller
   const compositeController = createCompositeAbortController([signal]);
-  
+
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     const isLastAttempt = attempt === attempts;
-    
+
     try {
       // Check if aborted before starting attempt
       if (compositeController.signal.aborted) {
@@ -149,7 +149,7 @@ export async function executeWithRetry<T>(
         statusCode: normalizedError.type === 'http' ? (normalizedError as any).statusCode : undefined,
         retryable: shouldRetry(error) && !isLastAttempt,
         message: normalizedError.message,
-        error: normalizedError,
+        error: normalizedError
       });
 
       // Call onAttempt callback
@@ -195,11 +195,11 @@ export function useApiRetry() {
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true;
-    
+
     return () => {
       isMountedRef.current = false;
       // Abort all ongoing operations
-      abortControllersRef.current.forEach(controller => {
+      abortControllersRef.current.forEach((controller) => {
         if (!controller.signal.aborted) {
           controller.abort();
         }
@@ -208,10 +208,10 @@ export function useApiRetry() {
     };
   }, []);
 
-  const executeWithRetry = useCallback(async <T>(
-    fn: (ctx: RetryContext) => Promise<T>,
-    options?: Partial<RetryOptions>
-  ): Promise<T> => {
+  const executeWithRetry = useCallback(async <T,>(
+  fn: (ctx: RetryContext) => Promise<T>,
+  options?: Partial<RetryOptions>)
+  : Promise<T> => {
     if (!isMountedRef.current) {
       throw new Error('Component is unmounted');
     }
@@ -246,7 +246,7 @@ export function useApiRetry() {
   }, []);
 
   const abortAll = useCallback(() => {
-    abortControllersRef.current.forEach(controller => {
+    abortControllersRef.current.forEach((controller) => {
       if (!controller.signal.aborted) {
         controller.abort();
       }
@@ -257,7 +257,7 @@ export function useApiRetry() {
   return {
     executeWithRetry,
     abortAll,
-    isMounted: () => isMountedRef.current,
+    isMounted: () => isMountedRef.current
   };
 }
 
@@ -270,7 +270,7 @@ export function useManagedAbortController() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    
+
     return () => {
       isMountedRef.current = false;
       if (controllerRef.current && !controllerRef.current.signal.aborted) {
@@ -311,6 +311,6 @@ export function useManagedAbortController() {
     abort,
     reset,
     signal: controllerRef.current?.signal,
-    isMounted: () => isMountedRef.current,
+    isMounted: () => isMountedRef.current
   };
 }

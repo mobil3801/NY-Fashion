@@ -117,7 +117,7 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-export function InventoryProvider({ children }: { children: React.ReactNode }) {
+export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   // State management
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -138,7 +138,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true;
-    
+
     return () => {
       isMountedRef.current = false;
       abortAll();
@@ -557,8 +557,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   return (
     <InventoryContext.Provider value={value}>
       {children}
-    </InventoryContext.Provider>
-  );
+    </InventoryContext.Provider>);
+
 }
 
 export function useInventory() {

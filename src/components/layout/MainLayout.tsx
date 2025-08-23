@@ -103,7 +103,7 @@ const MainLayout: React.FC = () => {
 
         {/* Main Content Area - Clean implementation */}
         <main
-          className="py-[0px] flex-1 w-full main-content"
+          className="py-[10px] flex-1 w-full main-content"
           role="main"
           aria-label="Main content"
           style={{
