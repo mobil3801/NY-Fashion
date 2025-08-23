@@ -3,12 +3,12 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TestReportDashboard from '@/components/testing/TestReportDashboard';
 import LiveAPITester from '@/components/testing/LiveAPITester';
-import { 
-  TestTube, 
+import {
+  TestTube,
   Activity,
   FileText,
-  Zap
-} from 'lucide-react';
+  Zap } from
+'lucide-react';
 
 export default function TestingPage() {
   return (
@@ -41,6 +41,6 @@ export default function TestingPage() {
           <LiveAPITester />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }

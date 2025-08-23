@@ -8,16 +8,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Play, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Play,
+  CheckCircle,
+  XCircle,
   Clock,
   Database,
   Zap,
   Activity,
-  AlertCircle
-} from 'lucide-react';
+  AlertCircle } from
+'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface APITest {
@@ -35,84 +35,84 @@ interface APITest {
 
 export default function LiveAPITester() {
   const [tests, setTests] = useState<APITest[]>([
-    {
-      id: 'get-products-basic',
-      name: 'Get Products - Basic',
-      method: 'GET',
-      endpoint: 'getProducts',
-      params: [{}],
-      expectedResult: 'Array of products',
-      status: 'idle'
-    },
-    {
-      id: 'get-products-search',
-      name: 'Get Products - Search Filter',
-      method: 'GET', 
-      endpoint: 'getProducts',
-      params: [{ search: 'test', limit: 10 }],
-      expectedResult: 'Filtered product array',
-      status: 'idle'
-    },
-    {
-      id: 'save-product-create',
-      name: 'Save Product - Create New',
-      method: 'POST',
-      endpoint: 'saveProduct',
-      params: [{
-        name: 'Test Product ' + Date.now(),
-        description: 'API Test Product',
-        category_id: 1,
-        cost_cents: 5000,
-        price_cents: 10000,
-        brand: 'API Test Brand',
-        sku: 'TEST' + Date.now()
-      }],
-      expectedResult: 'Success with new product ID',
-      status: 'idle'
-    },
-    {
-      id: 'get-stock-movements',
-      name: 'Get Stock Movements',
-      method: 'GET',
-      endpoint: 'getStockMovements',
-      params: [1, null, 10], // productId, variantId, limit
-      expectedResult: 'Array of stock movements',
-      status: 'idle'
-    },
-    {
-      id: 'add-stock-movement',
-      name: 'Add Stock Movement',
-      method: 'POST',
-      endpoint: 'addStockMovement',
-      params: [{
-        variant_id: 1,
-        delta: 25,
-        type: 'adjustment',
-        reason: 'API Test Movement - ' + Date.now(),
-        created_by: 1
-      }],
-      expectedResult: 'Success with movement ID',
-      status: 'idle'
-    },
-    {
-      id: 'validate-consistency',
-      name: 'Database Consistency Check',
-      method: 'GET',
-      endpoint: 'validateInventoryConsistency',
-      params: [],
-      expectedResult: 'Consistency validation report',
-      status: 'idle'
-    },
-    {
-      id: 'monitor-performance',
-      name: 'Performance Monitoring',
-      method: 'GET',
-      endpoint: 'monitorInventoryPerformance',
-      params: [],
-      expectedResult: 'Performance metrics report',
-      status: 'idle'
-    }
-  ]);
+  {
+    id: 'get-products-basic',
+    name: 'Get Products - Basic',
+    method: 'GET',
+    endpoint: 'getProducts',
+    params: [{}],
+    expectedResult: 'Array of products',
+    status: 'idle'
+  },
+  {
+    id: 'get-products-search',
+    name: 'Get Products - Search Filter',
+    method: 'GET',
+    endpoint: 'getProducts',
+    params: [{ search: 'test', limit: 10 }],
+    expectedResult: 'Filtered product array',
+    status: 'idle'
+  },
+  {
+    id: 'save-product-create',
+    name: 'Save Product - Create New',
+    method: 'POST',
+    endpoint: 'saveProduct',
+    params: [{
+      name: 'Test Product ' + Date.now(),
+      description: 'API Test Product',
+      category_id: 1,
+      cost_cents: 5000,
+      price_cents: 10000,
+      brand: 'API Test Brand',
+      sku: 'TEST' + Date.now()
+    }],
+    expectedResult: 'Success with new product ID',
+    status: 'idle'
+  },
+  {
+    id: 'get-stock-movements',
+    name: 'Get Stock Movements',
+    method: 'GET',
+    endpoint: 'getStockMovements',
+    params: [1, null, 10], // productId, variantId, limit
+    expectedResult: 'Array of stock movements',
+    status: 'idle'
+  },
+  {
+    id: 'add-stock-movement',
+    name: 'Add Stock Movement',
+    method: 'POST',
+    endpoint: 'addStockMovement',
+    params: [{
+      variant_id: 1,
+      delta: 25,
+      type: 'adjustment',
+      reason: 'API Test Movement - ' + Date.now(),
+      created_by: 1
+    }],
+    expectedResult: 'Success with movement ID',
+    status: 'idle'
+  },
+  {
+    id: 'validate-consistency',
+    name: 'Database Consistency Check',
+    method: 'GET',
+    endpoint: 'validateInventoryConsistency',
+    params: [],
+    expectedResult: 'Consistency validation report',
+    status: 'idle'
+  },
+  {
+    id: 'monitor-performance',
+    name: 'Performance Monitoring',
+    method: 'GET',
+    endpoint: 'monitorInventoryPerformance',
+    params: [],
+    expectedResult: 'Performance metrics report',
+    status: 'idle'
+  }]
+  );
 
   const [customTest, setCustomTest] = useState({
     endpoint: '',
@@ -120,11 +120,11 @@ export default function LiveAPITester() {
   });
 
   const runTest = async (testId: string) => {
-    setTests(prev => prev.map(test => 
-      test.id === testId ? { ...test, status: 'running', result: null, error: null } : test
+    setTests((prev) => prev.map((test) =>
+    test.id === testId ? { ...test, status: 'running', result: null, error: null } : test
     ));
 
-    const test = tests.find(t => t.id === testId);
+    const test = tests.find((t) => t.id === testId);
     if (!test) return;
 
     const startTime = performance.now();
@@ -139,28 +139,28 @@ export default function LiveAPITester() {
       const duration = performance.now() - startTime;
 
       if (error) {
-        setTests(prev => prev.map(t => 
-          t.id === testId ? { 
-            ...t, 
-            status: 'error', 
-            error,
-            duration 
-          } : t
+        setTests((prev) => prev.map((t) =>
+        t.id === testId ? {
+          ...t,
+          status: 'error',
+          error,
+          duration
+        } : t
         ));
-        
+
         toast({
           title: `API Test Failed: ${test.name}`,
           description: error,
           variant: 'destructive'
         });
       } else {
-        setTests(prev => prev.map(t => 
-          t.id === testId ? { 
-            ...t, 
-            status: 'success', 
-            result: data,
-            duration 
-          } : t
+        setTests((prev) => prev.map((t) =>
+        t.id === testId ? {
+          ...t,
+          status: 'success',
+          result: data,
+          duration
+        } : t
         ));
 
         toast({
@@ -172,14 +172,14 @@ export default function LiveAPITester() {
     } catch (err) {
       const duration = performance.now() - startTime;
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      
-      setTests(prev => prev.map(t => 
-        t.id === testId ? { 
-          ...t, 
-          status: 'error', 
-          error: errorMessage,
-          duration 
-        } : t
+
+      setTests((prev) => prev.map((t) =>
+      t.id === testId ? {
+        ...t,
+        status: 'error',
+        error: errorMessage,
+        duration
+      } : t
       ));
 
       toast({
@@ -194,10 +194,10 @@ export default function LiveAPITester() {
     for (const test of tests) {
       await runTest(test.id);
       // Brief pause between tests
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    const passedTests = tests.filter(t => t.status === 'success').length;
+    const passedTests = tests.filter((t) => t.status === 'success').length;
     toast({
       title: 'All API Tests Complete',
       description: `${passedTests}/${tests.length} tests passed`,
@@ -278,9 +278,9 @@ export default function LiveAPITester() {
 
   const stats = {
     total: tests.length,
-    passed: tests.filter(t => t.status === 'success').length,
-    failed: tests.filter(t => t.status === 'error').length,
-    running: tests.filter(t => t.status === 'running').length
+    passed: tests.filter((t) => t.status === 'success').length,
+    failed: tests.filter((t) => t.status === 'error').length,
+    running: tests.filter((t) => t.status === 'running').length
   };
 
   return (
@@ -333,7 +333,7 @@ export default function LiveAPITester() {
             <Activity className="h-5 w-5 text-purple-500" />
             <div>
               <p className="text-lg font-bold">
-                {stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0}%
+                {stats.total > 0 ? Math.round(stats.passed / stats.total * 100) : 0}%
               </p>
               <p className="text-sm text-gray-600">Pass Rate</p>
             </div>
@@ -351,8 +351,8 @@ export default function LiveAPITester() {
         <TabsContent value="predefined" className="space-y-4">
           <ScrollArea className="h-96">
             <div className="space-y-3">
-              {tests.map(test => (
-                <Card key={test.id} className="p-4">
+              {tests.map((test) =>
+              <Card key={test.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(test.status)}
@@ -368,46 +368,46 @@ export default function LiveAPITester() {
                     </div>
                     <div className="flex items-center gap-3">
                       {getStatusBadge(test.status)}
-                      {test.duration && (
-                        <span className="text-xs text-gray-500">
+                      {test.duration &&
+                    <span className="text-xs text-gray-500">
                           {test.duration.toFixed(0)}ms
                         </span>
-                      )}
+                    }
                       <Button
-                        size="sm"
-                        onClick={() => runTest(test.id)}
-                        disabled={test.status === 'running'}
-                      >
-                        {test.status === 'running' ? (
-                          <Activity className="h-4 w-4 animate-pulse" />
-                        ) : (
-                          <Play className="h-4 w-4" />
-                        )}
+                      size="sm"
+                      onClick={() => runTest(test.id)}
+                      disabled={test.status === 'running'}>
+
+                        {test.status === 'running' ?
+                      <Activity className="h-4 w-4 animate-pulse" /> :
+
+                      <Play className="h-4 w-4" />
+                      }
                       </Button>
                     </div>
                   </div>
                   
                   {/* Results */}
-                  {test.result && (
-                    <div className="mt-3 p-2 bg-green-50 rounded border">
+                  {test.result &&
+                <div className="mt-3 p-2 bg-green-50 rounded border">
                       <p className="text-xs font-medium text-green-800 mb-1">Result:</p>
                       <pre className="text-xs text-green-700 whitespace-pre-wrap">
                         {JSON.stringify(test.result, null, 2)}
                       </pre>
                     </div>
-                  )}
+                }
                   
-                  {test.error && (
-                    <div className="mt-3 p-2 bg-red-50 rounded border">
+                  {test.error &&
+                <div className="mt-3 p-2 bg-red-50 rounded border">
                       <div className="flex items-center gap-1 mb-1">
                         <AlertCircle className="h-3 w-3 text-red-600" />
                         <p className="text-xs font-medium text-red-800">Error:</p>
                       </div>
                       <p className="text-xs text-red-700">{test.error}</p>
                     </div>
-                  )}
+                }
                 </Card>
-              ))}
+              )}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -420,9 +420,9 @@ export default function LiveAPITester() {
                 <Input
                   id="endpoint"
                   value={customTest.endpoint}
-                  onChange={(e) => setCustomTest(prev => ({ ...prev, endpoint: e.target.value }))}
-                  placeholder="e.g., getProducts, saveProduct"
-                />
+                  onChange={(e) => setCustomTest((prev) => ({ ...prev, endpoint: e.target.value }))}
+                  placeholder="e.g., getProducts, saveProduct" />
+
               </div>
               
               <div>
@@ -430,10 +430,10 @@ export default function LiveAPITester() {
                 <Textarea
                   id="params"
                   value={customTest.params}
-                  onChange={(e) => setCustomTest(prev => ({ ...prev, params: e.target.value }))}
+                  onChange={(e) => setCustomTest((prev) => ({ ...prev, params: e.target.value }))}
                   placeholder='[{"search": "test", "limit": 10}]'
-                  rows={4}
-                />
+                  rows={4} />
+
               </div>
               
               <Button onClick={runCustomTest} className="w-full">
@@ -444,6 +444,6 @@ export default function LiveAPITester() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 }

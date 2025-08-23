@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState, LoginCredentials, RegisterCredentials } from '@/types/auth';
 import { useToast } from '@/hooks/use-toast';
+import { normalizeRole } from '@/auth/permissions';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -17,7 +18,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
     id: '1',
     email: 'admin@nyfashion.com',
     name: 'Admin User',
-    role: 'Admin' as const,
+    role: normalizeRole('Admin'),
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
   };
 
@@ -53,12 +54,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
       // Mock authentication - In real app, call your API
+      const rawRole = credentials.email === 'admin@nyfashion.com' ? 'Admin' :
+      credentials.email.includes('manager') ? 'Manager' : 'Employee';
+
       const mockUser: User = {
         id: '1',
         email: credentials.email,
         name: credentials.email === 'admin@nyfashion.com' ? 'Admin User' : 'Demo User',
-        role: credentials.email === 'admin@nyfashion.com' ? 'Admin' :
-        credentials.email.includes('manager') ? 'Manager' : 'Employee',
+        role: normalizeRole(rawRole),
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
       };
 
@@ -93,7 +96,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
         id: Date.now().toString(),
         email: credentials.email,
         name: credentials.name,
-        role: credentials.role || 'Employee',
+        role: normalizeRole(credentials.role || 'Employee'),
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
       };
 

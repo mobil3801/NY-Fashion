@@ -7,8 +7,8 @@ const InventoryAdjustments = () => {
   return (
     <InventoryErrorBoundary>
       <EnhancedInventoryAdjustments />
-    </InventoryErrorBoundary>
-  );
+    </InventoryErrorBoundary>);
+
 };
 
 export default InventoryAdjustments;

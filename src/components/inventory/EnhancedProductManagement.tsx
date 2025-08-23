@@ -25,23 +25,23 @@ interface ValidationError {
 }
 
 const EnhancedProductManagement = () => {
-  const { 
-    products, 
-    categories, 
-    loading, 
+  const {
+    products,
+    categories,
+    loading,
     loadingProducts,
-    fetchProducts, 
-    deleteProduct, 
+    fetchProducts,
+    deleteProduct,
     saveProduct,
-    setSelectedProduct, 
-    error, 
+    setSelectedProduct,
+    error,
     isRetrying,
     retry,
     clearError
   } = useInventory();
 
   const { toast } = useToast();
-  
+
   // Local state
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -49,15 +49,15 @@ const EnhancedProductManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  
+
   // Optimistic updates tracking
   const [optimisticActions, setOptimisticActions] = useState<OptimisticAction[]>([]);
   const [deletingIds, setDeletingIds] = useState<Set<string | number>>(new Set());
-  
+
   // Debounce search
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const [searchLoading, setSearchLoading] = useState(false);
-  
+
   // Progressive loading states
   const [operationStates, setOperationStates] = useState<Record<string, {
     loading: boolean;
@@ -67,9 +67,9 @@ const EnhancedProductManagement = () => {
 
   // Memoized filtered products
   const displayProducts = useMemo(() => {
-    let filtered = products.filter(product => {
+    let filtered = products.filter((product) => {
       // Hide optimistically deleted products
-      if (optimisticActions.some(action => action.type === 'delete' && action.id === product.id)) {
+      if (optimisticActions.some((action) => action.type === 'delete' && action.id === product.id)) {
         return false;
       }
       return true;
@@ -78,18 +78,18 @@ const EnhancedProductManagement = () => {
     // Apply search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name?.toLowerCase().includes(term) ||
-        product.sku?.toLowerCase().includes(term) ||
-        product.barcode?.toLowerCase().includes(term) ||
-        product.name_bn?.toLowerCase().includes(term)
+      filtered = filtered.filter((product) =>
+      product.name?.toLowerCase().includes(term) ||
+      product.sku?.toLowerCase().includes(term) ||
+      product.barcode?.toLowerCase().includes(term) ||
+      product.name_bn?.toLowerCase().includes(term)
       );
     }
 
     // Apply category filter
     if (selectedCategory) {
-      filtered = filtered.filter(product => 
-        product.category_id?.toString() === selectedCategory
+      filtered = filtered.filter((product) =>
+      product.category_id?.toString() === selectedCategory
       );
     }
 
@@ -100,8 +100,8 @@ const EnhancedProductManagement = () => {
   useEffect(() => {
     const cleanup = setTimeout(() => {
       const now = Date.now();
-      setOptimisticActions(prev => 
-        prev.filter(action => now - action.timestamp < 30000) // 30 seconds
+      setOptimisticActions((prev) =>
+      prev.filter((action) => now - action.timestamp < 30000) // 30 seconds
       );
     }, 5000);
 
@@ -128,11 +128,11 @@ const EnhancedProductManagement = () => {
           title: 'Search Error',
           description: 'Failed to search products. Please try again.',
           variant: 'destructive',
-          action: (
-            <Button variant="outline" size="sm" onClick={() => debouncedSearch(term)}>
+          action:
+          <Button variant="outline" size="sm" onClick={() => debouncedSearch(term)}>
               Retry
             </Button>
-          )
+
         });
       } finally {
         setSearchLoading(false);
@@ -153,8 +153,8 @@ const EnhancedProductManagement = () => {
 
     const optimisticId = `delete_${product.id}_${Date.now()}`;
     const rollback = () => {
-      setOptimisticActions(prev => prev.filter(a => a.id !== optimisticId));
-      setDeletingIds(prev => {
+      setOptimisticActions((prev) => prev.filter((a) => a.id !== optimisticId));
+      setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(product.id);
         return next;
@@ -163,39 +163,39 @@ const EnhancedProductManagement = () => {
 
     try {
       // Optimistic update
-      setOptimisticActions(prev => [...prev, {
+      setOptimisticActions((prev) => [...prev, {
         type: 'delete',
         id: optimisticId,
         data: product,
         timestamp: Date.now()
       }]);
-      setDeletingIds(prev => new Set(prev).add(product.id));
+      setDeletingIds((prev) => new Set(prev).add(product.id));
 
       // Show optimistic success toast
       const dismissToast = toast({
         title: 'Product Deleted',
         description: `${product.name} has been deleted successfully.`,
         variant: 'default',
-        action: (
-          <Button variant="outline" size="sm" onClick={() => {
-            rollback();
-            dismissToast.dismiss?.();
-            toast({
-              title: 'Delete Cancelled',
-              description: 'Product deletion has been cancelled.',
-            });
-          }}>
+        action:
+        <Button variant="outline" size="sm" onClick={() => {
+          rollback();
+          dismissToast.dismiss?.();
+          toast({
+            title: 'Delete Cancelled',
+            description: 'Product deletion has been cancelled.'
+          });
+        }}>
             Undo
           </Button>
-        )
+
       });
 
       // Actual API call
       await deleteProduct(product.id);
-      
+
       // Remove optimistic action on success
-      setOptimisticActions(prev => prev.filter(a => a.id !== optimisticId));
-      setDeletingIds(prev => {
+      setOptimisticActions((prev) => prev.filter((a) => a.id !== optimisticId));
+      setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(product.id);
         return next;
@@ -212,17 +212,17 @@ const EnhancedProductManagement = () => {
     } catch (error) {
       // Rollback on error
       rollback();
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete product';
       toast({
         title: 'Delete Failed',
         description: errorMessage,
         variant: 'destructive',
-        action: (
-          <Button variant="outline" size="sm" onClick={() => handleDelete(product)}>
+        action:
+        <Button variant="outline" size="sm" onClick={() => handleDelete(product)}>
             Retry
           </Button>
-        )
+
       });
     }
   }, [deleteProduct, fetchProducts, searchTerm, selectedCategory, toast]);
@@ -248,7 +248,7 @@ const EnhancedProductManagement = () => {
     try {
       setValidationErrors([]);
       handleCloseForm();
-      
+
       // Show success notification
       toast({
         title: 'Success',
@@ -263,10 +263,10 @@ const EnhancedProductManagement = () => {
           category_id: selectedCategory || undefined
         });
       }, 500);
-      
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save product';
-      
+
       // Check for validation errors
       if (error instanceof Error && error.message.includes('validation')) {
         setValidationErrors([{
@@ -274,16 +274,16 @@ const EnhancedProductManagement = () => {
           message: errorMessage
         }]);
       }
-      
+
       toast({
         title: 'Save Failed',
         description: errorMessage,
         variant: 'destructive',
-        action: (
-          <Button variant="outline" size="sm" onClick={handleSave}>
+        action:
+        <Button variant="outline" size="sm" onClick={handleSave}>
             Retry
           </Button>
-        )
+
       });
     }
   }, [editingProduct, handleCloseForm, toast, fetchProducts, searchTerm, selectedCategory]);
@@ -297,15 +297,15 @@ const EnhancedProductManagement = () => {
     if (isDeleting) {
       return { status: 'Deleting...', color: 'secondary', icon: Loader2 };
     }
-    
+
     if (stock === 0) {
       return { status: 'Out of Stock', color: 'destructive', icon: AlertTriangle };
     }
-    
+
     if (stock <= minLevel) {
       return { status: 'Low Stock', color: 'secondary', icon: AlertTriangle };
     }
-    
+
     return { status: 'In Stock', color: 'default', icon: CheckCircle };
   }, [deletingIds]);
 
@@ -313,23 +313,23 @@ const EnhancedProductManagement = () => {
   const handleRetry = useCallback(() => {
     clearError();
     setIsRefreshing(true);
-    
+
     Promise.all([
-      fetchProducts({
-        search: searchTerm.trim(),
-        category_id: selectedCategory || undefined
-      }),
-      // Add any other recovery operations here
+    fetchProducts({
+      search: searchTerm.trim(),
+      category_id: selectedCategory || undefined
+    })
+    // Add any other recovery operations here
     ]).finally(() => {
       setIsRefreshing(false);
     });
   }, [clearError, fetchProducts, searchTerm, selectedCategory]);
 
   // Render loading skeleton
-  const renderLoadingSkeleton = () => (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {[...Array(6)].map((_, i) => (
-        <Card key={i} className="animate-pulse">
+  const renderLoadingSkeleton = () =>
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) =>
+    <Card key={i} className="animate-pulse">
           <CardHeader className="space-y-2">
             <div className="h-4 bg-gray-300 rounded"></div>
             <div className="h-3 bg-gray-300 rounded w-3/4"></div>
@@ -341,13 +341,13 @@ const EnhancedProductManagement = () => {
             </div>
           </CardContent>
         </Card>
-      ))}
-    </div>
-  );
+    )}
+    </div>;
+
 
   // Render enhanced error state
-  const renderErrorState = () => (
-    <Alert variant="destructive" className="my-4">
+  const renderErrorState = () =>
+  <Alert variant="destructive" className="my-4">
       <AlertTriangle className="h-4 w-4" />
       <AlertDescription className="flex items-center justify-between">
         <div>
@@ -355,32 +355,32 @@ const EnhancedProductManagement = () => {
           <p className="mt-1 text-sm">
             {error?.message || 'Unable to fetch products. Please check your connection and try again.'}
           </p>
-          {error?.suggestion && (
-            <p className="mt-1 text-sm font-medium">{error.suggestion}</p>
-          )}
+          {error?.suggestion &&
+        <p className="mt-1 text-sm font-medium">{error.suggestion}</p>
+        }
         </div>
         <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRetry}
-          disabled={isRetrying}
-          className="ml-4"
-        >
-          {isRetrying ? (
-            <>
+        variant="outline"
+        size="sm"
+        onClick={handleRetry}
+        disabled={isRetrying}
+        className="ml-4">
+
+          {isRetrying ?
+        <>
               <Loader2 className="h-3 w-3 mr-2 animate-spin" />
               Retrying...
-            </>
-          ) : (
-            <>
+            </> :
+
+        <>
               <RefreshCw className="h-3 w-3 mr-2" />
               Retry
             </>
-          )}
+        }
         </Button>
       </AlertDescription>
-    </Alert>
-  );
+    </Alert>;
+
 
   return (
     <div className="space-y-6">
@@ -410,24 +410,24 @@ const EnhancedProductManagement = () => {
             </DialogHeader>
             
             {/* Validation Errors */}
-            {validationErrors.length > 0 && (
-              <Alert variant="destructive">
+            {validationErrors.length > 0 &&
+            <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   <ul className="list-disc ml-4">
-                    {validationErrors.map((error, index) => (
-                      <li key={index}>{error.message}</li>
-                    ))}
+                    {validationErrors.map((error, index) =>
+                  <li key={index}>{error.message}</li>
+                  )}
                   </ul>
                 </AlertDescription>
               </Alert>
-            )}
+            }
 
             <ProductForm
               product={editingProduct}
               onClose={handleCloseForm}
-              onSave={handleSave}
-            />
+              onSave={handleSave} />
+
           </DialogContent>
         </Dialog>
       </div>
@@ -438,9 +438,9 @@ const EnhancedProductManagement = () => {
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Filters
-            {(searchLoading || isRefreshing) && (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            )}
+            {(searchLoading || isRefreshing) &&
+            <Loader2 className="h-4 w-4 animate-spin" />
+            }
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -451,21 +451,21 @@ const EnhancedProductManagement = () => {
                   placeholder="Search products, SKU, or barcode..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pr-10"
-                />
-                {searchLoading && (
-                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
-                {searchTerm && !searchLoading && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                    onClick={() => handleSearchChange('')}
-                  >
+                  className="pr-10" />
+
+                {searchLoading &&
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                }
+                {searchTerm && !searchLoading &&
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => handleSearchChange('')}>
+
                     <X className="h-3 w-3" />
                   </Button>
-                )}
+                }
               </div>
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -474,23 +474,23 @@ const EnhancedProductManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
+                {categories.map((category) =>
+                <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name} ({category.product_count || 0})
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             <Button
               variant="outline"
               onClick={handleRetry}
-              disabled={isRetrying}
-            >
-              {isRetrying ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
+              disabled={isRetrying}>
+
+              {isRetrying ?
+              <Loader2 className="h-4 w-4 animate-spin" /> :
+
+              <RefreshCw className="h-4 w-4" />
+              }
             </Button>
           </div>
         </CardContent>
@@ -503,52 +503,52 @@ const EnhancedProductManagement = () => {
       {(loading || isRefreshing) && renderLoadingSkeleton()}
 
       {/* Products Grid */}
-      {!loading && !error && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {!loading && !error &&
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {displayProducts.map((product) => {
-            const stockStatus = getStockStatus(product);
-            const isDeleting = deletingIds.has(product.id);
-            const StatusIcon = stockStatus.icon;
-            
-            return (
-              <Card 
-                key={product.id} 
-                className={`hover:shadow-md transition-all ${
-                  isDeleting ? 'opacity-50 pointer-events-none' : ''
-                }`}
-              >
+          const stockStatus = getStockStatus(product);
+          const isDeleting = deletingIds.has(product.id);
+          const StatusIcon = stockStatus.icon;
+
+          return (
+            <Card
+              key={product.id}
+              className={`hover:shadow-md transition-all ${
+              isDeleting ? 'opacity-50 pointer-events-none' : ''}`
+              }>
+
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-lg leading-tight">
                         {product.name}
                       </CardTitle>
-                      {product.name_bn && (
-                        <p className="text-sm text-muted-foreground">
+                      {product.name_bn &&
+                    <p className="text-sm text-muted-foreground">
                           {product.name_bn}
                         </p>
-                      )}
+                    }
                     </div>
                     <div className="flex gap-1">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(product)}
-                        disabled={isDeleting}
-                      >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(product)}
+                      disabled={isDeleting}>
+
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(product)}
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(product)}
+                      disabled={isDeleting}>
+
+                        {isDeleting ?
+                      <Loader2 className="h-4 w-4 animate-spin" /> :
+
+                      <Trash2 className="h-4 w-4" />
+                      }
                       </Button>
                     </div>
                   </div>
@@ -576,52 +576,52 @@ const EnhancedProductManagement = () => {
                     <span className="text-muted-foreground">Price:</span>
                     <span className="font-semibold">৳{product.selling_price ?? product.price ?? 0}</span>
                   </div>
-                  {product.has_variants && (
-                    <div className="flex justify-between text-sm">
+                  {product.has_variants &&
+                <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Variants:</span>
                       <span>{product.variant_count} variants</span>
                     </div>
-                  )}
+                }
                 </CardContent>
-              </Card>
-            );
-          })}
+              </Card>);
+
+        })}
         </div>
-      )}
+      }
 
       {/* Empty State */}
-      {displayProducts.length === 0 && !loading && !error && (
-        <Card>
+      {displayProducts.length === 0 && !loading && !error &&
+      <Card>
           <CardContent className="flex flex-col items-center justify-center py-10">
             <Package className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No products found</h3>
             <p className="text-muted-foreground text-center mb-4">
-              {searchTerm || selectedCategory 
-                ? 'No products match your current filters. Try adjusting your search criteria.'
-                : 'Start building your inventory by adding your first product.'
-              }
+              {searchTerm || selectedCategory ?
+            'No products match your current filters. Try adjusting your search criteria.' :
+            'Start building your inventory by adding your first product.'
+            }
             </p>
-            {!searchTerm && !selectedCategory ? (
-              <Button onClick={() => setShowForm(true)}>
+            {!searchTerm && !selectedCategory ?
+          <Button onClick={() => setShowForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Product
-              </Button>
-            ) : (
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('');
-                }}
-              >
+              </Button> :
+
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedCategory('');
+            }}>
+
                 Clear Filters
               </Button>
-            )}
+          }
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default EnhancedProductManagement;

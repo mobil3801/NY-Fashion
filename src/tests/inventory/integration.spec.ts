@@ -40,8 +40,8 @@ const MockInventoryPage = () => {
       <button onClick={fetchProducts} data-testid="refresh-btn">
         Refresh
       </button>
-    </div>
-  );
+    </div>);
+
 };
 
 // Mock window.ezsite.apis
@@ -86,9 +86,9 @@ describe('Inventory Integration Tests', () => {
   describe('Product Management Integration', () => {
     it('should load and display products correctly', async () => {
       const mockProducts = [
-        { id: 1, name: 'Test Product 1', selling_price: 99.99 },
-        { id: 2, name: 'Test Product 2', selling_price: 149.99 }
-      ];
+      { id: 1, name: 'Test Product 1', selling_price: 99.99 },
+      { id: 2, name: 'Test Product 2', selling_price: 149.99 }];
+
 
       mockApis.run.mockResolvedValue({ data: mockProducts, error: null });
 
@@ -113,9 +113,9 @@ describe('Inventory Integration Tests', () => {
     });
 
     it('should handle API errors gracefully in UI', async () => {
-      mockApis.run.mockResolvedValue({ 
-        data: null, 
-        error: 'Failed to fetch products' 
+      mockApis.run.mockResolvedValue({
+        data: null,
+        error: 'Failed to fetch products'
       });
 
       renderWithQuery(<MockInventoryPage />);
@@ -147,8 +147,8 @@ describe('Inventory Integration Tests', () => {
 
       // Setup new data for refresh
       const refreshedProducts = [
-        { id: 3, name: 'Refreshed Product', selling_price: 79.99 }
-      ];
+      { id: 3, name: 'Refreshed Product', selling_price: 79.99 }];
+
       mockApis.run.mockResolvedValueOnce({ data: refreshedProducts, error: null });
 
       // Click refresh
@@ -200,18 +200,18 @@ describe('Inventory Integration Tests', () => {
               Add Stock
             </button>
             {loading && <div data-testid="loading">Processing...</div>}
-            {result && (
-              <div data-testid="result">
+            {result &&
+            <div data-testid="result">
                 {result.error ? result.error : `Movement ID: ${result.id}`}
               </div>
-            )}
-          </div>
-        );
+            }
+          </div>);
+
       };
 
-      mockApis.run.mockResolvedValue({ 
-        data: { id: 123, message: 'Stock movement recorded successfully' }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { id: 123, message: 'Stock movement recorded successfully' },
+        error: null
       });
 
       renderWithQuery(<MockStockMovementForm />);
@@ -347,30 +347,30 @@ describe('Inventory Integration Tests', () => {
               data-testid="product-name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Product Name"
-            />
+              placeholder="Product Name" />
+
             <input
               data-testid="product-price"
               type="number"
               value={formData.price_cents}
               onChange={(e) => setFormData({ ...formData, price_cents: parseInt(e.target.value) || 0 })}
-              placeholder="Price (cents)"
-            />
+              placeholder="Price (cents)" />
+
             <button onClick={handleSubmit} data-testid="save-btn">
               Save Product
             </button>
-            {result && (
-              <div data-testid="save-result">
+            {result &&
+            <div data-testid="save-result">
                 {result.error ? result.error : `Product saved with ID: ${result.id}`}
               </div>
-            )}
-          </div>
-        );
+            }
+          </div>);
+
       };
 
-      mockApis.run.mockResolvedValue({ 
-        data: { id: 456, message: 'Product created successfully' }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { id: 456, message: 'Product created successfully' },
+        error: null
       });
 
       renderWithQuery(<MockProductForm />);
@@ -411,9 +411,9 @@ describe('Inventory Integration Tests', () => {
       console.log(`Failed: ${summary.failed}`);
       console.log(`Pass Rate: ${summary.passRate.toFixed(2)}%`);
 
-      const integrationTests = summary.results.filter(r => r.result.integrationTest);
-      const performanceTests = integrationTests.filter(r => r.result.performanceTest);
-      const userFlowTests = integrationTests.filter(r => r.result.userInteractionFlow);
+      const integrationTests = summary.results.filter((r) => r.result.integrationTest);
+      const performanceTests = integrationTests.filter((r) => r.result.performanceTest);
+      const userFlowTests = integrationTests.filter((r) => r.result.userInteractionFlow);
 
       console.log('\n=== TEST CATEGORIES ===');
       console.log(`Integration Tests: ${integrationTests.length}`);

@@ -60,13 +60,13 @@ class InventoryErrorBoundary extends Component<Props, State> {
 
     // Send error to monitoring service (if available)
     try {
+
+
+
+
       // Example: Sentry, LogRocket, etc.
       // errorMonitoring.captureException(error, { extra: errorInfo });
-    } catch (monitoringError) {
-      console.error('Failed to report error:', monitoringError);
-    }
-  }
-
+    } catch (monitoringError) {console.error('Failed to report error:', monitoringError);}}
   componentWillUnmount() {
     if (this.retryTimeoutId) {
       clearTimeout(this.retryTimeoutId);
@@ -80,7 +80,7 @@ class InventoryErrorBoundary extends Component<Props, State> {
       return;
     }
 
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
@@ -122,12 +122,12 @@ class InventoryErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      const isNetworkError = this.state.error?.message?.includes('fetch') || 
-                           this.state.error?.message?.includes('network') ||
-                           this.state.error?.message?.includes('Network');
+      const isNetworkError = this.state.error?.message?.includes('fetch') ||
+      this.state.error?.message?.includes('network') ||
+      this.state.error?.message?.includes('Network');
 
       const isPermissionError = this.state.error?.message?.includes('permission') ||
-                               this.state.error?.message?.includes('unauthorized');
+      this.state.error?.message?.includes('unauthorized');
 
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
@@ -150,64 +150,64 @@ class InventoryErrorBoundary extends Component<Props, State> {
             
             <CardContent className="space-y-4">
               {/* Error Details */}
-              {process.env.NODE_ENV === 'development' && (
-                <Alert variant="destructive">
+              {process.env.NODE_ENV === 'development' &&
+              <Alert variant="destructive">
                   <Bug className="h-4 w-4" />
                   <AlertDescription>
                     <details className="mt-2">
                       <summary className="cursor-pointer font-medium">Technical Details</summary>
                       <div className="mt-2 text-sm font-mono bg-gray-100 p-2 rounded overflow-auto max-h-32">
                         <div><strong>Error:</strong> {this.state.error?.message}</div>
-                        {this.state.error?.stack && (
-                          <div className="mt-2">
+                        {this.state.error?.stack &&
+                      <div className="mt-2">
                             <strong>Stack:</strong>
                             <pre className="whitespace-pre-wrap text-xs mt-1">
                               {this.state.error.stack}
                             </pre>
                           </div>
-                        )}
+                      }
                       </div>
                     </details>
                   </AlertDescription>
                 </Alert>
-              )}
+              }
 
               {/* Suggested Actions */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
+                  <Button
                     onClick={this.handleRetry}
                     className="flex-1"
-                    disabled={this.state.retryCount >= 3}
-                  >
+                    disabled={this.state.retryCount >= 3}>
+
                     <RefreshCw className="w-4 h-4 mr-2" />
                     {this.state.retryCount >= 3 ? 'Too many retries' : `Retry (${this.state.retryCount}/3)`}
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => window.location.href = '/dashboard'}
-                    className="flex-1"
-                  >
+                    className="flex-1">
+
                     <Home className="w-4 h-4 mr-2" />
                     Go to Dashboard
                   </Button>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => window.location.reload()}
-                    className="flex-1"
-                  >
+                    className="flex-1">
+
                     Reload Page
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={this.handleReportBug}
-                    className="flex-1"
-                  >
+                    className="flex-1">
+
                     <Bug className="w-4 h-4 mr-2" />
                     Report Bug
                   </Button>
@@ -218,47 +218,47 @@ class InventoryErrorBoundary extends Component<Props, State> {
               <div className="text-sm text-muted-foreground space-y-2">
                 <p><strong>What you can try:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  {isNetworkError && (
-                    <>
+                  {isNetworkError &&
+                  <>
                       <li>Check your internet connection</li>
                       <li>Try refreshing the page</li>
                       <li>Contact your system administrator if the problem persists</li>
                     </>
-                  )}
-                  {isPermissionError && (
-                    <>
+                  }
+                  {isPermissionError &&
+                  <>
                       <li>Make sure you're logged in with the correct account</li>
                       <li>Contact your administrator to request access</li>
                       <li>Try logging out and back in</li>
                     </>
-                  )}
-                  {!isNetworkError && !isPermissionError && (
-                    <>
+                  }
+                  {!isNetworkError && !isPermissionError &&
+                  <>
                       <li>Reload the page to reset the application state</li>
                       <li>Clear your browser cache and cookies</li>
                       <li>Try using a different browser</li>
                       <li>Contact support if the error continues</li>
                     </>
-                  )}
+                  }
                 </ul>
               </div>
 
               {/* Retry count info */}
-              {this.state.retryCount > 0 && (
-                <Alert>
+              {this.state.retryCount > 0 &&
+              <Alert>
                   <AlertDescription>
                     This error has occurred {this.state.retryCount} time{this.state.retryCount > 1 ? 's' : ''}. 
-                    {this.state.retryCount >= 3 
-                      ? ' Please reload the page or contact support.' 
-                      : ' The system will automatically retry if it happens again.'
-                    }
+                    {this.state.retryCount >= 3 ?
+                  ' Please reload the page or contact support.' :
+                  ' The system will automatically retry if it happens again.'
+                  }
                   </AlertDescription>
                 </Alert>
-              )}
+              }
             </CardContent>
           </Card>
-        </div>
-      );
+        </div>);
+
     }
 
     return this.props.children;

@@ -34,17 +34,17 @@ const EnhancedStockMovement = () => {
   const { products, addStockMovement, getStockMovements } = useInventory();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [movements, setMovements] = useState<any[]>([]);
   const [showAddMovement, setShowAddMovement] = useState(false);
   const [loading, setLoading] = useState(false);
   const [validationState, setValidationState] = useState<ValidationState>({});
-  
+
   // Optimistic updates and conflicts
   const [pendingMovements, setPendingMovements] = useState<PendingMovement[]>([]);
   const [conflictResolution, setConflictResolution] = useState<any>(null);
-  
+
   // Form state with validation
   const [movementForm, setMovementForm] = useState({
     product_id: '',
@@ -57,12 +57,12 @@ const EnhancedStockMovement = () => {
   });
 
   const movementTypes = [
-    { value: 'receipt', label: 'Stock Receipt', icon: TrendingUp, color: 'green' },
-    { value: 'adjustment', label: 'Stock Adjustment', icon: RefreshCw, color: 'blue' },
-    { value: 'sale', label: 'Sale', icon: TrendingDown, color: 'red' },
-    { value: 'return', label: 'Return', icon: Package, color: 'orange' },
-    { value: 'transfer', label: 'Transfer', icon: ArrowRight, color: 'purple' }
-  ];
+  { value: 'receipt', label: 'Stock Receipt', icon: TrendingUp, color: 'green' },
+  { value: 'adjustment', label: 'Stock Adjustment', icon: RefreshCw, color: 'blue' },
+  { value: 'sale', label: 'Sale', icon: TrendingDown, color: 'red' },
+  { value: 'return', label: 'Return', icon: Package, color: 'orange' },
+  { value: 'transfer', label: 'Transfer', icon: ArrowRight, color: 'purple' }];
+
 
   // Real-time form validation
   const validateField = useCallback((field: string, value: any) => {
@@ -103,14 +103,14 @@ const EnhancedStockMovement = () => {
 
   // Enhanced form update with validation
   const updateFormField = useCallback((field: string, value: any) => {
-    setMovementForm(prev => ({ ...prev, [field]: value }));
+    setMovementForm((prev) => ({ ...prev, [field]: value }));
     validateField(field, value);
-    
+
     // Update expected stock when product changes
     if (field === 'product_id') {
-      const product = products.find(p => p.id!.toString() === value);
-      setMovementForm(prev => ({ 
-        ...prev, 
+      const product = products.find((p) => p.id!.toString() === value);
+      setMovementForm((prev) => ({
+        ...prev,
         expectedStock: product?.total_stock || 0,
         variant_id: '', // Reset variant when product changes
         unit_cost: product?.cost_price || 0
@@ -121,17 +121,17 @@ const EnhancedStockMovement = () => {
   // Fetch movements with conflict detection
   const fetchMovements = useCallback(async (productId: number, variantId?: number) => {
     if (!productId) return;
-    
+
     try {
       setLoading(true);
       const data = await getStockMovements(productId, variantId);
-      
+
       // Check for conflicts with pending movements
-      const conflicts = pendingMovements.filter(pending => 
-        pending.status === 'pending' && 
-        data.some(movement => movement.id === pending.id)
+      const conflicts = pendingMovements.filter((pending) =>
+      pending.status === 'pending' &&
+      data.some((movement) => movement.id === pending.id)
       );
-      
+
       if (conflicts.length > 0) {
         setConflictResolution({
           conflicts,
@@ -147,11 +147,11 @@ const EnhancedStockMovement = () => {
         title: 'Error',
         description: 'Failed to fetch stock movements. Please try again.',
         variant: 'destructive',
-        action: (
-          <Button variant="outline" size="sm" onClick={() => fetchMovements(productId, variantId)}>
+        action:
+        <Button variant="outline" size="sm" onClick={() => fetchMovements(productId, variantId)}>
             Retry
           </Button>
-        )
+
       });
     } finally {
       setLoading(false);
@@ -161,12 +161,12 @@ const EnhancedStockMovement = () => {
   // Enhanced movement submission with optimistic updates
   const handleAddMovement = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate all fields
-    const isFormValid = ['product_id', 'movement_type', 'quantity', 'unit_cost'].every(field => 
-      validateField(field, movementForm[field as keyof typeof movementForm])
+    const isFormValid = ['product_id', 'movement_type', 'quantity', 'unit_cost'].every((field) =>
+    validateField(field, movementForm[field as keyof typeof movementForm])
     );
-    
+
     if (!isFormValid) {
       toast({
         title: 'Validation Error',
@@ -195,33 +195,33 @@ const EnhancedStockMovement = () => {
         timestamp: Date.now(),
         status: 'pending'
       };
-      
-      setPendingMovements(prev => [...prev, tempMovement]);
-      setMovements(prev => [movementData, ...prev]);
-      
+
+      setPendingMovements((prev) => [...prev, tempMovement]);
+      setMovements((prev) => [movementData, ...prev]);
+
       // Show optimistic success
       const undoToast = toast({
         title: 'Movement Added',
-        description: `Stock movement recorded for ${products.find(p => p.id === movementData.product_id)?.name}`,
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              // Rollback optimistic update
-              setMovements(prev => prev.filter(m => m.id !== movementId));
-              setPendingMovements(prev => prev.filter(p => p.id !== movementId));
-              undoToast.dismiss?.();
-              toast({
-                title: 'Movement Cancelled',
-                description: 'Stock movement has been cancelled.'
-              });
-            }}
-          >
+        description: `Stock movement recorded for ${products.find((p) => p.id === movementData.product_id)?.name}`,
+        action:
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            // Rollback optimistic update
+            setMovements((prev) => prev.filter((m) => m.id !== movementId));
+            setPendingMovements((prev) => prev.filter((p) => p.id !== movementId));
+            undoToast.dismiss?.();
+            toast({
+              title: 'Movement Cancelled',
+              description: 'Stock movement has been cancelled.'
+            });
+          }}>
+
             <Undo className="h-3 w-3 mr-1" />
             Undo
           </Button>
-        )
+
       });
 
       // Close form
@@ -239,16 +239,16 @@ const EnhancedStockMovement = () => {
 
       // Actual API call
       await addStockMovement(movementData);
-      
+
       // Update pending status to success
-      setPendingMovements(prev => 
-        prev.map(p => 
-          p.id === movementId 
-            ? { ...p, status: 'success' as const }
-            : p
-        )
+      setPendingMovements((prev) =>
+      prev.map((p) =>
+      p.id === movementId ?
+      { ...p, status: 'success' as const } :
+      p
+      )
       );
-      
+
       // Refresh movements to get server data
       if (selectedProduct) {
         setTimeout(() => fetchMovements(selectedProduct.id), 1000);
@@ -256,32 +256,32 @@ const EnhancedStockMovement = () => {
 
     } catch (error) {
       // Rollback optimistic update on error
-      setMovements(prev => prev.filter(m => m.id !== movementId));
-      setPendingMovements(prev => 
-        prev.map(p => 
-          p.id === movementId 
-            ? { ...p, status: 'error' as const, error: error instanceof Error ? error.message : 'Unknown error' }
-            : p
-        )
+      setMovements((prev) => prev.filter((m) => m.id !== movementId));
+      setPendingMovements((prev) =>
+      prev.map((p) =>
+      p.id === movementId ?
+      { ...p, status: 'error' as const, error: error instanceof Error ? error.message : 'Unknown error' } :
+      p
+      )
       );
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to add stock movement';
       toast({
         title: 'Error',
         description: errorMessage,
         variant: 'destructive',
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              // Retry the operation
-              setShowAddMovement(true);
-            }}
-          >
+        action:
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            // Retry the operation
+            setShowAddMovement(true);
+          }}>
+
             Retry
           </Button>
-        )
+
       });
     }
   }, [movementForm, validateField, toast, user?.id, products, selectedProduct, addStockMovement, fetchMovements]);
@@ -289,10 +289,10 @@ const EnhancedStockMovement = () => {
   // Cleanup pending movements
   useEffect(() => {
     const cleanup = setInterval(() => {
-      setPendingMovements(prev => {
+      setPendingMovements((prev) => {
         const now = Date.now();
-        return prev.filter(p => 
-          p.status === 'pending' || (now - p.timestamp < 30000) // Keep for 30 seconds
+        return prev.filter((p) =>
+        p.status === 'pending' || now - p.timestamp < 30000 // Keep for 30 seconds
         );
       });
     }, 5000);
@@ -334,29 +334,29 @@ const EnhancedStockMovement = () => {
             </Alert>
             
             <div className="flex gap-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setMovements(conflictResolution.serverData);
                   setConflictResolution(null);
-                }}
-              >
+                }}>
+
                 Use Server Data
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   // Implement merge logic here
                   setMovements(conflictResolution.serverData);
                   setConflictResolution(null);
-                }}
-              >
+                }}>
+
                 Merge Changes
               </Button>
             </div>
           </div>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>);
+
   };
 
   return (
@@ -392,22 +392,22 @@ const EnhancedStockMovement = () => {
                 <Label htmlFor="product">Product *</Label>
                 <Select
                   value={movementForm.product_id}
-                  onValueChange={(value) => updateFormField('product_id', value)}
-                >
+                  onValueChange={(value) => updateFormField('product_id', value)}>
+
                   <SelectTrigger className={validationState.product_id?.isValid === false ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id!.toString()}>
+                    {products.map((product) =>
+                    <SelectItem key={product.id} value={product.id!.toString()}>
                         {product.name} ({product.sku}) - Stock: {product.total_stock || 0}
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
-                {validationState.product_id?.message && (
-                  <p className="text-sm text-red-500">{validationState.product_id.message}</p>
-                )}
+                {validationState.product_id?.message &&
+                <p className="text-sm text-red-500">{validationState.product_id.message}</p>
+                }
               </div>
 
               {/* Movement Type */}
@@ -415,25 +415,25 @@ const EnhancedStockMovement = () => {
                 <Label htmlFor="movement_type">Movement Type *</Label>
                 <Select
                   value={movementForm.movement_type}
-                  onValueChange={(value) => updateFormField('movement_type', value)}
-                >
+                  onValueChange={(value) => updateFormField('movement_type', value)}>
+
                   <SelectTrigger className={validationState.movement_type?.isValid === false ? 'border-red-500' : ''}>
                     <SelectValue placeholder="Select movement type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {movementTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                    {movementTypes.map((type) =>
+                    <SelectItem key={type.value} value={type.value}>
                         <div className="flex items-center gap-2">
                           <type.icon className="h-4 w-4" />
                           {type.label}
                         </div>
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
-                {validationState.movement_type?.message && (
-                  <p className="text-sm text-red-500">{validationState.movement_type.message}</p>
-                )}
+                {validationState.movement_type?.message &&
+                <p className="text-sm text-red-500">{validationState.movement_type.message}</p>
+                }
               </div>
 
               {/* Quantity and Unit Cost */}
@@ -448,11 +448,11 @@ const EnhancedStockMovement = () => {
                     onChange={(e) => updateFormField('quantity', parseInt(e.target.value) || 0)}
                     placeholder="0"
                     className={validationState.quantity?.isValid === false ? 'border-red-500' : ''}
-                    required
-                  />
-                  {validationState.quantity?.message && (
-                    <p className="text-sm text-red-500">{validationState.quantity.message}</p>
-                  )}
+                    required />
+
+                  {validationState.quantity?.message &&
+                  <p className="text-sm text-red-500">{validationState.quantity.message}</p>
+                  }
                 </div>
 
                 <div className="space-y-2">
@@ -465,17 +465,17 @@ const EnhancedStockMovement = () => {
                     value={movementForm.unit_cost}
                     onChange={(e) => updateFormField('unit_cost', parseFloat(e.target.value) || 0)}
                     placeholder="0.00"
-                    className={validationState.unit_cost?.isValid === false ? 'border-red-500' : ''}
-                  />
-                  {validationState.unit_cost?.message && (
-                    <p className="text-sm text-red-500">{validationState.unit_cost.message}</p>
-                  )}
+                    className={validationState.unit_cost?.isValid === false ? 'border-red-500' : ''} />
+
+                  {validationState.unit_cost?.message &&
+                  <p className="text-sm text-red-500">{validationState.unit_cost.message}</p>
+                  }
                 </div>
               </div>
 
               {/* Expected vs New Stock Preview */}
-              {movementForm.product_id && movementForm.quantity > 0 && (
-                <Alert>
+              {movementForm.product_id && movementForm.quantity > 0 &&
+              <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     <div className="flex justify-between items-center">
@@ -483,15 +483,15 @@ const EnhancedStockMovement = () => {
                       <ArrowRight className="h-4 w-4" />
                       <span>
                         New Stock: {
-                          ['receipt', 'return'].includes(movementForm.movement_type)
-                            ? movementForm.expectedStock + movementForm.quantity
-                            : movementForm.expectedStock - movementForm.quantity
-                        }
+                      ['receipt', 'return'].includes(movementForm.movement_type) ?
+                      movementForm.expectedStock + movementForm.quantity :
+                      movementForm.expectedStock - movementForm.quantity
+                      }
                       </span>
                     </div>
                   </AlertDescription>
                 </Alert>
-              )}
+              }
 
               {/* Notes */}
               <div className="space-y-2">
@@ -501,8 +501,8 @@ const EnhancedStockMovement = () => {
                   value={movementForm.notes}
                   onChange={(e) => updateFormField('notes', e.target.value)}
                   placeholder="Additional notes or reason for movement..."
-                  rows={3}
-                />
+                  rows={3} />
+
               </div>
 
               {/* Actions */}
@@ -511,14 +511,14 @@ const EnhancedStockMovement = () => {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
-                  {loading ? (
-                    <>
+                  {loading ?
+                  <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Adding...
-                    </>
-                  ) : (
-                    'Add Movement'
-                  )}
+                    </> :
+
+                  'Add Movement'
+                  }
                 </Button>
               </div>
             </form>
@@ -530,9 +530,9 @@ const EnhancedStockMovement = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         {movementTypes.map((type) => {
           const Icon = type.icon;
-          const typeMovements = movements.filter(m => m.movement_type === type.value);
+          const typeMovements = movements.filter((m) => m.movement_type === type.value);
           const totalQuantity = typeMovements.reduce((sum, m) => sum + (m.quantity || 0), 0);
-          
+
           return (
             <Card key={type.value}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -545,8 +545,8 @@ const EnhancedStockMovement = () => {
                   {typeMovements.length} transactions
                 </p>
               </CardContent>
-            </Card>
-          );
+            </Card>);
+
         })}
       </div>
 
@@ -568,69 +568,69 @@ const EnhancedStockMovement = () => {
                 const product = products.find((p) => p.id!.toString() === value);
                 setSelectedProduct(product);
                 if (product) fetchMovements(product.id);
-              }}
-            >
+              }}>
+
               <SelectTrigger className="w-64">
                 <SelectValue placeholder="Select a product" />
               </SelectTrigger>
               <SelectContent>
-                {products.map((product) => (
-                  <SelectItem key={product.id} value={product.id!.toString()}>
+                {products.map((product) =>
+                <SelectItem key={product.id} value={product.id!.toString()}>
                     {product.name} ({product.sku})
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             
-            {selectedProduct && (
-              <Badge variant="outline" className="flex items-center gap-1">
+            {selectedProduct &&
+            <Badge variant="outline" className="flex items-center gap-1">
                 <Package className="h-3 w-3" />
                 Current Stock: {selectedProduct.total_stock || 0} {selectedProduct.unit}
               </Badge>
-            )}
+            }
             
-            {selectedProduct && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fetchMovements(selectedProduct.id)}
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
+            {selectedProduct &&
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchMovements(selectedProduct.id)}
+              disabled={loading}>
+
+                {loading ?
+              <Loader2 className="h-4 w-4 animate-spin" /> :
+
+              <RefreshCw className="h-4 w-4" />
+              }
               </Button>
-            )}
+            }
           </div>
         </CardContent>
       </Card>
 
       {/* Movements Table */}
-      {selectedProduct && (
-        <Card>
+      {selectedProduct &&
+      <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Movement History - {selectedProduct.name}</span>
-              {pendingMovements.filter(p => p.status === 'pending').length > 0 && (
-                <Badge variant="secondary" className="flex items-center gap-1">
+              {pendingMovements.filter((p) => p.status === 'pending').length > 0 &&
+            <Badge variant="secondary" className="flex items-center gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  {pendingMovements.filter(p => p.status === 'pending').length} pending
+                  {pendingMovements.filter((p) => p.status === 'pending').length} pending
                 </Badge>
-              )}
+            }
             </CardTitle>
             <CardDescription>
               All stock movements for this product with real-time updates
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8">
+            {loading ?
+          <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-            ) : movements.length > 0 ? (
-              <Table>
+              </div> :
+          movements.length > 0 ?
+          <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
@@ -644,15 +644,15 @@ const EnhancedStockMovement = () => {
                 </TableHeader>
                 <TableBody>
                   {movements.map((movement) => {
-                    const typeInfo = getMovementTypeInfo(movement.movement_type);
-                    const Icon = typeInfo.icon;
-                    const pending = pendingMovements.find(p => p.id === movement.id);
-                    
-                    return (
-                      <TableRow 
-                        key={movement.id}
-                        className={pending?.status === 'pending' ? 'opacity-70' : ''}
-                      >
+                const typeInfo = getMovementTypeInfo(movement.movement_type);
+                const Icon = typeInfo.icon;
+                const pending = pendingMovements.find((p) => p.id === movement.id);
+
+                return (
+                  <TableRow
+                    key={movement.id}
+                    className={pending?.status === 'pending' ? 'opacity-70' : ''}>
+
                         <TableCell>
                           {new Date(movement.created_at).toLocaleDateString()}
                         </TableCell>
@@ -666,10 +666,10 @@ const EnhancedStockMovement = () => {
                         </TableCell>
                         <TableCell>
                           <span className={`font-mono ${
-                            ['receipt', 'return'].includes(movement.movement_type) ? 'text-green-600' :
-                            ['sale', 'adjustment'].includes(movement.movement_type) ? 'text-red-600' :
-                            'text-blue-600'
-                          }`}>
+                      ['receipt', 'return'].includes(movement.movement_type) ? 'text-green-600' :
+                      ['sale', 'adjustment'].includes(movement.movement_type) ? 'text-red-600' :
+                      'text-blue-600'}`
+                      }>
                             {formatMovementQuantity(movement.movement_type, movement.quantity)}
                           </span>
                         </TableCell>
@@ -683,38 +683,38 @@ const EnhancedStockMovement = () => {
                           {movement.notes || '-'}
                         </TableCell>
                         <TableCell>
-                          {pending?.status === 'pending' ? (
-                            <Badge variant="secondary" className="flex items-center gap-1">
+                          {pending?.status === 'pending' ?
+                      <Badge variant="secondary" className="flex items-center gap-1">
                               <Loader2 className="h-3 w-3 animate-spin" />
                               Pending
-                            </Badge>
-                          ) : pending?.status === 'error' ? (
-                            <Badge variant="destructive" className="flex items-center gap-1">
+                            </Badge> :
+                      pending?.status === 'error' ?
+                      <Badge variant="destructive" className="flex items-center gap-1">
                               <X className="h-3 w-3" />
                               Error
-                            </Badge>
-                          ) : (
-                            <Badge variant="default" className="flex items-center gap-1">
+                            </Badge> :
+
+                      <Badge variant="default" className="flex items-center gap-1">
                               <CheckCircle className="h-3 w-3" />
                               Complete
                             </Badge>
-                          )}
+                      }
                         </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                      </TableRow>);
+
+              })}
                 </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              </Table> :
+
+          <div className="text-center py-8 text-muted-foreground">
                 No stock movements found for this product
               </div>
-            )}
+          }
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default EnhancedStockMovement;

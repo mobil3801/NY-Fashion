@@ -1,16 +1,16 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  generateTestProduct, 
-  generateTestStockMovement, 
+import {
+  generateTestProduct,
+  generateTestStockMovement,
   generateTestFilters,
   validateProductResponse,
   validateStockMovementResponse,
   validateStockConsistency,
   NetworkSimulator,
   PerformanceMonitor,
-  TestResultAggregator
-} from './api-test-utils';
+  TestResultAggregator } from
+'./api-test-utils';
 
 // Mock window.ezsite.apis
 const mockApis = {
@@ -50,7 +50,7 @@ describe('Inventory API End-to-End Tests', () => {
       mockApis.run.mockResolvedValue({ data: mockProducts, error: null });
 
       const endTimer = performanceMonitor.startTimer('getProducts_basic');
-      
+
       try {
         const { data, error } = await window.ezsite.apis.run({
           path: "getProducts",
@@ -61,7 +61,7 @@ describe('Inventory API End-to-End Tests', () => {
 
         expect(error).toBeNull();
         expect(Array.isArray(data)).toBe(true);
-        
+
         if (data.length > 0) {
           const validationErrors = validateProductResponse(data[0]);
           expect(validationErrors).toHaveLength(0);
@@ -94,7 +94,7 @@ describe('Inventory API End-to-End Tests', () => {
 
       expect(error).toBeNull();
       expect(Array.isArray(data)).toBe(true);
-      
+
       testResults.addResult('getProducts_search', {
         success: true,
         filterApplied: searchFilters.search
@@ -102,9 +102,9 @@ describe('Inventory API End-to-End Tests', () => {
     });
 
     it('should handle price range filters', async () => {
-      const priceFilters = generateTestFilters({ 
-        min_price: 50, 
-        max_price: 200 
+      const priceFilters = generateTestFilters({
+        min_price: 50,
+        max_price: 200
       });
       mockApis.run.mockResolvedValue({ data: [], error: null });
 
@@ -159,7 +159,7 @@ describe('Inventory API End-to-End Tests', () => {
 
       // Should not crash and return valid response
       expect(Array.isArray(data)).toBe(true);
-      
+
       testResults.addResult('getProducts_invalid_input', {
         success: true,
         inputValidation: 'passed'
@@ -172,13 +172,13 @@ describe('Inventory API End-to-End Tests', () => {
       const newProduct = generateTestProduct();
       delete newProduct.id; // Remove ID for creation
 
-      mockApis.run.mockResolvedValue({ 
-        data: { id: 123, message: 'Product created successfully' }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { id: 123, message: 'Product created successfully' },
+        error: null
       });
 
       const endTimer = performanceMonitor.startTimer('saveProduct_create');
-      
+
       try {
         const { data, error } = await window.ezsite.apis.run({
           path: "saveProduct",
@@ -208,10 +208,10 @@ describe('Inventory API End-to-End Tests', () => {
 
     it('should update existing product successfully', async () => {
       const existingProduct = generateTestProduct({ id: 123 });
-      
-      mockApis.run.mockResolvedValue({ 
-        data: { id: 123, message: 'Product updated successfully' }, 
-        error: null 
+
+      mockApis.run.mockResolvedValue({
+        data: { id: 123, message: 'Product updated successfully' },
+        error: null
       });
 
       const { data, error } = await window.ezsite.apis.run({
@@ -251,13 +251,13 @@ describe('Inventory API End-to-End Tests', () => {
   describe('getStockMovements API Tests', () => {
     it('should fetch stock movements for a variant', async () => {
       const mockMovements = [generateTestStockMovement()];
-      mockApis.run.mockResolvedValue({ 
-        data: { movements: mockMovements }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { movements: mockMovements },
+        error: null
       });
 
       const endTimer = performanceMonitor.startTimer('getStockMovements');
-      
+
       try {
         const { data, error } = await window.ezsite.apis.run({
           path: "getStockMovements",
@@ -294,14 +294,14 @@ describe('Inventory API End-to-End Tests', () => {
   describe('addStockMovement API Tests', () => {
     it('should add stock movement successfully', async () => {
       const movement = generateTestStockMovement();
-      
-      mockApis.run.mockResolvedValue({ 
-        data: { id: 456, message: 'Stock movement recorded successfully' }, 
-        error: null 
+
+      mockApis.run.mockResolvedValue({
+        data: { id: 456, message: 'Stock movement recorded successfully' },
+        error: null
       });
 
       const endTimer = performanceMonitor.startTimer('addStockMovement');
-      
+
       try {
         const { data, error } = await window.ezsite.apis.run({
           path: "addStockMovement",
@@ -331,7 +331,7 @@ describe('Inventory API End-to-End Tests', () => {
 
     it('should validate movement type', async () => {
       const invalidMovement = generateTestStockMovement({ type: 'invalid_type' });
-      
+
       mockApis.run.mockRejectedValue(new Error('Invalid movement type'));
 
       try {
@@ -352,33 +352,33 @@ describe('Inventory API End-to-End Tests', () => {
   describe('Concurrent Operations Tests', () => {
     it('should handle concurrent stock movements correctly', async () => {
       const variantId = 1;
-      const movements = Array.from({ length: 5 }, (_, i) => 
-        generateTestStockMovement({ 
-          variant_id: variantId, 
-          delta: 5,
-          reason: `Concurrent test ${i}` 
-        })
+      const movements = Array.from({ length: 5 }, (_, i) =>
+      generateTestStockMovement({
+        variant_id: variantId,
+        delta: 5,
+        reason: `Concurrent test ${i}`
+      })
       );
 
       // Mock sequential responses
       let callCount = 0;
       mockApis.run.mockImplementation(() => {
         callCount++;
-        return Promise.resolve({ 
-          data: { id: callCount, message: 'Success' }, 
-          error: null 
+        return Promise.resolve({
+          data: { id: callCount, message: 'Success' },
+          error: null
         });
       });
 
-      const promises = movements.map(movement => 
-        window.ezsite.apis.run({
-          path: "addStockMovement",
-          param: [movement]
-        })
+      const promises = movements.map((movement) =>
+      window.ezsite.apis.run({
+        path: "addStockMovement",
+        param: [movement]
+      })
       );
 
       const results = await Promise.allSettled(promises);
-      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
 
       testResults.addResult('concurrent_movements', {
         success: successful === movements.length,
@@ -395,7 +395,7 @@ describe('Inventory API End-to-End Tests', () => {
 
       // Test getProducts performance
       mockApis.run.mockResolvedValue({ data: [], error: null });
-      
+
       const startTime = performance.now();
       await window.ezsite.apis.run({
         path: "getProducts",

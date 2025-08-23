@@ -75,7 +75,7 @@ export interface AdjustmentValidationRules {
 
 class InventoryValidator {
   private static instance: InventoryValidator;
-  
+
   static getInstance(): InventoryValidator {
     if (!this.instance) {
       this.instance = new InventoryValidator();
@@ -139,8 +139,8 @@ class InventoryValidator {
     }
 
     if (product.sku?.trim() && rules.sku.unique) {
-      const duplicate = existingProducts.find(p => 
-        p.sku === product.sku.trim() && p.id !== product.id
+      const duplicate = existingProducts.find((p) =>
+      p.sku === product.sku.trim() && p.id !== product.id
       );
       if (duplicate) {
         errors.push({
@@ -164,7 +164,7 @@ class InventoryValidator {
 
     // Price validation
     const price = parseFloat(product.selling_price || product.price || 0);
-    
+
     if (rules.price.required && (isNaN(price) || price <= 0)) {
       errors.push({
         field: 'price',
@@ -209,7 +209,7 @@ class InventoryValidator {
 
     // Stock validation
     const stock = parseInt(product.total_stock || product.current_stock || 0);
-    
+
     if (rules.stock.required && (isNaN(stock) || stock < 0)) {
       errors.push({
         field: 'stock',
@@ -255,7 +255,7 @@ class InventoryValidator {
 
     // Quantity validation
     const quantity = parseInt(movement.quantity || 0);
-    
+
     if (rules.quantity.required && (isNaN(quantity) || quantity <= rules.quantity.min)) {
       errors.push({
         field: 'quantity',
@@ -370,7 +370,7 @@ class InventoryValidator {
 
     // Items validation
     const items = adjustment.items || [];
-    
+
     if (items.length < rules.items.minItems) {
       errors.push({
         field: 'items',
@@ -392,7 +392,7 @@ class InventoryValidator {
 
     // Individual item validation
     let totalAdjustmentValue = 0;
-    
+
     items.forEach((item: any, index: number) => {
       const difference = Math.abs(item.difference || 0);
       const value = difference * (item.unit_cost || 0);
@@ -517,19 +517,19 @@ export const defaultStockMovementRules: StockMovementValidationRules = {
 };
 
 export const defaultAdjustmentRules: AdjustmentValidationRules = {
-  reason: { 
-    required: true, 
+  reason: {
+    required: true,
     allowedReasons: [
-      'Physical Count Discrepancy',
-      'Damaged Goods',
-      'Expired Items',
-      'Theft/Loss',
-      'System Error',
-      'Supplier Return',
-      'Quality Issues',
-      'Warehouse Transfer',
-      'Other'
-    ]
+    'Physical Count Discrepancy',
+    'Damaged Goods',
+    'Expired Items',
+    'Theft/Loss',
+    'System Error',
+    'Supplier Return',
+    'Quality Issues',
+    'Warehouse Transfer',
+    'Other']
+
   },
   items: { minItems: 1, maxItems: 50 },
   approval: { required: true, threshold: 1000 }
@@ -538,7 +538,7 @@ export const defaultAdjustmentRules: AdjustmentValidationRules = {
 // Validation helper functions
 export const hasErrors = (result: ValidationResult): boolean => result.errors.length > 0;
 export const hasWarnings = (result: ValidationResult): boolean => result.warnings.length > 0;
-export const getErrorMessages = (result: ValidationResult): string[] => 
-  result.errors.map(error => error.message);
-export const getWarningMessages = (result: ValidationResult): string[] => 
-  result.warnings.map(warning => warning.message);
+export const getErrorMessages = (result: ValidationResult): string[] =>
+result.errors.map((error) => error.message);
+export const getWarningMessages = (result: ValidationResult): string[] =>
+result.warnings.map((warning) => warning.message);

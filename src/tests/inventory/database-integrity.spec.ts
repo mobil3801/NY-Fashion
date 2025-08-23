@@ -26,13 +26,13 @@ describe('Database Integrity Tests', () => {
   describe('Stock Consistency Validation', () => {
     it('should validate stock calculations match movements', async () => {
       const variantId = 1;
-      
+
       // Mock stock movements
       const mockMovements = [
-        { delta: 100, type: 'receipt', created_at: '2024-01-01' },
-        { delta: -20, type: 'sale', created_at: '2024-01-02' },
-        { delta: 50, type: 'adjustment', created_at: '2024-01-03' }
-      ];
+      { delta: 100, type: 'receipt', created_at: '2024-01-01' },
+      { delta: -20, type: 'sale', created_at: '2024-01-02' },
+      { delta: 50, type: 'adjustment', created_at: '2024-01-03' }];
+
 
       // Mock inventory lot
       const mockInventoryLot = {
@@ -40,14 +40,14 @@ describe('Database Integrity Tests', () => {
         VirtualCount: 1
       };
 
-      mockApis.run.mockResolvedValue({ 
-        data: { movements: mockMovements }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { movements: mockMovements },
+        error: null
       });
-      
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockInventoryLot, 
-        error: null 
+
+      mockApis.tablePage.mockResolvedValue({
+        data: mockInventoryLot,
+        error: null
       });
 
       const result = await validateStockConsistency(variantId);
@@ -67,12 +67,12 @@ describe('Database Integrity Tests', () => {
 
     it('should detect stock inconsistencies', async () => {
       const variantId = 2;
-      
+
       // Mock stock movements that don't match inventory
       const mockMovements = [
-        { delta: 100, type: 'receipt', created_at: '2024-01-01' },
-        { delta: -30, type: 'sale', created_at: '2024-01-02' }
-      ];
+      { delta: 100, type: 'receipt', created_at: '2024-01-01' },
+      { delta: -30, type: 'sale', created_at: '2024-01-02' }];
+
 
       // Mock inventory lot with inconsistent value
       const mockInventoryLot = {
@@ -80,14 +80,14 @@ describe('Database Integrity Tests', () => {
         VirtualCount: 1
       };
 
-      mockApis.run.mockResolvedValue({ 
-        data: { movements: mockMovements }, 
-        error: null 
+      mockApis.run.mockResolvedValue({
+        data: { movements: mockMovements },
+        error: null
       });
-      
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockInventoryLot, 
-        error: null 
+
+      mockApis.tablePage.mockResolvedValue({
+        data: mockInventoryLot,
+        error: null
       });
 
       const result = await validateStockConsistency(variantId);
@@ -132,9 +132,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockProduct, 
-        error: null 
+      mockApis.tablePage.mockResolvedValue({
+        data: mockProduct,
+        error: null
       });
 
       const { data, error } = await window.ezsite.apis.tablePage(36848, {
@@ -144,15 +144,15 @@ describe('Database Integrity Tests', () => {
 
       expect(error).toBeNull();
       expect(data.List).toHaveLength(1);
-      
+
       const product = data.List[0];
       const requiredFields = [
-        'id', 'name', 'category_id', 'cost_price', 'selling_price',
-        'is_active', 'created_at', 'updated_at'
-      ];
+      'id', 'name', 'category_id', 'cost_price', 'selling_price',
+      'is_active', 'created_at', 'updated_at'];
 
-      const missingFields = requiredFields.filter(field => 
-        product[field] === undefined || product[field] === null
+
+      const missingFields = requiredFields.filter((field) =>
+      product[field] === undefined || product[field] === null
       );
 
       expect(missingFields).toHaveLength(0);
@@ -179,9 +179,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockMovement, 
-        error: null 
+      mockApis.tablePage.mockResolvedValue({
+        data: mockMovement,
+        error: null
       });
 
       const { data, error } = await window.ezsite.apis.tablePage(36851, {
@@ -191,12 +191,12 @@ describe('Database Integrity Tests', () => {
 
       expect(error).toBeNull();
       expect(data.List).toHaveLength(1);
-      
+
       const movement = data.List[0];
       const requiredFields = ['id', 'variant_id', 'delta', 'type', 'created_at'];
 
-      const missingFields = requiredFields.filter(field => 
-        movement[field] === undefined || movement[field] === null
+      const missingFields = requiredFields.filter((field) =>
+      movement[field] === undefined || movement[field] === null
       );
 
       expect(missingFields).toHaveLength(0);
@@ -234,9 +234,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage
-        .mockResolvedValueOnce({ data: mockProduct, error: null })
-        .mockResolvedValueOnce({ data: mockCategory, error: null });
+      mockApis.tablePage.
+      mockResolvedValueOnce({ data: mockProduct, error: null }).
+      mockResolvedValueOnce({ data: mockCategory, error: null });
 
       // Get product
       const { data: productData } = await window.ezsite.apis.tablePage(36848, {
@@ -245,7 +245,7 @@ describe('Database Integrity Tests', () => {
       });
 
       const product = productData.List[0];
-      
+
       // Verify category exists
       const { data: categoryData } = await window.ezsite.apis.tablePage(36847, {
         PageNo: 1,
@@ -282,9 +282,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage
-        .mockResolvedValueOnce({ data: mockMovement, error: null })
-        .mockResolvedValueOnce({ data: mockVariant, error: null });
+      mockApis.tablePage.
+      mockResolvedValueOnce({ data: mockMovement, error: null }).
+      mockResolvedValueOnce({ data: mockVariant, error: null });
 
       // Get movement
       const { data: movementData } = await window.ezsite.apis.tablePage(36851, {
@@ -293,7 +293,7 @@ describe('Database Integrity Tests', () => {
       });
 
       const movement = movementData.List[0];
-      
+
       // Verify variant exists
       const { data: variantData } = await window.ezsite.apis.tablePage(36849, {
         PageNo: 1,
@@ -327,9 +327,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockProduct, 
-        error: null 
+      mockApis.tablePage.mockResolvedValue({
+        data: mockProduct,
+        error: null
       });
 
       const { data } = await window.ezsite.apis.tablePage(36848, {
@@ -338,14 +338,14 @@ describe('Database Integrity Tests', () => {
       });
 
       const product = data.List[0];
-      
-      const numericFields = [
-        'id', 'cost_price', 'selling_price', 'current_stock', 
-        'min_stock_level', 'max_stock_level', 'tax_rate'
-      ];
 
-      const invalidFields = numericFields.filter(field => 
-        typeof product[field] !== 'number' || isNaN(product[field])
+      const numericFields = [
+      'id', 'cost_price', 'selling_price', 'current_stock',
+      'min_stock_level', 'max_stock_level', 'tax_rate'];
+
+
+      const invalidFields = numericFields.filter((field) =>
+      typeof product[field] !== 'number' || isNaN(product[field])
       );
 
       testResults.addResult('numeric_field_validation', {
@@ -366,9 +366,9 @@ describe('Database Integrity Tests', () => {
         }]
       };
 
-      mockApis.tablePage.mockResolvedValue({ 
-        data: mockProduct, 
-        error: null 
+      mockApis.tablePage.mockResolvedValue({
+        data: mockProduct,
+        error: null
       });
 
       const { data } = await window.ezsite.apis.tablePage(36848, {
@@ -377,11 +377,11 @@ describe('Database Integrity Tests', () => {
       });
 
       const product = data.List[0];
-      
+
       const booleanFields = ['is_active', 'is_trackable', 'tax_exempt'];
 
-      const invalidFields = booleanFields.filter(field => 
-        typeof product[field] !== 'boolean'
+      const invalidFields = booleanFields.filter((field) =>
+      typeof product[field] !== 'boolean'
       );
 
       testResults.addResult('boolean_field_validation', {

@@ -49,21 +49,21 @@ describe('Complete Inventory API Test Suite', () => {
 
   it('should validate overall system health', async () => {
     console.log('\n🏥 Running System Health Validation...');
-    
+
     try {
       // Mock system health checks
       const healthChecks = await Promise.allSettled([
-        validateAPIEndpoints(),
-        validateDatabaseConnection(),
-        validateNetworkResilience(),
-        validateUIResponsiveness()
-      ]);
+      validateAPIEndpoints(),
+      validateDatabaseConnection(),
+      validateNetworkResilience(),
+      validateUIResponsiveness()]
+      );
 
-      const passedChecks = healthChecks.filter(result => result.status === 'fulfilled').length;
+      const passedChecks = healthChecks.filter((result) => result.status === 'fulfilled').length;
       const failedChecks = healthChecks.length - passedChecks;
 
       console.log(`✅ Health Checks: ${passedChecks}/${healthChecks.length} passed`);
-      
+
       if (failedChecks > 0) {
         console.log(`⚠️ Warning: ${failedChecks} health checks failed`);
       }
@@ -72,7 +72,7 @@ describe('Complete Inventory API Test Suite', () => {
         total: healthChecks.length,
         passed: passedChecks,
         failed: failedChecks,
-        passRate: (passedChecks / healthChecks.length) * 100
+        passRate: passedChecks / healthChecks.length * 100
       };
 
       expect(passedChecks).toBeGreaterThan(0);
@@ -85,20 +85,20 @@ describe('Complete Inventory API Test Suite', () => {
 
 async function validateAPIEndpoints(): Promise<void> {
   console.log('  🔍 Validating API endpoints...');
-  
+
   // Mock API endpoint validation
   const endpoints = [
-    'getProducts',
-    'saveProduct', 
-    'getStockMovements',
-    'addStockMovement',
-    'updateStock'
-  ];
+  'getProducts',
+  'saveProduct',
+  'getStockMovements',
+  'addStockMovement',
+  'updateStock'];
+
 
   const validationPromises = endpoints.map(async (endpoint) => {
     try {
       // This would typically make actual calls to validate endpoints
-      await new Promise(resolve => setTimeout(resolve, 100)); // Simulate validation
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate validation
       return { endpoint, status: 'healthy' };
     } catch (error) {
       return { endpoint, status: 'unhealthy', error: error.message };
@@ -106,12 +106,12 @@ async function validateAPIEndpoints(): Promise<void> {
   });
 
   const results = await Promise.allSettled(validationPromises);
-  const healthyEndpoints = results.filter(r => 
-    r.status === 'fulfilled' && r.value.status === 'healthy'
+  const healthyEndpoints = results.filter((r) =>
+  r.status === 'fulfilled' && r.value.status === 'healthy'
   ).length;
 
   console.log(`    📊 API Endpoints: ${healthyEndpoints}/${endpoints.length} healthy`);
-  
+
   if (healthyEndpoints < endpoints.length) {
     throw new Error(`Only ${healthyEndpoints}/${endpoints.length} API endpoints are healthy`);
   }
@@ -119,19 +119,19 @@ async function validateAPIEndpoints(): Promise<void> {
 
 async function validateDatabaseConnection(): Promise<void> {
   console.log('  🔍 Validating database connection...');
-  
+
   try {
     // Mock database connection test
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     // Check if required tables exist (mock check)
     const requiredTables = [
-      'products',
-      'product_variants', 
-      'inventory_lots',
-      'stock_movements',
-      'categories'
-    ];
+    'products',
+    'product_variants',
+    'inventory_lots',
+    'stock_movements',
+    'categories'];
+
 
     console.log(`    📊 Database: All ${requiredTables.length} tables accessible`);
   } catch (error) {
@@ -141,18 +141,18 @@ async function validateDatabaseConnection(): Promise<void> {
 
 async function validateNetworkResilience(): Promise<void> {
   console.log('  🔍 Validating network resilience...');
-  
+
   try {
     // Mock network resilience tests
     const scenarios = [
-      'offline_recovery',
-      'timeout_handling', 
-      'retry_mechanisms',
-      'concurrent_requests'
-    ];
+    'offline_recovery',
+    'timeout_handling',
+    'retry_mechanisms',
+    'concurrent_requests'];
 
-    await Promise.all(scenarios.map(scenario => 
-      new Promise(resolve => setTimeout(resolve, 150))
+
+    await Promise.all(scenarios.map((scenario) =>
+    new Promise((resolve) => setTimeout(resolve, 150))
     ));
 
     console.log(`    📊 Network: All ${scenarios.length} resilience scenarios passed`);
@@ -163,18 +163,18 @@ async function validateNetworkResilience(): Promise<void> {
 
 async function validateUIResponsiveness(): Promise<void> {
   console.log('  🔍 Validating UI responsiveness...');
-  
+
   try {
     // Mock UI responsiveness tests
     const components = [
-      'ProductList',
-      'ProductForm',
-      'StockMovements', 
-      'InventoryDashboard'
-    ];
+    'ProductList',
+    'ProductForm',
+    'StockMovements',
+    'InventoryDashboard'];
 
-    await Promise.all(components.map(component =>
-      new Promise(resolve => setTimeout(resolve, 100))
+
+    await Promise.all(components.map((component) =>
+    new Promise((resolve) => setTimeout(resolve, 100))
     ));
 
     console.log(`    📊 UI: All ${components.length} components responsive`);
@@ -219,7 +219,7 @@ function generateFinalReport(results: any, duration: number): void {
   if (report.summary.passRate < 95) {
     report.recommendations.push('Consider investigating failed tests for system stability');
   }
-  
+
   if (duration > 30000) {
     report.recommendations.push('Test suite duration exceeds 30s - consider optimizing');
   }
@@ -251,7 +251,7 @@ function generateFinalReport(results: any, duration: number): void {
 
   console.log('\n='.repeat(60));
   console.log('🎉 Inventory API Testing Complete!');
-  
+
   // Export report for external tools
   if (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') {
     try {

@@ -186,14 +186,14 @@ function monitorInventoryPerformance() {
     }
 
     // Calculate summary statistics
-    const successfulQueries = results.metrics.filter(m => m.status !== 'error');
+    const successfulQueries = results.metrics.filter((m) => m.status !== 'error');
     const totalExecutionTime = successfulQueries.reduce((sum, m) => sum + (m.executionTime || 0), 0);
-    
+
     results.summary.totalQueries = results.metrics.length;
     results.summary.successfulQueries = successfulQueries.length;
-    results.summary.averageResponseTime = successfulQueries.length > 0 ? 
-      totalExecutionTime / successfulQueries.length : 0;
-    results.summary.slowQueries = successfulQueries.filter(m => m.status === 'slow').length;
+    results.summary.averageResponseTime = successfulQueries.length > 0 ?
+    totalExecutionTime / successfulQueries.length : 0;
+    results.summary.slowQueries = successfulQueries.filter((m) => m.status === 'slow').length;
     results.summary.totalExecutionTime = Date.now() - startTime;
 
     // Add general recommendations based on metrics

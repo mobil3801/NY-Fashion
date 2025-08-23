@@ -79,7 +79,7 @@ export class NetworkSimulator {
 
       // Simulate latency
       if (this.latency > 0) {
-        await new Promise(resolve => setTimeout(resolve, this.latency));
+        await new Promise((resolve) => setTimeout(resolve, this.latency));
       }
 
       return this.originalFetch(...args);
@@ -96,7 +96,7 @@ export const validateProductResponse = (product: any) => {
   const requiredFields = ['id', 'name', 'category_id', 'selling_price', 'cost_price'];
   const errors: string[] = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     if (product[field] === undefined || product[field] === null) {
       errors.push(`Missing required field: ${field}`);
     }
@@ -125,7 +125,7 @@ export const validateStockMovementResponse = (movement: any) => {
   const requiredFields = ['id', 'variant_id', 'delta', 'type', 'created_at'];
   const errors: string[] = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     if (movement[field] === undefined || movement[field] === null) {
       errors.push(`Missing required field: ${field}`);
     }
@@ -240,14 +240,14 @@ export class TestResultAggregator {
 
   getSummary() {
     const total = this.results.length;
-    const passed = this.results.filter(r => r.result.success).length;
+    const passed = this.results.filter((r) => r.result.success).length;
     const failed = total - passed;
 
     return {
       total,
       passed,
       failed,
-      passRate: total > 0 ? (passed / total) * 100 : 0,
+      passRate: total > 0 ? passed / total * 100 : 0,
       results: this.results
     };
   }
@@ -257,7 +257,7 @@ export class TestResultAggregator {
     return {
       ...summary,
       generatedAt: new Date().toISOString(),
-      details: this.results.map(r => ({
+      details: this.results.map((r) => ({
         test: r.test,
         passed: r.result.success,
         duration: r.result.duration,

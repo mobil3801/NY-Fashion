@@ -1,11 +1,11 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { 
-  NetworkSimulator, 
-  PerformanceMonitor, 
+import {
+  NetworkSimulator,
+  PerformanceMonitor,
   TestResultAggregator,
-  generateTestProduct
-} from './api-test-utils';
+  generateTestProduct } from
+'./api-test-utils';
 
 // Mock window.ezsite.apis
 const mockApis = {
@@ -52,7 +52,7 @@ describe('Network Failure Simulation Tests', () => {
         });
       } catch (error) {
         const duration = endTimer();
-        
+
         expect(error.name).toBe('TypeError');
         expect(error.message).toContain('Failed to fetch');
 
@@ -109,12 +109,12 @@ describe('Network Failure Simulation Tests', () => {
       networkSimulator.install();
 
       // Mock timeout error after delay
-      mockApis.run.mockImplementation(() => 
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            reject(new Error('Request timeout'));
-          }, 1000); // Shorter timeout for testing
-        })
+      mockApis.run.mockImplementation(() =>
+      new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timeout'));
+        }, 1000); // Shorter timeout for testing
+      })
       );
 
       const endTimer = performanceMonitor.startTimer('timeout_handling');
@@ -126,7 +126,7 @@ describe('Network Failure Simulation Tests', () => {
         });
       } catch (error) {
         const duration = endTimer();
-        
+
         expect(error.message).toContain('timeout');
 
         testResults.addResult('timeout_handling', {
@@ -144,16 +144,16 @@ describe('Network Failure Simulation Tests', () => {
       networkSimulator.setLatency(slowLatency);
       networkSimulator.install();
 
-      mockApis.run.mockImplementation(() => 
-        new Promise(resolve => {
-          setTimeout(() => {
-            resolve({ data: [], error: null });
-          }, slowLatency);
-        })
+      mockApis.run.mockImplementation(() =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ data: [], error: null });
+        }, slowLatency);
+      })
       );
 
       const endTimer = performanceMonitor.startTimer('slow_network');
-      
+
       const { data, error } = await window.ezsite.apis.run({
         path: "getProducts",
         param: [{}]
@@ -201,16 +201,16 @@ describe('Network Failure Simulation Tests', () => {
           });
           results.push({ success: true, attempt: i + 1 });
         } catch (error) {
-          results.push({ 
-            success: false, 
-            attempt: i + 1, 
-            error: error.message 
+          results.push({
+            success: false,
+            attempt: i + 1,
+            error: error.message
           });
         }
       }
 
-      const successfulAttempts = results.filter(r => r.success).length;
-      const failedAttempts = results.filter(r => !r.success).length;
+      const successfulAttempts = results.filter((r) => r.success).length;
+      const failedAttempts = results.filter((r) => !r.success).length;
       const actualFailureRate = failedAttempts / attempts;
 
       testResults.addResult('intermittent_failures', {
@@ -243,10 +243,10 @@ describe('Network Failure Simulation Tests', () => {
       mockApis.run.mockImplementation(() => {
         requestId++;
         const currentId = requestId;
-        
+
         return new Promise((resolve, reject) => {
           const delay = Math.random() * 2000 + 500; // 0.5-2.5 seconds
-          
+
           setTimeout(() => {
             if (Math.random() < 0.2) {
               reject(new Error(`Network error for request ${currentId}`));
@@ -263,7 +263,7 @@ describe('Network Failure Simulation Tests', () => {
           window.ezsite.apis.run({
             path: "getProducts",
             param: [{ search: `concurrent_test_${i}` }]
-          }).catch(error => ({ error: error.message, requestId: i }))
+          }).catch((error) => ({ error: error.message, requestId: i }))
         );
       }
 
@@ -271,13 +271,13 @@ describe('Network Failure Simulation Tests', () => {
       const results = await Promise.allSettled(requests);
       const duration = endTimer();
 
-      const successful = results.filter(r => 
-        r.status === 'fulfilled' && !r.value.error
+      const successful = results.filter((r) =>
+      r.status === 'fulfilled' && !r.value.error
       ).length;
 
-      const failed = results.filter(r => 
-        r.status === 'rejected' || 
-        (r.status === 'fulfilled' && r.value.error)
+      const failed = results.filter((r) =>
+      r.status === 'rejected' ||
+      r.status === 'fulfilled' && r.value.error
       ).length;
 
       testResults.addResult('concurrent_network_stress', {
@@ -302,12 +302,12 @@ describe('Network Failure Simulation Tests', () => {
       delete product.id; // New product
 
       // First attempt fails
-      mockApis.run
-        .mockRejectedValueOnce(new Error('Network error during save'))
-        .mockResolvedValueOnce({ 
-          data: { id: 123, message: 'Product created successfully' }, 
-          error: null 
-        });
+      mockApis.run.
+      mockRejectedValueOnce(new Error('Network error during save')).
+      mockResolvedValueOnce({
+        data: { id: 123, message: 'Product created successfully' },
+        error: null
+      });
 
       // First attempt should fail
       try {
@@ -341,15 +341,15 @@ describe('Network Failure Simulation Tests', () => {
       product.id = 456; // Existing product
 
       let updateCount = 0;
-      
+
       // Mock delayed response to simulate network recovery
       mockApis.run.mockImplementation(() => {
         updateCount++;
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
           setTimeout(() => {
-            resolve({ 
-              data: { id: 456, message: 'Product updated successfully' }, 
-              error: null 
+            resolve({
+              data: { id: 456, message: 'Product updated successfully' },
+              error: null
             });
           }, 500);
         });
@@ -357,22 +357,22 @@ describe('Network Failure Simulation Tests', () => {
 
       // Simulate user clicking save multiple times during network delay
       const updates = [
-        window.ezsite.apis.run({
-          path: "saveProduct",
-          param: [{ ...product, name: 'Updated Name 1' }]
-        }),
-        window.ezsite.apis.run({
-          path: "saveProduct",
-          param: [{ ...product, name: 'Updated Name 2' }]
-        }),
-        window.ezsite.apis.run({
-          path: "saveProduct",
-          param: [{ ...product, name: 'Updated Name 3' }]
-        })
-      ];
+      window.ezsite.apis.run({
+        path: "saveProduct",
+        param: [{ ...product, name: 'Updated Name 1' }]
+      }),
+      window.ezsite.apis.run({
+        path: "saveProduct",
+        param: [{ ...product, name: 'Updated Name 2' }]
+      }),
+      window.ezsite.apis.run({
+        path: "saveProduct",
+        param: [{ ...product, name: 'Updated Name 3' }]
+      })];
+
 
       const results = await Promise.allSettled(updates);
-      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const successful = results.filter((r) => r.status === 'fulfilled').length;
 
       testResults.addResult('duplicate_prevention', {
         success: successful >= 1, // At least one update succeeded
@@ -396,11 +396,11 @@ describe('Network Failure Simulation Tests', () => {
 
       mockApis.run.mockImplementation(() => {
         attemptCount++;
-        
+
         if (attemptCount < maxRetries) {
           return Promise.reject(new Error('Temporary network error'));
         }
-        
+
         return Promise.resolve({ data: [], error: null });
       });
 
@@ -419,7 +419,7 @@ describe('Network Failure Simulation Tests', () => {
           if (attempt < maxRetries) {
             const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
             retryDelays.push(delay);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
             throw error;
           }
@@ -457,7 +457,7 @@ describe('Network Failure Simulation Tests', () => {
       console.log(`Passed: ${summary.passed}`);
       console.log(`Failed: ${summary.failed}`);
       console.log(`Pass Rate: ${summary.passRate.toFixed(2)}%`);
-      
+
       console.log('\n=== PERFORMANCE METRICS ===');
       Object.entries(performanceMetrics).forEach(([operation, metrics]) => {
         console.log(`${operation}:`);
@@ -468,11 +468,11 @@ describe('Network Failure Simulation Tests', () => {
       });
 
       console.log('\n=== NETWORK TEST CATEGORIES ===');
-      const networkTests = summary.results.filter(r => r.result.networkTest);
-      const offlineTests = networkTests.filter(r => r.result.errorType === 'offline');
-      const timeoutTests = networkTests.filter(r => r.result.errorType === 'timeout');
-      const intermittentTests = networkTests.filter(r => r.result.intermittentTest);
-      const concurrentTests = networkTests.filter(r => r.result.concurrentTest);
+      const networkTests = summary.results.filter((r) => r.result.networkTest);
+      const offlineTests = networkTests.filter((r) => r.result.errorType === 'offline');
+      const timeoutTests = networkTests.filter((r) => r.result.errorType === 'timeout');
+      const intermittentTests = networkTests.filter((r) => r.result.intermittentTest);
+      const concurrentTests = networkTests.filter((r) => r.result.concurrentTest);
 
       console.log(`Offline Tests: ${offlineTests.length}`);
       console.log(`Timeout Tests: ${timeoutTests.length}`);

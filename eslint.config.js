@@ -28,6 +28,7 @@ export default tseslint.config(
       "no-undef": "error",
 
       // Prevent importing from wrong debug context paths to avoid duplicate contexts
+      // Prevent importing old permission utilities
       "no-restricted-imports": [
       "error",
       {
@@ -35,6 +36,10 @@ export default tseslint.config(
         {
           "group": ["@/contexts/DebugContext", "@/debug/DebugProvider", "**/debug/DebugProvider"],
           "message": "Import debug functionality from '@/debug' barrel export only to use the consolidated context."
+        },
+        {
+          "group": ["@/utils/permissions", "**/utils/permissions"],
+          "message": "Use '@/auth/usePermissions' hook instead of old permission utilities for consistency."
         }],
 
         "paths": [
@@ -45,6 +50,10 @@ export default tseslint.config(
         {
           "name": "./debug/DebugProvider",
           "message": "Import from '@/debug' barrel only."
+        },
+        {
+          "name": "@/utils/permissions",
+          "message": "Use '@/auth/usePermissions' hook instead."
         }]
 
       }]

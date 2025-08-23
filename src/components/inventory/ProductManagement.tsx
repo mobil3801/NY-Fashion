@@ -7,8 +7,8 @@ const ProductManagement = () => {
   return (
     <InventoryErrorBoundary>
       <EnhancedProductManagement />
-    </InventoryErrorBoundary>
-  );
+    </InventoryErrorBoundary>);
+
 };
 
 export default ProductManagement;

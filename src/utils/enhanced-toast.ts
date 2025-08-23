@@ -34,60 +34,60 @@ const errorCategoryConfig = {
     color: 'orange',
     defaultMessage: 'Connection error. Please check your internet connection.',
     suggestions: [
-      'Check your internet connection',
-      'Try refreshing the page',
-      'Wait a moment and try again'
-    ]
+    'Check your internet connection',
+    'Try refreshing the page',
+    'Wait a moment and try again']
+
   },
   validation: {
     icon: AlertTriangle,
     color: 'yellow',
     defaultMessage: 'Please fix the errors and try again.',
     suggestions: [
-      'Review the highlighted fields',
-      'Ensure all required information is provided',
-      'Check the format of your input'
-    ]
+    'Review the highlighted fields',
+    'Ensure all required information is provided',
+    'Check the format of your input']
+
   },
   permission: {
     icon: X,
     color: 'red',
     defaultMessage: 'You don\'t have permission to perform this action.',
     suggestions: [
-      'Contact your administrator',
-      'Ensure you\'re logged in with the correct account',
-      'Try logging out and back in'
-    ]
+    'Contact your administrator',
+    'Ensure you\'re logged in with the correct account',
+    'Try logging out and back in']
+
   },
   business: {
     icon: AlertTriangle,
     color: 'blue',
     defaultMessage: 'This action cannot be completed due to business rules.',
     suggestions: [
-      'Review the business rules',
-      'Check if prerequisites are met',
-      'Contact support for clarification'
-    ]
+    'Review the business rules',
+    'Check if prerequisites are met',
+    'Contact support for clarification']
+
   },
   system: {
     icon: Bug,
     color: 'red',
     defaultMessage: 'A system error occurred. Please try again.',
     suggestions: [
-      'Try the action again',
-      'Refresh the page',
-      'Contact support if the problem persists'
-    ]
+    'Try the action again',
+    'Refresh the page',
+    'Contact support if the problem persists']
+
   },
   timeout: {
     icon: Loader2,
     color: 'gray',
     defaultMessage: 'The request took too long to complete.',
     suggestions: [
-      'Try again with a smaller request',
-      'Check your connection speed',
-      'Wait a moment and retry'
-    ]
+    'Try again with a smaller request',
+    'Check your connection speed',
+    'Wait a moment and retry']
+
   }
 };
 
@@ -101,7 +101,7 @@ const priorityConfig = {
 class EnhancedToastManager {
   private static instance: EnhancedToastManager;
   private activeToasts = new Map<string, any>();
-  private retryStates = new Map<string, { count: number; maxRetries: number }>();
+  private retryStates = new Map<string, {count: number;maxRetries: number;}>();
 
   static getInstance(): EnhancedToastManager {
     if (!this.instance) {
@@ -156,9 +156,9 @@ class EnhancedToastManager {
               console.error('Retry failed:', error);
             }
           }
-        }, 
-          React.createElement(RefreshCw, { className: "h-3 w-3 mr-1" }),
-          "Retry"
+        },
+        React.createElement(RefreshCw, { className: "h-3 w-3 mr-1" }),
+        "Retry"
         )
       );
     }
@@ -179,8 +179,8 @@ class EnhancedToastManager {
             }
           }
         },
-          React.createElement(Undo, { className: "h-3 w-3 mr-1" }),
-          "Undo"
+        React.createElement(Undo, { className: "h-3 w-3 mr-1" }),
+        "Undo"
         )
       );
     }
@@ -200,7 +200,7 @@ class EnhancedToastManager {
               timestamp: new Date().toISOString(),
               metadata: options.metadata
             };
-            
+
             const success = await this.copyToClipboard(JSON.stringify(content, null, 2));
             if (success) {
               this.success({
@@ -211,8 +211,8 @@ class EnhancedToastManager {
             }
           }
         },
-          React.createElement(Copy, { className: "h-3 w-3 mr-1" }),
-          "Copy"
+        React.createElement(Copy, { className: "h-3 w-3 mr-1" }),
+        "Copy"
         )
       );
     }
@@ -226,8 +226,8 @@ class EnhancedToastManager {
           size: "sm",
           onClick: options.reportAction
         },
-          React.createElement(Bug, { className: "h-3 w-3 mr-1" }),
-          "Report"
+        React.createElement(Bug, { className: "h-3 w-3 mr-1" }),
+        "Report"
         )
       );
     }
@@ -241,38 +241,38 @@ class EnhancedToastManager {
           size: "sm",
           onClick: options.helpAction
         },
-          React.createElement(ExternalLink, { className: "h-3 w-3 mr-1" }),
-          "Help"
+        React.createElement(ExternalLink, { className: "h-3 w-3 mr-1" }),
+        "Help"
         )
       );
     }
 
-    return actions.length > 0 ? 
-      React.createElement("div", { className: "flex gap-2 mt-2" }, ...actions)
-     : undefined;
+    return actions.length > 0 ?
+    React.createElement("div", { className: "flex gap-2 mt-2" }, ...actions) :
+    undefined;
   }
 
   private createDescriptionElement(options: EnhancedToastOptions) {
     const config = options.category ? this.getErrorConfig(options.category) : null;
-    
+
     return React.createElement("div", null,
-      React.createElement("div", null, options.description),
-      config && config.suggestions && 
-        React.createElement("div", { className: "mt-2 text-xs" },
-          React.createElement("div", { className: "font-medium" }, "Suggestions:"),
-          React.createElement("ul", { className: "list-disc list-inside mt-1" },
-            config.suggestions.slice(0, 2).map((suggestion, index) => 
-              React.createElement("li", { key: index }, suggestion)
-            )
-          )
-        )
+    React.createElement("div", null, options.description),
+    config && config.suggestions &&
+    React.createElement("div", { className: "mt-2 text-xs" },
+    React.createElement("div", { className: "font-medium" }, "Suggestions:"),
+    React.createElement("ul", { className: "list-disc list-inside mt-1" },
+    config.suggestions.slice(0, 2).map((suggestion, index) =>
+    React.createElement("li", { key: index }, suggestion)
+    )
+    )
+    )
     );
   }
 
   success(options: Partial<EnhancedToastOptions>) {
     const toastId = this.generateId();
     const config = priorityConfig[options.priority || 'medium'];
-    
+
     const toastInstance = toast({
       title: options.title || 'Success',
       description: options.description,
@@ -288,7 +288,7 @@ class EnhancedToastManager {
     const toastId = this.generateId();
     const config = priorityConfig[options.priority || 'high'];
     const errorConfig = options.category ? this.getErrorConfig(options.category) : null;
-    
+
     const toastInstance = toast({
       title: options.title,
       description: this.createDescriptionElement(options),
@@ -304,7 +304,7 @@ class EnhancedToastManager {
   warning(options: Partial<EnhancedToastOptions>) {
     const toastId = this.generateId();
     const config = priorityConfig[options.priority || 'medium'];
-    
+
     const toastInstance = toast({
       title: options.title || 'Warning',
       description: options.description,
@@ -319,7 +319,7 @@ class EnhancedToastManager {
   info(options: Partial<EnhancedToastOptions>) {
     const toastId = this.generateId();
     const config = priorityConfig[options.priority || 'low'];
-    
+
     const toastInstance = toast({
       title: options.title || 'Information',
       description: options.description,
@@ -332,9 +332,9 @@ class EnhancedToastManager {
   }
 
   async retryWithBackoff(
-    action: () => Promise<void>,
-    options: RetryOptions & Partial<EnhancedToastOptions> = {}
-  ): Promise<void> {
+  action: () => Promise<void>,
+  options: RetryOptions & Partial<EnhancedToastOptions> = {})
+  : Promise<void> {
     const {
       maxRetries = 3,
       baseDelay = 1000,
@@ -351,7 +351,7 @@ class EnhancedToastManager {
       try {
         if (showProgress && currentRetry > 0) {
           if (toastId) this.dismiss(toastId);
-          
+
           toastId = this.info({
             title: `Retrying... (${currentRetry}/${maxRetries})`,
             description: 'Please wait while we retry the operation.',
@@ -361,9 +361,9 @@ class EnhancedToastManager {
         }
 
         await action();
-        
+
         if (toastId) this.dismiss(toastId);
-        
+
         if (currentRetry > 0) {
           this.success({
             title: 'Success',
@@ -371,15 +371,15 @@ class EnhancedToastManager {
             ...toastOptions
           });
         }
-        
+
         return;
-        
+
       } catch (error) {
         currentRetry++;
-        
+
         if (currentRetry >= maxRetries) {
           if (toastId) this.dismiss(toastId);
-          
+
           this.error({
             title: 'Operation Failed',
             description: `Failed after ${maxRetries} attempts. ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -394,28 +394,28 @@ class EnhancedToastManager {
             },
             ...toastOptions
           });
-          
+
           throw error;
         }
 
         // Wait before next retry
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= backoffMultiplier;
       }
     }
   }
 
   optimisticUpdate<T>(
-    optimisticAction: () => T,
-    actualAction: () => Promise<T>,
-    rollbackAction: () => void,
-    options: Partial<EnhancedToastOptions> = {}
-  ): Promise<T> {
+  optimisticAction: () => T,
+  actualAction: () => Promise<T>,
+  rollbackAction: () => void,
+  options: Partial<EnhancedToastOptions> = {})
+  : Promise<T> {
     return new Promise((resolve, reject) => {
       try {
         // Apply optimistic update
         const optimisticResult = optimisticAction();
-        
+
         // Show optimistic success with undo option
         const toastId = this.success({
           title: options.title || 'Updated',
@@ -432,27 +432,27 @@ class EnhancedToastManager {
         });
 
         // Perform actual action
-        actualAction()
-          .then((result) => {
-            this.dismiss(toastId);
-            resolve(result);
-          })
-          .catch((error) => {
-            // Rollback on error
-            rollbackAction();
-            this.dismiss(toastId);
-            
-            this.error({
-              title: 'Update Failed',
-              description: `The update could not be completed. ${error instanceof Error ? error.message : 'Unknown error'}`,
-              category: 'system',
-              retryAction: () => this.optimisticUpdate(optimisticAction, actualAction, rollbackAction, options),
-              ...options
-            });
-            
-            reject(error);
+        actualAction().
+        then((result) => {
+          this.dismiss(toastId);
+          resolve(result);
+        }).
+        catch((error) => {
+          // Rollback on error
+          rollbackAction();
+          this.dismiss(toastId);
+
+          this.error({
+            title: 'Update Failed',
+            description: `The update could not be completed. ${error instanceof Error ? error.message : 'Unknown error'}`,
+            category: 'system',
+            retryAction: () => this.optimisticUpdate(optimisticAction, actualAction, rollbackAction, options),
+            ...options
           });
-          
+
+          reject(error);
+        });
+
       } catch (error) {
         this.error({
           title: 'Update Error',
@@ -496,7 +496,7 @@ export const showInfoToast = (options: Partial<EnhancedToastOptions>) => enhance
 export const categorizeError = (error: unknown): ErrorCategory => {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
       return 'network';
     }
@@ -513,6 +513,6 @@ export const categorizeError = (error: unknown): ErrorCategory => {
       return 'business';
     }
   }
-  
+
   return 'system';
 };

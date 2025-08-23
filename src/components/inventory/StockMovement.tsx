@@ -7,8 +7,8 @@ const StockMovement = () => {
   return (
     <InventoryErrorBoundary>
       <EnhancedStockMovement />
-    </InventoryErrorBoundary>
-  );
+    </InventoryErrorBoundary>);
+
 };
 
 export default StockMovement;

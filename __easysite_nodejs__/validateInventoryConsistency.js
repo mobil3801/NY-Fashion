@@ -162,11 +162,11 @@ function validateInventoryConsistency() {
 
     // Calculate summary statistics
     results.summary.totalChecks = results.checks.length;
-    results.summary.passedChecks = results.checks.filter(check => check.status === 'passed').length;
-    results.summary.failedChecks = results.checks.filter(check => check.status === 'failed').length;
-    results.summary.errorChecks = results.checks.filter(check => check.status === 'error').length;
-    results.summary.passRate = results.summary.totalChecks > 0 ? 
-      (results.summary.passedChecks / results.summary.totalChecks) * 100 : 0;
+    results.summary.passedChecks = results.checks.filter((check) => check.status === 'passed').length;
+    results.summary.failedChecks = results.checks.filter((check) => check.status === 'failed').length;
+    results.summary.errorChecks = results.checks.filter((check) => check.status === 'error').length;
+    results.summary.passRate = results.summary.totalChecks > 0 ?
+    results.summary.passedChecks / results.summary.totalChecks * 100 : 0;
 
     return results;
 

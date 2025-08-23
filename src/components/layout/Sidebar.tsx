@@ -17,27 +17,28 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { canAccess } from '@/utils/permissions';
+import { usePermissions } from '@/auth/usePermissions';
 
 const Sidebar: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { can, isAdmin } = usePermissions();
 
   const menuItems = [
-  { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
-  { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
-  { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
-  { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
-  { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
-  { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
-  { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
-  { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
-  { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
-  { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }];
+  { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', permission: 'view:dashboard' as const },
+  { icon: ShoppingBag, label: t('sales'), path: '/sales', permission: 'view:sales' as const },
+  { icon: FileText, label: t('invoices'), path: '/invoices', permission: 'view:invoices' as const },
+  { icon: ShoppingCart, label: t('purchases'), path: '/purchases', permission: 'view:purchases' as const },
+  { icon: Package, label: t('inventory'), path: '/inventory', permission: 'view:inventory' as const },
+  { icon: Users, label: t('employees'), path: '/employees', permission: 'view:employees' as const },
+  { icon: Wallet, label: t('salary'), path: '/salary', permission: 'view:salary' as const },
+  { icon: Shield, label: t('admin'), path: '/admin', permission: 'admin:system' as const },
+  { icon: Settings, label: t('settings'), path: '/settings', permission: 'view:settings' as const },
+  { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'view:sales' as const }];
 
 
   const availableMenuItems = menuItems.filter((item) =>
-  user && canAccess(user.role, item.resource)
+  can(item.permission)
   );
 
   return (
@@ -68,11 +69,31 @@ const Sidebar: React.FC = () => {
             <span className="truncate">{item.label}</span>
           </NavLink>
         )}
-        {hasPermission(user, 'view_debug') &&
-        <NavLink to="/debug/network" icon={<Network />} label={t('debug.title')} />
+        {isAdmin &&
+        <NavLink
+          to="/debug/network"
+          className={({ isActive }) =>
+          cn(
+            "px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-3 text-gray-700 transition-colors duration-200",
+            isActive && "bg-emerald-100 text-emerald-800"
+          )
+          }>
+            <Network className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">{t('debug.title')}</span>
+          </NavLink>
         }
-        {hasPermission(user, 'view_debug') &&
-        <NavLink to="/testing" icon={<TestTube />} label="API Testing" />
+        {isAdmin &&
+        <NavLink
+          to="/testing"
+          className={({ isActive }) =>
+          cn(
+            "px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center space-x-3 text-gray-700 transition-colors duration-200",
+            isActive && "bg-emerald-100 text-emerald-800"
+          )
+          }>
+            <TestTube className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+            <span className="truncate">API Testing</span>
+          </NavLink>
         }
       </nav>
     </aside>);
