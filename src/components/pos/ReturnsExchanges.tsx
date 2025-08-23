@@ -29,13 +29,13 @@ const ReturnsExchanges: React.FC = () => {
   const { toast } = useToast();
 
   const returnReasons = [
-    'Defective item',
-    'Wrong size/color',
-    'Customer changed mind',
-    'Item not as described',
-    'Damaged during shipping',
-    'Other'
-  ];
+  'Defective item',
+  'Wrong size/color',
+  'Customer changed mind',
+  'Item not as described',
+  'Damaged during shipping',
+  'Other'];
+
 
   const searchInvoice = async () => {
     if (!invoiceSearch) return;
@@ -55,39 +55,39 @@ const ReturnsExchanges: React.FC = () => {
           createdAt: '2024-01-01T00:00:00Z'
         },
         items: [
-          {
-            id: 'item-1',
-            product: {
-              id: 'prod-1',
-              sku: 'TSHIRT-001',
-              name: 'Basic Cotton T-Shirt',
-              description: 'Comfortable cotton t-shirt',
-              category: 'Apparel',
-              basePrice: 25.99,
-              isApparel: true,
-              isActive: true,
-              currentStock: 50,
-              minStockLevel: 10,
-              variants: [],
-              createdAt: '2024-01-01T00:00:00Z',
-              updatedAt: '2024-01-01T00:00:00Z'
-            },
-            variant: {
-              id: 'var-1',
-              productId: 'prod-1',
-              size: 'M',
-              color: 'Blue',
-              sku: 'TSHIRT-001-M-BLU',
-              priceAdjustment: 0,
-              stockQuantity: 20
-            },
-            quantity: 2,
-            unitPrice: 25.99,
-            lineDiscount: 0,
-            lineDiscountType: 'percentage',
-            subtotal: 51.98
-          }
-        ],
+        {
+          id: 'item-1',
+          product: {
+            id: 'prod-1',
+            sku: 'TSHIRT-001',
+            name: 'Basic Cotton T-Shirt',
+            description: 'Comfortable cotton t-shirt',
+            category: 'Apparel',
+            basePrice: 25.99,
+            isApparel: true,
+            isActive: true,
+            currentStock: 50,
+            minStockLevel: 10,
+            variants: [],
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z'
+          },
+          variant: {
+            id: 'var-1',
+            productId: 'prod-1',
+            size: 'M',
+            color: 'Blue',
+            sku: 'TSHIRT-001-M-BLU',
+            priceAdjustment: 0,
+            stockQuantity: 20
+          },
+          quantity: 2,
+          unitPrice: 25.99,
+          lineDiscount: 0,
+          lineDiscountType: 'percentage',
+          subtotal: 51.98
+        }],
+
         subtotal: 51.98,
         orderDiscount: 0,
         orderDiscountType: 'percentage',
@@ -103,7 +103,7 @@ const ReturnsExchanges: React.FC = () => {
       if (invoiceSearch === mockInvoice.invoiceNumber) {
         setOriginalInvoice(mockInvoice);
         // Initialize return items with zero quantities
-        setReturnItems(mockInvoice.items.map(item => ({
+        setReturnItems(mockInvoice.items.map((item) => ({
           originalCartItemId: item.id,
           quantity: 0,
           reason: ''
@@ -123,28 +123,28 @@ const ReturnsExchanges: React.FC = () => {
   };
 
   const updateReturnQuantity = (itemId: string, quantity: number) => {
-    setReturnItems(prev => prev.map(item => 
-      item.originalCartItemId === itemId 
-        ? { ...item, quantity: Math.max(0, quantity) }
-        : item
+    setReturnItems((prev) => prev.map((item) =>
+    item.originalCartItemId === itemId ?
+    { ...item, quantity: Math.max(0, quantity) } :
+    item
     ));
   };
 
   const updateReturnReason = (itemId: string, reason: string) => {
-    setReturnItems(prev => prev.map(item => 
-      item.originalCartItemId === itemId 
-        ? { ...item, reason }
-        : item
+    setReturnItems((prev) => prev.map((item) =>
+    item.originalCartItemId === itemId ?
+    { ...item, reason } :
+    item
     ));
   };
 
   const calculateReturnAmount = () => {
     if (!originalInvoice) return 0;
-    
+
     return returnItems.reduce((total, returnItem) => {
-      const originalItem = originalInvoice.items.find(item => item.id === returnItem.originalCartItemId);
+      const originalItem = originalInvoice.items.find((item) => item.id === returnItem.originalCartItemId);
       if (originalItem && returnItem.quantity > 0) {
-        return total + (originalItem.unitPrice * returnItem.quantity);
+        return total + originalItem.unitPrice * returnItem.quantity;
       }
       return total;
     }, 0);
@@ -153,7 +153,7 @@ const ReturnsExchanges: React.FC = () => {
   const processReturn = async () => {
     if (!originalInvoice) return;
 
-    const itemsToReturn = returnItems.filter(item => item.quantity > 0);
+    const itemsToReturn = returnItems.filter((item) => item.quantity > 0);
     if (itemsToReturn.length === 0) {
       toast({
         title: 'No Items Selected',
@@ -164,7 +164,7 @@ const ReturnsExchanges: React.FC = () => {
     }
 
     // Validate return reasons
-    const invalidItems = itemsToReturn.filter(item => !item.reason);
+    const invalidItems = itemsToReturn.filter((item) => !item.reason);
     if (invalidItems.length > 0) {
       toast({
         title: 'Missing Return Reasons',
@@ -176,7 +176,7 @@ const ReturnsExchanges: React.FC = () => {
 
     try {
       const returnAmount = calculateReturnAmount();
-      
+
       // Create return record
       const returnExchange = {
         id: `return-${Date.now()}`,
@@ -196,7 +196,7 @@ const ReturnsExchanges: React.FC = () => {
 
       toast({
         title: 'Return Processed',
-        description: `Return processed successfully. Refund amount: $${returnAmount.toFixed(2)}`,
+        description: `Return processed successfully. Refund amount: $${returnAmount.toFixed(2)}`
       });
 
       // Reset form
@@ -220,7 +220,7 @@ const ReturnsExchanges: React.FC = () => {
     addToCart(originalItem.product, originalItem.variant, returnQuantity);
     toast({
       title: 'Item Added',
-      description: 'Item added to cart for exchange',
+      description: 'Item added to cart for exchange'
     });
   };
 
@@ -246,8 +246,8 @@ const ReturnsExchanges: React.FC = () => {
                 placeholder="Enter invoice number..."
                 value={invoiceSearch}
                 onChange={(e) => setInvoiceSearch(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && searchInvoice()}
-              />
+                onKeyPress={(e) => e.key === 'Enter' && searchInvoice()} />
+
               <Button onClick={searchInvoice} disabled={isLoading}>
                 <Search className="h-4 w-4" />
               </Button>
@@ -255,8 +255,8 @@ const ReturnsExchanges: React.FC = () => {
           </div>
 
           {/* Original Invoice Details */}
-          {originalInvoice && (
-            <>
+          {originalInvoice &&
+          <>
               <Separator />
               <div>
                 <h3 className="font-medium mb-3">Original Invoice Details</h3>
@@ -269,13 +269,13 @@ const ReturnsExchanges: React.FC = () => {
                         <p><strong>Total:</strong> ${originalInvoice.totalAmount.toFixed(2)}</p>
                       </div>
                       <div>
-                        {originalInvoice.customer && (
-                          <>
+                        {originalInvoice.customer &&
+                      <>
                             <p><strong>Customer:</strong> {originalInvoice.customer.name}</p>
                             <p><strong>Email:</strong> {originalInvoice.customer.email}</p>
                             <p><strong>Phone:</strong> {originalInvoice.customer.phone}</p>
                           </>
-                        )}
+                      }
                       </div>
                     </div>
 
@@ -283,18 +283,18 @@ const ReturnsExchanges: React.FC = () => {
                     <div className="space-y-3">
                       <h4 className="font-medium">Items to Return</h4>
                       {originalInvoice.items.map((originalItem, index) => {
-                        const returnItem = returnItems.find(item => item.originalCartItemId === originalItem.id);
-                        return (
-                          <div key={originalItem.id} className="border rounded-lg p-3">
+                      const returnItem = returnItems.find((item) => item.originalCartItemId === originalItem.id);
+                      return (
+                        <div key={originalItem.id} className="border rounded-lg p-3">
                             <div className="flex justify-between items-start mb-3">
                               <div className="flex-1">
                                 <h5 className="font-medium">{originalItem.product.name}</h5>
-                                {originalItem.variant && (
-                                  <p className="text-sm text-gray-600">
+                                {originalItem.variant &&
+                              <p className="text-sm text-gray-600">
                                     {originalItem.variant.size && `Size: ${originalItem.variant.size}`}
                                     {originalItem.variant.color && ` Color: ${originalItem.variant.color}`}
                                   </p>
-                                )}
+                              }
                                 <p className="text-sm text-gray-600">
                                   Original Quantity: {originalItem.quantity} × ${originalItem.unitPrice.toFixed(2)}
                                 </p>
@@ -308,50 +308,50 @@ const ReturnsExchanges: React.FC = () => {
                               <div>
                                 <label className="text-sm font-medium">Return Quantity</label>
                                 <Input
-                                  type="number"
-                                  min="0"
-                                  max={originalItem.quantity}
-                                  value={returnItem?.quantity || 0}
-                                  onChange={(e) => updateReturnQuantity(originalItem.id, parseInt(e.target.value) || 0)}
-                                />
+                                type="number"
+                                min="0"
+                                max={originalItem.quantity}
+                                value={returnItem?.quantity || 0}
+                                onChange={(e) => updateReturnQuantity(originalItem.id, parseInt(e.target.value) || 0)} />
+
                               </div>
                               
                               <div>
                                 <label className="text-sm font-medium">Reason</label>
                                 <Select
-                                  value={returnItem?.reason || ''}
-                                  onValueChange={(value) => updateReturnReason(originalItem.id, value)}
-                                  disabled={!returnItem?.quantity || returnItem.quantity === 0}
-                                >
+                                value={returnItem?.reason || ''}
+                                onValueChange={(value) => updateReturnReason(originalItem.id, value)}
+                                disabled={!returnItem?.quantity || returnItem.quantity === 0}>
+
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select reason" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {returnReasons.map((reason) => (
-                                      <SelectItem key={reason} value={reason}>
+                                    {returnReasons.map((reason) =>
+                                  <SelectItem key={reason} value={reason}>
                                         {reason}
                                       </SelectItem>
-                                    ))}
+                                  )}
                                   </SelectContent>
                                 </Select>
                               </div>
 
                               <div className="flex items-end">
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => addReturnedItemToCart(originalItem, returnItem?.quantity || 0)}
-                                  disabled={!returnItem?.quantity || returnItem.quantity === 0}
-                                  className="w-full"
-                                >
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addReturnedItemToCart(originalItem, returnItem?.quantity || 0)}
+                                disabled={!returnItem?.quantity || returnItem.quantity === 0}
+                                className="w-full">
+
                                   <ArrowRight className="h-4 w-4 mr-2" />
                                   Exchange
                                 </Button>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          </div>);
+
+                    })}
                     </div>
                   </CardContent>
                 </Card>
@@ -366,11 +366,11 @@ const ReturnsExchanges: React.FC = () => {
                     <div>
                       <label className="text-sm font-medium">Overall Reason (Optional)</label>
                       <Textarea
-                        value={returnReason}
-                        onChange={(e) => setReturnReason(e.target.value)}
-                        placeholder="Additional notes about the return..."
-                        className="mt-1"
-                      />
+                      value={returnReason}
+                      onChange={(e) => setReturnReason(e.target.value)}
+                      placeholder="Additional notes about the return..."
+                      className="mt-1" />
+
                     </div>
 
                     <Separator className="my-4" />
@@ -383,17 +383,17 @@ const ReturnsExchanges: React.FC = () => {
                     </div>
 
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowReturnDialog(false)}
-                      >
+                      <Button
+                      variant="outline"
+                      onClick={() => setShowReturnDialog(false)}>
+
                         Cancel
                       </Button>
-                      <Button 
-                        onClick={processReturn}
-                        disabled={calculateReturnAmount() === 0}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
+                      <Button
+                      onClick={processReturn}
+                      disabled={calculateReturnAmount() === 0}
+                      className="bg-red-600 hover:bg-red-700">
+
                         Process Return
                       </Button>
                     </div>
@@ -401,11 +401,11 @@ const ReturnsExchanges: React.FC = () => {
                 </Card>
               </div>
             </>
-          )}
+          }
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default ReturnsExchanges;

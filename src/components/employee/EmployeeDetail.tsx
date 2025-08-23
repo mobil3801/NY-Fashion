@@ -39,26 +39,26 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading employee details...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800 border-green-300';
-      case 'Inactive': return 'bg-gray-100 text-gray-800 border-gray-300';
-      case 'Suspended': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Terminated': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Active':return 'bg-green-100 text-green-800 border-green-300';
+      case 'Inactive':return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Suspended':return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'Terminated':return 'bg-red-100 text-red-800 border-red-300';
+      default:return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'Admin': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'Manager': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'Employee': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Admin':return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'Manager':return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Employee':return 'bg-green-100 text-green-800 border-green-300';
+      default:return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -71,11 +71,11 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {onBack && (
-            <Button variant="outline" size="sm" onClick={onBack}>
+          {onBack &&
+          <Button variant="outline" size="sm" onClick={onBack}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-          )}
+          }
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={currentEmployee.profile_picture_url} />
@@ -102,12 +102,12 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
               {currentEmployee.status}
             </Badge>
           </div>
-          {canManageEmployees && (
-            <Button onClick={() => setIsEditDialogOpen(true)}>
+          {canManageEmployees &&
+          <Button onClick={() => setIsEditDialogOpen(true)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
-          )}
+          }
         </div>
       </div>
 
@@ -180,35 +180,35 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
                   </div>
                 </div>
                 
-                {currentEmployee.phone && (
-                  <div className="flex items-center gap-3">
+                {currentEmployee.phone &&
+                <div className="flex items-center gap-3">
                     <Phone className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Phone</p>
                       <p>{currentEmployee.phone}</p>
                     </div>
                   </div>
-                )}
+                }
 
-                {currentEmployee.date_of_birth && (
-                  <div className="flex items-center gap-3">
+                {currentEmployee.date_of_birth &&
+                <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Date of Birth</p>
                       <p>{formatDate(currentEmployee.date_of_birth)}</p>
                     </div>
                   </div>
-                )}
+                }
 
-                {currentEmployee.address && (
-                  <div className="flex items-center gap-3">
+                {currentEmployee.address &&
+                <div className="flex items-center gap-3">
                     <MapPin className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Address</p>
                       <p>{currentEmployee.address}</p>
                     </div>
                   </div>
-                )}
+                }
               </CardContent>
             </Card>
 
@@ -226,73 +226,73 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
                   </div>
                 </div>
 
-                {currentEmployee.department && (
-                  <div className="flex items-center gap-3">
+                {currentEmployee.department &&
+                <div className="flex items-center gap-3">
                     <Building className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Department</p>
                       <p>{currentEmployee.department}</p>
                     </div>
                   </div>
-                )}
+                }
 
-                {currentEmployee.salary && (
-                  <div className="flex items-center gap-3">
+                {currentEmployee.salary &&
+                <div className="flex items-center gap-3">
                     <DollarSign className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Salary</p>
                       <p>${currentEmployee.salary.toLocaleString()}</p>
                     </div>
                   </div>
-                )}
+                }
 
                 <Separator />
 
                 {/* Emergency Contact */}
-                {(currentEmployee.emergency_contact_name || currentEmployee.emergency_contact_phone) && (
-                  <div>
+                {(currentEmployee.emergency_contact_name || currentEmployee.emergency_contact_phone) &&
+                <div>
                     <p className="text-sm font-medium text-gray-900 mb-2">Emergency Contact</p>
-                    {currentEmployee.emergency_contact_name && (
-                      <div className="flex items-center gap-3 mb-2">
+                    {currentEmployee.emergency_contact_name &&
+                  <div className="flex items-center gap-3 mb-2">
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
                           <p className="text-sm text-gray-600">Name</p>
                           <p>{currentEmployee.emergency_contact_name}</p>
                         </div>
                       </div>
-                    )}
-                    {currentEmployee.emergency_contact_phone && (
-                      <div className="flex items-center gap-3">
+                  }
+                    {currentEmployee.emergency_contact_phone &&
+                  <div className="flex items-center gap-3">
                         <Phone className="h-4 w-4 text-gray-400" />
                         <div>
                           <p className="text-sm text-gray-600">Phone</p>
                           <p>{currentEmployee.emergency_contact_phone}</p>
                         </div>
                       </div>
-                    )}
+                  }
                   </div>
-                )}
+                }
 
                 {/* Notes */}
-                {currentEmployee.notes && (
-                  <>
+                {currentEmployee.notes &&
+                <>
                     <Separator />
                     <div>
                       <p className="text-sm font-medium text-gray-900 mb-2">Notes</p>
                       <p className="text-sm text-gray-600">{currentEmployee.notes}</p>
                     </div>
                   </>
-                )}
+                }
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
         <TabsContent value="photo-ids">
-          <PhotoIdManagement 
-            employeeId={currentEmployee.id!} 
-            photoIds={photoIds}
-          />
+          <PhotoIdManagement
+            employeeId={currentEmployee.id!}
+            photoIds={photoIds} />
+
         </TabsContent>
 
         <TabsContent value="time-tracking">
@@ -312,12 +312,12 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employeeId, onBack }) =
               setIsEditDialogOpen(false);
               loadEmployee(employeeId);
             }}
-            onCancel={() => setIsEditDialogOpen(false)}
-          />
+            onCancel={() => setIsEditDialogOpen(false)} />
+
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default EmployeeDetail;

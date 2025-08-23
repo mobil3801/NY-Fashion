@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       await login({ email, password });
       navigate(from, { replace: true });
@@ -64,8 +64,8 @@ const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="rounded-2xl"
-                  required
-                />
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="password">{t('password')}</Label>
@@ -75,14 +75,14 @@ const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="rounded-2xl"
-                  required
-                />
+                  required />
+
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
+
                 {isLoading ? t('loading') : t('signIn')}
               </Button>
             </form>
@@ -101,8 +101,8 @@ const LoginPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleLanguageToggle}
-                className="rounded-2xl"
-              >
+                className="rounded-2xl">
+
                 <Globe className="w-4 h-4 mr-2" />
                 {language === 'en' ? 'বাংলা' : 'English'}
               </Button>
@@ -118,8 +118,8 @@ const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LoginPage;

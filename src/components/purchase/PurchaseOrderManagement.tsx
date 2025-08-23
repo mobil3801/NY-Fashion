@@ -23,29 +23,29 @@ const PurchaseOrderManagement = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'secondary';
-      case 'sent': return 'default';
-      case 'partial': return 'outline';
-      case 'received': return 'default';
-      case 'closed': return 'secondary';
-      default: return 'secondary';
+      case 'draft':return 'secondary';
+      case 'sent':return 'default';
+      case 'partial':return 'outline';
+      case 'received':return 'default';
+      case 'closed':return 'secondary';
+      default:return 'secondary';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'draft': return <FileText className="h-4 w-4" />;
-      case 'sent': return <Clock className="h-4 w-4" />;
-      case 'partial': return <Truck className="h-4 w-4" />;
-      case 'received': return <CheckCircle className="h-4 w-4" />;
-      case 'closed': return <CheckCircle className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
+      case 'draft':return <FileText className="h-4 w-4" />;
+      case 'sent':return <Clock className="h-4 w-4" />;
+      case 'partial':return <Truck className="h-4 w-4" />;
+      case 'received':return <CheckCircle className="h-4 w-4" />;
+      case 'closed':return <CheckCircle className="h-4 w-4" />;
+      default:return <FileText className="h-4 w-4" />;
     }
   };
 
-  const filteredPOs = purchaseOrders.filter(po => {
+  const filteredPOs = purchaseOrders.filter((po) => {
     const matchesSearch = po.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         po.supplier_name.toLowerCase().includes(searchTerm.toLowerCase());
+    po.supplier_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || po.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -102,7 +102,7 @@ const PurchaseOrderManagement = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Draft</p>
                 <p className="text-2xl font-bold">
-                  {purchaseOrders.filter(po => po.status === 'draft').length}
+                  {purchaseOrders.filter((po) => po.status === 'draft').length}
                 </p>
               </div>
               <FileText className="h-8 w-8 text-gray-400" />
@@ -115,7 +115,7 @@ const PurchaseOrderManagement = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Sent</p>
                 <p className="text-2xl font-bold">
-                  {purchaseOrders.filter(po => po.status === 'sent').length}
+                  {purchaseOrders.filter((po) => po.status === 'sent').length}
                 </p>
               </div>
               <Clock className="h-8 w-8 text-blue-500" />
@@ -128,7 +128,7 @@ const PurchaseOrderManagement = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Partial</p>
                 <p className="text-2xl font-bold">
-                  {purchaseOrders.filter(po => po.status === 'partial').length}
+                  {purchaseOrders.filter((po) => po.status === 'partial').length}
                 </p>
               </div>
               <Truck className="h-8 w-8 text-orange-500" />
@@ -141,7 +141,7 @@ const PurchaseOrderManagement = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Received</p>
                 <p className="text-2xl font-bold">
-                  {purchaseOrders.filter(po => po.status === 'received').length}
+                  {purchaseOrders.filter((po) => po.status === 'received').length}
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
@@ -160,8 +160,8 @@ const PurchaseOrderManagement = () => {
                 placeholder="Search POs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
-              />
+                className="w-64" />
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -192,21 +192,21 @@ const PurchaseOrderManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
-                <TableRow>
+              {loading ?
+              <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     Loading purchase orders...
                   </TableCell>
-                </TableRow>
-              ) : filteredPOs.length === 0 ? (
-                <TableRow>
+                </TableRow> :
+              filteredPOs.length === 0 ?
+              <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     No purchase orders found
                   </TableCell>
-                </TableRow>
-              ) : (
-                filteredPOs.map((po) => (
-                  <TableRow key={po.id}>
+                </TableRow> :
+
+              filteredPOs.map((po) =>
+              <TableRow key={po.id}>
                     <TableCell className="font-medium">{po.po_number}</TableCell>
                     <TableCell>{po.supplier_name}</TableCell>
                     <TableCell>{new Date(po.order_date).toLocaleDateString()}</TableCell>
@@ -225,44 +225,44 @@ const PurchaseOrderManagement = () => {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditPO(po)}
-                        >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditPO(po)}>
+
                           Edit
                         </Button>
-                        {po.status === 'draft' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleApprovePO(po.id)}
-                          >
+                        {po.status === 'draft' &&
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleApprovePO(po.id)}>
+
                             Approve
                           </Button>
-                        )}
-                        {(po.status === 'sent' || po.status === 'partial') && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleReceiveItems(po)}
-                          >
+                    }
+                        {(po.status === 'sent' || po.status === 'partial') &&
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleReceiveItems(po)}>
+
                             Receive
                           </Button>
-                        )}
-                        {po.status === 'received' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleClosePO(po.id)}
-                          >
+                    }
+                        {po.status === 'received' &&
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleClosePO(po.id)}>
+
                             Close
                           </Button>
-                        )}
+                    }
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+              )
+              }
             </TableBody>
           </Table>
         </CardContent>
@@ -277,8 +277,8 @@ const PurchaseOrderManagement = () => {
           </DialogHeader>
           <PurchaseOrderForm
             purchaseOrder={selectedPO}
-            onClose={() => setShowForm(false)}
-          />
+            onClose={() => setShowForm(false)} />
+
         </DialogContent>
       </Dialog>
 
@@ -289,12 +289,12 @@ const PurchaseOrderManagement = () => {
           </DialogHeader>
           <POReceivingProcess
             purchaseOrder={selectedPO}
-            onClose={() => setShowReceiving(false)}
-          />
+            onClose={() => setShowReceiving(false)} />
+
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PurchaseOrderManagement;

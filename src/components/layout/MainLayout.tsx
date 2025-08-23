@@ -29,8 +29,8 @@ const MainLayout: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-xl"
-          >
+            className="p-2 hover:bg-gray-100 rounded-xl">
+
             <Menu className="w-5 h-5" />
           </Button>
         </div>
@@ -41,8 +41,8 @@ const MainLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MainLayout;

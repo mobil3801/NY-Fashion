@@ -1,35 +1,35 @@
 
 function getProducts(filters = {}) {
-    const { 
-        page = 1, 
-        limit = 50, 
-        category_id, 
-        search, 
-        low_stock_only = false,
-        active_only = true 
-    } = filters;
-    
-    const offset = (page - 1) * limit;
-    
-    let whereClause = 'WHERE 1=1';
-    let params = [];
-    
-    if (active_only) {
-        whereClause += ' AND p.is_active = 1';
-    }
-    
-    if (category_id) {
-        whereClause += ' AND p.category_id = ?';
-        params.push(category_id);
-    }
-    
-    if (search) {
-        whereClause += ' AND (p.name LIKE ? OR p.name_bn LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ?)';
-        const searchTerm = `%${search}%`;
-        params.push(searchTerm, searchTerm, searchTerm, searchTerm);
-    }
-    
-    const sql = `
+  const {
+    page = 1,
+    limit = 50,
+    category_id,
+    search,
+    low_stock_only = false,
+    active_only = true
+  } = filters;
+
+  const offset = (page - 1) * limit;
+
+  let whereClause = 'WHERE 1=1';
+  let params = [];
+
+  if (active_only) {
+    whereClause += ' AND p.is_active = 1';
+  }
+
+  if (category_id) {
+    whereClause += ' AND p.category_id = ?';
+    params.push(category_id);
+  }
+
+  if (search) {
+    whereClause += ' AND (p.name LIKE ? OR p.name_bn LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ?)';
+    const searchTerm = `%${search}%`;
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+  }
+
+  const sql = `
         SELECT 
             p.*,
             c.name as category_name,
@@ -51,29 +51,29 @@ function getProducts(filters = {}) {
         ORDER BY p.updated_at DESC
         LIMIT ? OFFSET ?
     `;
-    
-    params.push(limit, offset);
-    
-    const products = window.ezsite.db.prepare(sql).all(...params);
-    
-    // Get total count
-    const countSql = `
+
+  params.push(limit, offset);
+
+  const products = window.ezsite.db.prepare(sql).all(...params);
+
+  // Get total count
+  const countSql = `
         SELECT COUNT(DISTINCT p.id) as total
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         ${whereClause}
     `;
-    
-    const countParams = params.slice(0, -2); // Remove limit and offset
-    const { total } = window.ezsite.db.prepare(countSql).get(...countParams);
-    
-    return {
-        products,
-        pagination: {
-            page,
-            limit,
-            total,
-            pages: Math.ceil(total / limit)
-        }
-    };
+
+  const countParams = params.slice(0, -2); // Remove limit and offset
+  const { total } = window.ezsite.db.prepare(countSql).get(...countParams);
+
+  return {
+    products,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    }
+  };
 }

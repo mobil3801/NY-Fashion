@@ -20,7 +20,7 @@ interface PurchaseOrderContextType {
 
 const PurchaseOrderContext = createContext<PurchaseOrderContextType | undefined>(undefined);
 
-export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PurchaseOrderProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [receipts, setReceipts] = useState<POReceipt[]>([]);
@@ -39,7 +39,7 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         toast({
           title: "Initialization Error",
           description: "Failed to initialize purchase order system",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     };
@@ -60,7 +60,7 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
       toast({
         title: "Error",
         description: "Failed to load suppliers",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
       toast({
         title: "Error",
         description: "Failed to load purchase orders",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -93,20 +93,20 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         path: 'saveSupplier.js',
         param: [supplier]
       });
-      
+
       await refreshSuppliers();
       toast({
         title: "Success",
-        description: supplier.id ? "Supplier updated successfully" : "Supplier created successfully",
+        description: supplier.id ? "Supplier updated successfully" : "Supplier created successfully"
       });
-      
+
       return data.id;
     } catch (error) {
       console.error('Error saving supplier:', error);
       toast({
         title: "Error",
         description: "Failed to save supplier",
-        variant: "destructive",
+        variant: "destructive"
       });
       throw error;
     }
@@ -118,20 +118,20 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         path: 'savePurchaseOrder.js',
         param: [po]
       });
-      
+
       await refreshPurchaseOrders();
       toast({
         title: "Success",
-        description: po.id ? "Purchase order updated successfully" : "Purchase order created successfully",
+        description: po.id ? "Purchase order updated successfully" : "Purchase order created successfully"
       });
-      
+
       return data.id;
     } catch (error) {
       console.error('Error saving purchase order:', error);
       toast({
         title: "Error",
         description: "Failed to save purchase order",
-        variant: "destructive",
+        variant: "destructive"
       });
       throw error;
     }
@@ -143,18 +143,18 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         path: 'updatePOStatus.js',
         param: [poId, status, 'current-user', options]
       });
-      
+
       await refreshPurchaseOrders();
       toast({
         title: "Success",
-        description: `Purchase order status updated to ${status}`,
+        description: `Purchase order status updated to ${status}`
       });
     } catch (error) {
       console.error('Error updating PO status:', error);
       toast({
         title: "Error",
         description: "Failed to update purchase order status",
-        variant: "destructive",
+        variant: "destructive"
       });
       throw error;
     }
@@ -166,20 +166,20 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         path: 'receivePOItems.js',
         param: [receiptData]
       });
-      
+
       await refreshPurchaseOrders();
       toast({
         title: "Success",
-        description: "Items received successfully",
+        description: "Items received successfully"
       });
-      
+
       return data;
     } catch (error) {
       console.error('Error receiving PO items:', error);
       toast({
         title: "Error",
         description: "Failed to receive items",
-        variant: "destructive",
+        variant: "destructive"
       });
       throw error;
     }
@@ -190,7 +190,7 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
       // Here we would implement file upload to EasySite storage
       // For now, we'll simulate it
       const fileUrl = `invoices/${Date.now()}-${file.name}`;
-      
+
       // Save invoice data with file reference
       const invoiceWithFile = {
         ...invoiceData,
@@ -198,21 +198,21 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         file_url: fileUrl,
         file_name: file.name
       };
-      
+
       // In a real implementation, you would upload to EasySite storage here
       // await window.ezsite.storage.upload(file, fileUrl);
-      
+
       toast({
         title: "Success",
-        description: "Invoice uploaded successfully",
+        description: "Invoice uploaded successfully"
       });
-      
+
     } catch (error) {
       console.error('Error uploading invoice:', error);
       toast({
         title: "Error",
         description: "Failed to upload invoice",
-        variant: "destructive",
+        variant: "destructive"
       });
       throw error;
     }
@@ -232,12 +232,12 @@ export const PurchaseOrderProvider: React.FC<{ children: React.ReactNode }> = ({
         savePurchaseOrder,
         updatePOStatus,
         receivePOItems,
-        uploadInvoice,
-      }}
-    >
+        uploadInvoice
+      }}>
+
       {children}
-    </PurchaseOrderContext.Provider>
-  );
+    </PurchaseOrderContext.Provider>);
+
 };
 
 export const usePurchaseOrder = () => {

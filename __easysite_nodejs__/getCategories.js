@@ -1,6 +1,6 @@
 
 function getCategories() {
-    const sql = `
+  const sql = `
         SELECT 
             c.*,
             COUNT(p.id) as product_count
@@ -10,7 +10,7 @@ function getCategories() {
         GROUP BY c.id
         ORDER BY c.name ASC
     `;
-    
-    const categories = window.ezsite.db.prepare(sql).all();
-    return { categories };
+
+  const categories = window.ezsite.db.prepare(sql).all();
+  return { categories };
 }

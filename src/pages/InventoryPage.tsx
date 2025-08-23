@@ -182,8 +182,8 @@ const InventoryPage = () => {
         <CSVImport isOpen={showCSVImport} onClose={() => setShowCSVImport(false)} />
         <BarcodeGeneration isOpen={showBarcodeGen} onClose={() => setShowBarcodeGen(false)} />
       </div>
-    </InventoryProvider>
-  );
+    </InventoryProvider>);
+
 };
 
 export default InventoryPage;

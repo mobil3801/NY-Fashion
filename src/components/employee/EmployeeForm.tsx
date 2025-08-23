@@ -26,7 +26,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
 }) => {
   const { saveEmployee, loading } = useEmployee();
   const [profileImage, setProfileImage] = useState<string>('');
-  
+
   const {
     register,
     handleSubmit,
@@ -89,7 +89,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         ...data,
         profile_picture_url: profileImage
       });
-      
+
       if (onSuccess) {
         onSuccess(savedEmployee);
       }
@@ -120,8 +120,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 className={`
                   border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
                   ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-                `}
-              >
+                `}>
+
                 <input {...getInputProps()} />
                 <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-600">
@@ -130,20 +130,20 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
               </div>
               
-              {profileImage && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setProfileImage('');
-                    setValue('profile_picture_url', '');
-                  }}
-                >
+              {profileImage &&
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setProfileImage('');
+                  setValue('profile_picture_url', '');
+                }}>
+
                   <X className="h-4 w-4 mr-2" />
                   Remove
                 </Button>
-              )}
+              }
             </div>
           </CardContent>
         </Card>
@@ -160,8 +160,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Input
                   id="employee_id"
                   {...register('employee_id')}
-                  placeholder="Auto-generated if empty"
-                />
+                  placeholder="Auto-generated if empty" />
+
               </div>
               
               <div>
@@ -170,11 +170,11 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                   id="email"
                   type="email"
                   {...register('email', { required: 'Email is required' })}
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-                )}
+                  className={errors.email ? 'border-red-500' : ''} />
+
+                {errors.email &&
+                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                }
               </div>
             </div>
 
@@ -184,11 +184,11 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Input
                   id="first_name"
                   {...register('first_name', { required: 'First name is required' })}
-                  className={errors.first_name ? 'border-red-500' : ''}
-                />
-                {errors.first_name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.first_name.message}</p>
-                )}
+                  className={errors.first_name ? 'border-red-500' : ''} />
+
+                {errors.first_name &&
+                <p className="text-red-500 text-sm mt-1">{errors.first_name.message}</p>
+                }
               </div>
               
               <div>
@@ -196,11 +196,11 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Input
                   id="last_name"
                   {...register('last_name', { required: 'Last name is required' })}
-                  className={errors.last_name ? 'border-red-500' : ''}
-                />
-                {errors.last_name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.last_name.message}</p>
-                )}
+                  className={errors.last_name ? 'border-red-500' : ''} />
+
+                {errors.last_name &&
+                <p className="text-red-500 text-sm mt-1">{errors.last_name.message}</p>
+                }
               </div>
             </div>
 
@@ -209,8 +209,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
-                  {...register('phone')}
-                />
+                  {...register('phone')} />
+
               </div>
               
               <div>
@@ -218,8 +218,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Input
                   id="date_of_birth"
                   type="date"
-                  {...register('date_of_birth')}
-                />
+                  {...register('date_of_birth')} />
+
               </div>
             </div>
 
@@ -228,8 +228,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               <Textarea
                 id="address"
                 {...register('address')}
-                rows={3}
-              />
+                rows={3} />
+
             </div>
           </CardContent>
         </Card>
@@ -247,19 +247,19 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                   id="hire_date"
                   type="date"
                   {...register('hire_date', { required: 'Hire date is required' })}
-                  className={errors.hire_date ? 'border-red-500' : ''}
-                />
-                {errors.hire_date && (
-                  <p className="text-red-500 text-sm mt-1">{errors.hire_date.message}</p>
-                )}
+                  className={errors.hire_date ? 'border-red-500' : ''} />
+
+                {errors.hire_date &&
+                <p className="text-red-500 text-sm mt-1">{errors.hire_date.message}</p>
+                }
               </div>
               
               <div>
                 <Label htmlFor="role">Role *</Label>
                 <Select
                   value={watch('role')}
-                  onValueChange={(value) => setValue('role', value as any)}
-                >
+                  onValueChange={(value) => setValue('role', value as any)}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -275,8 +275,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Label htmlFor="status">Status *</Label>
                 <Select
                   value={watch('status')}
-                  onValueChange={(value) => setValue('status', value as any)}
-                >
+                  onValueChange={(value) => setValue('status', value as any)}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -295,8 +295,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                   id="salary"
                   type="number"
                   step="0.01"
-                  {...register('salary', { valueAsNumber: true })}
-                />
+                  {...register('salary', { valueAsNumber: true })} />
+
               </div>
             </div>
 
@@ -305,16 +305,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Label htmlFor="department">Department</Label>
                 <Input
                   id="department"
-                  {...register('department')}
-                />
+                  {...register('department')} />
+
               </div>
               
               <div>
                 <Label htmlFor="position">Position</Label>
                 <Input
                   id="position"
-                  {...register('position')}
-                />
+                  {...register('position')} />
+
               </div>
             </div>
           </CardContent>
@@ -331,16 +331,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 <Label htmlFor="emergency_contact_name">Contact Name</Label>
                 <Input
                   id="emergency_contact_name"
-                  {...register('emergency_contact_name')}
-                />
+                  {...register('emergency_contact_name')} />
+
               </div>
               
               <div>
                 <Label htmlFor="emergency_contact_phone">Contact Phone</Label>
                 <Input
                   id="emergency_contact_phone"
-                  {...register('emergency_contact_phone')}
-                />
+                  {...register('emergency_contact_phone')} />
+
               </div>
             </div>
 
@@ -350,8 +350,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 id="notes"
                 {...register('notes')}
                 rows={3}
-                placeholder="Any additional notes about the employee..."
-              />
+                placeholder="Any additional notes about the employee..." />
+
             </div>
           </CardContent>
         </Card>
@@ -359,17 +359,17 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
 
       {/* Actions */}
       <div className="flex justify-end space-x-4">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+        {onCancel &&
+        <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-        )}
+        }
         <Button type="submit" disabled={loading}>
           {loading ? 'Saving...' : employee ? 'Update Employee' : 'Create Employee'}
         </Button>
       </div>
-    </form>
-  );
+    </form>);
+
 };
 
 export default EmployeeForm;

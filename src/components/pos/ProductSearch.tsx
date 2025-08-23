@@ -19,7 +19,7 @@ const ProductSearch: React.FC = () => {
   const [selectedVariant, setSelectedVariant] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { addToCart } = usePOS();
   const { toast } = useToast();
 
@@ -66,7 +66,7 @@ const ProductSearch: React.FC = () => {
 
   const handleSearch = async () => {
     if (!searchQuery) return;
-    
+
     setIsLoading(true);
     try {
       const { data: products } = await window.ezsite.apis.run({
@@ -74,7 +74,7 @@ const ProductSearch: React.FC = () => {
         param: [searchQuery, searchType]
       });
       setSearchResults(products || []);
-      
+
       // Auto-select if exact barcode match
       if (searchType === 'barcode' && products?.length === 1) {
         setSelectedProduct(products[0]);
@@ -93,8 +93,8 @@ const ProductSearch: React.FC = () => {
   const handleAddToCart = () => {
     if (!selectedProduct) return;
 
-    const variant = selectedProduct.variants.find(v => v.id === selectedVariant);
-    
+    const variant = selectedProduct.variants.find((v) => v.id === selectedVariant);
+
     // Check stock availability
     const availableStock = variant ? variant.stockQuantity : selectedProduct.currentStock;
     if (quantity > availableStock) {
@@ -107,10 +107,10 @@ const ProductSearch: React.FC = () => {
     }
 
     addToCart(selectedProduct, variant, quantity);
-    
+
     toast({
       title: 'Product Added',
-      description: `${selectedProduct.name} added to cart`,
+      description: `${selectedProduct.name} added to cart`
     });
 
     // Reset form
@@ -152,8 +152,8 @@ const ProductSearch: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="pl-10"
-              />
+                className="pl-10" />
+
             </div>
             
             <Button onClick={handleSearch} disabled={isLoading} variant="outline">
@@ -164,16 +164,16 @@ const ProductSearch: React.FC = () => {
           {/* Search Results */}
           {isLoading && <div className="text-center py-4">Searching...</div>}
           
-          {searchResults.length > 0 && (
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {searchResults.map((product) => (
-                <div
-                  key={product.id}
-                  className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${
-                    selectedProduct?.id === product.id ? 'bg-blue-50 border-blue-300' : ''
-                  }`}
-                  onClick={() => handleProductSelect(product)}
-                >
+          {searchResults.length > 0 &&
+          <div className="max-h-60 overflow-y-auto space-y-2">
+              {searchResults.map((product) =>
+            <div
+              key={product.id}
+              className={`p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+              selectedProduct?.id === product.id ? 'bg-blue-50 border-blue-300' : ''}`
+              }
+              onClick={() => handleProductSelect(product)}>
+
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h4 className="font-medium">{product.name}</h4>
@@ -187,21 +187,21 @@ const ProductSearch: React.FC = () => {
                       </Badge>
                     </div>
                   </div>
-                  {product.isApparel && (
-                    <Badge variant="secondary" className="mt-2">
+                  {product.isApparel &&
+              <Badge variant="secondary" className="mt-2">
                       Apparel (Tax Exempt under $110)
                     </Badge>
-                  )}
+              }
                 </div>
-              ))}
+            )}
             </div>
-          )}
+          }
         </CardContent>
       </Card>
 
       {/* Product Selection */}
-      {selectedProduct && (
-        <Card>
+      {selectedProduct &&
+      <Card>
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <Package className="h-12 w-12 text-gray-400" />
@@ -210,56 +210,56 @@ const ProductSearch: React.FC = () => {
                 <p className="text-sm text-gray-600 mb-2">{selectedProduct.description}</p>
                 
                 {/* Variants Selection */}
-                {selectedProduct.variants.length > 0 && (
-                  <div className="mb-3">
+                {selectedProduct.variants.length > 0 &&
+              <div className="mb-3">
                     <Select value={selectedVariant} onValueChange={setSelectedVariant}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select variant" />
                       </SelectTrigger>
                       <SelectContent>
-                        {selectedProduct.variants.map((variant) => (
-                          <SelectItem key={variant.id} value={variant.id}>
+                        {selectedProduct.variants.map((variant) =>
+                    <SelectItem key={variant.id} value={variant.id}>
                             {variant.size && `Size: ${variant.size}`}
                             {variant.color && ` Color: ${variant.color}`}
-                            {variant.priceAdjustment !== 0 && 
-                              ` (+$${variant.priceAdjustment.toFixed(2)})`
-                            }
+                            {variant.priceAdjustment !== 0 &&
+                      ` (+$${variant.priceAdjustment.toFixed(2)})`
+                      }
                             {` - Stock: ${variant.stockQuantity}`}
                           </SelectItem>
-                        ))}
+                    )}
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+              }
 
                 {/* Quantity */}
                 <div className="flex items-center gap-2 mb-3">
                   <label className="text-sm font-medium">Qty:</label>
                   <Input
-                    type="number"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="w-20"
-                  />
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  className="w-20" />
+
                 </div>
 
                 <div className="flex justify-between items-center">
                   <div>
                     {(() => {
-                      const variant = selectedProduct.variants.find(v => v.id === selectedVariant);
-                      const unitPrice = selectedProduct.basePrice + (variant?.priceAdjustment || 0);
-                      return (
-                        <div>
+                    const variant = selectedProduct.variants.find((v) => v.id === selectedVariant);
+                    const unitPrice = selectedProduct.basePrice + (variant?.priceAdjustment || 0);
+                    return (
+                      <div>
                           <p className="text-sm text-gray-600">
                             Unit Price: ${unitPrice.toFixed(2)}
                           </p>
                           <p className="font-semibold">
                             Total: ${(unitPrice * quantity).toFixed(2)}
                           </p>
-                        </div>
-                      );
-                    })()}
+                        </div>);
+
+                  })()}
                   </div>
                   <Button onClick={handleAddToCart} className="bg-green-600 hover:bg-green-700">
                     Add to Cart
@@ -269,9 +269,9 @@ const ProductSearch: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default ProductSearch;

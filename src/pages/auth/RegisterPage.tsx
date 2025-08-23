@@ -26,7 +26,7 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       await register(formData);
       navigate('/dashboard');
@@ -67,8 +67,8 @@ const RegisterPage: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="rounded-2xl"
-                  required
-                />
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="email">{t('email')}</Label>
@@ -78,8 +78,8 @@ const RegisterPage: React.FC = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="rounded-2xl"
-                  required
-                />
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="password">{t('password')}</Label>
@@ -89,8 +89,8 @@ const RegisterPage: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="rounded-2xl"
-                  required
-                />
+                  required />
+
               </div>
               <div>
                 <Label htmlFor="role">Role</Label>
@@ -105,11 +105,11 @@ const RegisterPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700"
-                disabled={isLoading}
-              >
+                disabled={isLoading}>
+
                 {isLoading ? t('loading') : t('signUp')}
               </Button>
             </form>
@@ -128,8 +128,8 @@ const RegisterPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleLanguageToggle}
-                className="rounded-2xl"
-              >
+                className="rounded-2xl">
+
                 <Globe className="w-4 h-4 mr-2" />
                 {language === 'en' ? 'বাংলা' : 'English'}
               </Button>
@@ -137,8 +137,8 @@ const RegisterPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default RegisterPage;

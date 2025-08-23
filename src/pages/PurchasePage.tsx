@@ -37,8 +37,8 @@ const PurchasePage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </PurchaseOrderProvider>
-  );
+    </PurchaseOrderProvider>);
+
 };
 
 export default PurchasePage;

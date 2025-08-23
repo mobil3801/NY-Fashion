@@ -76,14 +76,14 @@ const ProductManagement = () => {
                 {editingProduct ? 'Update product information' : 'Create a new product in your inventory'}
               </DialogDescription>
             </DialogHeader>
-            <ProductForm 
-              product={editingProduct} 
+            <ProductForm
+              product={editingProduct}
               onClose={handleCloseForm}
               onSave={() => {
                 handleCloseForm();
                 fetchProducts();
-              }}
-            />
+              }} />
+
           </DialogContent>
         </Dialog>
       </div>
@@ -102,8 +102,8 @@ const ProductManagement = () => {
               <Input
                 placeholder="Search products, SKU, or barcode..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+                onChange={(e) => setSearchTerm(e.target.value)} />
+
             </div>
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-48">
@@ -111,11 +111,11 @@ const ProductManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id.toString()}>
+                {categories.map((category) =>
+                <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name} ({category.product_count})
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             <Button type="submit">
@@ -127,10 +127,10 @@ const ProductManagement = () => {
       </Card>
 
       {/* Products Grid */}
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
+      {loading ?
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) =>
+        <Card key={i} className="animate-pulse">
               <CardHeader className="space-y-2">
                 <div className="h-4 bg-gray-300 rounded"></div>
                 <div className="h-3 bg-gray-300 rounded w-3/4"></div>
@@ -142,39 +142,39 @@ const ProductManagement = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        )}
+        </div> :
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => {
-            const stockStatus = getStockStatus(product);
-            return (
-              <Card key={product.id} className="hover:shadow-md transition-shadow">
+          const stockStatus = getStockStatus(product);
+          return (
+            <Card key={product.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <CardTitle className="text-lg leading-tight">
                         {product.name}
                       </CardTitle>
-                      {product.name_bn && (
-                        <p className="text-sm text-muted-foreground">
+                      {product.name_bn &&
+                    <p className="text-sm text-muted-foreground">
                           {product.name_bn}
                         </p>
-                      )}
+                    }
                     </div>
                     <div className="flex gap-1">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(product)}
-                      >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(product)}>
+
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(product.id!)}
-                      >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(product.id!)}>
+
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -196,30 +196,30 @@ const ProductManagement = () => {
                     <span className="flex items-center gap-1">
                       <Package className="h-3 w-3" />
                       {product.total_stock || 0} {product.unit}
-                      {(product.total_stock || 0) <= product.min_stock_level && (
-                        <AlertTriangle className="h-3 w-3 text-yellow-500" />
-                      )}
+                      {(product.total_stock || 0) <= product.min_stock_level &&
+                    <AlertTriangle className="h-3 w-3 text-yellow-500" />
+                    }
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Price:</span>
                     <span className="font-semibold">৳{product.selling_price}</span>
                   </div>
-                  {product.has_variants && (
-                    <div className="flex justify-between text-sm">
+                  {product.has_variants &&
+                <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Variants:</span>
                       <span>{product.variant_count} variants</span>
                     </div>
-                  )}
+                }
                 </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+              </Card>);
 
-      {products.length === 0 && !loading && (
-        <Card>
+        })}
+        </div>
+      }
+
+      {products.length === 0 && !loading &&
+      <Card>
           <CardContent className="flex flex-col items-center justify-center py-10">
             <Package className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No products found</h3>
@@ -232,9 +232,9 @@ const ProductManagement = () => {
             </Button>
           </CardContent>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default ProductManagement;

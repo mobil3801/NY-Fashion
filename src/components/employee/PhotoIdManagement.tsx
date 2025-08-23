@@ -157,32 +157,32 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Photo IDs</h2>
-        {canManageIds && (
-          <Button onClick={() => handleOpenDialog()}>
+        {canManageIds &&
+        <Button onClick={() => handleOpenDialog()}>
             <Plus className="h-4 w-4 mr-2" />
             Add ID
           </Button>
-        )}
+        }
       </div>
 
-      {photoIds.length === 0 ? (
-        <Card>
+      {photoIds.length === 0 ?
+      <Card>
           <CardContent className="text-center py-12">
             <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No IDs uploaded</h3>
             <p className="text-gray-600 mb-4">Upload employee identification documents for verification.</p>
-            {canManageIds && (
-              <Button onClick={() => handleOpenDialog()}>
+            {canManageIds &&
+          <Button onClick={() => handleOpenDialog()}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add First ID
               </Button>
-            )}
+          }
           </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {photoIds.map((photoId) => (
-            <Card key={photoId.id} className={`${photoId.is_primary ? 'ring-2 ring-blue-500' : ''}`}>
+        </Card> :
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {photoIds.map((photoId) =>
+        <Card key={photoId.id} className={`${photoId.is_primary ? 'ring-2 ring-blue-500' : ''}`}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -190,42 +190,42 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                       <Badge className={getIdTypeColor(photoId.id_type)}>
                         {photoId.id_type}
                       </Badge>
-                      {photoId.is_primary && (
-                        <Badge variant="outline">Primary</Badge>
-                      )}
+                      {photoId.is_primary &&
+                  <Badge variant="outline">Primary</Badge>
+                  }
                     </CardTitle>
                     <div className="text-sm text-gray-600 mt-1">
                       ID: {photoId.id_number_masked}
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {canVerifyIds && (
-                      <Button
-                        size="sm"
-                        variant={photoId.is_verified ? "default" : "outline"}
-                        onClick={() => handleVerify(photoId, !photoId.is_verified)}
-                      >
-                        {photoId.is_verified ? (
-                          <ShieldCheck className="h-4 w-4" />
-                        ) : (
-                          <Shield className="h-4 w-4" />
-                        )}
+                    {canVerifyIds &&
+                <Button
+                  size="sm"
+                  variant={photoId.is_verified ? "default" : "outline"}
+                  onClick={() => handleVerify(photoId, !photoId.is_verified)}>
+
+                        {photoId.is_verified ?
+                  <ShieldCheck className="h-4 w-4" /> :
+
+                  <Shield className="h-4 w-4" />
+                  }
                       </Button>
-                    )}
-                    {canManageIds && (
-                      <>
+                }
+                    {canManageIds &&
+                <>
                         <Button size="sm" variant="outline" onClick={() => handleOpenDialog(photoId)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => deletePhotoId(photoId.id!)}
-                        >
+                        <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => deletePhotoId(photoId.id!)}>
+
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </>
-                    )}
+                }
                   </div>
                 </div>
               </CardHeader>
@@ -234,70 +234,70 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   <div>
                     <Label className="text-xs text-gray-500">Front Image</Label>
                     <div className="mt-1 aspect-[3/2] bg-gray-100 rounded-lg overflow-hidden">
-                      <img 
-                        src={photoId.front_image_url} 
-                        alt="ID Front"
-                        className="w-full h-full object-cover cursor-pointer hover:opacity-90"
-                        onClick={() => window.open(photoId.front_image_url, '_blank')}
-                      />
+                      <img
+                    src={photoId.front_image_url}
+                    alt="ID Front"
+                    className="w-full h-full object-cover cursor-pointer hover:opacity-90"
+                    onClick={() => window.open(photoId.front_image_url, '_blank')} />
+
                     </div>
                   </div>
-                  {photoId.back_image_url && (
-                    <div>
+                  {photoId.back_image_url &&
+              <div>
                       <Label className="text-xs text-gray-500">Back Image</Label>
                       <div className="mt-1 aspect-[3/2] bg-gray-100 rounded-lg overflow-hidden">
-                        <img 
-                          src={photoId.back_image_url} 
-                          alt="ID Back"
-                          className="w-full h-full object-cover cursor-pointer hover:opacity-90"
-                          onClick={() => window.open(photoId.back_image_url, '_blank')}
-                        />
+                        <img
+                    src={photoId.back_image_url}
+                    alt="ID Back"
+                    className="w-full h-full object-cover cursor-pointer hover:opacity-90"
+                    onClick={() => window.open(photoId.back_image_url, '_blank')} />
+
                       </div>
                     </div>
-                  )}
+              }
                 </div>
 
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-4">
-                    {photoId.issue_date && (
-                      <div className="text-gray-600">
+                    {photoId.issue_date &&
+                <div className="text-gray-600">
                         <Calendar className="h-4 w-4 inline mr-1" />
                         Issued: {formatDate(photoId.issue_date)}
                       </div>
-                    )}
-                    {photoId.expiry_date && (
-                      <div className={`${isExpiringSoon(photoId.expiry_date) ? 'text-orange-600' : 'text-gray-600'}`}>
+                }
+                    {photoId.expiry_date &&
+                <div className={`${isExpiringSoon(photoId.expiry_date) ? 'text-orange-600' : 'text-gray-600'}`}>
                         <Calendar className="h-4 w-4 inline mr-1" />
                         Expires: {formatDate(photoId.expiry_date)}
-                        {isExpiringSoon(photoId.expiry_date) && (
-                          <span className="ml-1 text-orange-600">⚠️</span>
-                        )}
+                        {isExpiringSoon(photoId.expiry_date) &&
+                  <span className="ml-1 text-orange-600">⚠️</span>
+                  }
                       </div>
-                    )}
+                }
                   </div>
-                  {photoId.is_verified ? (
-                    <Badge className="bg-green-100 text-green-800 border-green-300">
+                  {photoId.is_verified ?
+              <Badge className="bg-green-100 text-green-800 border-green-300">
                       <ShieldCheck className="h-3 w-3 mr-1" />
                       Verified
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">
+                    </Badge> :
+
+              <Badge variant="outline">
                       <Shield className="h-3 w-3 mr-1" />
                       Pending
                     </Badge>
-                  )}
+              }
                 </div>
 
-                {photoId.notes && (
-                  <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                {photoId.notes &&
+            <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
                     {photoId.notes}
                   </div>
-                )}
+            }
               </CardContent>
             </Card>
-          ))}
+        )}
         </div>
-      )}
+      }
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -315,8 +315,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                 <Label htmlFor="id_type">ID Type *</Label>
                 <Select
                   value={formData.id_type}
-                  onValueChange={(value) => setFormData({ ...formData, id_type: value as any })}
-                >
+                  onValueChange={(value) => setFormData({ ...formData, id_type: value as any })}>
+
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -336,8 +336,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   id="id_number"
                   value={formData.id_number}
                   onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
-                  placeholder="Enter ID number"
-                />
+                  placeholder="Enter ID number" />
+
               </div>
             </div>
 
@@ -348,8 +348,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   id="issue_date"
                   type="date"
                   value={formData.issue_date}
-                  onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })} />
+
               </div>
               
               <div>
@@ -358,8 +358,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   id="expiry_date"
                   type="date"
                   value={formData.expiry_date}
-                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                />
+                  onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })} />
+
               </div>
             </div>
 
@@ -368,8 +368,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
               <Switch
                 id="is_primary"
                 checked={formData.is_primary}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_primary: checked })}
-              />
+                onCheckedChange={(checked) => setFormData({ ...formData, is_primary: checked })} />
+
               <Label htmlFor="is_primary">Set as Primary ID</Label>
             </div>
 
@@ -383,34 +383,34 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   className={`
                     mt-2 border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
                     ${isFrontDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-                  `}
-                >
+                  `}>
+
                   <input {...getFrontInputProps()} />
-                  {frontImage ? (
-                    <div className="relative">
+                  {frontImage ?
+                  <div className="relative">
                       <img src={frontImage} alt="Front preview" className="max-h-40 mx-auto rounded" />
                       <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFrontImage('');
-                        }}
-                      >
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="absolute top-2 right-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFrontImage('');
+                      }}>
+
                         <X className="h-4 w-4" />
                       </Button>
-                    </div>
-                  ) : (
-                    <>
+                    </div> :
+
+                  <>
                       <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-sm text-gray-600">
                         {isFrontDragActive ? 'Drop front image here' : 'Click or drag front image here'}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                     </>
-                  )}
+                  }
                 </div>
               </div>
 
@@ -422,34 +422,34 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                   className={`
                     mt-2 border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors
                     ${isBackDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
-                  `}
-                >
+                  `}>
+
                   <input {...getBackInputProps()} />
-                  {backImage ? (
-                    <div className="relative">
+                  {backImage ?
+                  <div className="relative">
                       <img src={backImage} alt="Back preview" className="max-h-40 mx-auto rounded" />
                       <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="absolute top-2 right-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setBackImage('');
-                        }}
-                      >
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="absolute top-2 right-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBackImage('');
+                      }}>
+
                         <X className="h-4 w-4" />
                       </Button>
-                    </div>
-                  ) : (
-                    <>
+                    </div> :
+
+                  <>
                       <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-sm text-gray-600">
                         {isBackDragActive ? 'Drop back image here' : 'Click or drag back image here'}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                     </>
-                  )}
+                  }
                 </div>
               </div>
             </div>
@@ -462,8 +462,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Any additional notes about this ID..."
-                rows={3}
-              />
+                rows={3} />
+
             </div>
 
             {/* Actions */}
@@ -478,8 +478,8 @@ const PhotoIdManagement: React.FC<PhotoIdManagementProps> = ({ employeeId, photo
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PhotoIdManagement;

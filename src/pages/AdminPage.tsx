@@ -23,14 +23,14 @@ const AdminPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
-          { title: 'User Management', desc: 'Manage system users', color: 'bg-emerald-100 text-emerald-700' },
-          { title: 'System Settings', desc: 'Configure system', color: 'bg-blue-100 text-blue-700' },
-          { title: 'Backup & Restore', desc: 'Data management', color: 'bg-purple-100 text-purple-700' },
-          { title: 'Security Logs', desc: 'Monitor security', color: 'bg-orange-100 text-orange-700' },
-          { title: 'System Reports', desc: 'Generate reports', color: 'bg-red-100 text-red-700' },
-          { title: 'Audit Trail', desc: 'Track changes', color: 'bg-indigo-100 text-indigo-700' }
-        ].map((item, index) => (
-          <Card key={index} className="rounded-3xl border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+        { title: 'User Management', desc: 'Manage system users', color: 'bg-emerald-100 text-emerald-700' },
+        { title: 'System Settings', desc: 'Configure system', color: 'bg-blue-100 text-blue-700' },
+        { title: 'Backup & Restore', desc: 'Data management', color: 'bg-purple-100 text-purple-700' },
+        { title: 'Security Logs', desc: 'Monitor security', color: 'bg-orange-100 text-orange-700' },
+        { title: 'System Reports', desc: 'Generate reports', color: 'bg-red-100 text-red-700' },
+        { title: 'Audit Trail', desc: 'Track changes', color: 'bg-indigo-100 text-indigo-700' }].
+        map((item, index) =>
+        <Card key={index} className="rounded-3xl border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${item.color}`}>
                 <Shield className="w-6 h-6" />
@@ -39,7 +39,7 @@ const AdminPage: React.FC = () => {
               <p className="text-sm text-gray-600">{item.desc}</p>
             </CardContent>
           </Card>
-        ))}
+        )}
       </div>
 
       <Card className="rounded-3xl border-0 shadow-sm">
@@ -57,8 +57,8 @@ const AdminPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default AdminPage;

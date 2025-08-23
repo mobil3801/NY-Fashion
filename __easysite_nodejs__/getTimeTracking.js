@@ -2,7 +2,7 @@
 function getTimeTracking(employeeId, startDate = '', endDate = '', page = 1, limit = 50) {
   const Database = require('better-sqlite3');
   const db = new Database('pos_system.db');
-  
+
   try {
     let query = `
       SELECT 
@@ -17,30 +17,30 @@ function getTimeTracking(employeeId, startDate = '', endDate = '', page = 1, lim
       LEFT JOIN employees adj ON tt.adjusted_by = adj.id
       WHERE 1=1
     `;
-    
+
     const params = [];
-    
+
     if (employeeId) {
       query += ` AND tt.employee_id = ?`;
       params.push(employeeId);
     }
-    
+
     if (startDate) {
       query += ` AND DATE(tt.clock_in_time) >= ?`;
       params.push(startDate);
     }
-    
+
     if (endDate) {
       query += ` AND DATE(tt.clock_in_time) <= ?`;
       params.push(endDate);
     }
-    
+
     query += ` ORDER BY tt.clock_in_time DESC`;
     query += ` LIMIT ? OFFSET ?`;
     params.push(limit, (page - 1) * limit);
-    
+
     const timeEntries = db.prepare(query).all(...params);
-    
+
     // Get current status for employee
     let currentStatus = null;
     if (employeeId) {
@@ -59,32 +59,32 @@ function getTimeTracking(employeeId, startDate = '', endDate = '', page = 1, lim
         LIMIT 1
       `).get(employeeId);
     }
-    
+
     // Get total count
     let countQuery = `
       SELECT COUNT(*) as total
       FROM time_tracking tt
       WHERE 1=1
     `;
-    
+
     const countParams = [];
     if (employeeId) {
       countQuery += ` AND tt.employee_id = ?`;
       countParams.push(employeeId);
     }
-    
+
     if (startDate) {
       countQuery += ` AND DATE(tt.clock_in_time) >= ?`;
       countParams.push(startDate);
     }
-    
+
     if (endDate) {
       countQuery += ` AND DATE(tt.clock_in_time) <= ?`;
       countParams.push(endDate);
     }
-    
+
     const { total } = db.prepare(countQuery).get(...countParams);
-    
+
     return {
       timeEntries,
       currentStatus,

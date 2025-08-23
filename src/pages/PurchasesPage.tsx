@@ -27,8 +27,8 @@ const PurchasesPage: React.FC = () => {
           <input
             type="text"
             placeholder={t('search')}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-          />
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+
         </div>
         <Button variant="outline" className="rounded-2xl">
           <Filter className="w-4 h-4 mr-2" />
@@ -51,8 +51,8 @@ const PurchasesPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PurchasesPage;

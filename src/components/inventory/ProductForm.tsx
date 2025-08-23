@@ -44,19 +44,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
       dimensions: product?.dimensions || '',
       tags: product?.tags || '',
       variants: product?.variants || [
-        {
-          variant_name: 'Default',
-          sku: '',
-          barcode: '',
-          size: '',
-          color: '',
-          material: '',
-          cost_price: 0,
-          selling_price: 0,
-          msrp: 0,
-          current_stock: 0
-        }
-      ]
+      {
+        variant_name: 'Default',
+        sku: '',
+        barcode: '',
+        size: '',
+        color: '',
+        material: '',
+        cost_price: 0,
+        selling_price: 0,
+        msrp: 0,
+        current_stock: 0
+      }]
+
     }
   });
 
@@ -87,7 +87,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
-      
+
       const productData = {
         ...data,
         id: product?.id,
@@ -125,11 +125,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Input
                 id="name"
                 {...register('name', { required: 'Product name is required' })}
-                placeholder="e.g., Cotton Saree"
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
-              )}
+                placeholder="e.g., Cotton Saree" />
+
+              {errors.name &&
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+              }
             </div>
 
             <div className="space-y-2">
@@ -137,8 +137,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Input
                 id="name_bn"
                 {...register('name_bn')}
-                placeholder="e.g., কটন শাড়ি"
-              />
+                placeholder="e.g., কটন শাড়ি" />
+
             </div>
           </div>
 
@@ -148,8 +148,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               id="description"
               {...register('description')}
               placeholder="Detailed product description..."
-              rows={3}
-            />
+              rows={3} />
+
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -160,11 +160,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
+                  {categories.map((category) =>
+                  <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name} ({category.name_bn})
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -174,8 +174,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Input
                 id="brand"
                 {...register('brand')}
-                placeholder="Brand name"
-              />
+                placeholder="Brand name" />
+
             </div>
           </div>
 
@@ -186,19 +186,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 <Input
                   id="sku"
                   {...register('sku', { required: 'SKU is required' })}
-                  placeholder="Product SKU"
-                />
+                  placeholder="Product SKU" />
+
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setValue('sku', generateSKU())}
-                >
+                  onClick={() => setValue('sku', generateSKU())}>
+
                   Generate
                 </Button>
               </div>
-              {errors.sku && (
-                <p className="text-sm text-red-500">{errors.sku.message}</p>
-              )}
+              {errors.sku &&
+              <p className="text-sm text-red-500">{errors.sku.message}</p>
+              }
             </div>
 
             <div className="space-y-2">
@@ -206,8 +206,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Input
                 id="barcode"
                 {...register('barcode')}
-                placeholder="Barcode"
-              />
+                placeholder="Barcode" />
+
             </div>
 
             <div className="space-y-2">
@@ -234,8 +234,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 type="number"
                 step="0.01"
                 {...register('weight')}
-                placeholder="0.50"
-              />
+                placeholder="0.50" />
+
             </div>
 
             <div className="space-y-2">
@@ -243,8 +243,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Input
                 id="dimensions"
                 {...register('dimensions')}
-                placeholder="Length x Width x Height"
-              />
+                placeholder="Length x Width x Height" />
+
             </div>
           </div>
 
@@ -253,8 +253,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
             <Input
               id="tags"
               {...register('tags')}
-              placeholder="casual, formal, wedding, cotton (comma separated)"
-            />
+              placeholder="casual, formal, wedding, cotton (comma separated)" />
+
           </div>
         </TabsContent>
 
@@ -267,11 +267,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 type="number"
                 step="0.01"
                 {...register('cost_price', { required: 'Cost price is required', min: 0 })}
-                placeholder="0.00"
-              />
-              {errors.cost_price && (
-                <p className="text-sm text-red-500">{errors.cost_price.message}</p>
-              )}
+                placeholder="0.00" />
+
+              {errors.cost_price &&
+              <p className="text-sm text-red-500">{errors.cost_price.message}</p>
+              }
             </div>
 
             <div className="space-y-2">
@@ -281,11 +281,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 type="number"
                 step="0.01"
                 {...register('selling_price', { required: 'Selling price is required', min: 0 })}
-                placeholder="0.00"
-              />
-              {errors.selling_price && (
-                <p className="text-sm text-red-500">{errors.selling_price.message}</p>
-              )}
+                placeholder="0.00" />
+
+              {errors.selling_price &&
+              <p className="text-sm text-red-500">{errors.selling_price.message}</p>
+              }
             </div>
 
             <div className="space-y-2">
@@ -295,8 +295,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 type="number"
                 step="0.01"
                 {...register('msrp', { min: 0 })}
-                placeholder="0.00"
-              />
+                placeholder="0.00" />
+
             </div>
           </div>
 
@@ -307,8 +307,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 id="min_stock_level"
                 type="number"
                 {...register('min_stock_level', { min: 0 })}
-                placeholder="0"
-              />
+                placeholder="0" />
+
             </div>
 
             <div className="space-y-2">
@@ -317,8 +317,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                 id="max_stock_level"
                 type="number"
                 {...register('max_stock_level', { min: 0 })}
-                placeholder="100"
-              />
+                placeholder="100" />
+
             </div>
           </div>
         </TabsContent>
@@ -336,48 +336,48 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <Switch
                 id="has-variants"
                 checked={hasVariants}
-                onCheckedChange={setHasVariants}
-              />
+                onCheckedChange={setHasVariants} />
+
             </div>
           </div>
 
-          {hasVariants && (
-            <div className="space-y-4">
+          {hasVariants &&
+          <div className="space-y-4">
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => append({
-                  variant_name: '',
-                  sku: '',
-                  barcode: '',
-                  size: '',
-                  color: '',
-                  material: '',
-                  cost_price: 0,
-                  selling_price: 0,
-                  msrp: 0,
-                  current_stock: 0
-                })}
-              >
+              type="button"
+              variant="outline"
+              onClick={() => append({
+                variant_name: '',
+                sku: '',
+                barcode: '',
+                size: '',
+                color: '',
+                material: '',
+                cost_price: 0,
+                selling_price: 0,
+                msrp: 0,
+                current_stock: 0
+              })}>
+
                 <Plus className="h-4 w-4 mr-2" />
                 Add Variant
               </Button>
 
-              {fields.map((field, index) => (
-                <Card key={field.id}>
+              {fields.map((field, index) =>
+            <Card key={field.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">Variant {index + 1}</CardTitle>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => remove(index)}
-                        >
+                      {fields.length > 1 &&
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => remove(index)}>
+
                           <X className="h-4 w-4" />
                         </Button>
-                      )}
+                  }
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -385,17 +385,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                       <div className="space-y-2">
                         <Label>Variant Name</Label>
                         <Input
-                          {...register(`variants.${index}.variant_name`)}
-                          placeholder="e.g., Red Small"
-                        />
+                      {...register(`variants.${index}.variant_name`)}
+                      placeholder="e.g., Red Small" />
+
                       </div>
 
                       <div className="space-y-2">
                         <Label>SKU</Label>
                         <Input
-                          {...register(`variants.${index}.sku`)}
-                          placeholder="Variant SKU"
-                        />
+                      {...register(`variants.${index}.sku`)}
+                      placeholder="Variant SKU" />
+
                       </div>
                     </div>
 
@@ -407,9 +407,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                             <SelectValue placeholder="Select size" />
                           </SelectTrigger>
                           <SelectContent>
-                            {commonSizes.map((size) => (
-                              <SelectItem key={size} value={size}>{size}</SelectItem>
-                            ))}
+                            {commonSizes.map((size) =>
+                        <SelectItem key={size} value={size}>{size}</SelectItem>
+                        )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -421,9 +421,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                             <SelectValue placeholder="Select color" />
                           </SelectTrigger>
                           <SelectContent>
-                            {commonColors.map((color) => (
-                              <SelectItem key={color} value={color}>{color}</SelectItem>
-                            ))}
+                            {commonColors.map((color) =>
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                        )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -435,9 +435,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                             <SelectValue placeholder="Select material" />
                           </SelectTrigger>
                           <SelectContent>
-                            {commonMaterials.map((material) => (
-                              <SelectItem key={material} value={material}>{material}</SelectItem>
-                            ))}
+                            {commonMaterials.map((material) =>
+                        <SelectItem key={material} value={material}>{material}</SelectItem>
+                        )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -447,47 +447,47 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                       <div className="space-y-2">
                         <Label>Cost Price (৳)</Label>
                         <Input
-                          type="number"
-                          step="0.01"
-                          {...register(`variants.${index}.cost_price`)}
-                          placeholder="0.00"
-                        />
+                      type="number"
+                      step="0.01"
+                      {...register(`variants.${index}.cost_price`)}
+                      placeholder="0.00" />
+
                       </div>
 
                       <div className="space-y-2">
                         <Label>Selling Price (৳)</Label>
                         <Input
-                          type="number"
-                          step="0.01"
-                          {...register(`variants.${index}.selling_price`)}
-                          placeholder="0.00"
-                        />
+                      type="number"
+                      step="0.01"
+                      {...register(`variants.${index}.selling_price`)}
+                      placeholder="0.00" />
+
                       </div>
 
                       <div className="space-y-2">
                         <Label>MSRP (৳)</Label>
                         <Input
-                          type="number"
-                          step="0.01"
-                          {...register(`variants.${index}.msrp`)}
-                          placeholder="0.00"
-                        />
+                      type="number"
+                      step="0.01"
+                      {...register(`variants.${index}.msrp`)}
+                      placeholder="0.00" />
+
                       </div>
 
                       <div className="space-y-2">
                         <Label>Stock</Label>
                         <Input
-                          type="number"
-                          {...register(`variants.${index}.current_stock`)}
-                          placeholder="0"
-                        />
+                      type="number"
+                      {...register(`variants.${index}.current_stock`)}
+                      placeholder="0" />
+
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+            )}
             </div>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
@@ -502,23 +502,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                isDragActive 
-                  ? 'border-primary bg-primary/10' 
-                  : 'border-muted-foreground/25 hover:border-primary/50'
-              }`}
-            >
+              isDragActive ?
+              'border-primary bg-primary/10' :
+              'border-muted-foreground/25 hover:border-primary/50'}`
+              }>
+
               <input {...getInputProps()} />
               <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              {isDragActive ? (
-                <p>Drop the images here ...</p>
-              ) : (
-                <div>
+              {isDragActive ?
+              <p>Drop the images here ...</p> :
+
+              <div>
                   <p className="text-lg mb-2">Drag & drop images here, or click to select</p>
                   <p className="text-sm text-muted-foreground">
                     Supports: JPG, PNG, WebP (Max 5MB each)
                   </p>
                 </div>
-              )}
+              }
             </div>
 
             <div className="grid grid-cols-4 gap-4">
@@ -536,8 +536,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
           {loading ? 'Saving...' : product ? 'Update Product' : 'Create Product'}
         </Button>
       </div>
-    </form>
-  );
+    </form>);
+
 };
 
 export default ProductForm;

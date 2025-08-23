@@ -31,9 +31,9 @@ const LowStockAlerts = () => {
 
   const getStockLevel = (current: number, min: number, max: number) => {
     if (current === 0) return { level: 'out', percentage: 0, color: 'bg-red-500' };
-    if (current <= min) return { level: 'critical', percentage: (current / min) * 50, color: 'bg-red-500' };
-    if (current <= min * 2) return { level: 'low', percentage: 50 + ((current - min) / min) * 30, color: 'bg-yellow-500' };
-    return { level: 'good', percentage: 80 + ((current - min * 2) / (max - min * 2)) * 20, color: 'bg-green-500' };
+    if (current <= min) return { level: 'critical', percentage: current / min * 50, color: 'bg-red-500' };
+    if (current <= min * 2) return { level: 'low', percentage: 50 + (current - min) / min * 30, color: 'bg-yellow-500' };
+    return { level: 'good', percentage: 80 + (current - min * 2) / (max - min * 2) * 20, color: 'bg-green-500' };
   };
 
   const getStockBadge = (level: string) => {
@@ -54,8 +54,8 @@ const LowStockAlerts = () => {
     console.log('Generate PO for product:', productId);
   };
 
-  const criticalProducts = lowStockProducts.filter(p => (p.total_stock || 0) === 0);
-  const lowProducts = lowStockProducts.filter(p => (p.total_stock || 0) > 0 && (p.total_stock || 0) <= p.min_stock_level);
+  const criticalProducts = lowStockProducts.filter((p) => (p.total_stock || 0) === 0);
+  const lowProducts = lowStockProducts.filter((p) => (p.total_stock || 0) > 0 && (p.total_stock || 0) <= p.min_stock_level);
 
   return (
     <div className="space-y-6">
@@ -114,8 +114,8 @@ const LowStockAlerts = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">৳{
-              lowStockProducts.reduce((sum, product) => sum + (product.selling_price * (product.total_stock || 0)), 0).toLocaleString()
-            }</div>
+              lowStockProducts.reduce((sum, product) => sum + product.selling_price * (product.total_stock || 0), 0).toLocaleString()
+              }</div>
             <p className="text-xs text-muted-foreground">
               Current inventory value
             </p>
@@ -139,8 +139,8 @@ const LowStockAlerts = () => {
       </div>
 
       {/* Critical Stock Alert */}
-      {criticalProducts.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+      {criticalProducts.length > 0 &&
+      <Card className="border-red-200 bg-red-50">
           <CardHeader>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -152,8 +152,8 @@ const LowStockAlerts = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-              {criticalProducts.slice(0, 6).map((product) => (
-                <div key={product.id} className="flex items-center justify-between bg-white p-3 rounded-lg border">
+              {criticalProducts.slice(0, 6).map((product) =>
+            <div key={product.id} className="flex items-center justify-between bg-white p-3 rounded-lg border">
                   <div>
                     <p className="font-medium text-sm">{product.name}</p>
                     <p className="text-xs text-muted-foreground">{product.sku}</p>
@@ -162,16 +162,16 @@ const LowStockAlerts = () => {
                     Reorder
                   </Button>
                 </div>
-              ))}
+            )}
             </div>
-            {criticalProducts.length > 6 && (
-              <p className="text-sm text-red-600 mt-2">
+            {criticalProducts.length > 6 &&
+          <p className="text-sm text-red-600 mt-2">
                 And {criticalProducts.length - 6} more products...
               </p>
-            )}
+          }
           </CardContent>
         </Card>
-      )}
+      }
 
       {/* Low Stock Products Table */}
       <Card>
@@ -182,12 +182,12 @@ const LowStockAlerts = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex justify-center py-8">
+          {loading ?
+          <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : lowStockProducts.length > 0 ? (
-            <Table>
+            </div> :
+          lowStockProducts.length > 0 ?
+          <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
@@ -202,14 +202,14 @@ const LowStockAlerts = () => {
               </TableHeader>
               <TableBody>
                 {lowStockProducts.map((product) => {
-                  const stockInfo = getStockLevel(
-                    product.total_stock || 0,
-                    product.min_stock_level,
-                    product.max_stock_level
-                  );
-                  
-                  return (
-                    <TableRow key={product.id}>
+                const stockInfo = getStockLevel(
+                  product.total_stock || 0,
+                  product.min_stock_level,
+                  product.max_stock_level
+                );
+
+                return (
+                  <TableRow key={product.id}>
                       <TableCell>
                         <div>
                           <div className="font-medium">{product.name}</div>
@@ -234,10 +234,10 @@ const LowStockAlerts = () => {
                       </TableCell>
                       <TableCell>
                         <div className="w-20">
-                          <Progress 
-                            value={stockInfo.percentage} 
-                            className="h-2"
-                          />
+                          <Progress
+                          value={stockInfo.percentage}
+                          className="h-2" />
+
                           <span className="text-xs text-muted-foreground">
                             {stockInfo.percentage.toFixed(0)}%
                           </span>
@@ -248,32 +248,32 @@ const LowStockAlerts = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => generatePurchaseOrder(product.id)}
-                          >
+                          <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => generatePurchaseOrder(product.id)}>
+
                             <ShoppingCart className="h-3 w-3 mr-1" />
                             Reorder
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  );
-                })}
+                    </TableRow>);
+
+              })}
               </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
+            </Table> :
+
+          <div className="text-center py-8 text-muted-foreground">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2">All Stock Levels Good!</h3>
               <p>No products are below their minimum stock levels.</p>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LowStockAlerts;

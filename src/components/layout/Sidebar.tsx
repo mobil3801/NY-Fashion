@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  FileText, 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  FileText,
   ShoppingCart,
   Package,
   Users,
@@ -14,8 +14,8 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+  ChevronRight } from
+'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -32,31 +32,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const { t } = useLanguage();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
-    { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
-    { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
-    { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
-    { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
-    { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
-    { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
-    { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
-    { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
-    { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }
-  ];
+  { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
+  { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
+  { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
+  { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
+  { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
+  { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
+  { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
+  { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
+  { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
+  { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }];
 
-  const availableMenuItems = menuItems.filter(item => 
-    user && canAccess(user.role, item.resource)
+
+  const availableMenuItems = menuItems.filter((item) =>
+  user && canAccess(user.role, item.resource)
   );
 
   return (
     <>
       {/* Mobile Backdrop */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={onToggle}
-        />
-      )}
+      {isOpen &&
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        onClick={onToggle} />
+
+      }
 
       {/* Sidebar */}
       <div className={cn(
@@ -77,29 +77,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             variant="ghost"
             size="sm"
             onClick={onToggle}
-            className="lg:hidden p-1 hover:bg-gray-100 rounded-xl"
-          >
+            className="lg:hidden p-1 hover:bg-gray-100 rounded-xl">
+
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         <nav className="px-4 space-y-2">
-          {availableMenuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors",
-                  isActive && "bg-emerald-100 text-emerald-700 font-medium"
-                )
-              }
-              onClick={() => window.innerWidth < 1024 && onToggle()}
-            >
+          {availableMenuItems.map((item) =>
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+            cn(
+              "flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors",
+              isActive && "bg-emerald-100 text-emerald-700 font-medium"
+            )
+            }
+            onClick={() => window.innerWidth < 1024 && onToggle()}>
+
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
             </NavLink>
-          ))}
+          )}
         </nav>
 
         <div className="absolute bottom-6 left-4 right-4">
@@ -110,8 +110,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           </div>
         </div>
       </div>
-    </>
-  );
+    </>);
+
 };
 
 export default Sidebar;

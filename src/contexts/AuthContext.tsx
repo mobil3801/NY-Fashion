@@ -11,7 +11,7 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isLoading: true,
@@ -32,24 +32,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       } catch (error) {
         localStorage.removeItem('nyf_user');
-        setAuthState(prev => ({ ...prev, isLoading: false }));
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     } else {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
-      
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
       // Mock authentication - In real app, call your API
       const mockUser: User = {
         id: '1',
         email: credentials.email,
         name: credentials.email === 'admin@nyfashion.com' ? 'Admin User' : 'Demo User',
-        role: credentials.email === 'admin@nyfashion.com' ? 'Admin' : 
-              credentials.email.includes('manager') ? 'Manager' : 'Employee',
+        role: credentials.email === 'admin@nyfashion.com' ? 'Admin' :
+        credentials.email.includes('manager') ? 'Manager' : 'Employee',
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
       };
 
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Welcome back, ${mockUser.name}!`
       });
     } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Login Failed",
         description: "Invalid credentials. Please try again.",
@@ -77,8 +77,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (credentials: RegisterCredentials) => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
-      
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
       // Mock registration
       const newUser: User = {
         id: Date.now().toString(),
@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: `Welcome to NY FASHION, ${newUser.name}!`
       });
     } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
       toast({
         title: "Registration Failed",
         description: "Something went wrong. Please try again.",
@@ -126,8 +126,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={{ ...authState, login, register, logout }}>
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };
 
 export const useAuth = () => {

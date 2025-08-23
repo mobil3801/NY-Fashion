@@ -2,7 +2,7 @@
 function createEmployeeTables() {
   const Database = require('better-sqlite3');
   const db = new Database('pos_system.db');
-  
+
   try {
     // Employee profiles table
     db.exec(`

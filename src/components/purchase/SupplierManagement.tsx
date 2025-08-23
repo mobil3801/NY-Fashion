@@ -17,10 +17,10 @@ const SupplierManagement = () => {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSuppliers = suppliers.filter((supplier) =>
+  supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  supplier.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEditSupplier = (supplier: Supplier) => {
@@ -61,8 +61,8 @@ const SupplierManagement = () => {
                 placeholder="Search suppliers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
-              />
+                className="w-64" />
+
             </div>
           </div>
         </CardHeader>
@@ -81,21 +81,21 @@ const SupplierManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
-                <TableRow>
+              {loading ?
+              <TableRow>
                   <TableCell colSpan={8} className="text-center py-8">
                     Loading suppliers...
                   </TableCell>
-                </TableRow>
-              ) : filteredSuppliers.length === 0 ? (
-                <TableRow>
+                </TableRow> :
+              filteredSuppliers.length === 0 ?
+              <TableRow>
                   <TableCell colSpan={8} className="text-center py-8">
                     No suppliers found
                   </TableCell>
-                </TableRow>
-              ) : (
-                filteredSuppliers.map((supplier) => (
-                  <TableRow key={supplier.id}>
+                </TableRow> :
+
+              filteredSuppliers.map((supplier) =>
+              <TableRow key={supplier.id}>
                     <TableCell className="font-medium">{supplier.name}</TableCell>
                     <TableCell>{supplier.contact_person}</TableCell>
                     <TableCell>{supplier.email}</TableCell>
@@ -110,10 +110,10 @@ const SupplierManagement = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditSupplier(supplier)}
-                        >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditSupplier(supplier)}>
+
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm">
@@ -122,8 +122,8 @@ const SupplierManagement = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
+              )
+              }
             </TableBody>
           </Table>
         </CardContent>
@@ -138,12 +138,12 @@ const SupplierManagement = () => {
           </DialogHeader>
           <SupplierForm
             supplier={selectedSupplier}
-            onClose={handleCloseForm}
-          />
+            onClose={handleCloseForm} />
+
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SupplierManagement;

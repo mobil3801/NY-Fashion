@@ -33,9 +33,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
+      retry: 1
+    }
+  }
 });
 
 function App() {
@@ -55,94 +55,94 @@ function App() {
                 
                 {/* Protected Routes */}
                 <Route
-                  path="/*"
-                  element={
-                    <ProtectedRoute>
+                        path="/*"
+                        element={
+                        <ProtectedRoute>
                       <MainLayout />
                     </ProtectedRoute>
-                  }
-                >
+                        }>
+
                   <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route 
-                    path="dashboard" 
-                    element={
-                      <ProtectedRoute resource="dashboard">
+                  <Route
+                          path="dashboard"
+                          element={
+                          <ProtectedRoute resource="dashboard">
                         <DashboardPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="sales" 
-                    element={
-                      <ProtectedRoute resource="sales">
+                          } />
+
+                  <Route
+                          path="sales"
+                          element={
+                          <ProtectedRoute resource="sales">
                         <SalesPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="invoices" 
-                    element={
-                      <ProtectedRoute resource="invoices">
+                          } />
+
+                  <Route
+                          path="invoices"
+                          element={
+                          <ProtectedRoute resource="invoices">
                         <InvoicesPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="purchases" 
-                    element={
-                      <ProtectedRoute resource="purchases">
+                          } />
+
+                  <Route
+                          path="purchases"
+                          element={
+                          <ProtectedRoute resource="purchases">
                         <PurchasePage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="inventory" 
-                    element={
-                      <ProtectedRoute resource="inventory">
+                          } />
+
+                  <Route
+                          path="inventory"
+                          element={
+                          <ProtectedRoute resource="inventory">
                         <InventoryPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="employees" 
-                    element={
-                      <ProtectedRoute resource="employees">
+                          } />
+
+                  <Route
+                          path="employees"
+                          element={
+                          <ProtectedRoute resource="employees">
                         <EmployeesPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="salary" 
-                    element={
-                      <ProtectedRoute resource="salary">
+                          } />
+
+                  <Route
+                          path="salary"
+                          element={
+                          <ProtectedRoute resource="salary">
                         <SalaryPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="admin" 
-                    element={
-                      <ProtectedRoute resource="admin">
+                          } />
+
+                  <Route
+                          path="admin"
+                          element={
+                          <ProtectedRoute resource="admin">
                         <AdminPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="settings" 
-                    element={
-                      <ProtectedRoute resource="settings">
+                          } />
+
+                  <Route
+                          path="settings"
+                          element={
+                          <ProtectedRoute resource="settings">
                         <SettingsPage />
                       </ProtectedRoute>
-                    } 
-                  />
-                  <Route 
-                    path="pos" 
-                    element={
-                      <ProtectedRoute resource="pos">
+                          } />
+
+                  <Route
+                          path="pos"
+                          element={
+                          <ProtectedRoute resource="pos">
                         <POSPage />
                       </ProtectedRoute>
-                    } 
-                  />
+                          } />
+
                 </Route>
 
                 {/* Fallback Route */}
@@ -156,8 +156,8 @@ function App() {
           </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>);
+
 }
 
 export default App;

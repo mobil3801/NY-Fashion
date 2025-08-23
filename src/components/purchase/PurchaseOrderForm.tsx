@@ -32,35 +32,35 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
     other_costs: purchaseOrder?.other_costs || 0,
     currency: purchaseOrder?.currency || 'USD',
     notes: purchaseOrder?.notes || '',
-    status: purchaseOrder?.status || 'draft',
+    status: purchaseOrder?.status || 'draft'
   });
 
   const [items, setItems] = useState<Partial<PurchaseOrderItem>[]>(
     purchaseOrder?.items || [
-      {
-        product_id: '',
-        product_name: '',
-        sku: '',
-        quantity_ordered: 1,
-        unit_cost: 0,
-        total_cost: 0,
-        description: '',
-      }
-    ]
+    {
+      product_id: '',
+      product_name: '',
+      sku: '',
+      quantity_ordered: 1,
+      unit_cost: 0,
+      total_cost: 0,
+      description: ''
+    }]
+
   );
 
   const handleSupplierChange = (supplierId: string) => {
-    const supplier = suppliers.find(s => s.id === supplierId);
-    setFormData(prev => ({
+    const supplier = suppliers.find((s) => s.id === supplierId);
+    setFormData((prev) => ({
       ...prev,
       supplier_id: supplierId,
       supplier_name: supplier?.name || '',
-      currency: supplier?.currency || 'USD',
+      currency: supplier?.currency || 'USD'
     }));
   };
 
   const handleProductChange = (index: number, productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (product) {
       const updatedItems = [...items];
       updatedItems[index] = {
@@ -69,7 +69,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
         product_name: product.name,
         sku: product.sku,
         unit_cost: product.cost || 0,
-        total_cost: (product.cost || 0) * (updatedItems[index].quantity_ordered || 1),
+        total_cost: (product.cost || 0) * (updatedItems[index].quantity_ordered || 1)
       };
       setItems(updatedItems);
     }
@@ -79,7 +79,7 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
     const updatedItems = [...items];
     updatedItems[index] = {
       ...updatedItems[index],
-      [field]: value,
+      [field]: value
     };
 
     if (field === 'quantity_ordered' || field === 'unit_cost') {
@@ -93,17 +93,17 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
 
   const addItem = () => {
     setItems([
-      ...items,
-      {
-        product_id: '',
-        product_name: '',
-        sku: '',
-        quantity_ordered: 1,
-        unit_cost: 0,
-        total_cost: 0,
-        description: '',
-      }
-    ]);
+    ...items,
+    {
+      product_id: '',
+      product_name: '',
+      sku: '',
+      quantity_ordered: 1,
+      unit_cost: 0,
+      total_cost: 0,
+      description: ''
+    }]
+    );
   };
 
   const removeItem = (index: number) => {
@@ -124,16 +124,16 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
 
     try {
       const { subtotal, totalCost } = calculateTotals();
-      
+
       await savePurchaseOrder({
         ...formData,
         id: purchaseOrder?.id,
         subtotal,
         total_cost: totalCost,
-        items: items.filter(item => item.product_id),
-        created_by: 'current-user', // In real app, get from auth context
+        items: items.filter((item) => item.product_id),
+        created_by: 'current-user' // In real app, get from auth context
       });
-      
+
       onClose();
     } catch (error) {
       console.error('Error saving purchase order:', error);
@@ -160,17 +160,17 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {suppliers.map(supplier => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
+                  {suppliers.map((supplier) =>
+                  <SelectItem key={supplier.id} value={supplier.id}>
                       {supplier.name}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
-              <Select value={formData.currency} onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}>
+              <Select value={formData.currency} onValueChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -191,9 +191,9 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                 id="order_date"
                 type="date"
                 value={formData.order_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, order_date: e.target.value }))}
-                required
-              />
+                onChange={(e) => setFormData((prev) => ({ ...prev, order_date: e.target.value }))}
+                required />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="expected_date">Expected Date</Label>
@@ -201,8 +201,8 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                 id="expected_date"
                 type="date"
                 value={formData.expected_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, expected_date: e.target.value }))}
-              />
+                onChange={(e) => setFormData((prev) => ({ ...prev, expected_date: e.target.value }))} />
+
             </div>
           </div>
 
@@ -211,10 +211,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
               placeholder="Enter any additional notes"
-              rows={3}
-            />
+              rows={3} />
+
           </div>
         </CardContent>
       </Card>
@@ -243,67 +243,67 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((item, index) => (
-                <TableRow key={index}>
+              {items.map((item, index) =>
+              <TableRow key={index}>
                   <TableCell>
                     <Select
-                      value={item.product_id}
-                      onValueChange={(value) => handleProductChange(index, value)}
-                    >
+                    value={item.product_id}
+                    onValueChange={(value) => handleProductChange(index, value)}>
+
                       <SelectTrigger className="w-48">
                         <SelectValue placeholder="Select product" />
                       </SelectTrigger>
                       <SelectContent>
-                        {products.map(product => (
-                          <SelectItem key={product.id} value={product.id}>
+                        {products.map((product) =>
+                      <SelectItem key={product.id} value={product.id}>
                             {product.name}
                           </SelectItem>
-                        ))}
+                      )}
                       </SelectContent>
                     </Select>
                   </TableCell>
                   <TableCell>
                     <Input
-                      value={item.sku}
-                      readOnly
-                      className="w-24"
-                    />
+                    value={item.sku}
+                    readOnly
+                    className="w-24" />
+
                   </TableCell>
                   <TableCell>
                     <Input
-                      type="number"
-                      value={item.quantity_ordered}
-                      onChange={(e) => handleItemChange(index, 'quantity_ordered', parseInt(e.target.value) || 0)}
-                      className="w-20"
-                      min="1"
-                    />
+                    type="number"
+                    value={item.quantity_ordered}
+                    onChange={(e) => handleItemChange(index, 'quantity_ordered', parseInt(e.target.value) || 0)}
+                    className="w-20"
+                    min="1" />
+
                   </TableCell>
                   <TableCell>
                     <Input
-                      type="number"
-                      value={item.unit_cost}
-                      onChange={(e) => handleItemChange(index, 'unit_cost', parseFloat(e.target.value) || 0)}
-                      className="w-24"
-                      step="0.01"
-                      min="0"
-                    />
+                    type="number"
+                    value={item.unit_cost}
+                    onChange={(e) => handleItemChange(index, 'unit_cost', parseFloat(e.target.value) || 0)}
+                    className="w-24"
+                    step="0.01"
+                    min="0" />
+
                   </TableCell>
                   <TableCell>
                     {formData.currency} {(item.total_cost || 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                      disabled={items.length === 1}
-                    >
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeItem(index)}
+                    disabled={items.length === 1}>
+
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -322,10 +322,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                 id="freight_cost"
                 type="number"
                 value={formData.freight_cost}
-                onChange={(e) => setFormData(prev => ({ ...prev, freight_cost: parseFloat(e.target.value) || 0 }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, freight_cost: parseFloat(e.target.value) || 0 }))}
                 step="0.01"
-                min="0"
-              />
+                min="0" />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="duty_cost">Duty Cost</Label>
@@ -333,10 +333,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                 id="duty_cost"
                 type="number"
                 value={formData.duty_cost}
-                onChange={(e) => setFormData(prev => ({ ...prev, duty_cost: parseFloat(e.target.value) || 0 }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, duty_cost: parseFloat(e.target.value) || 0 }))}
                 step="0.01"
-                min="0"
-              />
+                min="0" />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="other_costs">Other Costs</Label>
@@ -344,10 +344,10 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
                 id="other_costs"
                 type="number"
                 value={formData.other_costs}
-                onChange={(e) => setFormData(prev => ({ ...prev, other_costs: parseFloat(e.target.value) || 0 }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, other_costs: parseFloat(e.target.value) || 0 }))}
                 step="0.01"
-                min="0"
-              />
+                min="0" />
+
             </div>
           </div>
         </CardContent>
@@ -385,12 +385,12 @@ const PurchaseOrderForm: React.FC<PurchaseOrderFormProps> = ({ purchaseOrder, on
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit" disabled={loading || !formData.supplier_id || items.filter(item => item.product_id).length === 0}>
+        <Button type="submit" disabled={loading || !formData.supplier_id || items.filter((item) => item.product_id).length === 0}>
           {loading ? 'Saving...' : purchaseOrder ? 'Update PO' : 'Create PO'}
         </Button>
       </div>
-    </form>
-  );
+    </form>);
+
 };
 
 export default PurchaseOrderForm;

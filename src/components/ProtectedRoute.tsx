@@ -10,8 +10,8 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
   resource,
   fallback = <Navigate to="/login" replace />
 }) => {
@@ -26,8 +26,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <Skeleton className="h-32 w-96" />
           <Skeleton className="h-4 w-64" />
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!isAuthenticated || !user) {
@@ -41,8 +41,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
           <p className="text-gray-600">You don't have permission to access this page.</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return <>{children}</>;

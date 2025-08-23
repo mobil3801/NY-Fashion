@@ -13,7 +13,7 @@ interface EmployeeContextType {
   pagination: EmployeePagination;
   loading: boolean;
   filters: EmployeeFilters;
-  
+
   // Actions
   initializeEmployeeSystem: () => Promise<void>;
   loadEmployees: (filters?: Partial<EmployeeFilters>, page?: number) => Promise<void>;
@@ -31,9 +31,9 @@ interface EmployeeContextType {
 
 const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
-export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
   const { toast } = useToast();
-  
+
   // State
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
@@ -80,17 +80,17 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setLoading(true);
       const activeFilters = { ...filters, ...filterOverrides };
-      
+
       const response = await window.ezsite.apis.run({
         path: "getEmployees",
         param: [
-          activeFilters.searchTerm,
-          activeFilters.role,
-          activeFilters.status,
-          activeFilters.department,
-          page,
-          pagination.limit
-        ]
+        activeFilters.searchTerm,
+        activeFilters.role,
+        activeFilters.status,
+        activeFilters.department,
+        page,
+        pagination.limit]
+
       });
 
       if (response.data) {
@@ -149,10 +149,10 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           title: "Success",
           description: response.data.message || "Employee saved successfully"
         });
-        
+
         // Reload employees list
         await loadEmployees();
-        
+
         return { ...employee, id: response.data.id, employee_id: response.data.employee_id } as Employee;
       }
       throw new Error('No response data');
@@ -183,12 +183,12 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           title: "Success",
           description: response.data.message || "Photo ID saved successfully"
         });
-        
+
         // Reload current employee if viewing details
         if (currentEmployee) {
           await loadEmployee(currentEmployee.id!);
         }
-        
+
         return { ...photoId, id: response.data.id } as PhotoId;
       }
       throw new Error('No response data');
@@ -241,11 +241,11 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Clock in/out
   const clockInOut = useCallback(async (
-    employeeId: number, 
-    action: 'clock_in' | 'clock_out' | 'break_start' | 'break_end',
-    location = '',
-    notes = ''
-  ) => {
+  employeeId: number,
+  action: 'clock_in' | 'clock_out' | 'break_start' | 'break_end',
+  location = '',
+  notes = '') =>
+  {
     try {
       setLoading(true);
       const response = await window.ezsite.apis.run({
@@ -258,10 +258,10 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           title: "Success",
           description: response.data.message
         });
-        
+
         // Reload time tracking data
         await loadTimeTracking(employeeId);
-        
+
         return response.data;
       }
     } catch (error) {
@@ -279,11 +279,11 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Load time tracking
   const loadTimeTracking = useCallback(async (
-    employeeId?: number, 
-    startDate?: string, 
-    endDate?: string, 
-    page = 1
-  ) => {
+  employeeId?: number,
+  startDate?: string,
+  endDate?: string,
+  page = 1) =>
+  {
     try {
       setLoading(true);
       const response = await window.ezsite.apis.run({
@@ -295,7 +295,7 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         setTimeEntries(response.data.timeEntries || []);
         setCurrentStatus(response.data.currentStatus);
         if (response.data.pagination) {
-          setPagination(prev => ({ ...prev, ...response.data.pagination }));
+          setPagination((prev) => ({ ...prev, ...response.data.pagination }));
         }
       }
     } catch (error) {
@@ -329,7 +329,7 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Update filters
   const updateFilters = useCallback((newFilters: Partial<EmployeeFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
   }, []);
 
   // Clear current employee
@@ -350,7 +350,7 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     pagination,
     loading,
     filters,
-    
+
     // Actions
     initializeEmployeeSystem,
     loadEmployees,
@@ -369,8 +369,8 @@ export const EmployeeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <EmployeeContext.Provider value={value}>
       {children}
-    </EmployeeContext.Provider>
-  );
+    </EmployeeContext.Provider>);
+
 };
 
 export const useEmployee = () => {

@@ -33,8 +33,8 @@ const EmployeesPage: React.FC = () => {
             </DialogHeader>
             <EmployeeForm
               onSuccess={() => setIsCreateDialogOpen(false)}
-              onCancel={() => setIsCreateDialogOpen(false)}
-            />
+              onCancel={() => setIsCreateDialogOpen(false)} />
+
           </DialogContent>
         </Dialog>
       </div>
@@ -97,8 +97,8 @@ const EmployeesPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default EmployeesPage;

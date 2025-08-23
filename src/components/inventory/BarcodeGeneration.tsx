@@ -18,7 +18,7 @@ interface BarcodeGenerationProps {
 const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }) => {
   const { products } = useInventory();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [labelSettings, setLabelSettings] = useState({
     format: 'standard', // standard, small, large
@@ -29,10 +29,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
   });
 
   const labelFormats = [
-    { value: 'standard', label: 'Standard Label (2.25" x 1.25")', width: 162, height: 90 },
-    { value: 'small', label: 'Small Label (1.5" x 1")', width: 108, height: 72 },
-    { value: 'large', label: 'Large Label (3" x 2")', width: 216, height: 144 }
-  ];
+  { value: 'standard', label: 'Standard Label (2.25" x 1.25")', width: 162, height: 90 },
+  { value: 'small', label: 'Small Label (1.5" x 1")', width: 108, height: 72 },
+  { value: 'large', label: 'Large Label (3" x 2")', width: 216, height: 144 }];
+
 
   const generateBarcode = (text: string, width = 2) => {
     // Simple Code 128 barcode pattern generation
@@ -41,9 +41,9 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
       '4': '10010001100', '5': '10001001100', '6': '10011001000', '7': '10011000100',
       '8': '10001100100', '9': '11001001000', 'A': '11001000100', 'B': '11000100100'
     };
-    
+
     let pattern = '11010000100'; // Start code B
-    
+
     for (const char of text) {
       if (char in code128) {
         pattern += code128[char as keyof typeof code128];
@@ -51,9 +51,9 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
         pattern += code128['0']; // Default pattern
       }
     }
-    
+
     pattern += '11000111010'; // Stop pattern
-    
+
     return pattern;
   };
 
@@ -61,7 +61,7 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const format = labelFormats.find(f => f.value === settings.format) || labelFormats[0];
+    const format = labelFormats.find((f) => f.value === settings.format) || labelFormats[0];
     canvas.width = format.width;
     canvas.height = format.height;
 
@@ -92,11 +92,11 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
     // Draw barcode
     const barcodeText = data.barcode || data.sku;
     const pattern = generateBarcode(barcodeText);
-    
+
     const barcodeWidth = canvas.width - 20;
     const barcodeHeight = 30;
     const barWidth = barcodeWidth / pattern.length;
-    
+
     let x = 10;
     for (let i = 0; i < pattern.length; i++) {
       if (pattern[i] === '1') {
@@ -127,8 +127,8 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
   };
 
   const generatePDF = () => {
-    const selectedProductsData = products.filter(p => selectedProducts.includes(p.id!));
-    
+    const selectedProductsData = products.filter((p) => selectedProducts.includes(p.id!));
+
     if (selectedProductsData.length === 0) {
       alert('Please select at least one product');
       return;
@@ -136,25 +136,25 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
 
     // Create a temporary canvas for each label
     const canvas = document.createElement('canvas');
-    const format = labelFormats.find(f => f.value === labelSettings.format) || labelFormats[0];
-    
+    const format = labelFormats.find((f) => f.value === labelSettings.format) || labelFormats[0];
+
     // Simple PDF generation using canvas - in a real app, use jsPDF
     const pdf = {
       content: [] as string[],
-      addPage: function(dataUrl: string) {
+      addPage: function (dataUrl: string) {
         this.content.push(dataUrl);
       },
-      download: function(filename: string) {
+      download: function (filename: string) {
         // Create a simple HTML page with all labels
         let html = '<html><head><title>Barcode Labels</title></head><body style="margin:0;padding:10px;">';
-        
+
         this.content.forEach((dataUrl, index) => {
           html += `<img src="${dataUrl}" style="margin:5px;border:1px solid #ccc;" />`;
           if ((index + 1) % 4 === 0) html += '<br/>';
         });
-        
+
         html += '</body></html>';
-        
+
         const blob = new Blob([html], { type: 'text/html' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -165,7 +165,7 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
       }
     };
 
-    selectedProductsData.forEach(product => {
+    selectedProductsData.forEach((product) => {
       for (let copy = 0; copy < labelSettings.copies; copy++) {
         drawBarcode(canvas, product, labelSettings);
         const dataUrl = canvas.toDataURL('image/png');
@@ -177,10 +177,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
   };
 
   const toggleProductSelection = (productId: number) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
+    setSelectedProducts((prev) =>
+    prev.includes(productId) ?
+    prev.filter((id) => id !== productId) :
+    [...prev, productId]
     );
   };
 
@@ -188,7 +188,7 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
     if (selectedProducts.length === products.length) {
       setSelectedProducts([]);
     } else {
-      setSelectedProducts(products.map(p => p.id!));
+      setSelectedProducts(products.map((p) => p.id!));
     }
   };
 
@@ -215,19 +215,19 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Label Format</Label>
-                  <Select 
+                  <Select
                     value={labelSettings.format}
-                    onValueChange={(value) => setLabelSettings({ ...labelSettings, format: value })}
-                  >
+                    onValueChange={(value) => setLabelSettings({ ...labelSettings, format: value })}>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {labelFormats.map(format => (
-                        <SelectItem key={format.value} value={format.value}>
+                      {labelFormats.map((format) =>
+                      <SelectItem key={format.value} value={format.value}>
                           {format.label}
                         </SelectItem>
-                      ))}
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -237,10 +237,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                     <Checkbox
                       id="include-name"
                       checked={labelSettings.includeName}
-                      onCheckedChange={(checked) => 
-                        setLabelSettings({ ...labelSettings, includeName: checked as boolean })
-                      }
-                    />
+                      onCheckedChange={(checked) =>
+                      setLabelSettings({ ...labelSettings, includeName: checked as boolean })
+                      } />
+
                     <Label htmlFor="include-name">Include Product Name</Label>
                   </div>
 
@@ -248,10 +248,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                     <Checkbox
                       id="include-price"
                       checked={labelSettings.includePrice}
-                      onCheckedChange={(checked) => 
-                        setLabelSettings({ ...labelSettings, includePrice: checked as boolean })
-                      }
-                    />
+                      onCheckedChange={(checked) =>
+                      setLabelSettings({ ...labelSettings, includePrice: checked as boolean })
+                      } />
+
                     <Label htmlFor="include-price">Include Price</Label>
                   </div>
 
@@ -259,10 +259,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                     <Checkbox
                       id="include-category"
                       checked={labelSettings.includeCategory}
-                      onCheckedChange={(checked) => 
-                        setLabelSettings({ ...labelSettings, includeCategory: checked as boolean })
-                      }
-                    />
+                      onCheckedChange={(checked) =>
+                      setLabelSettings({ ...labelSettings, includeCategory: checked as boolean })
+                      } />
+
                     <Label htmlFor="include-category">Include Category</Label>
                   </div>
                 </div>
@@ -275,10 +275,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                     min="1"
                     max="10"
                     value={labelSettings.copies}
-                    onChange={(e) => 
-                      setLabelSettings({ ...labelSettings, copies: parseInt(e.target.value) || 1 })
-                    }
-                  />
+                    onChange={(e) =>
+                    setLabelSettings({ ...labelSettings, copies: parseInt(e.target.value) || 1 })
+                    } />
+
                 </div>
               </CardContent>
             </Card>
@@ -293,8 +293,8 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                   <canvas
                     ref={canvasRef}
                     className="border border-gray-300 max-w-full h-auto"
-                    style={{ imageRendering: 'pixelated' }}
-                  />
+                    style={{ imageRendering: 'pixelated' }} />
+
                 </div>
                 <div className="mt-4 text-center">
                   <Button
@@ -304,8 +304,8 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                       if (products.length > 0 && canvasRef.current) {
                         drawBarcode(canvasRef.current, products[0], labelSettings);
                       }
-                    }}
-                  >
+                    }}>
+
                     Update Preview
                   </Button>
                 </div>
@@ -329,20 +329,20 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
               </CardHeader>
               <CardContent>
                 <div className="max-h-96 overflow-y-auto space-y-2">
-                  {products.map(product => (
-                    <div
-                      key={product.id}
-                      className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedProducts.includes(product.id!) 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => toggleProductSelection(product.id!)}
-                    >
+                  {products.map((product) =>
+                  <div
+                    key={product.id}
+                    className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                    selectedProducts.includes(product.id!) ?
+                    'border-primary bg-primary/10' :
+                    'border-gray-200 hover:border-gray-300'}`
+                    }
+                    onClick={() => toggleProductSelection(product.id!)}>
+
                       <Checkbox
-                        checked={selectedProducts.includes(product.id!)}
-                        onChange={() => toggleProductSelection(product.id!)}
-                      />
+                      checked={selectedProducts.includes(product.id!)}
+                      onChange={() => toggleProductSelection(product.id!)} />
+
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{product.name}</p>
                         <p className="text-xs text-muted-foreground">
@@ -350,14 +350,14 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
                         </p>
                       </div>
                     </div>
-                  ))}
+                  )}
 
-                  {products.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
+                  {products.length === 0 &&
+                  <div className="text-center py-8 text-muted-foreground">
                       <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>No products available</p>
                     </div>
-                  )}
+                  }
                 </div>
               </CardContent>
             </Card>
@@ -366,10 +366,10 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={generatePDF}
-                disabled={selectedProducts.length === 0}
-              >
+                disabled={selectedProducts.length === 0}>
+
                 <Download className="h-4 w-4 mr-2" />
                 Generate Labels
               </Button>
@@ -377,8 +377,8 @@ const BarcodeGeneration: React.FC<BarcodeGenerationProps> = ({ isOpen, onClose }
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default BarcodeGeneration;

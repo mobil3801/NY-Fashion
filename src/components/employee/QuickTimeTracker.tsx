@@ -20,7 +20,7 @@ const QuickTimeTracker: React.FC = () => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
 
@@ -33,7 +33,7 @@ const QuickTimeTracker: React.FC = () => {
 
   const handleQuickClockIn = async () => {
     if (!user?.employeeId) return;
-    
+
     try {
       await clockInOut(user.employeeId, 'clock_in', location);
       setLocation('');
@@ -44,7 +44,7 @@ const QuickTimeTracker: React.FC = () => {
 
   const handleQuickClockOut = async () => {
     if (!user?.employeeId) return;
-    
+
     try {
       await clockInOut(user.employeeId, 'clock_out');
     } catch (error) {
@@ -54,13 +54,13 @@ const QuickTimeTracker: React.FC = () => {
 
   const getCurrentShiftDuration = () => {
     if (!currentStatus || !currentStatus.clock_in_time) return '00:00:00';
-    
+
     const clockIn = new Date(currentStatus.clock_in_time);
     const diff = currentTime.getTime() - clockIn.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
+    const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
+    const seconds = Math.floor(diff % (1000 * 60) / 1000);
+
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
@@ -68,7 +68,7 @@ const QuickTimeTracker: React.FC = () => {
     if (!currentStatus) {
       return <Badge variant="secondary">Clocked Out</Badge>;
     }
-    
+
     switch (currentStatus.status) {
       case 'clocked_in':
         return <Badge className="bg-green-100 text-green-800 border-green-300">Clocked In</Badge>;
@@ -95,16 +95,16 @@ const QuickTimeTracker: React.FC = () => {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           {getStatusBadge()}
-          {currentStatus && currentStatus.status !== 'clocked_out' && (
-            <div className="text-xl font-mono font-bold">
+          {currentStatus && currentStatus.status !== 'clocked_out' &&
+          <div className="text-xl font-mono font-bold">
               {getCurrentShiftDuration()}
             </div>
-          )}
+          }
         </div>
 
         <div className="flex gap-2">
-          {!currentStatus || currentStatus.status === 'clocked_out' ? (
-            <Dialog>
+          {!currentStatus || currentStatus.status === 'clocked_out' ?
+          <Dialog>
               <DialogTrigger asChild>
                 <Button className="flex-1">
                   <Play className="h-4 w-4 mr-2" />
@@ -121,69 +121,69 @@ const QuickTimeTracker: React.FC = () => {
                     <div className="flex items-center gap-2 mt-1">
                       <MapPin className="h-4 w-4 text-gray-400" />
                       <Input
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g., Main Office, Store #1"
-                      />
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="e.g., Main Office, Store #1" />
+
                     </div>
                   </div>
                   <div className="flex justify-end gap-2">
-                    <Button 
-                      onClick={handleQuickClockIn}
-                      disabled={loading}
-                    >
+                    <Button
+                    onClick={handleQuickClockIn}
+                    disabled={loading}>
+
                       {loading ? 'Clocking In...' : 'Clock In'}
                     </Button>
                   </div>
                 </div>
               </DialogContent>
-            </Dialog>
-          ) : (
+            </Dialog> :
+
+          <>
+              {currentStatus.status === 'clocked_in' &&
             <>
-              {currentStatus.status === 'clocked_in' && (
-                <>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => clockInOut(user.employeeId!, 'break_start')}
-                    disabled={loading}
-                  >
+                  <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => clockInOut(user.employeeId!, 'break_start')}
+                disabled={loading}>
+
                     <Coffee className="h-4 w-4 mr-2" />
                     Break
                   </Button>
-                  <Button 
-                    className="flex-1"
-                    onClick={handleQuickClockOut}
-                    disabled={loading}
-                  >
+                  <Button
+                className="flex-1"
+                onClick={handleQuickClockOut}
+                disabled={loading}>
+
                     <Square className="h-4 w-4 mr-2" />
                     Clock Out
                   </Button>
                 </>
-              )}
+            }
               
-              {currentStatus.status === 'on_break' && (
-                <Button 
-                  className="flex-1"
-                  onClick={() => clockInOut(user.employeeId!, 'break_end')}
-                  disabled={loading}
-                >
+              {currentStatus.status === 'on_break' &&
+            <Button
+              className="flex-1"
+              onClick={() => clockInOut(user.employeeId!, 'break_end')}
+              disabled={loading}>
+
                   <Play className="h-4 w-4 mr-2" />
                   End Break
                 </Button>
-              )}
+            }
             </>
-          )}
+          }
         </div>
 
-        {currentStatus && currentStatus.clock_in_time && (
-          <div className="text-xs text-gray-500 text-center">
+        {currentStatus && currentStatus.clock_in_time &&
+        <div className="text-xs text-gray-500 text-center">
             Clocked in at {new Date(currentStatus.clock_in_time).toLocaleTimeString()}
           </div>
-        )}
+        }
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default QuickTimeTracker;

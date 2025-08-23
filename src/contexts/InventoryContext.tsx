@@ -84,22 +84,22 @@ interface InventoryContextType {
   categories: Category[];
   loading: boolean;
   selectedProduct: Product | null;
-  
+
   // Product management
   fetchProducts: (filters?: any) => Promise<void>;
   fetchCategories: () => Promise<void>;
   saveProduct: (product: Product) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   setSelectedProduct: (product: Product | null) => void;
-  
+
   // Stock management
   addStockMovement: (movement: StockMovement) => Promise<void>;
   getStockMovements: (productId: number, variantId?: number) => Promise<StockMovement[]>;
   adjustStock: (adjustments: any[]) => Promise<void>;
-  
+
   // Low stock alerts
   getLowStockProducts: () => Promise<Product[]>;
-  
+
   // Import/Export
   importProductsFromCSV: (csvData: string) => Promise<void>;
   exportProductsToCSV: () => Promise<string>;
@@ -107,7 +107,7 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-export function InventoryProvider({ children }: { children: React.ReactNode }) {
+export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -333,8 +333,8 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
   return (
     <InventoryContext.Provider value={value}>
       {children}
-    </InventoryContext.Provider>
-  );
+    </InventoryContext.Provider>);
+
 }
 
 export function useInventory() {

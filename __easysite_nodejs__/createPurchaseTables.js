@@ -2,11 +2,11 @@
 function createPurchaseTables() {
   const { Database } = require('sqlite3');
   const path = require('path');
-  
+
   return new Promise((resolve, reject) => {
     const dbPath = path.join(process.cwd(), 'database.sqlite');
     const db = new Database(dbPath);
-    
+
     db.serialize(() => {
       // Suppliers table
       db.run(`

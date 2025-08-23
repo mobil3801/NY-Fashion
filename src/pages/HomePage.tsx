@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 
 const HomePage = () => {
-    return (
-        <div className="min-h-screen bg-white">
+  return (
+    <div className="min-h-screen bg-white">
             <header className="py-6 px-8 border-b">
                 <div className="container mx-auto flex justify-between items-center">
                     <h1 className="text-xl font-bold">You Blank Project</h1>
@@ -26,8 +26,8 @@ const HomePage = () => {
                     <p>© {new Date().getFullYear()} Your Blank Project. All rights reserved.</p>
                 </div>
             </footer>
-        </div>
-    );
+        </div>);
+
 };
 
-export default HomePage; 
+export default HomePage;

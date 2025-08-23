@@ -20,7 +20,7 @@ const InventoryAdjustments = () => {
   const [adjustments, setAdjustments] = useState<any[]>([]);
   const [showCreateAdjustment, setShowCreateAdjustment] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const [adjustmentForm, setAdjustmentForm] = useState({
     reason: '',
     notes: '',
@@ -30,14 +30,14 @@ const InventoryAdjustments = () => {
   const [adjustmentItems, setAdjustmentItems] = useState<any[]>([]);
 
   const adjustmentReasons = [
-    'Physical Count Discrepancy',
-    'Damaged Goods',
-    'Expired Items',
-    'Theft/Loss',
-    'System Error',
-    'Supplier Return',
-    'Other'
-  ];
+  'Physical Count Discrepancy',
+  'Damaged Goods',
+  'Expired Items',
+  'Theft/Loss',
+  'System Error',
+  'Supplier Return',
+  'Other'];
+
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -54,17 +54,17 @@ const InventoryAdjustments = () => {
 
   const addAdjustmentItem = () => {
     setAdjustmentItems([
-      ...adjustmentItems,
-      {
-        product_id: '',
-        variant_id: '',
-        current_stock: 0,
-        adjusted_stock: 0,
-        difference: 0,
-        unit_cost: 0,
-        reason: ''
-      }
-    ]);
+    ...adjustmentItems,
+    {
+      product_id: '',
+      variant_id: '',
+      current_stock: 0,
+      adjusted_stock: 0,
+      difference: 0,
+      unit_cost: 0,
+      reason: ''
+    }]
+    );
   };
 
   const removeAdjustmentItem = (index: number) => {
@@ -74,12 +74,12 @@ const InventoryAdjustments = () => {
   const updateAdjustmentItem = (index: number, field: string, value: any) => {
     const updated = [...adjustmentItems];
     updated[index] = { ...updated[index], [field]: value };
-    
+
     // Calculate difference when stock values change
     if (field === 'current_stock' || field === 'adjusted_stock') {
       updated[index].difference = updated[index].adjusted_stock - updated[index].current_stock;
     }
-    
+
     setAdjustmentItems(updated);
   };
 
@@ -87,7 +87,7 @@ const InventoryAdjustments = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      
+
       const adjustmentData = {
         ...adjustmentForm,
         items: adjustmentItems,
@@ -96,11 +96,11 @@ const InventoryAdjustments = () => {
 
       // TODO: Call API to create adjustment
       console.log('Creating adjustment:', adjustmentData);
-      
+
       setShowCreateAdjustment(false);
       setAdjustmentForm({ reason: '', notes: '', items: [] });
       setAdjustmentItems([]);
-      
+
     } catch (error) {
       console.error('Error creating adjustment:', error);
     } finally {
@@ -118,8 +118,8 @@ const InventoryAdjustments = () => {
             Create and manage stock adjustments with proper authorization
           </p>
         </div>
-        {hasPermission(user, 'inventory', 'create') && (
-          <Dialog open={showCreateAdjustment} onOpenChange={setShowCreateAdjustment}>
+        {hasPermission(user, 'inventory', 'create') &&
+        <Dialog open={showCreateAdjustment} onOpenChange={setShowCreateAdjustment}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -138,19 +138,19 @@ const InventoryAdjustments = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="reason">Adjustment Reason *</Label>
-                    <Select 
-                      value={adjustmentForm.reason}
-                      onValueChange={(value) => setAdjustmentForm({ ...adjustmentForm, reason: value })}
-                    >
+                    <Select
+                    value={adjustmentForm.reason}
+                    onValueChange={(value) => setAdjustmentForm({ ...adjustmentForm, reason: value })}>
+
                       <SelectTrigger>
                         <SelectValue placeholder="Select reason" />
                       </SelectTrigger>
                       <SelectContent>
-                        {adjustmentReasons.map((reason) => (
-                          <SelectItem key={reason} value={reason}>
+                        {adjustmentReasons.map((reason) =>
+                      <SelectItem key={reason} value={reason}>
                             {reason}
                           </SelectItem>
-                        ))}
+                      )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -158,21 +158,21 @@ const InventoryAdjustments = () => {
                   <div className="space-y-2">
                     <Label htmlFor="adjustment_date">Adjustment Date</Label>
                     <Input
-                      type="date"
-                      defaultValue={new Date().toISOString().split('T')[0]}
-                    />
+                    type="date"
+                    defaultValue={new Date().toISOString().split('T')[0]} />
+
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
-                    id="notes"
-                    value={adjustmentForm.notes}
-                    onChange={(e) => setAdjustmentForm({ ...adjustmentForm, notes: e.target.value })}
-                    placeholder="Additional notes about this adjustment..."
-                    rows={3}
-                  />
+                  id="notes"
+                  value={adjustmentForm.notes}
+                  onChange={(e) => setAdjustmentForm({ ...adjustmentForm, notes: e.target.value })}
+                  placeholder="Additional notes about this adjustment..."
+                  rows={3} />
+
                 </div>
 
                 {/* Adjustment Items */}
@@ -185,30 +185,30 @@ const InventoryAdjustments = () => {
                     </Button>
                   </div>
 
-                  {adjustmentItems.map((item, index) => (
-                    <Card key={index}>
+                  {adjustmentItems.map((item, index) =>
+                <Card key={index}>
                       <CardContent className="pt-4">
                         <div className="grid grid-cols-6 gap-4">
                           <div className="col-span-2 space-y-2">
                             <Label>Product *</Label>
-                            <Select 
-                              value={item.product_id}
-                              onValueChange={(value) => {
-                                const product = products.find(p => p.id!.toString() === value);
-                                updateAdjustmentItem(index, 'product_id', value);
-                                updateAdjustmentItem(index, 'current_stock', product?.total_stock || 0);
-                                updateAdjustmentItem(index, 'unit_cost', product?.cost_price || 0);
-                              }}
-                            >
+                            <Select
+                          value={item.product_id}
+                          onValueChange={(value) => {
+                            const product = products.find((p) => p.id!.toString() === value);
+                            updateAdjustmentItem(index, 'product_id', value);
+                            updateAdjustmentItem(index, 'current_stock', product?.total_stock || 0);
+                            updateAdjustmentItem(index, 'unit_cost', product?.cost_price || 0);
+                          }}>
+
                               <SelectTrigger>
                                 <SelectValue placeholder="Select product" />
                               </SelectTrigger>
                               <SelectContent>
-                                {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id!.toString()}>
+                                {products.map((product) =>
+                            <SelectItem key={product.id} value={product.id!.toString()}>
                                     {product.name} ({product.sku})
                                   </SelectItem>
-                                ))}
+                            )}
                               </SelectContent>
                             </Select>
                           </div>
@@ -216,43 +216,43 @@ const InventoryAdjustments = () => {
                           <div className="space-y-2">
                             <Label>Current Stock</Label>
                             <Input
-                              type="number"
-                              value={item.current_stock}
-                              onChange={(e) => updateAdjustmentItem(index, 'current_stock', parseInt(e.target.value) || 0)}
-                              readOnly
-                            />
+                          type="number"
+                          value={item.current_stock}
+                          onChange={(e) => updateAdjustmentItem(index, 'current_stock', parseInt(e.target.value) || 0)}
+                          readOnly />
+
                           </div>
 
                           <div className="space-y-2">
                             <Label>Adjusted Stock *</Label>
                             <Input
-                              type="number"
-                              value={item.adjusted_stock}
-                              onChange={(e) => updateAdjustmentItem(index, 'adjusted_stock', parseInt(e.target.value) || 0)}
-                              placeholder="New stock level"
-                            />
+                          type="number"
+                          value={item.adjusted_stock}
+                          onChange={(e) => updateAdjustmentItem(index, 'adjusted_stock', parseInt(e.target.value) || 0)}
+                          placeholder="New stock level" />
+
                           </div>
 
                           <div className="space-y-2">
                             <Label>Difference</Label>
                             <Input
-                              type="number"
-                              value={item.difference}
-                              readOnly
-                              className={`${
-                                item.difference > 0 ? 'text-green-600' : 
-                                item.difference < 0 ? 'text-red-600' : ''
-                              }`}
-                            />
+                          type="number"
+                          value={item.difference}
+                          readOnly
+                          className={`${
+                          item.difference > 0 ? 'text-green-600' :
+                          item.difference < 0 ? 'text-red-600' : ''}`
+                          } />
+
                           </div>
 
                           <div className="flex items-end">
                             <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeAdjustmentItem(index)}
-                            >
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeAdjustmentItem(index)}>
+
                               <XCircle className="h-4 w-4" />
                             </Button>
                           </div>
@@ -261,22 +261,22 @@ const InventoryAdjustments = () => {
                         <div className="mt-4">
                           <Label>Item Notes</Label>
                           <Input
-                            value={item.reason}
-                            onChange={(e) => updateAdjustmentItem(index, 'reason', e.target.value)}
-                            placeholder="Specific reason for this item adjustment..."
-                          />
+                        value={item.reason}
+                        onChange={(e) => updateAdjustmentItem(index, 'reason', e.target.value)}
+                        placeholder="Specific reason for this item adjustment..." />
+
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                )}
 
-                  {adjustmentItems.length === 0 && (
-                    <Card>
+                  {adjustmentItems.length === 0 &&
+                <Card>
                       <CardContent className="text-center py-8 text-muted-foreground">
                         No items added yet. Click "Add Item" to start.
                       </CardContent>
                     </Card>
-                  )}
+                }
                 </div>
 
                 <div className="flex justify-end space-x-4">
@@ -290,7 +290,7 @@ const InventoryAdjustments = () => {
               </form>
             </DialogContent>
           </Dialog>
-        )}
+        }
       </div>
 
       {/* Adjustments List */}
@@ -326,9 +326,9 @@ const InventoryAdjustments = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {adjustments.length > 0 ? (
-                adjustments.map((adjustment) => (
-                  <TableRow key={adjustment.id}>
+              {adjustments.length > 0 ?
+              adjustments.map((adjustment) =>
+              <TableRow key={adjustment.id}>
                     <TableCell className="font-mono">
                       {adjustment.adjustment_number}
                     </TableCell>
@@ -345,8 +345,8 @@ const InventoryAdjustments = () => {
                         <Button variant="ghost" size="sm">
                           <FileText className="h-4 w-4" />
                         </Button>
-                        {adjustment.status === 'pending' && hasPermission(user, 'inventory', 'approve') && (
-                          <>
+                        {adjustment.status === 'pending' && hasPermission(user, 'inventory', 'approve') &&
+                    <>
                             <Button variant="ghost" size="sm">
                               <CheckCircle className="h-4 w-4" />
                             </Button>
@@ -354,24 +354,24 @@ const InventoryAdjustments = () => {
                               <XCircle className="h-4 w-4" />
                             </Button>
                           </>
-                        )}
+                    }
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
+              ) :
+
+              <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No inventory adjustments found
                   </TableCell>
                 </TableRow>
-              )}
+              }
             </TableBody>
           </Table>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default InventoryAdjustments;

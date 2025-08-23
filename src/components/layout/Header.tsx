@@ -24,8 +24,8 @@ const Header: React.FC = () => {
             <input
               type="text"
               placeholder={t('search')}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-64"
-            />
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-64" />
+
           </div>
         </div>
 
@@ -34,8 +34,8 @@ const Header: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={handleLanguageToggle}
-            className="p-2 hover:bg-emerald-50 rounded-2xl"
-          >
+            className="p-2 hover:bg-emerald-50 rounded-2xl">
+
             <Globe className="w-4 h-4 mr-2" />
             {language === 'en' ? 'বাংলা' : 'English'}
           </Button>
@@ -74,8 +74,8 @@ const Header: React.FC = () => {
           </DropdownMenu>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };
 
 export default Header;

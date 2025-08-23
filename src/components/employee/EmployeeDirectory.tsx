@@ -58,21 +58,21 @@ const EmployeeDirectory: React.FC = () => {
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800 border-green-300';
-      case 'Inactive': return 'bg-gray-100 text-gray-800 border-gray-300';
-      case 'Suspended': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'Terminated': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Active':return 'bg-green-100 text-green-800 border-green-300';
+      case 'Inactive':return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Suspended':return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'Terminated':return 'bg-red-100 text-red-800 border-red-300';
+      default:return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   // Get role color
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'Admin': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'Manager': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'Employee': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'Admin':return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'Manager':return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'Employee':return 'bg-green-100 text-green-800 border-green-300';
+      default:return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -97,8 +97,8 @@ const EmployeeDirectory: React.FC = () => {
                 setIsCreateDialogOpen(false);
                 loadEmployees();
               }}
-              onCancel={() => setIsCreateDialogOpen(false)}
-            />
+              onCancel={() => setIsCreateDialogOpen(false)} />
+
           </DialogContent>
         </Dialog>
       </div>
@@ -114,8 +114,8 @@ const EmployeeDirectory: React.FC = () => {
                   placeholder="Search employees..."
                   value={filters.searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10"
-                />
+                  className="pl-10" />
+
               </div>
             </div>
             <div className="flex gap-2">
@@ -148,18 +148,18 @@ const EmployeeDirectory: React.FC = () => {
                 placeholder="Department..."
                 value={filters.department}
                 onChange={(e) => handleFilterChange('department', e.target.value)}
-                className="w-[140px]"
-              />
+                className="w-[140px]" />
+
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Employee Grid */}
-      {loading ? (
-        <div className="text-center py-8">Loading employees...</div>
-      ) : employees.length === 0 ? (
-        <Card>
+      {loading ?
+      <div className="text-center py-8">Loading employees...</div> :
+      employees.length === 0 ?
+      <Card>
           <CardContent className="text-center py-12">
             <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No employees found</h3>
@@ -169,12 +169,12 @@ const EmployeeDirectory: React.FC = () => {
               Add Employee
             </Button>
           </CardContent>
-        </Card>
-      ) : (
-        <>
+        </Card> :
+
+      <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {employees.map((employee) => (
-              <Card key={employee.id} className="hover:shadow-lg transition-shadow">
+            {employees.map((employee) =>
+          <Card key={employee.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -213,18 +213,18 @@ const EmployeeDirectory: React.FC = () => {
                       <Mail className="h-4 w-4 mr-2" />
                       {employee.email}
                     </div>
-                    {employee.phone && (
-                      <div className="flex items-center text-sm text-gray-600">
+                    {employee.phone &&
+                <div className="flex items-center text-sm text-gray-600">
                         <Phone className="h-4 w-4 mr-2" />
                         {employee.phone}
                       </div>
-                    )}
-                    {employee.department && (
-                      <div className="flex items-center text-sm text-gray-600">
+                }
+                    {employee.department &&
+                <div className="flex items-center text-sm text-gray-600">
                         <Badge className="h-4 w-4 mr-2" />
                         {employee.department}
                       </div>
-                    )}
+                }
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -236,71 +236,71 @@ const EmployeeDirectory: React.FC = () => {
                         {employee.status}
                       </UIBadge>
                     </div>
-                    {employee.is_clocked_in ? (
-                      <div className="flex items-center text-green-600 text-sm">
+                    {employee.is_clocked_in ?
+                <div className="flex items-center text-green-600 text-sm">
                         <Clock className="h-4 w-4 mr-1" />
                         Clocked In
-                      </div>
-                    ) : null}
+                      </div> :
+                null}
                   </div>
 
-                  {employee.total_photo_ids && (
-                    <div className="mt-3 pt-3 border-t">
+                  {employee.total_photo_ids &&
+              <div className="mt-3 pt-3 border-t">
                       <div className="text-xs text-gray-600">
                         {employee.verified_photo_ids}/{employee.total_photo_ids} IDs verified
                       </div>
                     </div>
-                  )}
+              }
                 </CardContent>
               </Card>
-            ))}
+          )}
           </div>
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex justify-center">
+          {pagination.totalPages > 1 &&
+        <div className="flex justify-center">
               <Pagination>
                 <PaginationContent>
-                  {pagination.page > 1 && (
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => handlePageChange(pagination.page - 1)}
-                        className="cursor-pointer"
-                      />
+                  {pagination.page > 1 &&
+              <PaginationItem>
+                      <PaginationPrevious
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  className="cursor-pointer" />
+
                     </PaginationItem>
-                  )}
+              }
                   
                   {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <PaginationItem key={page}>
+                const page = i + 1;
+                return (
+                  <PaginationItem key={page}>
                         <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={page === pagination.page}
-                          className="cursor-pointer"
-                        >
+                      onClick={() => handlePageChange(page)}
+                      isActive={page === pagination.page}
+                      className="cursor-pointer">
+
                           {page}
                         </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
+                      </PaginationItem>);
+
+              })}
                   
-                  {pagination.page < pagination.totalPages && (
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => handlePageChange(pagination.page + 1)}
-                        className="cursor-pointer"
-                      />
+                  {pagination.page < pagination.totalPages &&
+              <PaginationItem>
+                      <PaginationNext
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  className="cursor-pointer" />
+
                     </PaginationItem>
-                  )}
+              }
                 </PaginationContent>
               </Pagination>
             </div>
-          )}
+        }
         </>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default EmployeeDirectory;

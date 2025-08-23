@@ -34,7 +34,7 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
 
@@ -59,7 +59,7 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
     if (!currentStatus) {
       return <Badge variant="secondary">Clocked Out</Badge>;
     }
-    
+
     switch (currentStatus.status) {
       case 'clocked_in':
         return <Badge className="bg-green-100 text-green-800 border-green-300">Clocked In</Badge>;
@@ -71,9 +71,9 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
   };
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(dateString).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -83,13 +83,13 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
 
   const getCurrentShiftDuration = () => {
     if (!currentStatus || !currentStatus.clock_in_time) return '00:00:00';
-    
+
     const clockIn = new Date(currentStatus.clock_in_time);
     const diff = currentTime.getTime() - clockIn.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
+    const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
+    const seconds = Math.floor(diff % (1000 * 60) / 1000);
+
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
@@ -107,22 +107,22 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               {getStatusBadge()}
-              {currentStatus && currentStatus.status !== 'clocked_out' && (
-                <div className="text-sm text-gray-600">
+              {currentStatus && currentStatus.status !== 'clocked_out' &&
+              <div className="text-sm text-gray-600">
                   Since: {formatTime(currentStatus.clock_in_time)}
                 </div>
-              )}
+              }
             </div>
-            {currentStatus && currentStatus.status !== 'clocked_out' && (
-              <div className="text-2xl font-mono font-bold">
+            {currentStatus && currentStatus.status !== 'clocked_out' &&
+            <div className="text-2xl font-mono font-bold">
                 {getCurrentShiftDuration()}
               </div>
-            )}
+            }
           </div>
 
           <div className="flex gap-2">
-            {!currentStatus || currentStatus.status === 'clocked_out' ? (
-              <Dialog>
+            {!currentStatus || currentStatus.status === 'clocked_out' ?
+            <Dialog>
                 <DialogTrigger asChild>
                   <Button>
                     <Play className="h-4 w-4 mr-2" />
@@ -137,37 +137,37 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                     <div>
                       <Label htmlFor="location">Location (Optional)</Label>
                       <Input
-                        id="location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g., Main Office, Store #1"
-                      />
+                      id="location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="e.g., Main Office, Store #1" />
+
                     </div>
                     <div>
                       <Label htmlFor="notes">Notes (Optional)</Label>
                       <Textarea
-                        id="notes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Any notes for this shift..."
-                        rows={3}
-                      />
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Any notes for this shift..."
+                      rows={3} />
+
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        onClick={() => handleClockAction('clock_in')}
-                        disabled={loading}
-                      >
+                      <Button
+                      onClick={() => handleClockAction('clock_in')}
+                      disabled={loading}>
+
                         {loading ? 'Clocking In...' : 'Clock In'}
                       </Button>
                     </div>
                   </div>
                 </DialogContent>
-              </Dialog>
-            ) : (
+              </Dialog> :
+
+            <>
+                {currentStatus.status === 'clocked_in' &&
               <>
-                {currentStatus.status === 'clocked_in' && (
-                  <>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline">
@@ -183,18 +183,18 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                           <div>
                             <Label htmlFor="break-notes">Break Notes (Optional)</Label>
                             <Textarea
-                              id="break-notes"
-                              value={notes}
-                              onChange={(e) => setNotes(e.target.value)}
-                              placeholder="Lunch break, coffee break, etc."
-                              rows={2}
-                            />
+                          id="break-notes"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Lunch break, coffee break, etc."
+                          rows={2} />
+
                           </div>
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              onClick={() => handleClockAction('break_start')}
-                              disabled={loading}
-                            >
+                            <Button
+                          onClick={() => handleClockAction('break_start')}
+                          disabled={loading}>
+
                               {loading ? 'Starting Break...' : 'Start Break'}
                             </Button>
                           </div>
@@ -216,18 +216,18 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                           <div>
                             <Label htmlFor="clock-out-notes">End of Shift Notes (Optional)</Label>
                             <Textarea
-                              id="clock-out-notes"
-                              value={notes}
-                              onChange={(e) => setNotes(e.target.value)}
-                              placeholder="Summary of work completed, issues, etc."
-                              rows={3}
-                            />
+                          id="clock-out-notes"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Summary of work completed, issues, etc."
+                          rows={3} />
+
                           </div>
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              onClick={() => handleClockAction('clock_out')}
-                              disabled={loading}
-                            >
+                            <Button
+                          onClick={() => handleClockAction('clock_out')}
+                          disabled={loading}>
+
                               {loading ? 'Clocking Out...' : 'Clock Out'}
                             </Button>
                           </div>
@@ -235,16 +235,16 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                       </DialogContent>
                     </Dialog>
                   </>
-                )}
+              }
 
-                {currentStatus.status === 'on_break' && (
-                  <Button onClick={() => handleClockAction('break_end')} disabled={loading}>
+                {currentStatus.status === 'on_break' &&
+              <Button onClick={() => handleClockAction('break_end')} disabled={loading}>
                     <Play className="h-4 w-4 mr-2" />
                     {loading ? 'Ending Break...' : 'End Break'}
                   </Button>
-                )}
+              }
               </>
-            )}
+            }
           </div>
         </CardContent>
       </Card>
@@ -255,12 +255,12 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
           <CardTitle>Recent Time Entries</CardTitle>
         </CardHeader>
         <CardContent>
-          {timeEntries.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+          {timeEntries.length === 0 ?
+          <div className="text-center py-8 text-gray-500">
               No time entries found
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+            </div> :
+
+          <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -274,8 +274,8 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {timeEntries.map((entry) => (
-                    <TableRow key={entry.id}>
+                  {timeEntries.map((entry) =>
+                <TableRow key={entry.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-400" />
@@ -289,16 +289,16 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {entry.clock_out_time ? (
-                          <div className="flex items-center gap-2">
+                        {entry.clock_out_time ?
+                    <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-red-600" />
                             {formatTime(entry.clock_out_time)}
-                          </div>
-                        ) : (
-                          <Badge className="bg-green-100 text-green-800 border-green-300">
+                          </div> :
+
+                    <Badge className="bg-green-100 text-green-800 border-green-300">
                             In Progress
                           </Badge>
-                        )}
+                    }
                       </TableCell>
                       <TableCell>
                         {entry.total_hours ? `${entry.total_hours}h` : '-'}
@@ -307,30 +307,30 @@ const TimeTracking: React.FC<TimeTrackingProps> = ({ employee }) => {
                         {entry.break_hours ? `${entry.break_hours}h` : '-'}
                       </TableCell>
                       <TableCell>
-                        {entry.location && (
-                          <div className="flex items-center gap-2">
+                        {entry.location &&
+                    <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-gray-400" />
                             {entry.location}
                           </div>
-                        )}
+                    }
                       </TableCell>
                       <TableCell>
-                        {entry.notes && (
-                          <div className="max-w-xs truncate" title={entry.notes}>
+                        {entry.notes &&
+                    <div className="max-w-xs truncate" title={entry.notes}>
                             {entry.notes}
                           </div>
-                        )}
+                    }
                       </TableCell>
                     </TableRow>
-                  ))}
+                )}
                 </TableBody>
               </Table>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default TimeTracking;

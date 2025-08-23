@@ -2,11 +2,11 @@
 function getPurchaseOrders() {
   const { Database } = require('sqlite3');
   const path = require('path');
-  
+
   return new Promise((resolve, reject) => {
     const dbPath = path.join(process.cwd(), 'database.sqlite');
     const db = new Database(dbPath);
-    
+
     // Get all purchase orders with their items
     const query = `
       SELECT 
@@ -19,7 +19,7 @@ function getPurchaseOrders() {
       LEFT JOIN po_items poi ON po.id = poi.po_id
       ORDER BY po.created_at DESC
     `;
-    
+
     db.all(query, [], (err, rows) => {
       db.close();
       if (err) {
@@ -27,8 +27,8 @@ function getPurchaseOrders() {
       } else {
         // Group items by purchase order
         const poMap = new Map();
-        
-        rows.forEach(row => {
+
+        rows.forEach((row) => {
           if (!poMap.has(row.id)) {
             poMap.set(row.id, {
               id: row.id,
@@ -54,7 +54,7 @@ function getPurchaseOrders() {
               items: []
             });
           }
-          
+
           if (row.item_id) {
             poMap.get(row.id).items.push({
               id: row.item_id,
@@ -71,7 +71,7 @@ function getPurchaseOrders() {
             });
           }
         });
-        
+
         resolve(Array.from(poMap.values()));
       }
     });

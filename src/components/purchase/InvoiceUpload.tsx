@@ -24,11 +24,11 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
     invoice_number: '',
     invoice_date: new Date().toISOString().split('T')[0],
     due_date: '',
-    amount: purchaseOrder.total_cost,
+    amount: purchaseOrder.total_cost
   });
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setUploadedFiles(prev => [...prev, ...acceptedFiles]);
+    setUploadedFiles((prev) => [...prev, ...acceptedFiles]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -37,13 +37,13 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
       'image/*': ['.jpg', '.jpeg', '.png', '.gif'],
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
     },
-    multiple: true,
+    multiple: true
   });
 
   const removeFile = (index: number) => {
-    setUploadedFiles(files => files.filter((_, i) => i !== index));
+    setUploadedFiles((files) => files.filter((_, i) => i !== index));
   };
 
   const getFileIcon = (file: File) => {
@@ -114,10 +114,10 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                 <Input
                   id="invoice_number"
                   value={invoiceData.invoice_number}
-                  onChange={(e) => setInvoiceData(prev => ({ ...prev, invoice_number: e.target.value }))}
+                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, invoice_number: e.target.value }))}
                   placeholder="Enter invoice number"
-                  required
-                />
+                  required />
+
               </div>
               <div className="space-y-2">
                 <Label htmlFor="amount">Invoice Amount *</Label>
@@ -125,11 +125,11 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   id="amount"
                   type="number"
                   value={invoiceData.amount}
-                  onChange={(e) => setInvoiceData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
                   step="0.01"
                   min="0"
-                  required
-                />
+                  required />
+
               </div>
             </div>
 
@@ -140,9 +140,9 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   id="invoice_date"
                   type="date"
                   value={invoiceData.invoice_date}
-                  onChange={(e) => setInvoiceData(prev => ({ ...prev, invoice_date: e.target.value }))}
-                  required
-                />
+                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, invoice_date: e.target.value }))}
+                  required />
+
               </div>
               <div className="space-y-2">
                 <Label htmlFor="due_date">Due Date</Label>
@@ -150,8 +150,8 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                   id="due_date"
                   type="date"
                   value={invoiceData.due_date}
-                  onChange={(e) => setInvoiceData(prev => ({ ...prev, due_date: e.target.value }))}
-                />
+                  onChange={(e) => setInvoiceData((prev) => ({ ...prev, due_date: e.target.value }))} />
+
               </div>
             </div>
           </CardContent>
@@ -165,17 +165,17 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                isDragActive 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
-            >
+              isDragActive ?
+              'border-blue-500 bg-blue-50' :
+              'border-gray-300 hover:border-gray-400'}`
+              }>
+
               <input {...getInputProps()} />
               <Upload className="h-8 w-8 mx-auto mb-4 text-gray-400" />
-              {isDragActive ? (
-                <p className="text-blue-600">Drop the files here...</p>
-              ) : (
-                <div>
+              {isDragActive ?
+              <p className="text-blue-600">Drop the files here...</p> :
+
+              <div>
                   <p className="text-gray-600 mb-2">
                     Drag & drop invoice files here, or click to select
                   </p>
@@ -183,14 +183,14 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                     Supports: JPG, PNG, PDF, DOC, DOCX
                   </p>
                 </div>
-              )}
+              }
             </div>
 
-            {uploadedFiles.length > 0 && (
-              <div className="mt-4 space-y-2">
+            {uploadedFiles.length > 0 &&
+            <div className="mt-4 space-y-2">
                 <h4 className="font-medium">Uploaded Files:</h4>
-                {uploadedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                {uploadedFiles.map((file, index) =>
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                     <div className="flex items-center gap-2">
                       {getFileIcon(file)}
                       <span className="text-sm font-medium">{file.name}</span>
@@ -199,17 +199,17 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
                       </span>
                     </div>
                     <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                    >
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}>
+
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                ))}
+              )}
               </div>
-            )}
+            }
           </CardContent>
         </Card>
 
@@ -219,14 +219,14 @@ const InvoiceUpload: React.FC<InvoiceUploadProps> = ({ purchaseOrder, onClose })
           </Button>
           <Button
             type="submit"
-            disabled={loading || uploadedFiles.length === 0 || !invoiceData.invoice_number}
-          >
+            disabled={loading || uploadedFiles.length === 0 || !invoiceData.invoice_number}>
+
             {loading ? 'Uploading...' : 'Upload Invoice'}
           </Button>
         </div>
       </form>
-    </div>
-  );
+    </div>);
+
 };
 
 export default InvoiceUpload;

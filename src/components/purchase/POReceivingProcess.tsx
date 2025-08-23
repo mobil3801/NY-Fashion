@@ -22,9 +22,9 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
   const [loading, setLoading] = useState(false);
   const [receivedDate, setReceivedDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
-  
+
   const [receivingItems, setReceivingItems] = useState(
-    purchaseOrder?.items.map(item => ({
+    purchaseOrder?.items.map((item) => ({
       po_item_id: item.id,
       product_id: item.product_id,
       product_name: item.product_name,
@@ -35,7 +35,7 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
       unit_cost: item.unit_cost,
       total_cost: 0,
       condition: 'good' as 'good' | 'damaged' | 'partial',
-      notes: '',
+      notes: ''
     })) || []
   );
 
@@ -43,7 +43,7 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
     const updatedItems = [...receivingItems];
     updatedItems[index] = {
       ...updatedItems[index],
-      [field]: value,
+      [field]: value
     };
 
     if (field === 'quantity_receiving') {
@@ -54,10 +54,10 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
   };
 
   const handleReceiveAll = () => {
-    const updatedItems = receivingItems.map(item => ({
+    const updatedItems = receivingItems.map((item) => ({
       ...item,
       quantity_receiving: Math.max(0, item.quantity_ordered - item.quantity_received_previously),
-      total_cost: Math.max(0, item.quantity_ordered - item.quantity_received_previously) * item.unit_cost,
+      total_cost: Math.max(0, item.quantity_ordered - item.quantity_received_previously) * item.unit_cost
     }));
     setReceivingItems(updatedItems);
   };
@@ -67,8 +67,8 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
     setLoading(true);
 
     try {
-      const itemsToReceive = receivingItems.filter(item => item.quantity_receiving > 0);
-      
+      const itemsToReceive = receivingItems.filter((item) => item.quantity_receiving > 0);
+
       if (itemsToReceive.length === 0) {
         alert('Please specify quantities to receive');
         setLoading(false);
@@ -80,15 +80,15 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
         received_date: receivedDate,
         received_by: 'current-user',
         notes,
-        items: itemsToReceive.map(item => ({
+        items: itemsToReceive.map((item) => ({
           po_item_id: item.po_item_id,
           product_id: item.product_id,
           quantity_received: item.quantity_receiving,
           unit_cost: item.unit_cost,
           total_cost: item.total_cost,
           condition: item.condition,
-          notes: item.notes,
-        })),
+          notes: item.notes
+        }))
       });
 
       onClose();
@@ -147,8 +147,8 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
                 type="date"
                 value={receivedDate}
                 onChange={(e) => setReceivedDate(e.target.value)}
-                required
-              />
+                required />
+
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -156,8 +156,8 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Receiving notes"
-              />
+                placeholder="Receiving notes" />
+
             </div>
           </div>
         </CardContent>
@@ -170,8 +170,8 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
             <Button
               type="button"
               variant="outline"
-              onClick={handleReceiveAll}
-            >
+              onClick={handleReceiveAll}>
+
               Receive All Outstanding
             </Button>
           </div>
@@ -194,7 +194,7 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
               {receivingItems.map((item, index) => {
                 const outstanding = item.quantity_ordered - item.quantity_received_previously;
                 const status = getReceivingStatus(item);
-                
+
                 return (
                   <TableRow key={index}>
                     <TableCell>
@@ -219,15 +219,15 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
                         className="w-20"
                         min="0"
                         max={outstanding}
-                        disabled={outstanding === 0}
-                      />
+                        disabled={outstanding === 0} />
+
                     </TableCell>
                     <TableCell>
                       <Select
                         value={item.condition}
                         onValueChange={(value) => handleItemChange(index, 'condition', value)}
-                        disabled={item.quantity_receiving === 0}
-                      >
+                        disabled={item.quantity_receiving === 0}>
+
                         <SelectTrigger className="w-24">
                           <SelectValue />
                         </SelectTrigger>
@@ -241,21 +241,21 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
                     <TableCell>
                       <Badge
                         variant={
-                          status === 'complete' ? 'default' :
-                          status === 'partial' ? 'outline' : 'secondary'
+                        status === 'complete' ? 'default' :
+                        status === 'partial' ? 'outline' : 'secondary'
                         }
-                        className="flex items-center gap-1 w-fit"
-                      >
-                        {status === 'complete' ? (
-                          <CheckCircle className="h-3 w-3" />
-                        ) : status === 'partial' ? (
-                          <AlertTriangle className="h-3 w-3" />
-                        ) : null}
+                        className="flex items-center gap-1 w-fit">
+
+                        {status === 'complete' ?
+                        <CheckCircle className="h-3 w-3" /> :
+                        status === 'partial' ?
+                        <AlertTriangle className="h-3 w-3" /> :
+                        null}
                         {status.toUpperCase()}
                       </Badge>
                     </TableCell>
-                  </TableRow>
-                );
+                  </TableRow>);
+
               })}
             </TableBody>
           </Table>
@@ -286,13 +286,13 @@ const POReceivingProcess: React.FC<POReceivingProcessProps> = ({ purchaseOrder, 
         </Button>
         <Button
           onClick={handleSubmit}
-          disabled={loading || getTotalReceiving() === 0}
-        >
+          disabled={loading || getTotalReceiving() === 0}>
+
           {loading ? 'Processing...' : `Receive ${getTotalReceiving()} Items`}
         </Button>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default POReceivingProcess;

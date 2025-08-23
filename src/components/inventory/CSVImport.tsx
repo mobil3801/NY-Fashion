@@ -44,17 +44,17 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose }) => {
   });
 
   const parseCSV = (text: string) => {
-    const lines = text.split('\n').filter(line => line.trim());
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    
+    const lines = text.split('\n').filter((line) => line.trim());
+    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+
     const data = lines.slice(1).map((line, index) => {
-      const values = line.split(',').map(v => v.trim());
+      const values = line.split(',').map((v) => v.trim());
       const row: any = { row_number: index + 2 };
-      
+
       headers.forEach((header, i) => {
         row[header] = values[i] || '';
       });
-      
+
       return row;
     });
 
@@ -64,28 +64,28 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose }) => {
 
   const validateRow = (row: any) => {
     const errors = [];
-    
+
     if (!row.name) errors.push('Product name is required');
     if (!row.sku) errors.push('SKU is required');
     if (!row.category_id && !row.category_name) errors.push('Category is required');
     if (row.cost_price && isNaN(parseFloat(row.cost_price))) errors.push('Invalid cost price');
     if (row.selling_price && isNaN(parseFloat(row.selling_price))) errors.push('Invalid selling price');
-    
+
     return errors;
   };
 
   const handleImport = async () => {
     setImporting(true);
     setStep('importing');
-    
+
     const results = [];
-    
+
     for (let i = 0; i < csvData.length; i++) {
       const row = csvData[i];
       const errors = validateRow(row);
-      
-      setImportProgress(((i + 1) / csvData.length) * 100);
-      
+
+      setImportProgress((i + 1) / csvData.length * 100);
+
       if (errors.length === 0) {
         try {
           // Transform CSV data to product format
@@ -108,10 +108,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose }) => {
             tags: row.tags || '',
             has_variants: false
           };
-          
+
           // TODO: Call actual import API
-          await new Promise(resolve => setTimeout(resolve, 100)); // Simulate API call
-          
+          await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate API call
+
           results.push({
             row_number: row.row_number,
             product_name: row.name,
@@ -135,7 +135,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose }) => {
         });
       }
     }
-    
+
     setImportResults(results);
     setImporting(false);
     setStep('results');
@@ -145,7 +145,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose }) => {
     const template = `name,name_bn,description,category_id,brand,sku,barcode,cost_price,selling_price,msrp,min_stock_level,max_stock_level,unit,weight,dimensions,tags
 Cotton Saree,কটন শাড়ি,Beautiful cotton saree,1,Local Brand,SAR001,,1500,2500,3000,5,50,pcs,0.5,Length: 6m,cotton saree formal
 Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Elegant silk three piece,2,Premium Brand,SK002,,2500,4000,4500,3,30,set,0.8,Set of 3 pieces,silk salwar formal`;
-    
+
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -180,8 +180,8 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
 
         <div className="space-y-6">
           {/* Step Upload */}
-          {step === 'upload' && (
-            <>
+          {step === 'upload' &&
+          <>
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Step 1: Upload CSV File</h3>
                 <Button variant="outline" onClick={downloadTemplate}>
@@ -191,25 +191,25 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
               </div>
 
               <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                  isDragActive 
-                    ? 'border-primary bg-primary/10' 
-                    : 'border-muted-foreground/25 hover:border-primary/50'
-                }`}
-              >
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isDragActive ?
+              'border-primary bg-primary/10' :
+              'border-muted-foreground/25 hover:border-primary/50'}`
+              }>
+
                 <input {...getInputProps()} />
                 <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                {isDragActive ? (
-                  <p>Drop the CSV file here ...</p>
-                ) : (
-                  <div>
+                {isDragActive ?
+              <p>Drop the CSV file here ...</p> :
+
+              <div>
                     <p className="text-lg mb-2">Drag & drop CSV file here, or click to select</p>
                     <p className="text-sm text-muted-foreground">
                       Only CSV files are accepted
                     </p>
                   </div>
-                )}
+              }
               </div>
 
               <Card className="bg-blue-50 border-blue-200">
@@ -227,11 +227,11 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                 </CardContent>
               </Card>
             </>
-          )}
+          }
 
           {/* Step Preview */}
-          {step === 'preview' && (
-            <>
+          {step === 'preview' &&
+          <>
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Step 2: Preview Data ({csvData.length} rows)</h3>
                 <div className="space-x-2">
@@ -260,45 +260,45 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                   </TableHeader>
                   <TableBody>
                     {csvData.slice(0, 10).map((row, index) => {
-                      const errors = validateRow(row);
-                      return (
-                        <TableRow key={index}>
+                    const errors = validateRow(row);
+                    return (
+                      <TableRow key={index}>
                           <TableCell>{row.row_number}</TableCell>
                           <TableCell>{row.name}</TableCell>
                           <TableCell className="font-mono">{row.sku}</TableCell>
                           <TableCell>{row.category_id || row.category_name}</TableCell>
                           <TableCell>৳{row.selling_price}</TableCell>
                           <TableCell>
-                            {errors.length === 0 ? (
-                              <Badge variant="default">
+                            {errors.length === 0 ?
+                          <Badge variant="default">
                                 <CheckCircle className="h-3 w-3 mr-1" />
                                 Valid
-                              </Badge>
-                            ) : (
-                              <Badge variant="destructive">
+                              </Badge> :
+
+                          <Badge variant="destructive">
                                 <AlertCircle className="h-3 w-3 mr-1" />
                                 {errors.length} errors
                               </Badge>
-                            )}
+                          }
                           </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                        </TableRow>);
+
+                  })}
                   </TableBody>
                 </Table>
               </div>
 
-              {csvData.length > 10 && (
-                <p className="text-sm text-muted-foreground text-center">
+              {csvData.length > 10 &&
+            <p className="text-sm text-muted-foreground text-center">
                   Showing first 10 rows. {csvData.length - 10} more rows will be imported.
                 </p>
-              )}
+            }
             </>
-          )}
+          }
 
           {/* Step Importing */}
-          {step === 'importing' && (
-            <div className="space-y-4">
+          {step === 'importing' &&
+          <div className="space-y-4">
               <h3 className="text-lg font-medium">Step 3: Importing Products...</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -311,11 +311,11 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                 Please wait while we import your products...
               </p>
             </div>
-          )}
+          }
 
           {/* Step Results */}
-          {step === 'results' && (
-            <>
+          {step === 'results' &&
+          <>
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Import Results</h3>
                 <Button onClick={resetImport}>
@@ -330,7 +330,7 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-green-600">
-                      {importResults.filter(r => r.status === 'success').length}
+                      {importResults.filter((r) => r.status === 'success').length}
                     </div>
                   </CardContent>
                 </Card>
@@ -340,7 +340,7 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-red-600">
-                      {importResults.filter(r => r.status === 'error').length}
+                      {importResults.filter((r) => r.status === 'error').length}
                     </div>
                   </CardContent>
                 </Card>
@@ -367,26 +367,26 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {importResults.map((result, index) => (
-                      <TableRow key={index}>
+                    {importResults.map((result, index) =>
+                  <TableRow key={index}>
                         <TableCell>{result.row_number}</TableCell>
                         <TableCell>{result.product_name}</TableCell>
                         <TableCell>
-                          {result.status === 'success' ? (
-                            <Badge variant="default">
+                          {result.status === 'success' ?
+                      <Badge variant="default">
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Success
-                            </Badge>
-                          ) : (
-                            <Badge variant="destructive">
+                            </Badge> :
+
+                      <Badge variant="destructive">
                               <AlertCircle className="h-3 w-3 mr-1" />
                               Error
                             </Badge>
-                          )}
+                      }
                         </TableCell>
                         <TableCell className="text-sm">{result.message}</TableCell>
                       </TableRow>
-                    ))}
+                  )}
                   </TableBody>
                 </Table>
               </div>
@@ -397,11 +397,11 @@ Silk Salwar Kameez,সিল্ক সালোয়ার কামিজ,Eleg
                 </Button>
               </div>
             </>
-          )}
+          }
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>);
+
 };
 
 export default CSVImport;

@@ -29,7 +29,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
     payment_terms: supplier?.payment_terms || '30 days',
     credit_limit: supplier?.credit_limit || 0,
     currency: supplier?.currency || 'USD',
-    status: supplier?.status || 'active',
+    status: supplier?.status || 'active'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
     try {
       await saveSupplier({
         ...formData,
-        id: supplier?.id,
+        id: supplier?.id
       });
       onClose();
     } catch (error) {
@@ -50,7 +50,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
   };
 
   const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value
     }));
@@ -66,8 +66,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
             placeholder="Enter company name"
-            required
-          />
+            required />
+
         </div>
         <div className="space-y-2">
           <Label htmlFor="contact_person">Contact Person</Label>
@@ -75,8 +75,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             id="contact_person"
             value={formData.contact_person}
             onChange={(e) => handleChange('contact_person', e.target.value)}
-            placeholder="Enter contact person"
-          />
+            placeholder="Enter contact person" />
+
         </div>
       </div>
 
@@ -88,8 +88,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             type="email"
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="Enter email address"
-          />
+            placeholder="Enter email address" />
+
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone">Phone</Label>
@@ -97,8 +97,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             id="phone"
             value={formData.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="Enter phone number"
-          />
+            placeholder="Enter phone number" />
+
         </div>
       </div>
 
@@ -109,8 +109,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
           value={formData.address}
           onChange={(e) => handleChange('address', e.target.value)}
           placeholder="Enter full address"
-          rows={3}
-        />
+          rows={3} />
+
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -120,8 +120,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             id="city"
             value={formData.city}
             onChange={(e) => handleChange('city', e.target.value)}
-            placeholder="Enter city"
-          />
+            placeholder="Enter city" />
+
         </div>
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
@@ -129,8 +129,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             id="country"
             value={formData.country}
             onChange={(e) => handleChange('country', e.target.value)}
-            placeholder="Enter country"
-          />
+            placeholder="Enter country" />
+
         </div>
       </div>
 
@@ -141,8 +141,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             id="tax_id"
             value={formData.tax_id}
             onChange={(e) => handleChange('tax_id', e.target.value)}
-            placeholder="Enter tax ID"
-          />
+            placeholder="Enter tax ID" />
+
         </div>
         <div className="space-y-2">
           <Label htmlFor="payment_terms">Payment Terms</Label>
@@ -170,8 +170,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
             type="number"
             value={formData.credit_limit}
             onChange={(e) => handleChange('credit_limit', parseFloat(e.target.value) || 0)}
-            placeholder="0.00"
-          />
+            placeholder="0.00" />
+
         </div>
         <div className="space-y-2">
           <Label htmlFor="currency">Currency</Label>
@@ -210,8 +210,8 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ supplier, onClose }) => {
           {loading ? 'Saving...' : supplier ? 'Update Supplier' : 'Create Supplier'}
         </Button>
       </div>
-    </form>
-  );
+    </form>);
+
 };
 
 export default SupplierForm;

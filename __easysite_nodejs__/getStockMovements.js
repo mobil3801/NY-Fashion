@@ -1,6 +1,6 @@
 
 function getStockMovements(productId, variantId = null, limit = 50) {
-    let sql = `
+  let sql = `
         SELECT 
             sm.*,
             p.name as product_name,
@@ -14,18 +14,18 @@ function getStockMovements(productId, variantId = null, limit = 50) {
         LEFT JOIN users u ON sm.created_by = u.id
         WHERE sm.product_id = ?
     `;
-    
-    let params = [productId];
-    
-    if (variantId) {
-        sql += ' AND sm.variant_id = ?';
-        params.push(variantId);
-    }
-    
-    sql += ' ORDER BY sm.created_at DESC LIMIT ?';
-    params.push(limit);
-    
-    const movements = window.ezsite.db.prepare(sql).all(...params);
-    
-    return { movements };
+
+  let params = [productId];
+
+  if (variantId) {
+    sql += ' AND sm.variant_id = ?';
+    params.push(variantId);
+  }
+
+  sql += ' ORDER BY sm.created_at DESC LIMIT ?';
+  params.push(limit);
+
+  const movements = window.ezsite.db.prepare(sql).all(...params);
+
+  return { movements };
 }

@@ -3,11 +3,11 @@ function saveSupplier(supplier) {
   const { Database } = require('sqlite3');
   const path = require('path');
   const { v4: uuidv4 } = require('uuid');
-  
+
   return new Promise((resolve, reject) => {
     const dbPath = path.join(process.cwd(), 'database.sqlite');
     const db = new Database(dbPath);
-    
+
     if (supplier.id) {
       // Update existing supplier
       const query = `
@@ -18,13 +18,13 @@ function saveSupplier(supplier) {
             status = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `;
-      
+
       db.run(query, [
-        supplier.name, supplier.contact_person, supplier.email, supplier.phone,
-        supplier.address, supplier.city, supplier.country, supplier.tax_id,
-        supplier.payment_terms, supplier.credit_limit, supplier.currency,
-        supplier.status, supplier.id
-      ], function(err) {
+      supplier.name, supplier.contact_person, supplier.email, supplier.phone,
+      supplier.address, supplier.city, supplier.country, supplier.tax_id,
+      supplier.payment_terms, supplier.credit_limit, supplier.currency,
+      supplier.status, supplier.id],
+      function (err) {
         db.close();
         if (err) {
           reject(err);
@@ -41,13 +41,13 @@ function saveSupplier(supplier) {
          tax_id, payment_terms, credit_limit, currency, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
-      
+
       db.run(query, [
-        id, supplier.name, supplier.contact_person, supplier.email, supplier.phone,
-        supplier.address, supplier.city, supplier.country, supplier.tax_id,
-        supplier.payment_terms || '30 days', supplier.credit_limit || 0, 
-        supplier.currency || 'USD', supplier.status || 'active'
-      ], function(err) {
+      id, supplier.name, supplier.contact_person, supplier.email, supplier.phone,
+      supplier.address, supplier.city, supplier.country, supplier.tax_id,
+      supplier.payment_terms || '30 days', supplier.credit_limit || 0,
+      supplier.currency || 'USD', supplier.status || 'active'],
+      function (err) {
         db.close();
         if (err) {
           reject(err);

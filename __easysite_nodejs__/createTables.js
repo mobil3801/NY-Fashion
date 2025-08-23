@@ -2,8 +2,8 @@
 // Initialize all POS system tables
 function createTables() {
   const tables = [
-    // Products table
-    `CREATE TABLE IF NOT EXISTS products (
+  // Products table
+  `CREATE TABLE IF NOT EXISTS products (
       id TEXT PRIMARY KEY,
       sku TEXT UNIQUE NOT NULL,
       barcode TEXT UNIQUE,
@@ -18,9 +18,9 @@ function createTables() {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     )`,
-    
-    // Product variants table
-    `CREATE TABLE IF NOT EXISTS product_variants (
+
+  // Product variants table
+  `CREATE TABLE IF NOT EXISTS product_variants (
       id TEXT PRIMARY KEY,
       product_id TEXT NOT NULL,
       size TEXT,
@@ -31,9 +31,9 @@ function createTables() {
       stock_quantity INTEGER DEFAULT 0,
       FOREIGN KEY (product_id) REFERENCES products (id)
     )`,
-    
-    // Customers table
-    `CREATE TABLE IF NOT EXISTS customers (
+
+  // Customers table
+  `CREATE TABLE IF NOT EXISTS customers (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT,
@@ -42,9 +42,9 @@ function createTables() {
       discount_rate REAL DEFAULT 0,
       created_at TEXT NOT NULL
     )`,
-    
-    // Invoices table
-    `CREATE TABLE IF NOT EXISTS invoices (
+
+  // Invoices table
+  `CREATE TABLE IF NOT EXISTS invoices (
       id TEXT PRIMARY KEY,
       invoice_number TEXT UNIQUE NOT NULL,
       customer_id TEXT,
@@ -65,9 +65,9 @@ function createTables() {
       status TEXT DEFAULT 'completed',
       FOREIGN KEY (customer_id) REFERENCES customers (id)
     )`,
-    
-    // Invoice items table
-    `CREATE TABLE IF NOT EXISTS invoice_items (
+
+  // Invoice items table
+  `CREATE TABLE IF NOT EXISTS invoice_items (
       id TEXT PRIMARY KEY,
       invoice_id TEXT NOT NULL,
       product_id TEXT NOT NULL,
@@ -82,9 +82,9 @@ function createTables() {
       FOREIGN KEY (product_id) REFERENCES products (id),
       FOREIGN KEY (variant_id) REFERENCES product_variants (id)
     )`,
-    
-    // Stock movements table
-    `CREATE TABLE IF NOT EXISTS stock_movements (
+
+  // Stock movements table
+  `CREATE TABLE IF NOT EXISTS stock_movements (
       id TEXT PRIMARY KEY,
       product_id TEXT NOT NULL,
       variant_id TEXT,
@@ -98,9 +98,9 @@ function createTables() {
       FOREIGN KEY (product_id) REFERENCES products (id),
       FOREIGN KEY (variant_id) REFERENCES product_variants (id)
     )`,
-    
-    // Returns and exchanges table
-    `CREATE TABLE IF NOT EXISTS returns_exchanges (
+
+  // Returns and exchanges table
+  `CREATE TABLE IF NOT EXISTS returns_exchanges (
       id TEXT PRIMARY KEY,
       original_invoice_id TEXT NOT NULL,
       return_amount REAL DEFAULT 0,
@@ -111,9 +111,9 @@ function createTables() {
       created_at TEXT NOT NULL,
       FOREIGN KEY (original_invoice_id) REFERENCES invoices (id)
     )`,
-    
-    // Return items table
-    `CREATE TABLE IF NOT EXISTS return_items (
+
+  // Return items table
+  `CREATE TABLE IF NOT EXISTS return_items (
       id TEXT PRIMARY KEY,
       return_exchange_id TEXT NOT NULL,
       original_invoice_item_id TEXT NOT NULL,
@@ -122,9 +122,9 @@ function createTables() {
       FOREIGN KEY (return_exchange_id) REFERENCES returns_exchanges (id),
       FOREIGN KEY (original_invoice_item_id) REFERENCES invoice_items (id)
     )`,
-    
-    // Discount approvals table
-    `CREATE TABLE IF NOT EXISTS discount_approvals (
+
+  // Discount approvals table
+  `CREATE TABLE IF NOT EXISTS discount_approvals (
       id TEXT PRIMARY KEY,
       requested_by TEXT NOT NULL,
       approved_by TEXT,
@@ -134,11 +134,11 @@ function createTables() {
       status TEXT DEFAULT 'pending',
       created_at TEXT NOT NULL,
       approved_at TEXT
-    )`
-  ];
+    )`];
+
 
   // Execute each table creation
-  tables.forEach(sql => {
+  tables.forEach((sql) => {
     try {
       // This would be handled by the database connection
       console.log('Creating table:', sql);

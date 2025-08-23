@@ -110,8 +110,8 @@ const POSPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </POSProvider>
-  );
+    </POSProvider>);
+
 };
 
 export default POSPage;
