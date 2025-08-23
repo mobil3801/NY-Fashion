@@ -154,78 +154,78 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
     }, []); // Set up throttled event listeners
   useThrottledMouseMove(containerRef.current, handleMouseMove);useThrottledClick(containerRef.current, handleClick);useThrottledMouseDown(containerRef.current, handleMouseDown); // Animation loop for smooth updates (if needed)
   const handleAnimationFrame = useCallback((deltaTime: number, timestamp: number) => {// Only run if chart is animating
-      if (chartRef.current?.isAnimating) {// Chart handles its own animation, this is just for coordination
+      if (chartRef.current?.isAnimating) {
+
+
+        // Chart handles its own animation, this is just for coordination
       }}, []);const { start: startAnimation, stop: stopAnimation } = useRafLoop({ onFrame: handleAnimationFrame, autoStart: false }); // Start/stop animation based on chart state
-  useEffect(() => {if (animate && !isLoading && !error) {startAnimation();} else {stopAnimation();}return stopAnimation;}, [animate, isLoading, error, startAnimation, stopAnimation]);if (error) {return <div className={`flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4 ${className}`} style={{ width, height }}>
+  useEffect(() => {
+    if (animate && !isLoading && !error) {
+      startAnimation();
+    } else {
+      stopAnimation();
+    }
+
+    return stopAnimation;
+  }, [animate, isLoading, error, startAnimation, stopAnimation]);
+
+  if (error) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4 ${className}`}
+        style={{ width, height }}>
 
         <div className="text-center">
           <div className="text-red-600 font-medium">Chart Error</div>
           <div className="text-red-500 text-sm mt-1">{error}</div>
         </div>
-      </div>;}if (isLoading) {return <div className={`flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg ${className}`} style={{ width, height }}>
+      </div>);
+
+  }
+
+  if (isLoading) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg ${className}`}
+        style={{ width, height }}>
 
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <div className="text-gray-600 text-sm mt-2">Loading chart...</div>
         </div>
-      </div>;}return <div ref={containerRef} className={`relative chart-container ${className}`} style={{ width, height }} role="img" aria-label="Categorical chart">
+      </div>);
+
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`relative chart-container ${className}`}
+      style={{ width, height }}
+      role="img"
+      aria-label="Categorical chart">
 
       {/* Chart canvas will be appended here by the chart instance */}
       
       {/* Optional overlay for hover information */}
-      {hoveredBar && <div className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10" style={{ left: hoveredBar.x, top: Math.max(0, hoveredBar.y - 30)
-      }}>
+      {hoveredBar &&
+      <div
+        className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10"
+        style={{
+          left: hoveredBar.x,
+          top: Math.max(0, hoveredBar.y - 30)
+        }}>
 
           {hoveredBar.label}: {hoveredBar.value}
         </div>
-    }
-    </div>;
+      }
+    </div>);
 
 };
 

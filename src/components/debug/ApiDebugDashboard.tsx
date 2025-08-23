@@ -105,26 +105,6 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -226,15 +206,25 @@ const ApiDebugDashboard: React.FC = () => {
                         {call.method}
                       </Badge>
                       <span className="font-medium text-sm">{call.operation}</span>
-                      {call.attempt > 1 && <Badge variant="secondary" className="text-xs">
+                      {call.attempt > 1 &&
+                    <Badge variant="secondary" className="text-xs">
                           Attempt {call.attempt}
-                        </Badge>}
+                        </Badge>
+                    }
                     </div>
                     <div className="flex items-center gap-2">
-                      {call.status === 'error' && <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation();handleRetryCall(call.id);}}>
+                      {call.status === 'error' &&
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRetryCall(call.id);
+                      }}>
 
                           <RotateCcw className="h-3 w-3" />
-                        </Button>}
+                        </Button>
+                    }
                       <Badge variant={getStatusColor(call.status) as any} className="text-xs">
                         {call.status}
                       </Badge>
@@ -244,13 +234,18 @@ const ApiDebugDashboard: React.FC = () => {
                     <span className="truncate max-w-xs">{call.url}</span>
                     <span>{formatDistanceToNow(call.timestamp, { addSuffix: true })}</span>
                   </div>
-                  {call.duration && <div className="text-xs text-gray-500 mt-1">
+                  {call.duration &&
+                <div className="text-xs text-gray-500 mt-1">
                       Duration: {call.duration.toFixed(0)}ms
-                    </div>}
-                </div>)}
-              {filteredCalls.length === 0 && <div className="text-center py-8 text-gray-500">
+                    </div>
+                }
+                </div>
+            )}
+              {filteredCalls.length === 0 &&
+            <div className="text-center py-8 text-gray-500">
                   No API calls match your filters
-                </div>}
+                </div>
+            }
             </div>
           </ScrollArea>
         </CardContent>
@@ -266,7 +261,8 @@ const ApiDebugDashboard: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           
-          {selectedCallData && <Tabs defaultValue="overview" className="w-full">
+          {selectedCallData &&
+        <Tabs defaultValue="overview" className="w-full">
               <TabsList>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="request">Request</TabsTrigger>
@@ -333,18 +329,21 @@ const ApiDebugDashboard: React.FC = () => {
                         {JSON.stringify(selectedCallData.responseHeaders || {}, null, 2)}
                       </pre>
                     </div>
-                    {selectedCallData.response && <div>
+                    {selectedCallData.response &&
+                <div>
                         <h4 className="font-medium mb-2">Body:</h4>
                         <pre className="bg-gray-50 p-2 rounded text-xs overflow-x-auto">
                           {JSON.stringify(selectedCallData.response, null, 2)}
                         </pre>
-                      </div>}
+                      </div>
+                }
                   </div>
                 </ScrollArea>
               </TabsContent>
 
               <TabsContent value="error">
-                {selectedCallData.error ? <ScrollArea className="h-64">
+                {selectedCallData.error ?
+            <ScrollArea className="h-64">
                     <div className="space-y-4">
                       <div>
                         <h4 className="font-medium mb-2">Error Details:</h4>
@@ -354,6 +353,7 @@ const ApiDebugDashboard: React.FC = () => {
                       </div>
                     </div>
                   </ScrollArea> :
+
             <div className="text-center py-8 text-gray-500">
                     No error information available
                   </div>

@@ -1,471 +1,275 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { createConnectivity } from '@/lib/network/connectivity';
-import { createProductionConnectivity } from '@/lib/network/production-connectivity';
-import { isProduction } from '@/utils/env-validator';
+
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createConnectivity, NetStatus, ConnectivityListener } from '@/lib/network/connectivity';
 import { apiClient } from '@/lib/network/client';
 import { NetworkErrorClassifier } from '@/lib/network/error-classifier';
-import { NetworkStatus, ConnectionQuality } from '@/types/network';
+import {
+  EnhancedNetStatus,
+  ConnectionState,
+  ConnectionErrorType,
+  ConnectionRecoveryInfo } from
+'@/types/network';
 import { useNetworkRetry } from '@/hooks/use-network-retry';
-import { useToast } from '@/hooks/use-toast';
-import { logger } from '@/utils/production-logger';
-import { PRODUCTION_CONFIG } from '@/config/production';
 
-interface NetworkContextType {
-  // Connection state
-  isOnline: boolean;
-  isConnected: boolean;
-  connectionQuality: ConnectionQuality;
-  networkStatus: NetworkStatus;
-
-  // Connection metrics
-  latency: number;
-  bandwidth: number;
-  signalStrength: number;
-
-  // API state
-  pendingRequests: number;
-  failedRequests: number;
-  lastSuccessfulRequest: Date | null;
-
-  // Queue state
-  queuedOperations: number;
-  isProcessingQueue: boolean;
-
-  // Error handling
-  lastError: Error | null;
-  connectionErrors: number;
-
-  // Methods
-  checkConnection: () => Promise<boolean>;
-  clearErrors: () => void;
-  retryFailedRequests: () => Promise<void>;
-  getConnectionDiagnostics: () => Promise<any>;
+interface NetworkContextValue {
+  online: boolean;
+  status: EnhancedNetStatus;
+  lastChangeAt: number;
+  connectionState: ConnectionState;
+  errorDetails: ReturnType<typeof NetworkErrorClassifier.classifyError> | null;
+  recoveryInfo: ConnectionRecoveryInfo | null;
+  retryNow(): Promise<void>;
+  abortRetry(): void;
+  getDiagnostics?(): any;
+  isAutoRetrying: boolean;
+  retryCount: number;
 }
 
-const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
-
-export const useNetwork = () => {
-  const context = useContext(NetworkContext);
-  if (!context) {
-    throw new Error('useNetwork must be used within a NetworkProvider');
-  }
-  return context;
-};
-
-export const useOnlineStatus = () => {
-  const { isOnline } = useNetwork();
-  return isOnline;
-};
+const NetworkContext = createContext<NetworkContextValue | null>(null);
 
 interface NetworkProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
+  config?: {
+    heartbeatInterval?: number;
+    heartbeatTimeout?: number;
+  };
 }
 
-export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) => {
-  // Connection state
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('unknown');
-  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>('connecting');
-
-  // Connection metrics
-  const [latency, setLatency] = useState(0);
-  const [bandwidth, setBandwidth] = useState(0);
-  const [signalStrength, setSignalStrength] = useState(0);
-
-  // API state
-  const [pendingRequests, setPendingRequests] = useState(0);
-  const [failedRequests, setFailedRequests] = useState(0);
-  const [lastSuccessfulRequest, setLastSuccessfulRequest] = useState<Date | null>(null);
-
-  // Queue state
-  const [queuedOperations, setQueuedOperations] = useState(0);
-  const [isProcessingQueue, setIsProcessingQueue] = useState(false);
-
-  // Error handling
-  const [lastError, setLastError] = useState<Error | null>(null);
-  const [connectionErrors, setConnectionErrors] = useState(0);
-
-  const { toast } = useToast();
-  const { retryWithBackoff } = useNetworkRetry();
-
-  const connectivity = isProduction() ? createProductionConnectivity() : createConnectivity();
-
-  // Initialize network monitoring
-  useEffect(() => {
-    initializeNetworkMonitoring();
-    return () => cleanupNetworkMonitoring();
-  }, []);
-
-  // Network status listeners
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      logger.logInfo('Network connection restored');
-      checkConnection();
+export function NetworkProvider({ children, config }: NetworkProviderProps) {
+  const [monitor] = useState(() => createConnectivity(config));
+  const [status, setStatus] = useState<EnhancedNetStatus>(() => {
+    const initialStatus = monitor.get();
+    // Ensure consecutiveFailures is always defined
+    return {
+      online: initialStatus.online,
+      lastCheck: initialStatus.lastCheck,
+      consecutiveFailures: initialStatus.consecutiveFailures || 0,
+      lastError: initialStatus.lastError,
+      state: initialStatus.online ? 'online' : 'offline',
+      retryAttempts: 0
     };
+  });
+  const [lastChangeAt, setLastChangeAt] = useState<number>(Date.now());
+  const [connectionState, setConnectionState] = useState<ConnectionState>(
+    status.online ? 'online' : 'offline'
+  );
+  const [errorDetails, setErrorDetails] = useState<ReturnType<typeof NetworkErrorClassifier.classifyError> | null>(null);
+  const [recoveryInfo, setRecoveryInfo] = useState<ConnectionRecoveryInfo | null>(null);
+  const offlineStartTimeRef = useRef<number | null>(null);
+  const autoRetryTimeoutRef = useRef<NodeJS.Timeout>();
 
-    const handleOffline = () => {
-      setIsOnline(false);
-      setIsConnected(false);
-      setNetworkStatus('disconnected');
-      logger.logWarn('Network connection lost');
-    };
+  // Auto retry functionality
+  const {
+    executeWithRetry,
+    abortRetry,
+    isRetrying: isAutoRetrying,
+    retryCount,
+    currentError
+  } = useNetworkRetry({
+    maxRetries: 3,
+    onRetryAttempt: (attempt, errorType) => {
+      console.log(`Auto-retry attempt ${attempt} for ${errorType}`);
+      setConnectionState('reconnecting');
+    },
+    onMaxRetriesReached: (errorType) => {
+      console.warn(`Max auto-retries reached for ${errorType}`);
+      setConnectionState('offline');
+    },
+    onSuccess: () => {
+      setConnectionState('online');
+      import('@/hooks/use-toast').then(({ toast }) => {
+        toast({
+          title: "Connection Restored",
+          description: "Successfully reconnected to the server.",
+          variant: "default"
+        });
+      });
+    }
+  });
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+  useEffect(() => {
+    const unsubscribe = monitor.subscribe((newStatus) => {
+      const wasOffline = !status.online;
+      const statusChanged = status.online !== newStatus.online;
+      const now = Date.now();
+
+      // Track offline duration
+      if (statusChanged) {
+        if (!newStatus.online && !offlineStartTimeRef.current) {
+          offlineStartTimeRef.current = now;
+        } else if (newStatus.online && offlineStartTimeRef.current) {
+          const offlineDuration = now - offlineStartTimeRef.current;
+          setRecoveryInfo({
+            wasOfflineFor: offlineDuration,
+            recoveryTime: new Date(),
+            failureCount: newStatus.consecutiveFailures || 0
+          });
+          offlineStartTimeRef.current = null;
+        }
+      }
+
+      // Classify error if present
+      let errorClassification = null;
+      if (newStatus.lastError) {
+        errorClassification = NetworkErrorClassifier.classifyError(new Error(newStatus.lastError));
+        setErrorDetails(errorClassification);
+      } else {
+        setErrorDetails(null);
+      }
+
+      // Determine connection state
+      let newConnectionState: ConnectionState = 'online';
+      if (!newStatus.online) {
+        if (isAutoRetrying) {
+          newConnectionState = 'reconnecting';
+        } else if (errorClassification?.type === 'timeout') {
+          newConnectionState = 'poor_connection';
+        } else {
+          newConnectionState = 'offline';
+        }
+      } else if (wasOffline) {
+        newConnectionState = 'recovering';
+        // Auto-transition from recovering to online after a short delay
+        setTimeout(() => setConnectionState('online'), 2000);
+      }
+
+      // Ensure consecutiveFailures is always defined
+      const safeStatus: EnhancedNetStatus = {
+        online: newStatus.online,
+        lastCheck: newStatus.lastCheck,
+        consecutiveFailures: newStatus.consecutiveFailures || 0,
+        lastError: newStatus.lastError,
+        errorType: errorClassification?.type,
+        state: newConnectionState,
+        retryAttempts: retryCount
+      };
+
+      setStatus(safeStatus);
+      setConnectionState(newConnectionState);
+
+      // Update lastChangeAt timestamp when online status changes
+      if (statusChanged) {
+        setLastChangeAt(now);
+      }
+
+      // Sync with API client
+      apiClient.setOnlineStatus(safeStatus.online);
+
+      // Handle connection restoration with enhanced messaging
+      if (wasOffline && safeStatus.online) {
+        const offlineDuration = offlineStartTimeRef.current ? now - offlineStartTimeRef.current : 0;
+
+        import('@/hooks/use-toast').then(({ toast }) => {
+          let description = "You're back online. Syncing your changes...";
+
+          if (offlineDuration > 60000) {// > 1 minute
+            const minutes = Math.round(offlineDuration / 60000);
+            description = `Reconnected after ${minutes} minute${minutes > 1 ? 's' : ''}. Syncing your changes...`;
+          } else if (offlineDuration > 5000) {// > 5 seconds
+            const seconds = Math.round(offlineDuration / 1000);
+            description = `Reconnected after ${seconds} seconds. Syncing your changes...`;
+          }
+
+          toast({
+            title: "Connection Restored",
+            description,
+            variant: "default"
+          });
+        });
+
+        // Clear error details on successful reconnection
+        setErrorDetails(null);
+
+        // Flush any queued operations when coming back online
+        apiClient.flushQueue?.();
+      }
+
+      // Auto-retry logic for certain error types
+      if (!newStatus.online && errorClassification?.isRetryable && !isAutoRetrying) {
+        const shouldAutoRetry = NetworkErrorClassifier.shouldShowBanner(
+          errorClassification.type,
+          newStatus.consecutiveFailures || 0
+        );
+
+        if (shouldAutoRetry && retryCount < 3) {
+          const delay = NetworkErrorClassifier.getRetryDelay(errorClassification.type, retryCount + 1);
+
+          autoRetryTimeoutRef.current = setTimeout(() => {
+            executeWithRetry(async () => {
+              await monitor.checkNow();
+            }, 'Auto network check');
+          }, delay);
+        }
+      }
+    });
+
+    // Initial sync
+    apiClient.setOnlineStatus(status.online);
+    monitor.start();
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Periodic connection checking
-  useEffect(() => {
-    const interval = setInterval(checkConnection, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const initializeNetworkMonitoring = () => {
-    logger.logInfo('Initializing network monitoring');
-
-    // Initial connection check
-    checkConnection();
-
-    // Monitor connection quality if supported
-    if ('connection' in navigator) {
-      const connection = (navigator as any).connection;
-      updateConnectionMetrics(connection);
-
-      connection.addEventListener('change', () => {
-        updateConnectionMetrics(connection);
-      });
-    }
-
-    // Monitor API client events
-    setupApiClientMonitoring();
-  };
-
-  const cleanupNetworkMonitoring = () => {
-    logger.logInfo('Cleaning up network monitoring');
-  };
-
-  const updateConnectionMetrics = (connection: any) => {
-    if (connection) {
-      setBandwidth(connection.downlink || 0);
-      setSignalStrength(connection.effectiveType ? getSignalStrength(connection.effectiveType) : 0);
-
-      const quality = determineConnectionQuality(connection.effectiveType, connection.downlink);
-      setConnectionQuality(quality);
-
-      logger.logInfo('Connection metrics updated', {
-        effectiveType: connection.effectiveType,
-        downlink: connection.downlink,
-        quality
-      });
-    }
-  };
-
-  const getSignalStrength = (effectiveType: string): number => {
-    switch (effectiveType) {
-      case '4g':return 100;
-      case '3g':return 75;
-      case '2g':return 50;
-      case 'slow-2g':return 25;
-      default:return 0;
-    }
-  };
-
-  const determineConnectionQuality = (effectiveType: string, downlink: number): ConnectionQuality => {
-    if (!effectiveType) return 'unknown';
-
-    if (effectiveType === '4g' && downlink > 10) return 'excellent';
-    if (effectiveType === '4g' && downlink > 2) return 'good';
-    if (effectiveType === '3g') return 'fair';
-    if (effectiveType === '2g') return 'poor';
-    return 'poor';
-  };
-
-  const setupApiClientMonitoring = () => {
-    // Monitor API request lifecycle
-    const originalFetch = window.fetch;
-
-    window.fetch = async (input, init) => {
-      setPendingRequests((prev) => prev + 1);
-      const startTime = performance.now();
-
-      try {
-        const response = await originalFetch(input, init);
-
-        const duration = performance.now() - startTime;
-        setLatency(duration);
-
-        if (response.ok) {
-          setLastSuccessfulRequest(new Date());
-          setConnectionErrors(0);
-
-          if (!isConnected) {
-            setIsConnected(true);
-            setNetworkStatus('connected');
-            logger.logInfo('API connectivity restored');
-          }
-        } else {
-          handleApiError(new Error(`HTTP ${response.status}`));
-        }
-
-        return response;
-      } catch (error) {
-        handleApiError(error as Error);
-        throw error;
-      } finally {
-        setPendingRequests((prev) => Math.max(0, prev - 1));
+      unsubscribe();
+      monitor.stop();
+      if (autoRetryTimeoutRef.current) {
+        clearTimeout(autoRetryTimeoutRef.current);
       }
     };
-  };
+  }, [monitor, status.online, executeWithRetry, isAutoRetrying, retryCount]);
 
-  const handleApiError = (error: Error) => {
-    const errorType = NetworkErrorClassifier.classifyError(error);
-    setFailedRequests((prev) => prev + 1);
-    setLastError(error);
+  const retryNow = useCallback(async () => {
+    // Clear any existing auto-retry timeout
+    if (autoRetryTimeoutRef.current) {
+      clearTimeout(autoRetryTimeoutRef.current);
+      autoRetryTimeoutRef.current = undefined;
+    }
 
-    if (errorType.isNetworkError || errorType.isTimeoutError) {
-      setConnectionErrors((prev) => prev + 1);
-      setIsConnected(false);
-      setNetworkStatus('error');
+    setConnectionState('reconnecting');
 
-      logger.logError('Network API error', error, {
-        errorType,
-        connectionErrors: connectionErrors + 1
-      });
+    try {
+      await executeWithRetry(async () => {
+        // Trigger immediate connectivity check
+        await monitor.pingNow();
 
-      // Show user-friendly error message
-      if (connectionErrors >= 3) {
+        // Signal retry scheduler for any pending operations
+        apiClient.retryNow?.();
+
+        // Flush queue if online
+        if (status.online) {
+          apiClient.flushQueue?.();
+        }
+      }, 'Manual retry');
+    } catch (error) {
+      console.error('Manual retry failed:', error);
+
+      // Show error toast
+      import('@/hooks/use-toast').then(({ toast }) => {
+        const errorDetails = NetworkErrorClassifier.classifyError(error);
         toast({
-          title: 'Connection Issues',
-          description: 'Having trouble connecting to the server. Please check your internet connection.',
-          variant: 'destructive'
+          title: "Retry Failed",
+          description: errorDetails.userMessage,
+          variant: "destructive"
         });
-      }
-    }
-  };
-
-  const checkConnection = async (): Promise<boolean> => {
-    try {
-      setNetworkStatus('checking');
-      logger.logInfo('Checking network connection');
-
-      const startTime = performance.now();
-      const isConnectedNow = await connectivity.checkConnection();
-      const duration = performance.now() - startTime;
-
-      setLatency(duration);
-      setIsConnected(isConnectedNow);
-      setNetworkStatus(isConnectedNow ? 'connected' : 'disconnected');
-
-      if (isConnectedNow) {
-        setLastSuccessfulRequest(new Date());
-        setConnectionErrors(0);
-        logger.logInfo('Connection check successful', { latency: duration });
-      } else {
-        logger.logWarn('Connection check failed', { latency: duration });
-      }
-
-      return isConnectedNow;
-    } catch (error) {
-      logger.logError('Connection check error', error);
-      setIsConnected(false);
-      setNetworkStatus('error');
-      setConnectionErrors((prev) => prev + 1);
-      return false;
-    }
-  };
-
-  const clearErrors = () => {
-    setLastError(null);
-    setFailedRequests(0);
-    setConnectionErrors(0);
-    logger.logInfo('Network errors cleared');
-  };
-
-  const retryFailedRequests = async () => {
-    if (!isConnected) {
-      throw new Error('No network connection available');
-    }
-
-    setIsProcessingQueue(true);
-    try {
-      logger.logInfo('Retrying failed requests');
-
-      // Process any queued operations - simplified for production
-      if (isProduction()) {
-        // In production, just log the retry attempt and continue
-        logger.logInfo('Retry requested in production mode');
-      } else {
-        // Development mode - try to process queue
-        if (connectivity && typeof (connectivity as any).processQueue === 'function') {
-          await (connectivity as any).processQueue();
-        } else {
-          // Fallback to offlineQueue direct access
-          try {
-            const { offlineQueue } = await import('@/lib/offlineQueue');
-            if (offlineQueue && typeof offlineQueue.flush === 'function') {
-              await offlineQueue.flush(async (operation) => {
-                try {
-                  const response = await fetch(operation.url, {
-                    method: operation.type,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...operation.headers
-                    },
-                    body: operation.data ? JSON.stringify(operation.data) : undefined
-                  });
-                  return response.ok;
-                } catch (error) {
-                  logger.logWarn('Queue operation failed', { error });
-                  return false;
-                }
-              });
-            }
-          } catch (fallbackError) {
-            logger.logWarn('Failed to process queue:', fallbackError);
-          }
-        }
-      }
-
-      setQueuedOperations(0);
-      clearErrors();
-
-      toast({
-        title: 'Requests Retried',
-        description: 'Successfully retried pending operations.',
-        variant: 'default'
       });
-
-    } catch (error) {
-      logger.logError('Failed to retry requests', error);
-      throw error;
-    } finally {
-      setIsProcessingQueue(false);
     }
-  };
+  }, [monitor, status.online, executeWithRetry]);
 
-  const getConnectionDiagnostics = async () => {
-    const diagnostics = {
-      // Basic connectivity
-      isOnline,
-      isConnected,
-      networkStatus,
-      connectionQuality,
+  const getDiagnostics = useCallback(() => {
+    // Return diagnostics from monitor if available
+    return (monitor as any).getDiagnostics?.() || {};
+  }, [monitor]);
 
-      // Performance metrics
-      latency,
-      bandwidth,
-      signalStrength,
-
-      // Request metrics
-      pendingRequests,
-      failedRequests,
-      lastSuccessfulRequest,
-
-      // Queue metrics
-      queuedOperations,
-      isProcessingQueue,
-
-      // Error metrics
-      connectionErrors,
-      lastError: lastError?.message,
-
-      // Browser info
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      cookieEnabled: navigator.cookieEnabled,
-
-      // Connection info (if available)
-      connectionType: (navigator as any).connection?.effectiveType,
-      connectionSaveData: (navigator as any).connection?.saveData,
-
-      // Timing
-      timestamp: new Date().toISOString(),
-      uptime: performance.now()
-    };
-
-    logger.logInfo('Connection diagnostics generated', diagnostics);
-    return diagnostics;
-  };
-
-  // Update queue count periodically - Fixed implementation
-  useEffect(() => {
-    const updateQueueSize = async () => {
-      try {
-        // Simplified queue size management for production
-        if (isProduction()) {
-          // In production, just set to 0 to avoid complex queue management
-          setQueuedOperations(0);
-          return;
-        }
-
-        // Development mode - safely check queue size
-        try {
-          const { offlineQueue } = await import('@/lib/offlineQueue');
-          if (offlineQueue && typeof offlineQueue.sizeSync === 'function') {
-            const queueSize = offlineQueue.sizeSync();
-            setQueuedOperations(queueSize);
-          } else if (offlineQueue && typeof offlineQueue.size === 'function') {
-            const queueSize = await offlineQueue.size();
-            setQueuedOperations(queueSize);
-          } else {
-            setQueuedOperations(0);
-          }
-        } catch (importError) {
-          // Queue not available - set to 0
-          setQueuedOperations(0);
-        }
-      } catch (error) {
-        // Any error - set to 0 and log
-        console.warn('[NetworkContext] Queue size update failed:', error);
-        setQueuedOperations(0);
-      }
-    };
-
-    // Initial update
-    updateQueueSize();
-
-    // Periodic updates every 5 seconds
-    const interval = setInterval(updateQueueSize, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const contextValue: NetworkContextType = {
-    // Connection state
-    isOnline,
-    isConnected,
-    connectionQuality,
-    networkStatus,
-
-    // Connection metrics
-    latency,
-    bandwidth,
-    signalStrength,
-
-    // API state
-    pendingRequests,
-    failedRequests,
-    lastSuccessfulRequest,
-
-    // Queue state
-    queuedOperations,
-    isProcessingQueue,
-
-    // Error handling
-    lastError,
-    connectionErrors,
-
-    // Methods
-    checkConnection,
-    clearErrors,
-    retryFailedRequests,
-    getConnectionDiagnostics
+  const contextValue: NetworkContextValue = {
+    online: status.online,
+    status,
+    lastChangeAt,
+    connectionState,
+    errorDetails,
+    recoveryInfo,
+    retryNow,
+    abortRetry,
+    getDiagnostics,
+    isAutoRetrying,
+    retryCount
   };
 
   return (
@@ -473,4 +277,17 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
       {children}
     </NetworkContext.Provider>);
 
-};
+}
+
+export function useNetwork(): NetworkContextValue {
+  const context = useContext(NetworkContext);
+  if (!context) {
+    throw new Error('useNetwork must be used within a NetworkProvider');
+  }
+  return context;
+}
+
+export function useOnlineStatus(): boolean {
+  const { online } = useNetwork();
+  return online;
+}

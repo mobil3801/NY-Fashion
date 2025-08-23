@@ -7,9 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryProvider } from '@/contexts/InventoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNetwork } from '@/contexts/NetworkContext';
-import { NetworkAwareInventoryProvider, InventoryNetworkStatusBar } from '@/components/inventory/NetworkAwareInventoryProvider';
-import { EnhancedNetworkInventoryOperations } from '@/components/inventory/EnhancedNetworkInventoryOperations';
-import { OfflineInventoryManager } from '@/components/inventory/OfflineInventoryManager';
 
 // Import accessibility utilities for dev mode
 if (import.meta.env.DEV) {
@@ -50,14 +47,7 @@ const InventoryPage = () => {
 
   return (
     <InventoryProvider>
-      <NetworkAwareInventoryProvider>
-        <div className="space-y-6">
-          
-          {/* Network Status Bar */}
-          <InventoryNetworkStatusBar />
-
-          {/* Offline Manager */}
-          <OfflineInventoryManager />
+      <div className="space-y-6">
         {/* Header with enhanced accessibility */}
         <div className="flex justify-between items-center">
           <div>
@@ -70,10 +60,10 @@ const InventoryPage = () => {
           </div>
           <div className="flex gap-2" role="toolbar" aria-label="Inventory actions">
             <Button
-                variant="outline"
-                onClick={() => setShowCSVImport(true)}
-                className="btn-outline-aa focus-aa touch-target-aa"
-                aria-label="Import products from CSV file">
+              variant="outline"
+              onClick={() => setShowCSVImport(true)}
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Import products from CSV file">
 
 
 
@@ -81,10 +71,10 @@ const InventoryPage = () => {
               Import CSV
             </Button>
             <Button
-                variant="outline"
-                onClick={() => setShowBarcodeGen(true)}
-                className="btn-outline-aa focus-aa touch-target-aa"
-                aria-label="Generate barcode labels for products">
+              variant="outline"
+              onClick={() => setShowBarcodeGen(true)}
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Generate barcode labels for products">
 
 
 
@@ -92,9 +82,9 @@ const InventoryPage = () => {
               Generate Labels
             </Button>
             <Button
-                variant="outline"
-                className="btn-outline-aa focus-aa touch-target-aa"
-                aria-label="Export inventory data">
+              variant="outline"
+              className="btn-outline-aa focus-aa touch-target-aa"
+              aria-label="Export inventory data">
 
 
 
@@ -108,9 +98,9 @@ const InventoryPage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
             <TabsTrigger
-                value="products"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="Manage products and variants">
+              value="products"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Manage products and variants">
 
 
 
@@ -118,9 +108,9 @@ const InventoryPage = () => {
               Products
             </TabsTrigger>
             <TabsTrigger
-                value="stock"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="View and manage stock movements">
+              value="stock"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="View and manage stock movements">
 
 
 
@@ -128,9 +118,9 @@ const InventoryPage = () => {
               Stock Movement
             </TabsTrigger>
             <TabsTrigger
-                value="adjustments"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="Make inventory adjustments">
+              value="adjustments"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Make inventory adjustments">
 
 
 
@@ -138,9 +128,9 @@ const InventoryPage = () => {
               Adjustments
             </TabsTrigger>
             <TabsTrigger
-                value="alerts"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="View low stock alerts and critical items">
+              value="alerts"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="View low stock alerts and critical items">
 
 
 
@@ -148,9 +138,9 @@ const InventoryPage = () => {
               Low Stock
             </TabsTrigger>
             <TabsTrigger
-                value="reports"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="Generate inventory reports and analytics">
+              value="reports"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Generate inventory reports and analytics">
 
 
 
@@ -158,9 +148,9 @@ const InventoryPage = () => {
               Reports
             </TabsTrigger>
             <TabsTrigger
-                value="diagnostics"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="Network diagnostics and troubleshooting">
+              value="diagnostics"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Network diagnostics and troubleshooting">
 
 
 
@@ -168,9 +158,9 @@ const InventoryPage = () => {
               Diagnostics
             </TabsTrigger>
             <TabsTrigger
-                value="debug"
-                className="flex items-center gap-2 focus-aa text-default-aa"
-                aria-label="Inventory debug panel">
+              value="debug"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Inventory debug panel">
 
 
 
@@ -285,10 +275,7 @@ const InventoryPage = () => {
           </TabsContent>
 
           <TabsContent value="diagnostics" role="tabpanel" aria-labelledby="diagnostics-tab">
-            <div className="space-y-6">
-              <EnhancedNetworkInventoryOperations />
-              <NetworkDiagnosticsHelper />
-            </div>
+            <NetworkDiagnosticsHelper />
           </TabsContent>
           
           <TabsContent value="debug" role="tabpanel" aria-labelledby="debug-tab">
@@ -299,8 +286,7 @@ const InventoryPage = () => {
         {/* Dialogs */}
         <CSVImport isOpen={showCSVImport} onClose={() => setShowCSVImport(false)} />
         <BarcodeGeneration isOpen={showBarcodeGen} onClose={() => setShowBarcodeGen(false)} />
-        </div>
-      </NetworkAwareInventoryProvider>
+      </div>
     </InventoryProvider>);
 
 };

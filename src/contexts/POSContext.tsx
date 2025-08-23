@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { POSState, CartItem, Customer, PaymentMethod, Product, ProductVariant } from '@/types/pos';
 import { toast } from '@/hooks/use-toast';
 import { usePageLifecycle } from '@/hooks/usePageLifecycle';
@@ -185,13 +185,9 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           selectedCustomer: state.customer,
           timestamp: Date.now()
         };
-        try {
-          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
-          // Also save to sessionStorage for more immediate access
-          sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
-        } catch (error) {
-          console.warn('Failed to save cart data:', error);
-        }
+        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        // Also save to sessionStorage for more immediate access
+        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
       }
     },
     onVisibilityChange: (isVisible) => {
@@ -202,80 +198,51 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           selectedCustomer: state.customer,
           timestamp: Date.now()
         };
-        try {
-          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
-          // sessionStorage is cleared when the session ends (tab close)
-          sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
-        } catch (error) {
-          console.warn('Failed to save cart data:', error);
-        }
+        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        // sessionStorage is cleared when the session ends (tab close)
+        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
       }
     }
   });
 
-  // Helper functions for cart persistence
-  const setCart = React.useCallback((cartItems: CartItem[]) => {
-    // Since we're using useReducer, we need to dispatch actions to update cart
-    // Clear current cart first
-    dispatch({ type: 'CLEAR_CART' });
-
-    // Add each item to cart
-    cartItems.forEach((item) => {
-      dispatch({
-        type: 'ADD_TO_CART',
-        payload: {
-          product: item.product,
-          variant: item.variant,
-          quantity: item.quantity
-        }
-      });
-    });
-  }, []);
-
-  const setSelectedCustomer = React.useCallback((customer: Customer | null) => {
-    dispatch({ type: 'SET_CUSTOMER', payload: { customer: customer || undefined } });
-  }, []);
-
   // Load cart from storage on mount
-  React.useEffect(() => {
+  useEffect(() => {
     const loadPersistedCart = () => {
-      try {
-        // Try to load from session storage first (most recent)
-        const sessionCart = sessionStorage.getItem('ny-fashion-pos-cart-session');
-        if (sessionCart) {
+      // Try to load from session storage first (most recent)
+      const sessionCart = sessionStorage.getItem('ny-fashion-pos-cart-session');
+      if (sessionCart) {
+        try {
           const { cart: savedCart, selectedCustomer: savedCustomer } = JSON.parse(sessionCart);
-          if (savedCart && savedCart.length > 0) {
-            setCart(savedCart);
-          }
-          if (savedCustomer) {
-            setSelectedCustomer(savedCustomer);
-          }
+          setCart(savedCart || []);
+          setSelectedCustomer(savedCustomer || null);
           return;
+        } catch (error) {
+          console.warn('Error loading session cart:', error);
         }
+      }
 
-        // Then try localStorage backup
-        const backupCart = localStorage.getItem('ny-fashion-pos-cart-backup');
-        if (backupCart) {
+      // Then try localStorage backup
+      const backupCart = localStorage.getItem('ny-fashion-pos-cart-backup');
+      if (backupCart) {
+        try {
           const { cart: savedCart, selectedCustomer: savedCustomer, timestamp } = JSON.parse(backupCart);
           // Only restore if backup is less than 1 hour old
           if (Date.now() - timestamp < 3600000) {
-            if (savedCart && savedCart.length > 0) {
-              setCart(savedCart);
-            }
-            if (savedCustomer) {
-              setSelectedCustomer(savedCustomer);
-            }
+            setCart(savedCart || []);
+            setSelectedCustomer(savedCustomer || null);
             return;
           }
+        } catch (error) {
+          console.warn('Error loading backup cart:', error);
         }
+      }
 
-        // Fallback to legacy cart storage
-        const legacyCart = localStorage.getItem('posCart');
-        if (legacyCart) {
+      // Fallback to legacy cart storage
+      const legacyCart = localStorage.getItem('posCart');
+      if (legacyCart) {
+        try {
           const parsedCart = JSON.parse(legacyCart);
-          if (parsedCart && parsedCart.length > 0) {
-            setCart(parsedCart);
-          }
+          setCart(parsedCart || []);
           // Clean up legacy storage
           localStorage.removeItem('posCart');
 
@@ -286,95 +253,80 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             timestamp: Date.now()
           };
           localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        } catch (error) {
+          console.error('Error loading legacy cart:', error);
         }
-      } catch (error) {
-        console.error('Error loading cart data:', error);
       }
     };
 
     loadPersistedCart();
-  }, [setCart, setSelectedCustomer]);
+  }, []);
 
-  const addToCart = React.useCallback((product: Product, variant?: ProductVariant, quantity: number = 1) => {
+  const addToCart = (product: Product, variant?: ProductVariant, quantity: number = 1) => {
     dispatch({ type: 'ADD_TO_CART', payload: { product, variant, quantity } });
-  }, []);
+  };
 
-  const updateCartItemQuantity = React.useCallback((itemId: string, quantity: number) => {
+  const updateCartItemQuantity = (itemId: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { itemId, quantity } });
-  }, []);
+  };
 
-  const removeFromCart = React.useCallback((itemId: string) => {
+  const removeFromCart = (itemId: string) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { itemId } });
-  }, []);
+  };
 
-  const applyLineDiscount = React.useCallback((itemId: string, discount: number, type: 'percentage' | 'fixed') => {
+  const applyLineDiscount = (itemId: string, discount: number, type: 'percentage' | 'fixed') => {
     dispatch({ type: 'APPLY_LINE_DISCOUNT', payload: { itemId, discount, type } });
-  }, []);
+  };
 
-  const applyOrderDiscount = React.useCallback((discount: number, type: 'percentage' | 'fixed') => {
+  const applyOrderDiscount = (discount: number, type: 'percentage' | 'fixed') => {
     dispatch({ type: 'APPLY_ORDER_DISCOUNT', payload: { discount, type } });
-  }, []);
+  };
 
-  const setCustomer = React.useCallback((customer: Customer | undefined) => {
+  const setCustomer = (customer: Customer | undefined) => {
     dispatch({ type: 'SET_CUSTOMER', payload: { customer } });
-  }, []);
+  };
 
-  const setPaymentMethod = React.useCallback((method: PaymentMethod) => {
+  const setPaymentMethod = (method: PaymentMethod) => {
     dispatch({ type: 'SET_PAYMENT_METHOD', payload: { method } });
-  }, []);
+  };
 
-  const clearCart = React.useCallback(() => {
+  const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
-  }, []);
+  };
 
-  const getCartSubtotal = React.useCallback(() => {
+  const getCartSubtotal = () => {
     return state.cart.reduce((sum, item) => sum + item.subtotal, 0);
-  }, [state.cart]);
+  };
 
-  const getTaxAmount = React.useCallback(() => {
+  const getTaxAmount = () => {
     const { taxAmount } = calculateTax(state.cart);
     return taxAmount;
-  }, [state.cart]);
+  };
 
-  const getCartTotal = React.useCallback(() => {
+  const getCartTotal = () => {
     const subtotal = getCartSubtotal();
     const tax = getTaxAmount();
     const orderDiscountAmount = state.orderDiscountType === 'percentage' ?
     subtotal * (state.orderDiscount / 100) :
     state.orderDiscount;
     return subtotal + tax - orderDiscountAmount;
-  }, [getCartSubtotal, getTaxAmount, state.orderDiscount, state.orderDiscountType]);
-
-  const contextValue = React.useMemo(() => ({
-    state,
-    addToCart,
-    updateCartItemQuantity,
-    removeFromCart,
-    applyLineDiscount,
-    applyOrderDiscount,
-    setCustomer,
-    setPaymentMethod,
-    clearCart,
-    getCartTotal,
-    getCartSubtotal,
-    getTaxAmount
-  }), [
-  state,
-  addToCart,
-  updateCartItemQuantity,
-  removeFromCart,
-  applyLineDiscount,
-  applyOrderDiscount,
-  setCustomer,
-  setPaymentMethod,
-  clearCart,
-  getCartTotal,
-  getCartSubtotal,
-  getTaxAmount]
-  );
+  };
 
   return (
-    <POSContext.Provider value={contextValue}>
+    <POSContext.Provider value={{
+      state,
+      addToCart,
+      updateCartItemQuantity,
+      removeFromCart,
+      applyLineDiscount,
+      applyOrderDiscount,
+      setCustomer,
+      setPaymentMethod,
+      clearCart,
+      getCartTotal,
+      getCartSubtotal,
+      getTaxAmount
+    }}>
       {children}
     </POSContext.Provider>);
 

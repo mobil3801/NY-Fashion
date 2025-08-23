@@ -234,81 +234,81 @@ describe('Cleanup and Memory Management Tests', () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Expected to fail after destroy
       }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});it('should handle listener removal during destroy', () => {monitor = new ConnectivityMonitor();const listeners: (() => void)[] = [];for (let i = 0; i < 5; i++) {const removeListener = monitor.addListener(vi.fn(() => {// Try to remove other listeners during callback
                 listeners.forEach((remove) => {try {remove();} catch {} // Ignore errors
-                  });}));listeners.push(removeListener);}expect(() => monitor.destroy()).not.toThrow();});});describe('Memory Leak Prevention', () => {it('should not retain references to destroyed components', () => {const clients: ApiClient[] = []; // Create multiple clients
-          for (let i = 0; i < 10; i++) {const c = new ApiClient();c.subscribeToNetworkStatus(vi.fn());clients.push(c);} // Destroy all clients
-          clients.forEach((c) => c.destroy()); // Force garbage collection hint
-          if (global.gc) {global.gc();}
-          // Verify no lingering effects
-          clients.forEach((c) => {
-            expect(() => c.get('/test')).not.toThrow();
-            // The requests may return rejected promises, but shouldn't cause errors
-          });
-        });
-
-      it('should handle rapid create/destroy cycles', () => {
-        for (let i = 0; i < 50; i++) {
-          const c = new ApiClient();
-          const m = new ConnectivityMonitor({ heartbeatInterval: 100 });
-
-          c.subscribeToNetworkStatus(vi.fn());
-          m.addListener(vi.fn());
-
-          c.destroy();
-          m.destroy();
-        }
-
-        // Should not cause memory issues or errors
-        expect(true).toBe(true);
+                  });}));listeners.push(removeListener);}
+        expect(() => monitor.destroy()).not.toThrow();
       });
+  });
 
-      it('should clean up large data structures', async () => {
-        client = new ApiClient();
-        client.setOnlineStatus(false);
+  describe('Memory Leak Prevention', () => {
+    it('should not retain references to destroyed components', () => {
+      const clients: ApiClient[] = [];
 
-        // Create large operations
-        const largeData = {
-          items: new Array(1000).fill(0).map((_, i) => ({
-            id: i,
-            data: 'x'.repeat(1000) // 1KB per item
-          }))
-        };
+      // Create multiple clients
+      for (let i = 0; i < 10; i++) {
+        const c = new ApiClient();
+        c.subscribeToNetworkStatus(vi.fn());
+        clients.push(c);
+      }
 
-        for (let i = 0; i < 10; i++) {
-          await expect(client.post(`/api/bulk${i}`, largeData)).
-          rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
-        }
+      // Destroy all clients
+      clients.forEach((c) => c.destroy());
 
-        expect(client.getQueueStatus().size).toBe(10);
+      // Force garbage collection hint
+      if (global.gc) {
+        global.gc();
+      }
 
-        client.destroy();
-
-        // Memory should be freed
-        expect(client.getQueueStatus().isEmpty).toBe(true);
+      // Verify no lingering effects
+      clients.forEach((c) => {
+        expect(() => c.get('/test')).not.toThrow();
+        // The requests may return rejected promises, but shouldn't cause errors
       });
     });
+
+    it('should handle rapid create/destroy cycles', () => {
+      for (let i = 0; i < 50; i++) {
+        const c = new ApiClient();
+        const m = new ConnectivityMonitor({ heartbeatInterval: 100 });
+
+        c.subscribeToNetworkStatus(vi.fn());
+        m.addListener(vi.fn());
+
+        c.destroy();
+        m.destroy();
+      }
+
+      // Should not cause memory issues or errors
+      expect(true).toBe(true);
+    });
+
+    it('should clean up large data structures', async () => {
+      client = new ApiClient();
+      client.setOnlineStatus(false);
+
+      // Create large operations
+      const largeData = {
+        items: new Array(1000).fill(0).map((_, i) => ({
+          id: i,
+          data: 'x'.repeat(1000) // 1KB per item
+        }))
+      };
+
+      for (let i = 0; i < 10; i++) {
+        await expect(client.post(`/api/bulk${i}`, largeData)).
+        rejects.toMatchObject({ code: 'QUEUED_OFFLINE' });
+      }
+
+      expect(client.getQueueStatus().size).toBe(10);
+
+      client.destroy();
+
+      // Memory should be freed
+      expect(client.getQueueStatus().isEmpty).toBe(true);
+    });
+  });
 
   describe('setState After Unmount Prevention', () => {
     it('should not update state after component destruction', async () => {

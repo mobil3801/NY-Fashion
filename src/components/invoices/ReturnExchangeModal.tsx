@@ -334,46 +334,6 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -554,15 +514,25 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={processReturn} disabled={processing || selectedItemsCount === 0} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button onClick={processReturn}
+            disabled={processing || selectedItemsCount === 0}
+            className="bg-emerald-600 hover:bg-emerald-700">
 
-                {processing ? <>Processing...</> : <>
+                {processing ?
+              <>Processing...</> :
+
+              <>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Process {returnType === 'return' ? 'Return' : 'Exchange'}
-                  </>}
+                  </>
+              }
               </Button>
             </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>;};export default ReturnExchangeModal;
+    </Dialog>;
+
+};
+
+export default ReturnExchangeModal;

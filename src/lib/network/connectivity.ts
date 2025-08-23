@@ -1,178 +1,351 @@
-import { offlineQueue } from '@/lib/offlineQueue';
-import { logger } from '@/utils/production-logger';
+
+export interface NetStatus {
+  online: boolean;
+  lastCheck: Date;
+  consecutiveFailures: number;
+  lastError?: string;
+}
 
 export interface ConnectivityConfig {
-  timeout: number;
-  retryAttempts: number;
-  retryDelay: number;
-  endpoints: string[];
+  heartbeatInterval: number; // ms
+  heartbeatTimeout: number; // ms
+  maxRetries: number;
+  baseDelay: number; // ms
+  maxDelay: number; // ms
+  backoffFactor: number;
+  debounceMs: number; // ms to debounce status changes
 }
 
 const DEFAULT_CONFIG: ConnectivityConfig = {
-  timeout: 10000,
-  retryAttempts: 3,
-  retryDelay: 1000,
-  endpoints: [
-  '/api/health',
-  '/api/healthCheck',
-  '/healthCheck']
-
+  heartbeatInterval: 20000, // 20s
+  heartbeatTimeout: 3000, // 3s
+  maxRetries: 5,
+  baseDelay: 300,
+  maxDelay: 10000,
+  backoffFactor: 2,
+  debounceMs: 1500 // 1.5s debounce to prevent flapping
 };
 
-export class Connectivity {
+export type ConnectivityListener = (status: NetStatus) => void;
+
+class ConnectivityMonitor {
   private config: ConnectivityConfig;
-  private isOnline = true;
-  private lastCheckTime = 0;
-  private checkInterval: number | null = null;
+  private status: NetStatus;
+  private listeners: Set<ConnectivityListener> = new Set();
+  private heartbeatTimer?: number;
+  private abortController?: AbortController;
+  private isDestroyed = false;
+  private lastSuccessfulEndpoint?: string;
+  private debounceTimer?: number;
+  private pendingStatusUpdate?: NetStatus;
+  private diagnostics: {
+    totalAttempts: number;
+    successfulAttempts: number;
+    failedEndpoints: Map<string, number>;
+    averageLatency: number;
+    lastLatencies: number[];
+  } = {
+    totalAttempts: 0,
+    successfulAttempts: 0,
+    failedEndpoints: new Map(),
+    averageLatency: 0,
+    lastLatencies: []
+  };
 
   constructor(config: Partial<ConnectivityConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.status = {
+      online: navigator.onLine,
+      lastCheck: new Date(),
+      consecutiveFailures: 0 // Ensure this is always initialized
+    };
+
+    this.setupBrowserListeners();
   }
 
-  async checkConnection(): Promise<boolean> {
-    const now = Date.now();
+  private setupBrowserListeners(): void {
+    const handleOnline = () => {
+      if (this.isDestroyed) return;
+      this.debouncedUpdateStatus({ online: true, consecutiveFailures: 0 });
+      this.performHeartbeat(); // Immediate check when online
+    };
 
-    // Don't check too frequently
-    if (now - this.lastCheckTime < 1000) {
-      return this.isOnline;
+    const handleOffline = () => {
+      if (this.isDestroyed) return;
+      this.debouncedUpdateStatus({
+        online: false,
+        lastError: 'Browser offline event'
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Store cleanup functions
+    this.cleanup = () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }
+
+  private cleanup?: () => void;
+
+  public start(): void {
+    if (this.isDestroyed) return;
+    this.startHeartbeat();
+  }
+
+  public stop(): void {
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
     }
 
-    this.lastCheckTime = now;
-
-    // Check browser online status first
-    if (!navigator.onLine) {
-      this.isOnline = false;
-      return false;
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = undefined;
     }
+
+    this.abortController?.abort();
+    this.abortController = undefined;
+  }
+
+  private startHeartbeat(): void {
+    if (this.isDestroyed) return;
+
+    this.heartbeatTimer = window.setTimeout(() => {
+      this.performHeartbeat();
+    }, this.config.heartbeatInterval);
+  }
+
+  private async performHeartbeat(): Promise<void> {
+    if (this.isDestroyed) return;
+
+    this.abortController?.abort();
+    this.abortController = new AbortController();
+
+    const startTime = performance.now();
+    this.diagnostics.totalAttempts++;
 
     try {
-      // Try to make a simple request to check connectivity
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+      // Health check endpoint with fallbacks - use EasySite compatible endpoints
+      const endpoints = [
+      `${window.location.origin}/`, // EasySite home page (most reliable)
+      `${window.location.origin}/favicon.ico`, // Static resource fallback
+      '/api/health', // If available
+      'https://httpbin.org/status/200', // External fallback
+      'https://www.google.com/favicon.ico' // Ultimate fallback
+      ];
 
-      for (const endpoint of this.config.endpoints) {
+      let success = false;
+      let lastError = '';
+      let successfulEndpoint = '';
+
+      for (const endpoint of endpoints) {
         try {
-          const response = await fetch(endpoint, {
-            method: 'HEAD',
-            signal: controller.signal,
+          const requestStart = performance.now();
+
+          // Create a timeout promise for better control
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Heartbeat timeout')), this.config.heartbeatTimeout);
+          });
+
+          const fetchPromise = fetch(endpoint, {
+            method: endpoint.endsWith('/v1/health') ? 'GET' : 'HEAD',
+            mode: endpoint.includes(window.location.origin) ? 'cors' : 'no-cors',
             cache: 'no-cache',
-            mode: 'same-origin'
+            signal: this.abortController.signal
           });
 
-          clearTimeout(timeoutId);
+          const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-          if (response.ok) {
-            this.isOnline = true;
-            return true;
+          const latency = performance.now() - requestStart;
+
+          // Consider any non-network error as success for connectivity
+          success = true;
+          successfulEndpoint = endpoint;
+          this.lastSuccessfulEndpoint = endpoint;
+
+          // Update latency tracking
+          this.diagnostics.lastLatencies.push(latency);
+          if (this.diagnostics.lastLatencies.length > 10) {
+            this.diagnostics.lastLatencies.shift();
           }
-        } catch (endpointError) {
-          // Try next endpoint
-          continue;
-        }
-      }
+          this.diagnostics.averageLatency = this.diagnostics.lastLatencies.reduce((a, b) => a + b, 0) / this.diagnostics.lastLatencies.length;
 
-      // If all endpoints failed, try a simple request
-      try {
-        const response = await fetch('/', {
-          method: 'HEAD',
-          signal: controller.signal,
-          cache: 'no-cache'
-        });
-
-        clearTimeout(timeoutId);
-        this.isOnline = response.ok;
-        return this.isOnline;
-      } catch (fallbackError) {
-        this.isOnline = false;
-        return false;
-      }
-
-    } catch (error) {
-      logger.logWarn('Connection check failed', { error: error instanceof Error ? error.message : 'Unknown error' });
-      this.isOnline = false;
-      return false;
-    }
-  }
-
-  async processQueue(): Promise<void> {
-    if (!this.isOnline) {
-      throw new Error('No network connection available');
-    }
-
-    try {
-      await offlineQueue.flush(async (operation) => {
-        try {
-          const response = await fetch(operation.url, {
-            method: operation.type,
-            headers: {
-              'Content-Type': 'application/json',
-              ...operation.headers
-            },
-            body: operation.data ? JSON.stringify(operation.data) : undefined
-          });
-
-          return response.ok;
+          break;
         } catch (error) {
-          logger.logWarn('Queue operation failed', {
-            operation: operation.id,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-          return false;
+          lastError = error instanceof Error ? error.message : 'Unknown error';
+          this.diagnostics.failedEndpoints.set(endpoint, (this.diagnostics.failedEndpoints.get(endpoint) || 0) + 1);
+          // Continue to next endpoint
         }
-      });
+      }
+
+      if (success) {
+        this.diagnostics.successfulAttempts++;
+        this.debouncedUpdateStatus({
+          online: true,
+          consecutiveFailures: 0,
+          lastError: undefined
+        });
+      } else {
+        this.handleHeartbeatFailure(lastError);
+      }
     } catch (error) {
-      logger.logError('Queue processing failed', error);
-      throw error;
+      if (this.isDestroyed) return;
+
+      const errorMessage = error instanceof Error ? error.message : 'Network error';
+      this.handleHeartbeatFailure(errorMessage);
+    }
+
+    // Schedule next heartbeat
+    this.startHeartbeat();
+  }
+
+  private handleHeartbeatFailure(error: string): void {
+    const failures = (this.status.consecutiveFailures || 0) + 1;
+    const shouldMarkOffline = failures >= 2; // Mark offline after 2 consecutive failures
+
+    this.debouncedUpdateStatus({
+      online: shouldMarkOffline ? false : this.status.online,
+      consecutiveFailures: failures,
+      lastError: error
+    });
+  }
+
+  private debouncedUpdateStatus(updates: Partial<NetStatus>): void {
+    if (this.isDestroyed) return;
+
+    // Store the pending update - ensure consecutiveFailures is always defined
+    this.pendingStatusUpdate = {
+      online: this.status.online,
+      lastCheck: new Date(),
+      consecutiveFailures: this.status.consecutiveFailures || 0,
+      lastError: this.status.lastError,
+      ...updates
+    };
+
+    // Clear existing debounce timer
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    // Set up new debounce timer
+    this.debounceTimer = window.setTimeout(() => {
+      this.applyStatusUpdate();
+    }, this.config.debounceMs);
+  }
+
+  private applyStatusUpdate(): void {
+    if (this.isDestroyed || !this.pendingStatusUpdate) return;
+
+    const previousOnline = this.status.online;
+    this.status = { ...this.pendingStatusUpdate };
+    this.pendingStatusUpdate = undefined;
+
+    // Only notify listeners if online status actually changed
+    if (previousOnline !== this.status.online) {
+      this.notifyListeners();
     }
   }
 
-  async getQueueSize(): Promise<number> {
-    try {
-      return await offlineQueue.size();
-    } catch (error) {
-      logger.logWarn('Failed to get queue size', { error: error instanceof Error ? error.message : 'Unknown error' });
-      return 0;
-    }
+  private notifyListeners(): void {
+    this.listeners.forEach((listener) => {
+      try {
+        listener(this.status);
+      } catch (error) {
+        console.error('Error in connectivity listener:', error);
+      }
+    });
   }
 
-  startMonitoring(interval = 30000): void {
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-    }
-
-    this.checkInterval = setInterval(() => {
-      this.checkConnection().catch((error) => {
-        logger.logWarn('Connectivity monitoring error', { error: error instanceof Error ? error.message : 'Unknown error' });
-      });
-    }, interval);
+  public getStatus(): NetStatus {
+    // Ensure consecutiveFailures is always defined in returned status
+    return {
+      ...this.status,
+      consecutiveFailures: this.status.consecutiveFailures || 0
+    };
   }
 
-  stopMonitoring(): void {
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.checkInterval = null;
-    }
+  public addListener(listener: ConnectivityListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 
-  isConnected(): boolean {
-    return this.isOnline;
+  public async checkNow(): Promise<NetStatus> {
+    await this.performHeartbeat();
+    return this.getStatus();
+  }
+
+  public getDiagnostics() {
+    return {
+      connectivity: {
+        ...this.diagnostics,
+        lastSuccessfulEndpoint: this.lastSuccessfulEndpoint
+      }
+    };
+  }
+
+  public destroy(): void {
+    this.isDestroyed = true;
+    this.stop();
+    this.cleanup?.();
+    this.listeners.clear();
   }
 }
 
-export function createConnectivity(config?: Partial<ConnectivityConfig>): Connectivity {
-  return new Connectivity(config);
+// Utility function to check if an error indicates offline status
+export function isOfflineError(error: unknown): boolean {
+  if (error instanceof TypeError) {
+    // Network errors (DNS, connection refused, etc.)
+    return true;
+  }
+
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('connection') ||
+      message.includes('timeout') ||
+      message.includes('dns'));
+
+  }
+
+  // Check for specific HTTP status codes that indicate offline
+  if (typeof error === 'object' && error !== null) {
+    const status = (error as any).status || (error as any).statusCode;
+    return status === 408 || status === 429 || status >= 500 && status < 600;
+  }
+
+  return false;
 }
 
-// Backoff delay calculation utility function
-export default function calculateBackoffDelay(
+// Exponential backoff with full jitter
+export function calculateBackoffDelay(
 attempt: number,
-baseDelayMs: number = 300,
-maxDelayMs: number = 10000,
+baseDelay: number = 300,
+maxDelay: number = 10000,
 factor: number = 2)
 : number {
-  // Exponential backoff with full jitter
-  const exponentialDelay = Math.min(baseDelayMs * Math.pow(factor, attempt), maxDelayMs);
-  // Add full jitter (0 to exponentialDelay)
-  const jitter = Math.random() * exponentialDelay;
-  return Math.floor(jitter);
+  // Full jitter exponential backoff: delay = Math.min(maxDelay, base * 2^(attempt-1))
+  const exponentialDelay = baseDelay * Math.pow(factor, attempt - 1);
+  const cappedDelay = Math.min(exponentialDelay, maxDelay);
+
+  // Full jitter: random value between 0 and cappedDelay
+  return Math.floor(Math.random() * cappedDelay);
+}
+
+// Main factory function that returns the exact interface requested
+export function createConnectivity(config?: Partial<ConnectivityConfig>) {
+  const monitor = new ConnectivityMonitor(config);
+
+  return {
+    subscribe: (listener: ConnectivityListener) => monitor.addListener(listener),
+    get: () => monitor.getStatus(),
+    start: () => monitor.start(),
+    stop: () => monitor.stop(),
+    pingNow: () => monitor.checkNow(),
+    getDiagnostics: () => monitor.getDiagnostics()
+  };
 }

@@ -1,51 +1,73 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import SafeNetworkProvider from '@/components/network/SafeNetworkProvider';
+import { initConsoleDebugUtils } from '@/utils/consoleDebugUtils';
+import { setupPageLifecycle } from '@/lib/lifecycle';
 import './index.css';
+import './styles/accessibility.css';
 
-// Production-ready providers
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ProductionProvider } from '@/contexts/ProductionContext';
+// Initialize debug utilities and enhanced unload protection
+if (import.meta.env.DEV || process.env.NODE_ENV === 'development') {
+  initConsoleDebugUtils();
 
-// Import the simplified production App component
-import ProductionApp from './ProductionApp';
-
-// Environment detection
-const isProductionEnv = () => {
-  return import.meta.env.PROD || import.meta.env.MODE === 'production' ||
-  process.env.NODE_ENV === 'production';
-};
-
-// Create QueryClient with production-optimized settings
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 30 * 60 * 1000, // 30 minutes
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      refetchOnMount: true
-    },
-    mutations: {
-      retry: 2
+  // Enhanced unload protection - prevent deprecated unload listeners
+  const originalAddEventListener = window.addEventListener;
+  window.addEventListener = function (type: any, ...rest: any[]) {
+    if (type === 'unload') {
+      throw new Error('Do not use unload in main frame - use pagehide/visibilitychange instead');
     }
-  }
-});
+    // @ts-ignore
+    return originalAddEventListener.call(this, type, ...rest);
+  };
 
-// Start the application immediately
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+  // Initialize modern page lifecycle management
+  const lifecycleManager = setupPageLifecycle();
 
-root.render(
+  // Report any existing unload handlers
+  setTimeout(() => {
+    import('@/devtools/assertNoUnload').then(({ reportUnloadHandlers }) => {
+      reportUnloadHandlers();
+    }).catch(() => {
+      console.log('[Debug] Unload protection initialized');
+    });
+  }, 1000);
+
+  // Cleanup on page hide
+  window.addEventListener('pagehide', () => {
+    lifecycleManager.cleanup();
+  });
+}
+
+// Dev-only console command for contrast checking
+if (import.meta.env.DEV) {
+  (window as any).checkContrast = () => {
+    console.log('[A11y] Running contrast check...');
+
+    const checkElement = (el: Element) => {
+      const styles = getComputedStyle(el);
+      const bgColor = styles.backgroundColor;
+      const color = styles.color;
+      const fontSize = parseFloat(styles.fontSize);
+      const fontWeight = styles.fontWeight;
+
+      console.log(`Element: ${el.tagName}${el.className ? '.' + el.className.split(' ').join('.') : ''}`, {
+        background: bgColor,
+        color: color,
+        fontSize: `${fontSize}px`,
+        fontWeight: fontWeight
+      });
+    };
+
+    // Check all badge and text elements
+    document.querySelectorAll('[class*="badge"], [class*="text-"]').forEach(checkElement);
+  };
+}
+
+createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ProductionProvider>
-          <ProductionApp />
-        </ProductionProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <SafeNetworkProvider>
+      <App />
+    </SafeNetworkProvider>
   </React.StrictMode>
 );

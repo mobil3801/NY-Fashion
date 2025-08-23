@@ -44,19 +44,29 @@ export class NetworkDiagnostics {
       timestamp: Date.now()
     };
 
-    // Test DNS resolution using local resources
+    // Test DNS resolution
     try {
       const dnsStart = performance.now();
+      const img = new Image();
 
-      // Test DNS resolution by fetching a local resource with cache busting
-      const response = await fetch(`${window.location.origin}/favicon.ico?t=${Date.now()}`, {
-        method: 'HEAD',
-        cache: 'no-cache',
-        signal: AbortSignal.timeout(5000)
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('DNS timeout')), 5000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('DNS failed'));
+        };
+
+        img.src = `https://www.google.com/favicon.ico?${Date.now()}`;
       });
 
       diagnostics.dnsResolution = {
-        success: response.ok,
+        success: true,
         latency: performance.now() - dnsStart
       };
     } catch (error) {

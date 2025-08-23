@@ -32,7 +32,7 @@ async function uploadProductImages(productId, files) {
     const existingImagesQuery = `
       SELECT COUNT(*) as count FROM product_images WHERE product_id = $1
     `;
-    const existingResult = await window.ezsite.db.query(existingImagesQuery, [parseInt(productId)]);
+    const existingResult = window.ezsite.db.query(existingImagesQuery, [parseInt(productId)]);
     const currentCount = existingResult[0]?.count || 0;
 
     if (currentCount + filesToProcess.length > 10) {
@@ -44,8 +44,8 @@ async function uploadProductImages(productId, files) {
       const fileData = filesToProcess[i];
       const file = fileData.file || fileData;
 
-      // Upload file to EasySite storage
-      const uploadResult = await window.ezsite.apis.upload({
+      // Upload file to storage
+      const uploadResult = window.ezsite.apis.upload({
         filename: file.name,
         file: file
       });
@@ -55,7 +55,7 @@ async function uploadProductImages(productId, files) {
       }
 
       // Get the uploaded file URL
-      const urlResult = await window.ezsite.apis.getUploadUrl(uploadResult.data);
+      const urlResult = window.ezsite.apis.getUploadUrl(uploadResult.data);
       if (urlResult.error) {
         throw new Error(`Failed to get URL for ${file.name}: ${urlResult.error}`);
       }
@@ -66,20 +66,19 @@ async function uploadProductImages(productId, files) {
       // Save image record to database
       const insertQuery = `
         INSERT INTO product_images (
-          product_id, image_url, alt_text, sort_order, file_size, mime_type, file_id, uploaded_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-        RETURNING id, image_url, alt_text, sort_order, file_size, mime_type, file_id, uploaded_at
+          product_id, image_url, alt_text, sort_order, file_size, mime_type, uploaded_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+        RETURNING id, image_url, alt_text, sort_order, file_size, mime_type, uploaded_at
       `;
 
-      const insertResult = await window.ezsite.db.query(insertQuery, [
+      const insertResult = window.ezsite.db.query(insertQuery, [
       parseInt(productId),
       urlResult.data,
       fileData.altText || `Product image ${sortOrder + 1}`,
       sortOrder,
       file.size,
-      file.type,
-      uploadResult.data // Store file ID for cleanup purposes
-      ]);
+      file.type]
+      );
 
       if (!insertResult || insertResult.length === 0) {
         throw new Error(`Failed to save image record for ${file.name}`);

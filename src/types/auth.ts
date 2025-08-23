@@ -9,7 +9,7 @@ export interface User {
   employeeId?: string;
 }
 
-export type UserRole = 'admin' | 'manager' | 'employee';
+export type UserRole = 'Employee' | 'Manager' | 'Admin';
 
 export interface AuthState {
   user: User | null;

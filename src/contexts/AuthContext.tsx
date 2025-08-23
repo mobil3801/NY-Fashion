@@ -1,27 +1,143 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, LoginCredentials, RegisterCredentials } from '@/types/auth';
-import { useToast } from '@/hooks/use-toast';
-import { hasPermission } from '@/auth/permissions';
-import productionApi from '@/services/api';
-import { logger } from '@/utils/production-logger';
-import { PRODUCTION_CONFIG } from '@/config/production';
-import { useLoadingState } from '@/hooks/use-loading-state';
-import { validateLogin, validateRegister } from '@/utils/validation-schemas';
 
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, AuthState, LoginCredentials, RegisterCredentials } from '@/types/auth';
+import { useToast } from '@/hooks/use-toast';
+
+interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  hasPermission: (resource: string, action?: string) => boolean;
-  refreshUser: () => Promise<void>;
-  loginAttempts: number;
-  isLocked: boolean;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children }) => {
+  // Test user for layout testing - REMOVE IN PRODUCTION
+  const testUser = {
+    id: '1',
+    email: 'admin@nyfashion.com',
+    name: 'Admin User',
+    role: 'Admin' as const,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+  };
+
+  const [authState, setAuthState] = useState<AuthState>({
+    user: testUser,
+    isLoading: true,
+    isAuthenticated: true
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Check for existing session
+    const savedUser = localStorage.getItem('nyf_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        setAuthState({
+          user,
+          isLoading: false,
+          isAuthenticated: true
+        });
+      } catch (error) {
+        localStorage.removeItem('nyf_user');
+        setAuthState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } else {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, []);
+
+  const login = async (credentials: LoginCredentials) => {
+    try {
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+      // Mock authentication - In real app, call your API
+      const mockUser: User = {
+        id: '1',
+        email: credentials.email,
+        name: credentials.email === 'admin@nyfashion.com' ? 'Admin User' : 'Demo User',
+        role: credentials.email === 'admin@nyfashion.com' ? 'Admin' :
+        credentials.email.includes('manager') ? 'Manager' : 'Employee',
+        avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
+      };
+
+      localStorage.setItem('nyf_user', JSON.stringify(mockUser));
+      setAuthState({
+        user: mockUser,
+        isLoading: false,
+        isAuthenticated: true
+      });
+
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${mockUser.name}!`
+      });
+    } catch (error) {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const register = async (credentials: RegisterCredentials) => {
+    try {
+      setAuthState((prev) => ({ ...prev, isLoading: true }));
+
+      // Mock registration
+      const newUser: User = {
+        id: Date.now().toString(),
+        email: credentials.email,
+        name: credentials.name,
+        role: credentials.role || 'Employee',
+        avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
+      };
+
+      localStorage.setItem('nyf_user', JSON.stringify(newUser));
+      setAuthState({
+        user: newUser,
+        isLoading: false,
+        isAuthenticated: true
+      });
+
+      toast({
+        title: "Registration Successful",
+        description: `Welcome to NY FASHION, ${newUser.name}!`
+      });
+    } catch (error) {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      toast({
+        title: "Registration Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('nyf_user');
+    setAuthState({
+      user: null,
+      isLoading: false,
+      isAuthenticated: false
+    });
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out."
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ ...authState, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>);
+
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -29,299 +145,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loginAttempts, setLoginAttempts] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
-  const [lockoutTimer, setLockoutTimer] = useState<NodeJS.Timeout | null>(null);
-
-  const { toast } = useToast();
-  const { isLoading, withLoading } = useLoadingState();
-
-  const isAuthenticated = !!user;
-
-  // Initialize auth state
-  useEffect(() => {
-    initializeAuth();
-  }, []);
-
-  // Load lockout state from localStorage
-  useEffect(() => {
-    const lockoutEnd = localStorage.getItem('auth_lockout_end');
-    if (lockoutEnd) {
-      const lockoutEndTime = parseInt(lockoutEnd);
-      if (Date.now() < lockoutEndTime) {
-        setIsLocked(true);
-        const remainingTime = lockoutEndTime - Date.now();
-        const timer = setTimeout(() => {
-          setIsLocked(false);
-          setLoginAttempts(0);
-          localStorage.removeItem('auth_lockout_end');
-        }, remainingTime);
-        setLockoutTimer(timer);
-      } else {
-        localStorage.removeItem('auth_lockout_end');
-      }
-    }
-  }, []);
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (lockoutTimer) {
-        clearTimeout(lockoutTimer);
-      }
-    };
-  }, [lockoutTimer]);
-
-  const initializeAuth = async () => {
-    try {
-      logger.logInfo('Initializing auth state');
-      const result = await productionApi.getUserInfo();
-
-      if (result.data && !result.error) {
-        const userData: User = {
-          id: result.data.ID,
-          name: result.data.Name || result.data.Email,
-          email: result.data.Email,
-          role: result.data.Roles || 'GeneralUser',
-          createdAt: result.data.CreateTime
-        };
-
-        setUser(userData);
-        logger.setUserId(userData.id.toString());
-        logger.logUserAction('user_session_restored', { userId: userData.id });
-      }
-    } catch (error) {
-      // User not logged in - this is expected for non-authenticated users
-      logger.logDebug('Auth initialization - user not authenticated');
-    }
-  };
-
-  const login = async (credentials: LoginCredentials) => {
-    if (isLocked) {
-      const lockoutEnd = localStorage.getItem('auth_lockout_end');
-      const remainingTime = lockoutEnd ? Math.ceil((parseInt(lockoutEnd) - Date.now()) / 60000) : 0;
-      throw new Error(`Account locked due to multiple failed login attempts. Try again in ${remainingTime} minutes.`);
-    }
-
-    // Validate credentials
-    const validation = validateLogin(credentials);
-    if (!validation.success) {
-      throw new Error(validation.error);
-    }
-
-    await withLoading(async () => {
-      try {
-        logger.logSecurityEvent('login_attempt', { email: credentials.email });
-
-        const result = await productionApi.login(credentials);
-
-        if (result.error) {
-          handleFailedLogin();
-          throw new Error(result.error);
-        }
-
-        // Get user info after successful login
-        const userResult = await productionApi.getUserInfo();
-
-        if (userResult.error || !userResult.data) {
-          throw new Error('Failed to get user information after login');
-        }
-
-        const userData: User = {
-          id: userResult.data.ID,
-          name: userResult.data.Name || userResult.data.Email,
-          email: userResult.data.Email,
-          role: userResult.data.Roles || 'GeneralUser',
-          createdAt: userResult.data.CreateTime
-        };
-
-        setUser(userData);
-        setLoginAttempts(0);
-        logger.setUserId(userData.id.toString());
-        logger.logSecurityEvent('login_success', {
-          userId: userData.id,
-          email: userData.email,
-          role: userData.role
-        });
-
-        toast({
-          title: 'Welcome back!',
-          description: `Logged in as ${userData.name || userData.email}`,
-          variant: 'default'
-        });
-
-      } catch (error) {
-        handleFailedLogin();
-        logger.logSecurityEvent('login_failed', {
-          email: credentials.email,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          attempts: loginAttempts + 1
-        });
-        throw error;
-      }
-    });
-  };
-
-  const register = async (credentials: RegisterCredentials) => {
-    // Validate credentials
-    const validation = validateRegister(credentials);
-    if (!validation.success) {
-      throw new Error(validation.error);
-    }
-
-    await withLoading(async () => {
-      try {
-        logger.logSecurityEvent('registration_attempt', { email: credentials.email });
-
-        const result = await productionApi.register(credentials);
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        logger.logSecurityEvent('registration_success', { email: credentials.email });
-
-        toast({
-          title: 'Registration Successful',
-          description: 'Please check your email to verify your account, then log in.',
-          variant: 'default'
-        });
-
-      } catch (error) {
-        logger.logSecurityEvent('registration_failed', {
-          email: credentials.email,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-        throw error;
-      }
-    });
-  };
-
-  const logout = async () => {
-    await withLoading(async () => {
-      try {
-        const currentUserId = user?.id;
-
-        await productionApi.logout();
-
-        setUser(null);
-        logger.logSecurityEvent('logout_success', { userId: currentUserId });
-
-        toast({
-          title: 'Logged out',
-          description: 'You have been successfully logged out.',
-          variant: 'default'
-        });
-
-      } catch (error) {
-        // Even if logout fails on server, clear local state
-        setUser(null);
-        logger.logError('Logout failed', error);
-
-        toast({
-          title: 'Logged out',
-          description: 'You have been logged out locally.',
-          variant: 'default'
-        });
-      }
-    });
-  };
-
-  const refreshUser = async () => {
-    await withLoading(async () => {
-      try {
-        const result = await productionApi.getUserInfo();
-
-        if (result.error || !result.data) {
-          // User session expired
-          setUser(null);
-          return;
-        }
-
-        const userData: User = {
-          id: result.data.ID,
-          name: result.data.Name || result.data.Email,
-          email: result.data.Email,
-          role: result.data.Roles || 'GeneralUser',
-          createdAt: result.data.CreateTime
-        };
-
-        setUser(userData);
-        logger.logUserAction('user_data_refreshed', { userId: userData.id });
-
-      } catch (error) {
-        logger.logError('Failed to refresh user data', error);
-        setUser(null);
-      }
-    });
-  };
-
-  const handleFailedLogin = () => {
-    const newAttempts = loginAttempts + 1;
-    setLoginAttempts(newAttempts);
-
-    if (newAttempts >= PRODUCTION_CONFIG.security.maxLoginAttempts) {
-      setIsLocked(true);
-      const lockoutEnd = Date.now() + PRODUCTION_CONFIG.security.lockoutDuration;
-      localStorage.setItem('auth_lockout_end', lockoutEnd.toString());
-
-      const timer = setTimeout(() => {
-        setIsLocked(false);
-        setLoginAttempts(0);
-        localStorage.removeItem('auth_lockout_end');
-      }, PRODUCTION_CONFIG.security.lockoutDuration);
-
-      setLockoutTimer(timer);
-
-      logger.logSecurityEvent('account_locked', {
-        attempts: newAttempts,
-        lockoutDuration: PRODUCTION_CONFIG.security.lockoutDuration
-      });
-
-      toast({
-        title: 'Account Locked',
-        description: `Too many failed login attempts. Account locked for ${Math.ceil(PRODUCTION_CONFIG.security.lockoutDuration / 60000)} minutes.`,
-        variant: 'destructive'
-      });
-    } else {
-      const remainingAttempts = PRODUCTION_CONFIG.security.maxLoginAttempts - newAttempts;
-      toast({
-        title: 'Login Failed',
-        description: `Invalid credentials. ${remainingAttempts} attempts remaining before account lockout.`,
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const checkPermission = (resource: string, action?: string) => {
-    if (!user) return false;
-    return hasPermission(user.role, resource, action);
-  };
-
-  const contextValue: AuthContextType = {
-    user,
-    isLoading,
-    isAuthenticated,
-    login,
-    register,
-    logout,
-    hasPermission: checkPermission,
-    refreshUser,
-    loginAttempts,
-    isLocked
-  };
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>);
-
 };

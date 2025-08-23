@@ -1,5 +1,5 @@
 
-import calculateBackoffDelay from './connectivity';
+import { isOfflineError, calculateBackoffDelay } from './connectivity';
 import { OfflineQueue, QueuedOperation } from '@/lib/offlineQueue';
 import { normalizeError, ApiError } from '@/lib/errors';
 

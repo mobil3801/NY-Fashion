@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { usePOS } from '@/contexts/POSContext';
@@ -185,9 +185,6 @@ const ShoppingCart: React.FC = () => {
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Line Discount</DialogTitle>
-                        <DialogDescription>
-                          Apply a discount to this specific item. Large discounts may require manager approval.
-                        </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
                         <div>
@@ -298,9 +295,6 @@ const ShoppingCart: React.FC = () => {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Order Discount</DialogTitle>
-                <DialogDescription>
-                  Apply a discount to the entire order. Large discounts may require manager approval.
-                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>

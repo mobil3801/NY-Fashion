@@ -1,9 +1,7 @@
-import React, { Component, ReactNode, useState } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { AlertTriangle, RefreshCw, Shield, Wifi, WifiOff } from 'lucide-react';
-import ConnectionVerificationPanel from './ConnectionVerificationPanel';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -137,13 +135,34 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
                   </p>
                 </div>
 
-                <ErrorActionButtons
-                  onRetry={this.handleRetry}
-                  onReload={this.handleReload}
-                  isRetrying={this.state.isRetrying}
-                  retriesLeft={this.maxRetries - this.retryCount}
-                  error={this.state.error} />
+                <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                  <Button
+                    onClick={this.handleRetry}
+                    disabled={this.state.isRetrying}
+                    className="flex-1"
+                    variant="default">
 
+                    {this.state.isRetrying ?
+                    <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Retrying...
+                      </> :
+
+                    <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Try again ({this.maxRetries - this.retryCount} left)
+                      </>
+                    }
+                  </Button>
+                  
+                  <Button
+                    onClick={this.handleReload}
+                    variant="outline"
+                    className="flex-1">
+
+                    Reload page
+                  </Button>
+                </div>
 
                 {process.env.NODE_ENV === 'development' && this.state.errorInfo &&
                 <details className="mt-4 text-left">
@@ -165,135 +184,6 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
-}
-
-// Error Action Buttons Component
-interface ErrorActionButtonsProps {
-  onRetry: () => void;
-  onReload: () => void;
-  isRetrying: boolean;
-  retriesLeft: number;
-  error: Error | null;
-}
-
-function ErrorActionButtons({ onRetry, onReload, isRetrying, retriesLeft, error }: ErrorActionButtonsProps) {
-  const [verificationOpen, setVerificationOpen] = useState(false);
-
-  // Check if this looks like a connection/certificate error
-  const isConnectionError = error && (
-  error.message.toLowerCase().includes('certificate') ||
-  error.message.toLowerCase().includes('ssl') ||
-  error.message.toLowerCase().includes('tls') ||
-  error.message.toLowerCase().includes('connection') ||
-  error.message.toLowerCase().includes('network') ||
-  error.message.toLowerCase().includes('fetch'));
-
-
-  return (
-    <div className="flex flex-col gap-2 pt-4">
-      {/* Primary action buttons */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Button
-          onClick={onRetry}
-          disabled={isRetrying}
-          className="flex-1"
-          variant="default">
-
-          {isRetrying ?
-          <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Retrying...
-            </> :
-
-          <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Try again ({retriesLeft} left)
-            </>
-          }
-        </Button>
-        
-        <Button
-          onClick={onReload}
-          variant="outline"
-          className="flex-1">
-
-          Reload page
-        </Button>
-      </div>
-
-      {/* Connection verification button (shown for connection-related errors) */}
-      {isConnectionError &&
-      <div className="mt-2">
-          <Dialog open={verificationOpen} onOpenChange={setVerificationOpen}>
-            <Button
-            variant="ghost"
-            size="sm"
-            className="w-full flex items-center gap-2 text-blue-600 hover:text-blue-700"
-            onClick={() => setVerificationOpen(true)}>
-
-              <Shield className="h-4 w-4" />
-              Check Connection Security (Recommended)
-            </Button>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
-              <ConnectionVerificationPanel onClose={() => setVerificationOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      }
-
-      {/* Additional network troubleshooting options */}
-      <div className="mt-2 flex flex-col sm:flex-row gap-2 text-xs">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex-1"
-          onClick={() => {
-            // Clear all caches and service workers
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then((registrations) => {
-                registrations.forEach((registration) => registration.unregister());
-              });
-            }
-
-            // Clear browser cache (where possible)
-            if ('caches' in window) {
-              caches.keys().then((names) => {
-                names.forEach((name) => caches.delete(name));
-              });
-            }
-
-            // Force reload
-            window.location.reload();
-          }}>
-
-          <WifiOff className="h-3 w-3 mr-1" />
-          Clear Cache & Reload
-        </Button>
-
-        {navigator.onLine ?
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex-1 text-green-600"
-          disabled>
-
-            <Wifi className="h-3 w-3 mr-1" />
-            Online
-          </Button> :
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex-1 text-red-600"
-          disabled>
-
-            <WifiOff className="h-3 w-3 mr-1" />
-            Offline
-          </Button>
-        }
-      </div>
-    </div>);
-
 }
 
 export default EnhancedNetworkErrorBoundary;

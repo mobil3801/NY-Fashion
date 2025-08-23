@@ -11,13 +11,11 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FormField } from '@/components/ui/form-field';
 import { useInventory } from '@/contexts/InventoryContext';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import ImageUploadProgress from './ImageUploadProgress';
 import ImageGallery from './ImageGallery';
-import EnhancedFileUpload from '@/components/common/EnhancedFileUpload';
 
 interface ProductImage {
   id: number;
@@ -106,16 +104,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
       });
 
       if (error) {
-        throw new Error(error);
+        console.error('Error loading product images:', error);
+        return;
       }
 
       setProductImages(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load product images",
-        variant: "destructive"
-      });
+    } catch (error) {
+      console.error('Error loading product images:', error);
     }
   };
 
@@ -169,7 +164,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
     return interval;
   };
 
-  const onDrop = React.useCallback(async (uploadedFiles: any[]) => {
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
     if (!product?.id && !product) {
       toast({
         title: "Error",
@@ -179,41 +174,98 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
       return;
     }
 
+    const { valid, invalid } = validateFiles(acceptedFiles);
+
+    // Show validation errors
+    invalid.forEach(({ file, error }) => {
+      toast({
+        title: "Upload Error",
+        description: `${file.name}: ${error}`,
+        variant: "destructive"
+      });
+    });
+
+    if (valid.length === 0) return;
+
+    setIsUploading(true);
+
+    // Initialize progress tracking
+    const progressItems: UploadProgressItem[] = valid.map((file) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      fileName: file.name,
+      progress: 0,
+      status: 'uploading' as const
+    }));
+
+    setUploadProgress(progressItems);
+
+    // Start progress simulation for each file
+    const intervals = progressItems.map((item) => simulateProgress(item.id));
+
     try {
       const productId = product?.id || (await saveCurrentProduct());
       if (!productId) {
         throw new Error('Failed to get product ID');
       }
 
+      // Upload files
       const { data, error } = await window.ezsite.apis.run({
         path: 'uploadProductImages',
-        param: [productId, uploadedFiles.map((file) => ({
-          file: file.originalName,
-          fileId: file.fileId,
-          url: file.url,
-          size: file.size,
-          type: file.type,
-          altText: `${product?.name || 'Product'} image`
-        }))]
+        param: [productId, valid.map((file) => ({ file, altText: `${product?.name || 'Product'} image` }))]
       });
 
+      // Clear progress intervals
+      intervals.forEach(clearInterval);
+
       if (error) {
+        // Mark all as error
+        setUploadProgress((prev) =>
+        prev.map((item) => ({
+          ...item,
+          status: 'error' as const,
+          error: error,
+          progress: 0
+        }))
+        );
         throw new Error(error);
       }
 
-      // Refresh product images
+      // Mark all as completed
+      setUploadProgress((prev) =>
+      prev.map((item) => ({
+        ...item,
+        status: 'completed' as const,
+        progress: 100
+      }))
+      );
+
+      // Reload images
       await loadProductImages(productId);
 
       toast({
         title: "Success",
-        description: data.message || `Successfully processed ${uploadedFiles.length} image(s)`
+        description: `Successfully uploaded ${valid.length} image(s)`
       });
+
     } catch (error) {
+      // Clear progress intervals on error
+      intervals.forEach(clearInterval);
+
+      setUploadProgress((prev) =>
+      prev.map((item) => ({
+        ...item,
+        status: 'error' as const,
+        error: error.message || 'Upload failed'
+      }))
+      );
+
       toast({
-        title: "Error",
-        description: error.message || "Failed to process uploaded images",
+        title: "Upload Error",
+        description: error.message || 'Failed to upload images',
         variant: "destructive"
       });
+    } finally {
+      setIsUploading(false);
     }
   }, [product, productImages.length]);
 
@@ -236,28 +288,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
 
   const handleDeleteImage = async (imageId: number) => {
     try {
-      const result = await window.ezsite.apis.run({
+      const { data, error } = await window.ezsite.apis.run({
         path: 'deleteProductImage',
         param: [imageId]
       });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (error) {
+        throw new Error(error);
       }
 
-      // Refresh product images
-      await loadProductImages();
+      // Reload images to reflect changes
+      if (product?.id) {
+        await loadProductImages(product.id);
+      }
 
-      toast({
-        title: "Success",
-        description: result.data.message
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete image",
-        variant: "destructive"
-      });
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete image');
     }
   };
 
@@ -284,16 +330,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
       // Update local state
       setProductImages(newOrder);
 
-      toast({
-        title: "Success",
-        description: data.message || "Image order updated successfully"
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reorder images",
-        variant: "destructive"
-      });
+    } catch (error) {
+      throw new Error(error.message || 'Failed to reorder images');
     }
   };
 
@@ -347,43 +385,36 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
 
         <TabsContent value="basic" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Product Name"
-              error={errors.name?.message}
-              required
-              description="Enter the product name as it will appear to customers">
-
+            <div className="space-y-2">
+              <Label htmlFor="name">Product Name *</Label>
               <Input
+                id="name"
                 {...register('name', { required: 'Product name is required' })}
-                placeholder="e.g., Cotton Saree"
-                className="focus-visible-aa" />
+                placeholder="e.g., Cotton Saree" />
 
-            </FormField>
+              {errors.name &&
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+              }
+            </div>
 
             {/* Bengali name field removed - English only */}
           </div>
 
-          <FormField
-            label="Description"
-            description="Provide a detailed description of the product for customers">
-
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
             <Textarea
+              id="description"
               {...register('description')}
               placeholder="Detailed product description..."
-              rows={3}
-              className="focus-visible-aa" />
+              rows={3} />
 
-          </FormField>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Category"
-              error={errors.category_id?.message}
-              required
-              description="Choose the appropriate product category">
-
+            <div className="space-y-2">
+              <Label htmlFor="category_id">Category *</Label>
               <Select onValueChange={(value) => setValue('category_id', parseInt(value))}>
-                <SelectTrigger className="focus-visible-aa">
+                <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -415,18 +446,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
                   )}
                 </SelectContent>
               </Select>
-            </FormField>
+            </div>
 
-            <FormField
-              label="Brand"
-              description="Enter the brand name (optional)">
-
+            <div className="space-y-2">
+              <Label htmlFor="brand">Brand</Label>
               <Input
+                id="brand"
                 {...register('brand')}
-                placeholder="Brand name"
-                className="focus-visible-aa" />
+                placeholder="Brand name" />
 
-            </FormField>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
@@ -741,56 +770,76 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Enhanced Image Upload */}
-            {product?.id ?
-            <EnhancedFileUpload
-              onUploadComplete={handleImageUpload}
-              uploadType="product_image"
-              entityId={product.id}
-              maxFiles={10}
-              maxSize={5 * 1024 * 1024}
-              title="Upload Product Images"
-              description="Drag & drop product images here, or click to select (PNG, JPG, WebP up to 5MB each)" /> :
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Product Images</h3>
+              <p className="text-sm text-muted-foreground">
+                Upload high-quality images of your product. First image will be used as primary.
+                {!product?.id &&
+                <span className="block text-orange-600 mt-1 font-medium">
+                    Note: Save the product first before uploading images.
+                  </span>
+                }
+              </p>
+            </div>
+
+            {/* Upload Progress */}
+            <ImageUploadProgress
+              uploads={uploadProgress}
+              onClose={() => setUploadProgress([])} />
+
+
+            {/* Upload Zone */}
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+              isDragActive ?
+              'border-primary bg-primary/10' :
+              'border-muted-foreground/25 hover:border-primary/50'} ${
+
+              isUploading || !product?.id && !product ?
+              'opacity-50 pointer-events-none' :
+              ''}`
+              }>
 
 
 
+              <input {...getInputProps()} />
+              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              
+              {isDragActive ?
+              <p>Drop the images here ...</p> :
 
-            <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Upload className="h-5 w-5" />
-                    Upload Images
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8 text-gray-500">
-                    <Upload className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Save the product first to upload images</p>
-                  </div>
-                </CardContent>
-              </Card>
-            }
+              <div>
+                  <p className="text-lg mb-2">
+                    {isUploading ? 'Uploading...' : 'Drag & drop images here, or click to select'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Supports: JPG, PNG, WebP (Max 5MB each, 10 images total)
+                  </p>
+                  {productImages.length > 0 &&
+                <p className="text-xs text-muted-foreground mt-2">
+                      Current: {productImages.length}/10 images
+                    </p>
+                }
+                </div>
+              }
+            </div>
 
             {/* Image Gallery */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Eye className="h-5 w-5" />
-                  Product Images ({productImages.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            {productImages.length > 0 &&
+            <div>
+                <h4 className="text-md font-medium mb-3">
+                  Uploaded Images ({productImages.length})
+                </h4>
                 <ImageGallery
-                  images={productImages}
-                  onDeleteImage={handleDeleteImage}
-                  onReorderImages={handleReorderImages}
-                  productId={product?.id} />
+                images={productImages}
+                onDeleteImage={handleDeleteImage}
+                onReorderImages={handleReorderImages}
+                productId={product?.id} />
 
-
-
-              </CardContent>
-            </Card>
+              </div>
+            }
           </div>
         </TabsContent>
       </Tabs>
