@@ -56,8 +56,8 @@ const MainLayout: React.FC = () => {
   const MOBILE_HEADER_HEIGHT = 64; // 16 * 4 = 64px
   const DESKTOP_HEADER_HEIGHT = 80; // 20 * 4 = 80px
 
-  // Calculate top spacing for main content
-  const mainContentTopSpacing = isDesktop ? DESKTOP_HEADER_HEIGHT + 24 : MOBILE_HEADER_HEIGHT + 16;
+  // Calculate top spacing for main content - reduced padding
+  const mainContentTopSpacing = isDesktop ? DESKTOP_HEADER_HEIGHT + 8 : MOBILE_HEADER_HEIGHT + 4;
 
   return (
     <div className="min-h-screen bg-gray-50">
