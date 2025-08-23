@@ -11,8 +11,8 @@ import {
   Wallet,
   Shield,
   Settings,
-  X,
-} from 'lucide-react';
+  X } from
+'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,20 +34,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
   const firstFocusableElementRef = useRef<HTMLButtonElement>(null);
 
   const menuItems = [
-    { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
-    { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
-    { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
-    { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
-    { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
-    { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
-    { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
-    { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
-    { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
-    { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }
-  ];
+  { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard', resource: 'dashboard' },
+  { icon: ShoppingBag, label: t('sales'), path: '/sales', resource: 'sales' },
+  { icon: FileText, label: t('invoices'), path: '/invoices', resource: 'invoices' },
+  { icon: ShoppingCart, label: t('purchases'), path: '/purchases', resource: 'purchases' },
+  { icon: Package, label: t('inventory'), path: '/inventory', resource: 'inventory' },
+  { icon: Users, label: t('employees'), path: '/employees', resource: 'employees' },
+  { icon: Wallet, label: t('salary'), path: '/salary', resource: 'salary' },
+  { icon: Shield, label: t('admin'), path: '/admin', resource: 'admin' },
+  { icon: Settings, label: t('settings'), path: '/settings', resource: 'settings' },
+  { icon: ShoppingCart, label: 'Point of Sale', path: '/pos', permission: 'access_pos' as const }];
+
 
   const availableMenuItems = menuItems.filter((item) =>
-    user && canAccess(user.role, item.resource)
+  user && canAccess(user.role, item.resource)
   );
 
   // Handle keyboard navigation and focus management
@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
       document.addEventListener('keydown', handleFocusTrap);
-      
+
       // Focus first element when sidebar opens
       setTimeout(() => {
         firstFocusableElementRef.current?.focus();
@@ -125,8 +125,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
       )}
       aria-label="Main navigation"
       role="navigation"
-      aria-hidden={!shouldShowSidebar}
-    >
+      aria-hidden={!shouldShowSidebar}>
+
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white sticky top-0 z-10">
         <div className="flex items-center space-x-3">
@@ -138,43 +138,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
             <p className="text-xs text-gray-500">Management System</p>
           </div>
         </div>
-        {!isDesktop && (
-          <Button
-            ref={firstFocusableElementRef}
-            variant="ghost"
-            size="sm"
-            onClick={onToggle}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible"
-            aria-label="Close navigation menu"
-          >
+        {!isDesktop &&
+        <Button
+          ref={firstFocusableElementRef}
+          variant="ghost"
+          size="sm"
+          onClick={onToggle}
+          className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible"
+          aria-label="Close navigation menu">
+
             <X className="w-5 h-5" />
           </Button>
-        )}
+        }
       </div>
 
       {/* Navigation Menu */}
       <nav className="px-4 py-6 space-y-2" role="list">
-        {availableMenuItems.map((item, index) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus-visible",
-                isActive && "bg-emerald-100 text-emerald-700 font-medium shadow-sm border border-emerald-200"
-              )
-            }
-            onClick={handleNavClick}
-            role="listitem"
-            tabIndex={isOpen ? 0 : -1}
-          >
-            <item.icon 
-              className="w-5 h-5 transition-transform duration-200 group-hover:scale-105 flex-shrink-0" 
-              aria-hidden="true" 
-            />
+        {availableMenuItems.map((item, index) =>
+        <NavLink
+          key={item.path}
+          to={item.path}
+          className={({ isActive }) =>
+          cn(
+            "flex items-center space-x-3 px-4 py-3 rounded-2xl text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus-visible",
+            isActive && "bg-emerald-100 text-emerald-700 font-medium shadow-sm border border-emerald-200"
+          )
+          }
+          onClick={handleNavClick}
+          role="listitem"
+          tabIndex={isOpen ? 0 : -1}>
+
+            <item.icon
+            className="w-5 h-5 transition-transform duration-200 group-hover:scale-105 flex-shrink-0"
+            aria-hidden="true" />
+
             <span className="truncate">{item.label}</span>
           </NavLink>
-        ))}
+        )}
       </nav>
 
       {/* User Info Card */}
@@ -198,8 +198,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onClose }) => {
           </div>
         </div>
       </div>
-    </aside>
-  );
+    </aside>);
+
 };
 
 export default Sidebar;

@@ -27,7 +27,7 @@ const MainLayout: React.FC = () => {
   }, [isDesktop, isSidebarOpen]);
 
   const toggleSidebar = useCallback(() => {
-    setIsSidebarOpen(prev => !prev);
+    setIsSidebarOpen((prev) => !prev);
   }, []);
 
   const closeSidebar = useCallback(() => {
@@ -36,16 +36,16 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 layout-transition">
-      <Sidebar 
-        isOpen={isSidebarOpen} 
+      <Sidebar
+        isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
-        onClose={closeSidebar}
-      />
+        onClose={closeSidebar} />
+
       
       <div className={`min-h-screen flex flex-col layout-transition ${isDesktop ? 'lg:ml-64' : ''}`}>
         {/* Mobile/Tablet Header Bar */}
-        {(isMobile || isTablet) && (
-          <div className="flex items-center justify-between sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 shadow-sm">
+        {(isMobile || isTablet) &&
+        <div className="flex items-center justify-between sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 shadow-sm">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-sm">
                 <span className="text-white font-bold text-sm">NY</span>
@@ -56,29 +56,29 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible"
-              aria-label="Toggle navigation menu"
-              aria-expanded={isSidebarOpen}
-              aria-controls="sidebar-navigation"
-            >
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 focus:ring-2 focus:ring-emerald-500 focus-visible"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isSidebarOpen}
+            aria-controls="sidebar-navigation">
+
               <Menu className="w-5 h-5" />
             </Button>
           </div>
-        )}
+        }
 
         {/* Desktop Header */}
         {isDesktop && <Header />}
 
         {/* Main Content Area */}
-        <main 
+        <main
           className="flex-1 responsive-padding main-content overflow-x-hidden"
           role="main"
           aria-label="Main content"
-          style={{ minHeight: `calc(100vh - ${isDesktop ? '80px' : '64px'})` }}
-        >
+          style={{ minHeight: `calc(100vh - ${isDesktop ? '80px' : '64px'})` }}>
+
           <div className="max-w-none mx-auto animate-fade-in">
             <Outlet />
           </div>
@@ -86,15 +86,15 @@ const MainLayout: React.FC = () => {
       </div>
 
       {/* Overlay for mobile sidebar */}
-      {(isMobile || isTablet) && isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-          onClick={closeSidebar}
-          aria-hidden="true"
-        />
-      )}
-    </div>
-  );
+      {(isMobile || isTablet) && isSidebarOpen &&
+      <div
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
+        onClick={closeSidebar}
+        aria-hidden="true" />
+
+      }
+    </div>);
+
 };
 
 export default MainLayout;

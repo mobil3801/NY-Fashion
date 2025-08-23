@@ -17,7 +17,7 @@ import {
 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart as RechartsPieChart, Cell, BarChart, Bar, DonutChart } from
+  PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar } from
 'recharts';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
@@ -106,6 +106,7 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const [dateRange, setDateRange] = useState('today');
   const [customDateRange, setCustomDateRange] = useState<{
     from: Date | undefined;
@@ -115,6 +116,7 @@ const DashboardPage: React.FC = () => {
     to: undefined
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
   const getDateRangeParams = () => {
     const now = new Date();
@@ -148,7 +150,7 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (attempt = 0) => {
     try {
       setLoading(true);
       const dateParams = getDateRangeParams();
@@ -163,31 +165,56 @@ const DashboardPage: React.FC = () => {
       }
 
       setAnalyticsData(data);
+      setRetryCount(0); // Reset retry count on success
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard analytics",
-        variant: "destructive"
-      });
+
+      // Implement exponential backoff retry logic
+      if (attempt < 3) {
+        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s delays
+        setTimeout(() => {
+          setRetryCount(attempt + 1);
+          fetchAnalytics(attempt + 1);
+        }, delay);
+
+        toast({
+          title: "Retrying...",
+          description: `Failed to load dashboard analytics. Retrying in ${delay / 1000}s (${attempt + 1}/3)`,
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard analytics after 3 attempts",
+          variant: "destructive"
+        });
+      }
     } finally {
-      setLoading(false);
+      if (attempt === 0) {// Only set loading false on initial attempt
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [dateRange, customDateRange]);
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
-    if (autoRefresh) {
+    if (isClient) {
+      fetchAnalytics();
+    }
+  }, [isClient, dateRange, customDateRange]);
+
+  useEffect(() => {
+    if (autoRefresh && isClient) {
       const interval = setInterval(() => {
         fetchAnalytics();
       }, 30000); // Refresh every 30 seconds
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, dateRange, customDateRange]);
+  }, [autoRefresh, isClient, dateRange, customDateRange]);
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -235,7 +262,7 @@ const DashboardPage: React.FC = () => {
 
   };
 
-  if (loading && !analyticsData) {
+  if (!isClient || loading && !analyticsData) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -247,6 +274,16 @@ const DashboardPage: React.FC = () => {
               <CardContent className="p-6">
                 <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
                 <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map((i) =>
+          <Card key={i} className="rounded-3xl border-0 shadow-sm animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+                <div className="h-64 bg-gray-200 rounded"></div>
               </CardContent>
             </Card>
           )}
@@ -383,8 +420,9 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Daily revenue and transaction count</CardDescription>
           </CardHeader>
           <CardContent>
+            {analyticsData && analyticsData.charts && analyticsData.charts.salesTrend && analyticsData.charts.salesTrend.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={analyticsData?.charts.salesTrend || []}>
+              <LineChart data={analyticsData.charts.salesTrend}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="sale_date"
@@ -418,7 +456,18 @@ const DashboardPage: React.FC = () => {
                   name="Transactions" />
 
               </LineChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer> :
+
+            <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                  </div>
+                  <p className="mt-4">Loading chart data...</p>
+                </div>
+              </div>
+            }
           </CardContent>
         </Card>
 
@@ -429,10 +478,11 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Sales distribution across product categories</CardDescription>
           </CardHeader>
           <CardContent>
+            {analyticsData && analyticsData.charts && analyticsData.charts.categoryBreakdown && analyticsData.charts.categoryBreakdown.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
                 <Pie
-                  data={analyticsData?.charts.categoryBreakdown || []}
+                  data={analyticsData.charts.categoryBreakdown}
                   dataKey="category_revenue"
                   nameKey="category_name"
                   cx="50%"
@@ -440,13 +490,24 @@ const DashboardPage: React.FC = () => {
                   outerRadius={100}
                   label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}>
 
-                  {(analyticsData?.charts.categoryBreakdown || []).map((entry, index) =>
+                  {analyticsData.charts.categoryBreakdown.map((entry, index) =>
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   )}
                 </Pie>
                 <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
               </RechartsPieChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer> :
+
+            <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                  </div>
+                  <p className="mt-4">Loading chart data...</p>
+                </div>
+              </div>
+            }
           </CardContent>
         </Card>
       </div>
@@ -460,8 +521,9 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Top performing team members</CardDescription>
           </CardHeader>
           <CardContent>
+            {analyticsData && analyticsData.kpis && analyticsData.kpis.employeeLeaderboard && analyticsData.kpis.employeeLeaderboard.length > 0 ?
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analyticsData?.kpis.employeeLeaderboard.slice(0, 8) || []}>
+              <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="employee_name"
@@ -473,7 +535,18 @@ const DashboardPage: React.FC = () => {
                 <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
                 <Bar dataKey="total_sales" fill="#10b981" />
               </BarChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer> :
+
+            <div className="h-64 flex items-center justify-center text-gray-500">
+                <div className="text-center">
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                  </div>
+                  <p className="mt-4">Loading employee data...</p>
+                </div>
+              </div>
+            }
           </CardContent>
         </Card>
 
@@ -484,7 +557,8 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Transaction distribution</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {analyticsData?.charts.paymentMethods.map((method, index) => {
+            {analyticsData && analyticsData.charts && analyticsData.charts.paymentMethods && analyticsData.charts.paymentMethods.length > 0 ?
+            analyticsData.charts.paymentMethods.map((method, index) => {
               const total = analyticsData.charts.paymentMethods.reduce((sum, m) => sum + m.transaction_count, 0);
               const percentage = total > 0 ? method.transaction_count / total * 100 : 0;
 
@@ -499,7 +573,17 @@ const DashboardPage: React.FC = () => {
                   <Progress value={percentage} className="h-2" />
                 </div>);
 
-            })}
+            }) :
+            <div className="flex items-center justify-center h-32 text-gray-500">
+                <div className="text-center">
+                  <div className="animate-pulse space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                    <div className="h-2 bg-gray-200 rounded w-32 mx-auto"></div>
+                  </div>
+                  <p className="mt-4 text-sm">Loading payment data...</p>
+                </div>
+              </div>
+            }
           </CardContent>
         </Card>
       </div>

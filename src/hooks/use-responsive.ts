@@ -15,7 +15,7 @@ export const useResponsive = (): ResponsiveState => {
     isTablet: false,
     isDesktop: false,
     width: 0,
-    height: 0,
+    height: 0
   });
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const useResponsive = (): ResponsiveState => {
         isTablet: width >= 768 && width < 1024,
         isDesktop: width >= 1024,
         width,
-        height,
+        height
       });
     };
 
@@ -37,7 +37,7 @@ export const useResponsive = (): ResponsiveState => {
 
     // Add event listener
     window.addEventListener('resize', updateSize);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', updateSize);
   }, []);
@@ -50,7 +50,7 @@ export const BREAKPOINTS = {
   MOBILE: 768,
   TABLET: 1024,
   DESKTOP: 1280,
-  LARGE: 1536,
+  LARGE: 1536
 } as const;
 
 // Utility functions

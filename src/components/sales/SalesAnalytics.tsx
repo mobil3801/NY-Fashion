@@ -37,7 +37,9 @@ const SalesAnalytics: React.FC<SalesAnalyticsProps> = ({ filters, canViewAll }) 
     }
   });
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const [timeRange, setTimeRange] = useState('30');
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     loadAnalyticsData();
