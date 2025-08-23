@@ -116,12 +116,13 @@ const MainLayout: React.FC = () => {
           aria-label="Main content"
           style={{
             paddingTop: `${(isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT) + topSpacing}px`,
-            minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`
+            minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`,
+            padding: 0
           }}>
 
           Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
 
-          <div className="px-4 sm:px-6">Analytics Dashboard
+          <div className="">Analytics Dashboard
             <Outlet />Analytics Dashboard
           </div>Analytics DashboardWelcome back, Admin User! Here's your business overview.TodayRefreshTotal Revenue$0.00Transactions0Avg Basket Value$0.00Gross Margin0.0%Sales TrendDaily revenue and transaction countLoading chart data...Revenue by CategorySales distribution across product categoriesLoading chart data...Employee PerformanceTop performing team membersLoading employee data...Payment MethodsTransaction distributionLoading payment data...Low Stock AlertsProducts requiring attentionNo low stock alertsTop ProductsBest selling items in selected period
         </main>
