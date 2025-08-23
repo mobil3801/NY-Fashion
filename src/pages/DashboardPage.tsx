@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -118,6 +118,11 @@ const DashboardPage: React.FC = () => {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
 
+  // Refs for chart containers to prevent mounting errors
+  const salesTrendRef = useRef<HTMLDivElement>(null);
+  const categoryBreakdownRef = useRef<HTMLDivElement>(null);
+  const employeeLeaderboardRef = useRef<HTMLDivElement>(null);
+
   const getDateRangeParams = () => {
     const now = new Date();
 
@@ -164,8 +169,13 @@ const DashboardPage: React.FC = () => {
         throw new Error(error);
       }
 
-      setAnalyticsData(data);
-      setRetryCount(0); // Reset retry count on success
+      // Validate data structure before setting
+      if (data && typeof data === 'object' && data.kpis && data.charts) {
+        setAnalyticsData(data);
+        setRetryCount(0); // Reset retry count on success
+      } else {
+        throw new Error('Invalid data structure received');
+      }
     } catch (error) {
       console.error('Error fetching analytics:', error);
 
@@ -190,22 +200,26 @@ const DashboardPage: React.FC = () => {
         });
       }
     } finally {
-      if (attempt === 0) {// Only set loading false on initial attempt
+      if (attempt === 0) {
+        // Only set loading false on initial attempt
         setLoading(false);
       }
     }
   };
 
+  // Set client-side rendering flag
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Fetch analytics when component mounts or filters change
   useEffect(() => {
     if (isClient) {
       fetchAnalytics();
     }
   }, [isClient, dateRange, customDateRange]);
 
+  // Auto-refresh functionality
   useEffect(() => {
     if (autoRefresh && isClient) {
       const interval = setInterval(() => {
@@ -262,6 +276,7 @@ const DashboardPage: React.FC = () => {
 
   };
 
+  // Show loading state while client-side hydration is happening or data is loading
   if (!isClient || loading && !analyticsData) {
     return (
       <div className="space-y-6">
@@ -292,6 +307,7 @@ const DashboardPage: React.FC = () => {
 
   }
 
+  // Calculate percentage changes for KPIs
   const salesChangePercent = analyticsData?.comparison?.previousSales ?
   calculatePercentageChange(
     analyticsData.kpis.todaySales.total_revenue,
@@ -362,16 +378,20 @@ const DashboardPage: React.FC = () => {
                 }}
                 numberOfMonths={2} />
 
+
+
               </PopoverContent>
             </Popover>
           }
 
           <Button
-            onClick={fetchAnalytics}
+            onClick={() => fetchAnalytics()}
             variant="outline"
             size="sm"
             disabled={loading}
             className="flex items-center gap-2">
+
+
 
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -413,101 +433,115 @@ const DashboardPage: React.FC = () => {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend Chart */}
+        {/* Sales Trend Chart - Fixed mounting issues */}
         <Card className="rounded-3xl border-0 shadow-sm">
           <CardHeader>
             <CardTitle>Sales Trend</CardTitle>
             <CardDescription>Daily revenue and transaction count</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsData && analyticsData.charts && analyticsData.charts.salesTrend && analyticsData.charts.salesTrend.length > 0 ?
-            <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={analyticsData.charts.salesTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                  dataKey="sale_date"
-                  tickFormatter={(date) => format(new Date(date), 'MMM dd')} />
+            <div ref={salesTrendRef} className="w-full">
+              {isClient && analyticsData?.charts?.salesTrend?.length > 0 ?
+              <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={analyticsData.charts.salesTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                    dataKey="sale_date"
+                    tickFormatter={(date) => format(new Date(date), 'MMM dd')} />
 
-                  <YAxis yAxisId="revenue" orientation="left" tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
-                  <YAxis yAxisId="count" orientation="right" />
-                  <Tooltip
-                  formatter={(value, name) => {
-                    if (name === 'daily_revenue') return [formatCurrency(value as number), 'Revenue'];
-                    if (name === 'avg_basket') return [formatCurrency(value as number), 'Avg Basket'];
-                    return [value, name];
-                  }}
-                  labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')} />
 
-                  <Legend />
-                  <Line
-                  yAxisId="revenue"
-                  type="monotone"
-                  dataKey="daily_revenue"
-                  stroke="#10b981"
-                  strokeWidth={3}
-                  name="Revenue" />
 
-                  <Line
-                  yAxisId="count"
-                  type="monotone"
-                  dataKey="transaction_count"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  name="Transactions" />
+                    <YAxis yAxisId="revenue" orientation="left" tickFormatter={(value) => `$${(value / 100).toFixed(0)}`} />
+                    <YAxis yAxisId="count" orientation="right" />
+                    <Tooltip
+                    formatter={(value, name) => {
+                      if (name === 'daily_revenue') return [formatCurrency(value as number), 'Revenue'];
+                      if (name === 'avg_basket') return [formatCurrency(value as number), 'Avg Basket'];
+                      return [value, name];
+                    }}
+                    labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')} />
 
-                </LineChart>
-              </ResponsiveContainer> :
 
-            <div className="h-64 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+
+                    <Legend />
+                    <Line
+                    yAxisId="revenue"
+                    type="monotone"
+                    dataKey="daily_revenue"
+                    stroke="#10b981"
+                    strokeWidth={3}
+                    name="Revenue" />
+
+
+
+                    <Line
+                    yAxisId="count"
+                    type="monotone"
+                    dataKey="transaction_count"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    name="Transactions" />
+
+
+
+                  </LineChart>
+                </ResponsiveContainer> :
+
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                    </div>
+                    <p className="mt-4">Loading chart data...</p>
                   </div>
-                  <p className="mt-4">Loading chart data...</p>
                 </div>
-              </div>
-            }
+              }
+            </div>
           </CardContent>
         </Card>
 
-        {/* Category Revenue Breakdown */}
+        {/* Category Revenue Breakdown - Fixed Pie chart mounting */}
         <Card className="rounded-3xl border-0 shadow-sm">
           <CardHeader>
             <CardTitle>Revenue by Category</CardTitle>
             <CardDescription>Sales distribution across product categories</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsData && analyticsData.charts && analyticsData.charts.categoryBreakdown && analyticsData.charts.categoryBreakdown.length > 0 ?
-            <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                  data={analyticsData.charts.categoryBreakdown}
-                  dataKey="category_revenue"
-                  nameKey="category_name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}>
+            <div ref={categoryBreakdownRef} className="w-full">
+              {isClient && analyticsData?.charts?.categoryBreakdown?.length > 0 ?
+              <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPieChart>
+                    <Pie
+                    data={analyticsData.charts.categoryBreakdown}
+                    dataKey="category_revenue"
+                    nameKey="category_name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={({ category_name, percent }) => `${category_name} ${(percent * 100).toFixed(0)}%`}>
 
-                    {analyticsData.charts.categoryBreakdown.map((entry, index) =>
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  )}
-                  </Pie>
-                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
-                </RechartsPieChart>
-              </ResponsiveContainer> :
 
-            <div className="h-64 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+
+                      {analyticsData.charts.categoryBreakdown.map((entry, index) =>
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    )}
+                    </Pie>
+                    <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+                  </RechartsPieChart>
+                </ResponsiveContainer> :
+
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                    </div>
+                    <p className="mt-4">Loading chart data...</p>
                   </div>
-                  <p className="mt-4">Loading chart data...</p>
                 </div>
-              </div>
-            }
+              }
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -521,32 +555,36 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Top performing team members</CardDescription>
           </CardHeader>
           <CardContent>
-            {analyticsData && analyticsData.kpis && analyticsData.kpis.employeeLeaderboard && analyticsData.kpis.employeeLeaderboard.length > 0 ?
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                  dataKey="employee_name"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80} />
+            <div ref={employeeLeaderboardRef} className="w-full">
+              {isClient && analyticsData?.kpis?.employeeLeaderboard?.length > 0 ?
+              <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={analyticsData.kpis.employeeLeaderboard.slice(0, 8)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                    dataKey="employee_name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80} />
 
-                  <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
-                  <Bar dataKey="total_sales" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer> :
 
-            <div className="h-64 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
-                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+
+                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                    <Tooltip formatter={(value) => [formatCurrency(value as number), 'Total Sales']} />
+                    <Bar dataKey="total_sales" fill="#10b981" />
+                  </BarChart>
+                </ResponsiveContainer> :
+
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                  <div className="text-center">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                    </div>
+                    <p className="mt-4">Loading employee data...</p>
                   </div>
-                  <p className="mt-4">Loading employee data...</p>
                 </div>
-              </div>
-            }
+              }
+            </div>
           </CardContent>
         </Card>
 
@@ -557,7 +595,7 @@ const DashboardPage: React.FC = () => {
             <CardDescription>Transaction distribution</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {analyticsData && analyticsData.charts && analyticsData.charts.paymentMethods && analyticsData.charts.paymentMethods.length > 0 ?
+            {analyticsData?.charts?.paymentMethods?.length > 0 ?
             analyticsData.charts.paymentMethods.map((method, index) => {
               const total = analyticsData.charts.paymentMethods.reduce((sum, m) => sum + m.transaction_count, 0);
               const percentage = total > 0 ? method.transaction_count / total * 100 : 0;
@@ -575,14 +613,15 @@ const DashboardPage: React.FC = () => {
 
             }) :
             <div className="flex items-center justify-center h-32 text-gray-500">
-                <div className="text-center">
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
-                    <div className="h-2 bg-gray-200 rounded w-32 mx-auto"></div>
+                  <div className="text-center">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
+                      <div className="h-2 bg-gray-200 rounded w-32 mx-auto"></div>
+                    </div>
+                    <p className="mt-4 text-sm">Loading payment data...</p>
                   </div>
-                  <p className="mt-4 text-sm">Loading payment data...</p>
                 </div>
-              </div>
+
             }
           </CardContent>
         </Card>
@@ -618,6 +657,7 @@ const DashboardPage: React.FC = () => {
                   </div>
               ) :
               <p className="text-gray-500 text-center py-8">No low stock alerts</p>
+
               }
             </div>
           </CardContent>
