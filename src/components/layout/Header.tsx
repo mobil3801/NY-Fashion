@@ -16,8 +16,8 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-start">
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -25,6 +25,7 @@ const Header: React.FC = () => {
               type="text"
               placeholder={t('search')}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-64" />
+
 
           </div>
         </div>
@@ -35,6 +36,7 @@ const Header: React.FC = () => {
             size="sm"
             onClick={handleLanguageToggle}
             className="p-2 hover:bg-emerald-50 rounded-2xl">
+
 
             <Globe className="w-4 h-4 mr-2" />
             {language === 'en' ? 'বাংলা' : 'English'}
