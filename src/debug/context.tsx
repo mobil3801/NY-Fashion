@@ -90,7 +90,7 @@ interface DebugContextType {
 
   // Testing utilities
   simulateNetworkFailure: (duration: number) => void;
-  runNetworkBenchmark: () => Promise<{latency: number; bandwidth: number;}>;
+  runNetworkBenchmark: () => Promise<{latency: number;bandwidth: number;}>;
 }
 
 // Default debug settings
@@ -154,18 +154,18 @@ const createNoOpDebugContext = (): DebugContextType => ({
 // Custom hook with proper error handling
 export const useDebug = (): DebugContextType => {
   const context = useContext(DebugContext);
-  
+
   if (context === undefined) {
     // In development, throw error to catch missing provider
     if (process.env.NODE_ENV === 'development') {
       throw new Error('useDebug must be used within a DebugProvider');
     }
-    
+
     // In production, return safe defaults
     console.warn('[DebugProvider] useDebug called outside of DebugProvider, using no-op implementation');
     return createNoOpDebugContext();
   }
-  
+
   return context;
 };
 
@@ -178,7 +178,7 @@ interface DebugProviderProps {
 export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   // Debug logs state (from legacy provider)
   const [logs, setLogs] = useState<DebugLog[]>([]);
-  
+
   // Network status state
   const [networkStatus, setNetworkStatus] = useState<NetworkStatus>({
     isOnline: navigator.onLine,
@@ -188,7 +188,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
   // API calls state
   const [apiCalls, setApiCalls] = useState<ApiCall[]>([]);
-  
+
   // Debug settings state
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(DEFAULT_DEBUG_SETTINGS);
 
@@ -211,7 +211,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
       data
     };
 
-    setLogs(prev => {
+    setLogs((prev) => {
       const updated = [log, ...prev];
       // Keep only last 1000 logs to prevent memory issues
       return updated.length > 1000 ? updated.slice(0, 1000) : updated;
@@ -267,7 +267,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
         downlink: connection?.downlink
       });
     } catch (error) {
-      setNetworkStatus(prev => ({
+      setNetworkStatus((prev) => ({
         ...prev,
         isOnline: false,
         latency: null,
@@ -283,7 +283,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     const id = `api_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newCall: ApiCall = { ...call, id };
 
-    setApiCalls(prev => {
+    setApiCalls((prev) => {
       const updated = [newCall, ...prev].slice(0, debugSettings.maxApiCalls);
       return updated;
     });
@@ -294,8 +294,8 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   const updateApiCall = useCallback((id: string, updates: Partial<ApiCall>): void => {
     if (!debugSettings.enabled) return;
 
-    setApiCalls(prev => prev.map(call =>
-      call.id === id ? { ...call, ...updates } : call
+    setApiCalls((prev) => prev.map((call) =>
+    call.id === id ? { ...call, ...updates } : call
     ));
   }, [debugSettings.enabled]);
 
@@ -305,14 +305,14 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
   // Settings management
   const updateDebugSettings = useCallback((updates: Partial<DebugSettings>): void => {
-    setDebugSettings(prev => ({ ...prev, ...updates }));
+    setDebugSettings((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // Recovery tools
   const retryFailedCall = useCallback(async (callId: string): Promise<void> => {
     if (!debugSettings.enabled) return;
 
-    const call = apiCalls.find(c => c.id === callId);
+    const call = apiCalls.find((c) => c.id === callId);
     if (!call || call.status === 'pending') return;
 
     updateApiCall(callId, { status: 'pending', attempt: call.attempt + 1 });
@@ -341,13 +341,13 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     if (!debugSettings.enabled) return;
 
     if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => caches.delete(name));
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
       });
     }
 
     // Clear localStorage debug data
-    Object.keys(localStorage).forEach(key => {
+    Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('debug_') || key.startsWith('api_')) {
         localStorage.removeItem(key);
       }
@@ -373,7 +373,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     }, duration);
   }, [debugSettings.enabled]);
 
-  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number; bandwidth: number;}> => {
+  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number;bandwidth: number;}> => {
     if (!debugSettings.enabled) {
       return { latency: 0, bandwidth: 0 };
     }
@@ -415,8 +415,8 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     checkNetworkStatus();
 
     // Online/offline event handlers
-    const handleOnline = () => setNetworkStatus(prev => ({ ...prev, isOnline: true }));
-    const handleOffline = () => setNetworkStatus(prev => ({ ...prev, isOnline: false }));
+    const handleOnline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: true }));
+    const handleOffline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: false }));
 
     // Modern event patterns - no unload handlers
     window.addEventListener('online', handleOnline);
@@ -493,15 +493,15 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     return (
       <DebugContext.Provider value={createNoOpDebugContext()}>
         {children}
-      </DebugContext.Provider>
-    );
+      </DebugContext.Provider>);
+
   }
 
   return (
     <DebugContext.Provider value={contextValue}>
       {children}
-    </DebugContext.Provider>
-  );
+    </DebugContext.Provider>);
+
 };
 
 // Export types for use in components

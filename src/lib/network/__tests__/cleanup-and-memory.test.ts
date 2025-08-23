@@ -223,23 +223,23 @@ describe('Cleanup and Memory Management Tests', () => {
 
 
 
+
         // Expected to fail after destroy
-      }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});it('should handle listener removal during destroy', () => {
-      monitor = new ConnectivityMonitor();
+      }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});it('should handle listener removal during destroy', () => {monitor = new ConnectivityMonitor();
 
-      const listeners: (() => void)[] = [];
-      for (let i = 0; i < 5; i++) {
-        const removeListener = monitor.addListener(vi.fn(() => {
-          // Try to remove other listeners during callback
-          listeners.forEach((remove) => {
-            try {remove();} catch {} // Ignore errors
-          });
-        }));
-        listeners.push(removeListener);
-      }
+        const listeners: (() => void)[] = [];
+        for (let i = 0; i < 5; i++) {
+          const removeListener = monitor.addListener(vi.fn(() => {
+            // Try to remove other listeners during callback
+            listeners.forEach((remove) => {
+              try {remove();} catch {} // Ignore errors
+            });
+          }));
+          listeners.push(removeListener);
+        }
 
-      expect(() => monitor.destroy()).not.toThrow();
-    });
+        expect(() => monitor.destroy()).not.toThrow();
+      });
   });
 
   describe('Memory Leak Prevention', () => {

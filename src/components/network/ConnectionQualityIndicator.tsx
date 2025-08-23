@@ -16,7 +16,16 @@ export function ConnectionQualityIndicator({
   variant = 'full',
   showDetails = true
 }: ConnectionQualityIndicatorProps) {
-  const { online, status, retryNow } = useNetwork();
+  const {
+    online,
+    status,
+    connectionState,
+    errorDetails,
+    recoveryInfo,
+    retryNow,
+    isAutoRetrying,
+    retryCount
+  } = useNetwork();
   const [quality, setQuality] = useState<'excellent' | 'good' | 'fair' | 'poor' | 'offline'>('offline');
   const [diagnostics, setDiagnostics] = useState<NetworkDiagnostics | null>(null);
   const [isChecking, setIsChecking] = useState(false);
@@ -95,6 +104,17 @@ export function ConnectionQualityIndicator({
   };
 
   const getQualityColor = () => {
+    // Override colors based on connection state
+    if (connectionState === 'recovering') {
+      return 'bg-green-100 text-green-800 border-green-200';
+    }
+    if (connectionState === 'reconnecting') {
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+    if (connectionState === 'poor_connection') {
+      return 'bg-orange-100 text-orange-800 border-orange-200';
+    }
+
     switch (quality) {
       case 'excellent':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -110,8 +130,21 @@ export function ConnectionQualityIndicator({
   };
 
   const getQualityText = () => {
-    if (!online) return 'Offline';
-    return quality.charAt(0).toUpperCase() + quality.slice(1);
+    switch (connectionState) {
+      case 'recovering':
+        return 'Recovering';
+      case 'reconnecting':
+        return 'Reconnecting';
+      case 'poor_connection':
+        return 'Poor Connection';
+      case 'offline':
+        return 'Offline';
+      case 'online':
+        if (!online) return 'Offline';
+        return quality.charAt(0).toUpperCase() + quality.slice(1);
+      default:
+        return 'Unknown';
+    }
   };
 
   if (variant === 'minimal') {
@@ -154,23 +187,70 @@ export function ConnectionQualityIndicator({
               variant="ghost"
               size="sm"
               onClick={handleRefresh}
-              disabled={isChecking}
-              className="h-6 px-2">
+              disabled={isChecking || isAutoRetrying}
+              className="h-6 px-2"
+              aria-label="Refresh connection status">
 
-                <Wifi className={`h-3 w-3 ${isChecking ? 'animate-spin' : ''}`} />
+                <Wifi className={`h-3 w-3 ${isChecking || isAutoRetrying ? 'animate-spin' : ''}`} />
               </Button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
+              {/* Connection State */}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Quality:</span>
+                <span className="text-sm text-gray-600">Status:</span>
                 <Badge className={getQualityColor()}>
                   {getQualityText()}
                 </Badge>
               </div>
 
-              {diagnostics &&
+              {/* Error Details */}
+              {errorDetails &&
+            <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Error Type:</span>
+                    <span className="text-sm font-medium capitalize">
+                      {errorDetails.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                    {errorDetails.userMessage}
+                  </div>
+                </div>
+            }
+
+              {/* Recovery Info */}
+              {recoveryInfo &&
+            <div className="space-y-2 bg-green-50 p-2 rounded">
+                  <div className="text-xs text-green-700 font-medium">
+                    Connection Recovered
+                  </div>
+                  <div className="text-xs text-green-600">
+                    Offline for: {recoveryInfo.wasOfflineFor > 60000 ?
+                `${Math.round(recoveryInfo.wasOfflineFor / 60000)} min` :
+                `${Math.round(recoveryInfo.wasOfflineFor / 1000)} sec`}
+                  </div>
+                </div>
+            }
+
+              {/* Retry Information */}
+              {retryCount > 0 &&
+            <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Retry Attempts:</span>
+                  <span className="text-sm font-medium">{retryCount}</span>
+                </div>
+            }
+
+              {/* Connection Quality Metrics */}
+              {diagnostics && online &&
             <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Quality:</span>
+                    <Badge variant={quality === 'excellent' ? 'default' : 'secondary'}>
+                      {quality.charAt(0).toUpperCase() + quality.slice(1)}
+                    </Badge>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Latency:</span>
                     <span className="text-sm font-medium">
@@ -180,7 +260,7 @@ export function ConnectionQualityIndicator({
 
                   {diagnostics.effectiveType &&
               <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Type:</span>
+                      <span className="text-sm text-gray-600">Connection:</span>
                       <span className="text-sm font-medium">
                         {diagnostics.effectiveType.toUpperCase()}
                       </span>
@@ -194,6 +274,22 @@ export function ConnectionQualityIndicator({
                   </div>
                 </>
             }
+
+              {/* Failure Information */}
+              {status.consecutiveFailures > 0 &&
+            <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Consecutive Failures:</span>
+                  <span className="text-sm font-medium text-red-600">
+                    {status.consecutiveFailures}
+                  </span>
+                </div>
+            }
+
+              {/* Last Check Time */}
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>Last checked:</span>
+                <span>{new Date(status.lastCheck).toLocaleTimeString()}</span>
+              </div>
             </div>
           </div>
         </PopoverContent>

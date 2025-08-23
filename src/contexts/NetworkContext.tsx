@@ -1,14 +1,28 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { createConnectivity, NetStatus, ConnectivityListener } from '@/lib/network/connectivity';
 import { apiClient } from '@/lib/network/client';
+import { NetworkErrorClassifier } from '@/lib/network/error-classifier';
+import {
+  EnhancedNetStatus,
+  ConnectionState,
+  ConnectionErrorType,
+  ConnectionRecoveryInfo } from
+'@/types/network';
+import { useNetworkRetry } from '@/hooks/use-network-retry';
 
 interface NetworkContextValue {
   online: boolean;
-  status: NetStatus;
+  status: EnhancedNetStatus;
   lastChangeAt: number;
-  retryNow(): void;
+  connectionState: ConnectionState;
+  errorDetails: ReturnType<typeof NetworkErrorClassifier.classifyError> | null;
+  recoveryInfo: ConnectionRecoveryInfo | null;
+  retryNow(): Promise<void>;
+  abortRetry(): void;
   getDiagnostics?(): any;
+  isAutoRetrying: boolean;
+  retryCount: number;
 }
 
 const NetworkContext = createContext<NetworkContextValue | null>(null);
@@ -23,54 +37,169 @@ interface NetworkProviderProps {
 
 export function NetworkProvider({ children, config }: NetworkProviderProps) {
   const [monitor] = useState(() => createConnectivity(config));
-  const [status, setStatus] = useState<NetStatus>(() => {
+  const [status, setStatus] = useState<EnhancedNetStatus>(() => {
     const initialStatus = monitor.get();
     // Ensure consecutiveFailures is always defined
     return {
       online: initialStatus.online,
       lastCheck: initialStatus.lastCheck,
       consecutiveFailures: initialStatus.consecutiveFailures || 0,
-      lastError: initialStatus.lastError
+      lastError: initialStatus.lastError,
+      state: initialStatus.online ? 'online' : 'offline',
+      retryAttempts: 0
     };
   });
   const [lastChangeAt, setLastChangeAt] = useState<number>(Date.now());
+  const [connectionState, setConnectionState] = useState<ConnectionState>(
+    status.online ? 'online' : 'offline'
+  );
+  const [errorDetails, setErrorDetails] = useState<ReturnType<typeof NetworkErrorClassifier.classifyError> | null>(null);
+  const [recoveryInfo, setRecoveryInfo] = useState<ConnectionRecoveryInfo | null>(null);
+  const offlineStartTimeRef = useRef<number | null>(null);
+  const autoRetryTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Auto retry functionality
+  const {
+    executeWithRetry,
+    abortRetry,
+    isRetrying: isAutoRetrying,
+    retryCount,
+    currentError
+  } = useNetworkRetry({
+    maxRetries: 3,
+    onRetryAttempt: (attempt, errorType) => {
+      console.log(`Auto-retry attempt ${attempt} for ${errorType}`);
+      setConnectionState('reconnecting');
+    },
+    onMaxRetriesReached: (errorType) => {
+      console.warn(`Max auto-retries reached for ${errorType}`);
+      setConnectionState('offline');
+    },
+    onSuccess: () => {
+      setConnectionState('online');
+      import('@/hooks/use-toast').then(({ toast }) => {
+        toast({
+          title: "Connection Restored",
+          description: "Successfully reconnected to the server.",
+          variant: "default"
+        });
+      });
+    }
+  });
 
   useEffect(() => {
     const unsubscribe = monitor.subscribe((newStatus) => {
       const wasOffline = !status.online;
       const statusChanged = status.online !== newStatus.online;
+      const now = Date.now();
+
+      // Track offline duration
+      if (statusChanged) {
+        if (!newStatus.online && !offlineStartTimeRef.current) {
+          offlineStartTimeRef.current = now;
+        } else if (newStatus.online && offlineStartTimeRef.current) {
+          const offlineDuration = now - offlineStartTimeRef.current;
+          setRecoveryInfo({
+            wasOfflineFor: offlineDuration,
+            recoveryTime: new Date(),
+            failureCount: newStatus.consecutiveFailures || 0
+          });
+          offlineStartTimeRef.current = null;
+        }
+      }
+
+      // Classify error if present
+      let errorClassification = null;
+      if (newStatus.lastError) {
+        errorClassification = NetworkErrorClassifier.classifyError(new Error(newStatus.lastError));
+        setErrorDetails(errorClassification);
+      } else {
+        setErrorDetails(null);
+      }
+
+      // Determine connection state
+      let newConnectionState: ConnectionState = 'online';
+      if (!newStatus.online) {
+        if (isAutoRetrying) {
+          newConnectionState = 'reconnecting';
+        } else if (errorClassification?.type === 'timeout') {
+          newConnectionState = 'poor_connection';
+        } else {
+          newConnectionState = 'offline';
+        }
+      } else if (wasOffline) {
+        newConnectionState = 'recovering';
+        // Auto-transition from recovering to online after a short delay
+        setTimeout(() => setConnectionState('online'), 2000);
+      }
 
       // Ensure consecutiveFailures is always defined
-      const safeStatus: NetStatus = {
+      const safeStatus: EnhancedNetStatus = {
         online: newStatus.online,
         lastCheck: newStatus.lastCheck,
         consecutiveFailures: newStatus.consecutiveFailures || 0,
-        lastError: newStatus.lastError
+        lastError: newStatus.lastError,
+        errorType: errorClassification?.type,
+        state: newConnectionState,
+        retryAttempts: retryCount
       };
 
       setStatus(safeStatus);
+      setConnectionState(newConnectionState);
 
       // Update lastChangeAt timestamp when online status changes
       if (statusChanged) {
-        setLastChangeAt(Date.now());
+        setLastChangeAt(now);
       }
 
       // Sync with API client
       apiClient.setOnlineStatus(safeStatus.online);
 
-      // Show toast when connection is restored
+      // Handle connection restoration with enhanced messaging
       if (wasOffline && safeStatus.online) {
-        // Import toast dynamically to avoid circular dependencies
+        const offlineDuration = offlineStartTimeRef.current ? now - offlineStartTimeRef.current : 0;
+
         import('@/hooks/use-toast').then(({ toast }) => {
+          let description = "You're back online. Syncing your changes...";
+
+          if (offlineDuration > 60000) {// > 1 minute
+            const minutes = Math.round(offlineDuration / 60000);
+            description = `Reconnected after ${minutes} minute${minutes > 1 ? 's' : ''}. Syncing your changes...`;
+          } else if (offlineDuration > 5000) {// > 5 seconds
+            const seconds = Math.round(offlineDuration / 1000);
+            description = `Reconnected after ${seconds} seconds. Syncing your changes...`;
+          }
+
           toast({
             title: "Connection Restored",
-            description: "You're back online. Syncing your changes...",
+            description,
             variant: "default"
           });
         });
 
+        // Clear error details on successful reconnection
+        setErrorDetails(null);
+
         // Flush any queued operations when coming back online
         apiClient.flushQueue?.();
+      }
+
+      // Auto-retry logic for certain error types
+      if (!newStatus.online && errorClassification?.isRetryable && !isAutoRetrying) {
+        const shouldAutoRetry = NetworkErrorClassifier.shouldShowBanner(
+          errorClassification.type,
+          newStatus.consecutiveFailures || 0
+        );
+
+        if (shouldAutoRetry && retryCount < 3) {
+          const delay = NetworkErrorClassifier.getRetryDelay(errorClassification.type, retryCount + 1);
+
+          autoRetryTimeoutRef.current = setTimeout(() => {
+            executeWithRetry(async () => {
+              await monitor.checkNow();
+            }, 'Auto network check');
+          }, delay);
+        }
       }
     });
 
@@ -81,21 +210,48 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
     return () => {
       unsubscribe();
       monitor.stop();
+      if (autoRetryTimeoutRef.current) {
+        clearTimeout(autoRetryTimeoutRef.current);
+      }
     };
-  }, [monitor, status.online]);
+  }, [monitor, status.online, executeWithRetry, isAutoRetrying, retryCount]);
 
-  const retryNow = useCallback(() => {
-    // Trigger immediate connectivity check
-    monitor.pingNow();
-
-    // Signal retry scheduler for any pending operations
-    apiClient.retryNow?.();
-
-    // Flush queue if online
-    if (status.online) {
-      apiClient.flushQueue?.();
+  const retryNow = useCallback(async () => {
+    // Clear any existing auto-retry timeout
+    if (autoRetryTimeoutRef.current) {
+      clearTimeout(autoRetryTimeoutRef.current);
+      autoRetryTimeoutRef.current = undefined;
     }
-  }, [monitor, status.online]);
+
+    setConnectionState('reconnecting');
+
+    try {
+      await executeWithRetry(async () => {
+        // Trigger immediate connectivity check
+        await monitor.pingNow();
+
+        // Signal retry scheduler for any pending operations
+        apiClient.retryNow?.();
+
+        // Flush queue if online
+        if (status.online) {
+          apiClient.flushQueue?.();
+        }
+      }, 'Manual retry');
+    } catch (error) {
+      console.error('Manual retry failed:', error);
+
+      // Show error toast
+      import('@/hooks/use-toast').then(({ toast }) => {
+        const errorDetails = NetworkErrorClassifier.classifyError(error);
+        toast({
+          title: "Retry Failed",
+          description: errorDetails.userMessage,
+          variant: "destructive"
+        });
+      });
+    }
+  }, [monitor, status.online, executeWithRetry]);
 
   const getDiagnostics = useCallback(() => {
     // Return diagnostics from monitor if available
@@ -106,8 +262,14 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
     online: status.online,
     status,
     lastChangeAt,
+    connectionState,
+    errorDetails,
+    recoveryInfo,
     retryNow,
-    getDiagnostics
+    abortRetry,
+    getDiagnostics,
+    isAutoRetrying,
+    retryCount
   };
 
   return (

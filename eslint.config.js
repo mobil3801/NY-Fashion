@@ -28,16 +28,16 @@ export default tseslint.config(
 
       // Prevent importing from wrong debug context paths
       "no-restricted-imports": [
-        "error",
+      "error",
+      {
+        "patterns": [
         {
-          "patterns": [
-            {
-              "group": ["@/contexts/DebugContext", "@/debug/DebugProvider"],
-              "message": "Import debug functionality from '@/debug' instead to use the consolidated context."
-            }
-          ]
-        }
-      ]
+          "group": ["@/contexts/DebugContext", "@/debug/DebugProvider"],
+          "message": "Import debug functionality from '@/debug' instead to use the consolidated context."
+        }]
+
+      }]
+
     }
   }
 );
