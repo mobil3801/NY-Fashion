@@ -37,12 +37,12 @@ export function OfflineBanner() {
   };
 
   return (
-    <div 
+    <div
       className="sticky top-0 z-50 border-b border-amber-200 bg-amber-50 px-4 py-3"
       role="status"
       aria-live="polite"
-      aria-label="Network status"
-    >
+      aria-label="Network status">
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="text-amber-600">
@@ -52,11 +52,11 @@ export function OfflineBanner() {
             <p className="text-sm font-medium text-amber-800">
               {getStatusMessage()}
             </p>
-            {status.lastError && (
-              <p className="text-xs text-amber-600 mt-1">
+            {status.lastError &&
+            <p className="text-xs text-amber-600 mt-1">
                 Changes will be saved locally and synced when connection is restored
               </p>
-            )}
+            }
           </div>
         </div>
         
@@ -67,22 +67,22 @@ export function OfflineBanner() {
             onClick={handleRetry}
             disabled={isRetrying}
             className="border-amber-300 text-amber-700 hover:bg-amber-100 hover:border-amber-400"
-            aria-label="Retry connection"
-          >
-            {isRetrying ? (
-              <>
+            aria-label="Retry connection">
+
+            {isRetrying ?
+            <>
                 <RotateCcw className="h-3 w-3 mr-1 animate-spin" />
                 Checking...
-              </>
-            ) : (
-              <>
+              </> :
+
+            <>
                 <Wifi className="h-3 w-3 mr-1" />
                 Retry
               </>
-            )}
+            }
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

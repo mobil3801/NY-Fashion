@@ -10,14 +10,35 @@ import ShoppingCartComponent from '@/components/pos/ShoppingCart';
 import CustomerSelection from '@/components/pos/CustomerSelection';
 import PaymentComponent from '@/components/pos/PaymentComponent';
 import ReturnsExchanges from '@/components/pos/ReturnsExchanges';
+import NetworkAwarePOSOperations from '@/components/pos/NetworkAwarePOSOperations';
 import { useAuth } from '@/contexts/AuthContext';
 
 const POSPage: React.FC = () => {
   const { user } = useAuth();
 
+  const handleCreateSale = async (saleData: any) => {
+    // This would integrate with your actual POS sale creation logic
+    console.log('Creating sale:', saleData);
+    // Simulate API call
+    return new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleProcessReturn = async (returnData: any) => {
+    // This would integrate with your actual return processing logic
+    console.log('Processing return:', returnData);
+    return new Promise((resolve) => setTimeout(resolve, 1000));
+  };
+
+  const handleSyncOfflineData = async () => {
+    // This would sync all pending offline operations
+    console.log('Syncing offline data...');
+    return new Promise((resolve) => setTimeout(resolve, 2000));
+  };
+
   return (
     <POSProvider>
       <div className="min-h-screen bg-gray-50 p-4">
+
         {/* Header */}
         <div className="mb-6">
           <div className="flex justify-between items-center">
@@ -33,6 +54,15 @@ const POSPage: React.FC = () => {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Network Operations Bar */}
+        <div className="bg-white border-b p-4">
+          <NetworkAwarePOSOperations
+            onCreateSale={handleCreateSale}
+            onProcessReturn={handleProcessReturn}
+            onSyncOfflineData={handleSyncOfflineData} />
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

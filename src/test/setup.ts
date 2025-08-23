@@ -5,15 +5,15 @@ import { vi } from 'vitest';
 Object.defineProperty(window, 'location', {
   value: {
     origin: 'http://localhost:3000',
-    href: 'http://localhost:3000',
+    href: 'http://localhost:3000'
   },
-  writable: true,
+  writable: true
 });
 
 // Mock navigator.onLine
 Object.defineProperty(navigator, 'onLine', {
   value: true,
-  writable: true,
+  writable: true
 });
 
 // Mock console methods to reduce noise in tests
@@ -21,7 +21,7 @@ global.console = {
   ...console,
   warn: vi.fn(),
   error: vi.fn(),
-  log: vi.fn(),
+  log: vi.fn()
 };
 
 // Mock fetch if not available

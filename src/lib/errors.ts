@@ -43,11 +43,11 @@ export type ApiErrorType = NetworkError | HttpError | BusinessError | TimeoutErr
 
 export class ApiError extends Error {
   constructor(
-    message: string,
-    public code: string = 'UNKNOWN_ERROR',
-    public retryable: boolean = false,
-    public details?: any
-  ) {
+  message: string,
+  public code: string = 'UNKNOWN_ERROR',
+  public retryable: boolean = false,
+  public details?: any)
+  {
     super(message);
     this.name = 'ApiError';
   }
@@ -60,6 +60,11 @@ export const ERROR_CODES = {
   SERVER_ERROR: 'SERVER_ERROR',
   QUEUED_OFFLINE: 'QUEUED_OFFLINE',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  PERMISSION_DENIED: 'PERMISSION_DENIED',
+  RESOURCE_NOT_FOUND: 'RESOURCE_NOT_FOUND',
+  CONCURRENT_MODIFICATION: 'CONCURRENT_MODIFICATION',
+  RATE_LIMITED: 'RATE_LIMITED'
 } as const;
 
 /**
@@ -276,27 +281,42 @@ export function getUserFriendlyMessage(error: unknown): string {
     case 'business':
       // Clean up business error messages
       return normalizedError.message.
-      replace(/reminder:\s*please\s+retry\s+it\s+or\s+send\s+email\s+to\s+support\s+for\s+help\.?/i,
-      'Operation completed with warnings').
-      trim();
+        replace(/reminder:\s*please\s+retry\s+it\s+or\s+send\s+email\s+to\s+support\s+for\s+help\.?/i,
+          'Operation completed with warnings')
+        .trim();
 
     case 'network':
+      if (normalizedError.code === 'NETWORK_OFFLINE') {
+        return 'Connection lost. Your changes will be saved and synced when back online.';
+      }
+      if (normalizedError.code === 'QUEUED_OFFLINE') {
+        return 'Saved offline. Will sync automatically when connection returns.';
+      }
       return 'Network connection issue. Please check your internet connection.';
 
     case 'timeout':
-      return 'Request timed out. Please try again.';
+      return 'Request timed out. Please try again or check your connection.';
 
     case 'http':
       if (normalizedError.statusCode >= 400 && normalizedError.statusCode < 500) {
+        if (normalizedError.statusCode === 403) {
+          return 'You don\'t have permission to perform this action.';
+        }
+        if (normalizedError.statusCode === 404) {
+          return 'The requested item could not be found.';
+        }
+        if (normalizedError.statusCode === 422) {
+          return 'Please check your input and ensure all required fields are filled.';
+        }
         return `Request failed: ${normalizedError.statusText || 'Client error'}`;
       }
       if (normalizedError.statusCode >= 500) {
-        return 'Server temporarily unavailable. Please try again.';
+        return 'Server temporarily unavailable. Your changes are saved and will sync automatically.';
       }
       return normalizedError.message;
 
     default:
-      return 'An unexpected error occurred';
+      return normalizedError.message || 'An unexpected error occurred';
   }
 }
 

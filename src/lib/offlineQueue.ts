@@ -22,7 +22,7 @@ export interface OfflineQueueConfig {
 const DEFAULT_CONFIG: OfflineQueueConfig = {
   maxItems: 100,
   maxAttempts: 3,
-  persistentStorage: true,
+  persistentStorage: true
 };
 
 class IndexedDBWrapper {
@@ -127,7 +127,7 @@ export class OfflineQueue {
     if (this.config.persistentStorage) {
       this.idb = new IndexedDBWrapper();
       const success = await this.idb.init();
-      
+
       if (success) {
         // Load existing operations from IndexedDB
         try {
@@ -145,11 +145,11 @@ export class OfflineQueue {
   }
 
   async enqueue(
-    type: QueuedOperation['type'],
-    url: string,
-    data: any,
-    headers: Record<string, string> = {}
-  ): Promise<string> {
+  type: QueuedOperation['type'],
+  url: string,
+  data: any,
+  headers: Record<string, string> = {})
+  : Promise<string> {
     await this.init();
 
     // Generate idempotency key if not provided
@@ -157,7 +157,7 @@ export class OfflineQueue {
 
     // Check for duplicate operations
     const isDuplicate = this.memoryQueue.some(
-      op => op.idempotencyKey === idempotencyKey
+      (op) => op.idempotencyKey === idempotencyKey
     );
 
     if (isDuplicate) {
@@ -173,7 +173,7 @@ export class OfflineQueue {
       idempotencyKey,
       timestamp: Date.now(),
       attempts: 0,
-      maxAttempts: this.config.maxAttempts,
+      maxAttempts: this.config.maxAttempts
     };
 
     // Enforce queue size limit
@@ -208,14 +208,14 @@ export class OfflineQueue {
     for (const operation of operations) {
       try {
         const success = await executor(operation);
-        
+
         if (success) {
           await this.remove(operation.id);
           processedCount++;
         } else {
           // Increment attempt count
           operation.attempts++;
-          
+
           if (operation.attempts >= operation.maxAttempts) {
             // Remove failed operation after max attempts
             await this.remove(operation.id);
@@ -225,7 +225,7 @@ export class OfflineQueue {
       } catch (error) {
         console.error('Error processing queued operation:', error);
         operation.attempts++;
-        
+
         if (operation.attempts >= operation.maxAttempts) {
           await this.remove(operation.id);
         }
@@ -236,7 +236,7 @@ export class OfflineQueue {
   }
 
   async remove(id: string): Promise<void> {
-    const index = this.memoryQueue.findIndex(op => op.id === id);
+    const index = this.memoryQueue.findIndex((op) => op.id === id);
     if (index !== -1) {
       this.memoryQueue.splice(index, 1);
     }
@@ -254,7 +254,7 @@ export class OfflineQueue {
 
   async clear(): Promise<void> {
     this.memoryQueue = [];
-    
+
     if (this.idb) {
       try {
         await this.idb.clear();
@@ -284,7 +284,7 @@ export class OfflineQueue {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener();
       } catch (error) {
@@ -293,5 +293,3 @@ export class OfflineQueue {
     });
   }
 }
-
-

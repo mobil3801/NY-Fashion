@@ -7,7 +7,7 @@ const mockIDBRequest = {
   result: null,
   error: null,
   onsuccess: null as any,
-  onerror: null as any,
+  onerror: null as any
 };
 
 const mockIDBTransaction = {
@@ -16,17 +16,17 @@ const mockIDBTransaction = {
     delete: vi.fn(() => mockIDBRequest),
     clear: vi.fn(() => mockIDBRequest),
     index: vi.fn(() => ({
-      getAll: vi.fn(() => mockIDBRequest),
-    })),
-  })),
+      getAll: vi.fn(() => mockIDBRequest)
+    }))
+  }))
 };
 
 const mockIDBDatabase = {
   transaction: vi.fn(() => mockIDBTransaction),
   objectStoreNames: { contains: vi.fn(() => false) },
   createObjectStore: vi.fn(() => ({
-    createIndex: vi.fn(),
-  })),
+    createIndex: vi.fn()
+  }))
 };
 
 const mockIDBFactory = {
@@ -37,12 +37,12 @@ const mockIDBFactory = {
       request.onsuccess?.();
     }, 0);
     return request;
-  }),
+  })
 };
 
 Object.defineProperty(global, 'indexedDB', {
   value: mockIDBFactory,
-  writable: true,
+  writable: true
 });
 
 describe('OfflineQueue', () => {
@@ -55,9 +55,9 @@ describe('OfflineQueue', () => {
 
   it('should enqueue operations', async () => {
     await queue.init();
-    
+
     const id = await queue.enqueue('POST', '/api/test', { data: 'test' });
-    
+
     expect(id).toBeTruthy();
     expect(queue.size()).toBe(1);
     expect(queue.isEmpty()).toBe(false);
@@ -65,9 +65,9 @@ describe('OfflineQueue', () => {
 
   it('should prevent duplicate operations', async () => {
     await queue.init();
-    
+
     await queue.enqueue('POST', '/api/test', { data: 'test' }, { 'Idempotency-Key': 'test-key' });
-    
+
     await expect(
       queue.enqueue('POST', '/api/test', { data: 'test' }, { 'Idempotency-Key': 'test-key' })
     ).rejects.toThrow('Operation already queued');
@@ -75,17 +75,17 @@ describe('OfflineQueue', () => {
 
   it('should flush operations in FIFO order', async () => {
     await queue.init();
-    
+
     await queue.enqueue('POST', '/api/test1', { data: 'test1' });
     await queue.enqueue('POST', '/api/test2', { data: 'test2' });
-    
+
     const executedOperations: string[] = [];
-    
+
     const processedCount = await queue.flush(async (operation) => {
       executedOperations.push(operation.url);
       return true; // Success
     });
-    
+
     expect(processedCount).toBe(2);
     expect(executedOperations).toEqual(['/api/test1', '/api/test2']);
     expect(queue.isEmpty()).toBe(true);
@@ -93,22 +93,22 @@ describe('OfflineQueue', () => {
 
   it('should handle failed operations with retry logic', async () => {
     await queue.init();
-    
+
     await queue.enqueue('POST', '/api/test', { data: 'test' });
-    
+
     let attempts = 0;
     await queue.flush(async () => {
       attempts++;
       return false; // Simulate failure
     });
-    
+
     expect(attempts).toBe(1);
     expect(queue.size()).toBe(1); // Still in queue for retry
-    
+
     // After max attempts, should be removed
     const operations = queue.getAll();
     operations[0].attempts = 3; // Set to max
-    
+
     await queue.flush(async () => false);
     expect(queue.isEmpty()).toBe(true); // Removed after max attempts
   });
@@ -116,37 +116,37 @@ describe('OfflineQueue', () => {
   it('should respect size limits', async () => {
     const smallQueue = new OfflineQueue({ maxItems: 2, persistentStorage: false });
     await smallQueue.init();
-    
+
     await smallQueue.enqueue('POST', '/api/test1', { data: 'test1' });
     await smallQueue.enqueue('POST', '/api/test2', { data: 'test2' });
     await smallQueue.enqueue('POST', '/api/test3', { data: 'test3' }); // Should evict first
-    
+
     expect(smallQueue.size()).toBe(2);
     const operations = smallQueue.getAll();
-    expect(operations.map(op => op.url)).toEqual(['/api/test2', '/api/test3']);
+    expect(operations.map((op) => op.url)).toEqual(['/api/test2', '/api/test3']);
   });
 
   it('should notify listeners on changes', async () => {
     await queue.init();
-    
+
     const listener = vi.fn();
     const unsubscribe = queue.addListener(listener);
-    
+
     await queue.enqueue('POST', '/api/test', { data: 'test' });
-    
+
     expect(listener).toHaveBeenCalled();
-    
+
     unsubscribe();
   });
 
   it('should clear all operations', async () => {
     await queue.init();
-    
+
     await queue.enqueue('POST', '/api/test1', { data: 'test1' });
     await queue.enqueue('POST', '/api/test2', { data: 'test2' });
-    
+
     await queue.clear();
-    
+
     expect(queue.isEmpty()).toBe(true);
   });
 });

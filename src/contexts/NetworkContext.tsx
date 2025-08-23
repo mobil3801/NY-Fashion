@@ -1,12 +1,14 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { ConnectivityMonitor, NetStatus } from '@/lib/network/connectivity';
+import { apiClient } from '@/lib/network/client';
 
 interface NetworkContextValue {
   online: boolean;
   status: NetStatus;
   retryNow: () => Promise<void>;
   monitor: ConnectivityMonitor;
+  getDiagnostics: () => any;
 }
 
 const NetworkContext = createContext<NetworkContextValue | null>(null);
@@ -24,7 +26,14 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
   const [status, setStatus] = useState<NetStatus>(monitor.getStatus());
 
   useEffect(() => {
-    const unsubscribe = monitor.addListener(setStatus);
+    const unsubscribe = monitor.addListener((newStatus) => {
+      setStatus(newStatus);
+      // Sync with API client
+      apiClient.setOnlineStatus(newStatus.online);
+    });
+
+    // Initial sync
+    apiClient.setOnlineStatus(status.online);
 
     return () => {
       unsubscribe();
@@ -36,18 +45,26 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
     await monitor.checkNow();
   }, [monitor]);
 
+  const getDiagnostics = useCallback(() => {
+    return {
+      connectivity: monitor.getDiagnostics(),
+      apiClient: apiClient.getNetworkDiagnostics()
+    };
+  }, [monitor]);
+
   const contextValue: NetworkContextValue = {
     online: status.online,
     status,
     retryNow,
     monitor,
+    getDiagnostics
   };
 
   return (
     <NetworkContext.Provider value={contextValue}>
       {children}
-    </NetworkContext.Provider>
-  );
+    </NetworkContext.Provider>);
+
 }
 
 export function useNetwork(): NetworkContextValue {

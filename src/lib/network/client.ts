@@ -35,7 +35,7 @@ class NetworkRetryScheduler implements RetryScheduler {
   pause(): void {
     this.paused = true;
     // Clear all pending retries but keep track of them
-    this.pendingRetries.forEach(timerId => clearTimeout(timerId));
+    this.pendingRetries.forEach((timerId) => clearTimeout(timerId));
     this.pendingRetries.clear();
   }
 
@@ -55,7 +55,7 @@ class NetworkRetryScheduler implements RetryScheduler {
 
     const delay = calculateBackoffDelay(attempt);
     const id = this.nextId++;
-    
+
     const timerId = window.setTimeout(async () => {
       this.pendingRetries.delete(id);
       if (!this.paused) {
@@ -76,7 +76,7 @@ class NetworkRetryScheduler implements RetryScheduler {
   }
 
   destroy(): void {
-    this.pendingRetries.forEach(timerId => clearTimeout(timerId));
+    this.pendingRetries.forEach((timerId) => clearTimeout(timerId));
     this.pendingRetries.clear();
   }
 }
@@ -86,6 +86,7 @@ export class ApiClient {
   private offlineQueue: OfflineQueue;
   private retryScheduler: RetryScheduler;
   private isOnline = true;
+  private networkStatusCallbacks: Set<(online: boolean) => void> = new Set();
 
   constructor(config: ApiClientConfig = {}) {
     this.config = {
@@ -95,12 +96,12 @@ export class ApiClient {
       retryDelay: 300,
       retryDelayMax: 10000,
       retryFactor: 2,
-      ...config,
+      ...config
     };
 
     this.offlineQueue = new OfflineQueue();
     this.retryScheduler = new NetworkRetryScheduler();
-    
+
     // Initialize offline queue
     this.offlineQueue.init();
   }
@@ -108,6 +109,15 @@ export class ApiClient {
   setOnlineStatus(online: boolean): void {
     const wasOffline = !this.isOnline;
     this.isOnline = online;
+
+    // Notify subscribers
+    this.networkStatusCallbacks.forEach(callback => {
+      try {
+        callback(online);
+      } catch (error) {
+        console.error('Error in network status callback:', error);
+      }
+    });
 
     if (online && wasOffline) {
       // Resume retry scheduler and flush offline queue
@@ -117,6 +127,19 @@ export class ApiClient {
       // Pause retry scheduler when going offline
       this.retryScheduler.pause();
     }
+  }
+
+  subscribeToNetworkStatus(callback: (online: boolean) => void): () => void {
+    this.networkStatusCallbacks.add(callback);
+    return () => this.networkStatusCallbacks.delete(callback);
+  }
+
+  getNetworkDiagnostics() {
+    return {
+      isOnline: this.isOnline,
+      queueStatus: this.getQueueStatus(),
+      retrySchedulerPaused: this.retryScheduler.isPaused()
+    };
   }
 
   async flushOfflineQueue(): Promise<void> {
@@ -130,10 +153,10 @@ export class ApiClient {
             body: JSON.stringify(operation.data),
             headers: {
               'Content-Type': 'application/json',
-              ...operation.headers,
+              ...operation.headers
             },
             skipRetry: true,
-            skipOfflineQueue: true,
+            skipOfflineQueue: true
           });
           return true;
         } catch (error) {
@@ -152,9 +175,9 @@ export class ApiClient {
   }
 
   private async executeRequest<T = any>(
-    url: string,
-    options: ApiClientOptions = {}
-  ): Promise<T> {
+  url: string,
+  options: ApiClientOptions = {})
+  : Promise<T> {
     const {
       timeout = this.config.timeout,
       skipRetry = false,
@@ -177,8 +200,8 @@ export class ApiClient {
         headers: {
           'Content-Type': 'application/json',
           ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }),
-          ...fetchOptions.headers,
-        },
+          ...fetchOptions.headers
+        }
       });
 
       clearTimeout(timeoutId);
@@ -197,7 +220,7 @@ export class ApiClient {
       if (contentType?.includes('application/json')) {
         return await response.json();
       }
-      return await response.text() as T;
+      return (await response.text()) as T;
 
     } catch (error) {
       clearTimeout(timeoutId);
@@ -232,26 +255,26 @@ export class ApiClient {
   }
 
   private async requestWithRetry<T = any>(
-    url: string,
-    options: ApiClientOptions = {}
-  ): Promise<T> {
+  url: string,
+  options: ApiClientOptions = {})
+  : Promise<T> {
     const { skipRetry = false } = options;
-    
+
     if (skipRetry || this.config.retries === 0) {
       return this.executeRequest<T>(url, options);
     }
 
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= this.config.retries; attempt++) {
       try {
         return await this.executeRequest<T>(url, options);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         // Don't retry on client errors or if we've exhausted attempts
-        if (attempt === this.config.retries || 
-            (error instanceof ApiError && !error.retryable)) {
+        if (attempt === this.config.retries ||
+        error instanceof ApiError && !error.retryable) {
           break;
         }
 
@@ -263,8 +286,8 @@ export class ApiClient {
             this.config.retryDelayMax,
             this.config.retryFactor
           );
-          
-          await new Promise(resolve => setTimeout(resolve, delay));
+
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -293,7 +316,7 @@ export class ApiClient {
     return this.requestWithRetry<T>(url, {
       ...options,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data ? JSON.stringify(data) : undefined
     });
   }
 
@@ -313,7 +336,7 @@ export class ApiClient {
     return this.requestWithRetry<T>(url, {
       ...options,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data ? JSON.stringify(data) : undefined
     });
   }
 
@@ -337,7 +360,7 @@ export class ApiClient {
     return {
       size: this.offlineQueue.size(),
       isEmpty: this.offlineQueue.isEmpty(),
-      operations: this.offlineQueue.getAll(),
+      operations: this.offlineQueue.getAll()
     };
   }
 
@@ -354,15 +377,15 @@ export class ApiClient {
 
 // Global API client instance
 export const apiClient = new ApiClient({
-  baseURL: '', // Will use current origin
+  baseURL: '' // Will use current origin
 });
 
 // Utility function to create typed API error
 export function createApiError(
-  message: string,
-  code: string = 'UNKNOWN_ERROR',
-  retryable: boolean = false,
-  details?: any
-): ApiError {
+message: string,
+code: string = 'UNKNOWN_ERROR',
+retryable: boolean = false,
+details?: any)
+: ApiError {
   return new ApiError(message, code, retryable, details);
 }

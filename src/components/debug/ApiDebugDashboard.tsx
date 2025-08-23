@@ -82,9 +82,9 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
-    }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length,
-    success: apiCalls.filter((c) => c.status === 'success').length,
+    }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length,
     error: apiCalls.filter((c) => c.status === 'error').length,
     pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length
   };

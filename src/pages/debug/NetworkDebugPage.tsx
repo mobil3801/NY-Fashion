@@ -9,6 +9,7 @@ import NetworkStatusMonitor from '@/components/debug/NetworkStatusMonitor';
 import ApiDebugDashboard from '@/components/debug/ApiDebugDashboard';
 import ConnectionRecovery from '@/components/debug/ConnectionRecovery';
 import DebugSettingsPanel from '@/components/debug/DebugSettingsPanel';
+import NetworkDiagnosticsPanel from '@/components/debug/NetworkDiagnosticsPanel';
 
 const NetworkDebugPage: React.FC = () => {
   const navigate = useNavigate();
@@ -62,6 +63,7 @@ const NetworkDebugPage: React.FC = () => {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full max-w-md">
+          <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="api">API Calls</TabsTrigger>
           <TabsTrigger value="recovery">Recovery</TabsTrigger>
@@ -129,6 +131,10 @@ const NetworkDebugPage: React.FC = () => {
 
         <TabsContent value="api" className="space-y-6">
           <ApiDebugDashboard />
+        </TabsContent>
+
+        <TabsContent value="diagnostics" className="mt-6">
+          <NetworkDiagnosticsPanel />
         </TabsContent>
 
         <TabsContent value="recovery" className="space-y-6">

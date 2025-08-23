@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: ConnectivityConfig = {
   maxRetries: 5,
   baseDelay: 300,
   maxDelay: 10000,
-  backoffFactor: 2,
+  backoffFactor: 2
 };
 
 export type ConnectivityListener = (status: NetStatus) => void;
@@ -33,13 +33,27 @@ export class ConnectivityMonitor {
   private heartbeatTimer?: number;
   private abortController?: AbortController;
   private isDestroyed = false;
+  private lastSuccessfulEndpoint?: string;
+  private diagnostics: {
+    totalAttempts: number;
+    successfulAttempts: number;
+    failedEndpoints: Map<string, number>;
+    averageLatency: number;
+    lastLatencies: number[];
+  } = {
+    totalAttempts: 0,
+    successfulAttempts: 0,
+    failedEndpoints: new Map(),
+    averageLatency: 0,
+    lastLatencies: []
+  };
 
   constructor(config: Partial<ConnectivityConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.status = {
       online: navigator.onLine,
       lastCheck: new Date(),
-      consecutiveFailures: 0,
+      consecutiveFailures: 0
     };
 
     this.setupBrowserListeners();
@@ -55,9 +69,9 @@ export class ConnectivityMonitor {
 
     const handleOffline = () => {
       if (this.isDestroyed) return;
-      this.updateStatus({ 
-        online: false, 
-        lastError: 'Browser offline event',
+      this.updateStatus({
+        online: false,
+        lastError: 'Browser offline event'
       });
     };
 
@@ -75,7 +89,7 @@ export class ConnectivityMonitor {
 
   private startHeartbeat(): void {
     if (this.isDestroyed) return;
-    
+
     this.heartbeatTimer = window.setTimeout(() => {
       this.performHeartbeat();
     }, this.config.heartbeatInterval);
@@ -87,48 +101,69 @@ export class ConnectivityMonitor {
     this.abortController?.abort();
     this.abortController = new AbortController();
 
+    const startTime = performance.now();
+    this.diagnostics.totalAttempts++;
+
     try {
-      // Use a lightweight endpoint - try current origin first, then fallback
+      // Use actual API endpoints - try database connection first, then fallbacks
       const endpoints = [
-        `${window.location.origin}/api/health`,
-        `${window.location.origin}/favicon.ico`,
-        'https://www.google.com/favicon.ico', // Ultimate fallback
+        `${window.location.origin}/api/database/health`, // EasySite database health check
+        `${window.location.origin}/api/health`, // Generic health endpoint
+        `${window.location.origin}/favicon.ico`, // Static resource fallback
+        'https://httpbin.org/status/200', // Reliable external fallback
+        'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;
       let lastError = '';
+      let successfulEndpoint = '';
 
       for (const endpoint of endpoints) {
         try {
+          const requestStart = performance.now();
           const response = await fetch(endpoint, {
             method: 'HEAD',
             mode: 'no-cors', // Allow cross-origin for fallback
             cache: 'no-cache',
             signal: this.abortController.signal,
-            timeout: this.config.heartbeatTimeout,
+            timeout: this.config.heartbeatTimeout
           } as RequestInit);
 
+          const latency = performance.now() - requestStart;
+          
           // Consider any non-network error as success for connectivity
           success = true;
+          successfulEndpoint = endpoint;
+          this.lastSuccessfulEndpoint = endpoint;
+          
+          // Update latency tracking
+          this.diagnostics.lastLatencies.push(latency);
+          if (this.diagnostics.lastLatencies.length > 10) {
+            this.diagnostics.lastLatencies.shift();
+          }
+          this.diagnostics.averageLatency = this.diagnostics.lastLatencies.reduce((a, b) => a + b, 0) / this.diagnostics.lastLatencies.length;
+          
           break;
         } catch (error) {
           lastError = error instanceof Error ? error.message : 'Unknown error';
+          this.diagnostics.failedEndpoints.set(endpoint, (this.diagnostics.failedEndpoints.get(endpoint) || 0) + 1);
           // Continue to next endpoint
         }
       }
 
       if (success) {
-        this.updateStatus({ 
-          online: true, 
+        this.diagnostics.successfulAttempts++;
+        this.updateStatus({
+          online: true,
           consecutiveFailures: 0,
-          lastError: undefined,
+          lastError: undefined
         });
       } else {
         this.handleHeartbeatFailure(lastError);
       }
     } catch (error) {
       if (this.isDestroyed) return;
-      
+
       const errorMessage = error instanceof Error ? error.message : 'Network error';
       this.handleHeartbeatFailure(errorMessage);
     }
@@ -144,7 +179,7 @@ export class ConnectivityMonitor {
     this.updateStatus({
       online: shouldMarkOffline ? false : this.status.online,
       consecutiveFailures: failures,
-      lastError: error,
+      lastError: error
     });
   }
 
@@ -155,7 +190,7 @@ export class ConnectivityMonitor {
     this.status = {
       ...this.status,
       ...updates,
-      lastCheck: new Date(),
+      lastCheck: new Date()
     };
 
     // Only notify listeners if online status actually changed
@@ -165,7 +200,7 @@ export class ConnectivityMonitor {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => {
+    this.listeners.forEach((listener) => {
       try {
         listener(this.status);
       } catch (error) {
@@ -188,13 +223,17 @@ export class ConnectivityMonitor {
     return this.getStatus();
   }
 
+  public getDiagnostics() {
+    return { ...this.diagnostics, lastSuccessfulEndpoint: this.lastSuccessfulEndpoint };
+  }
+
   public destroy(): void {
     this.isDestroyed = true;
-    
+
     if (this.heartbeatTimer) {
       clearTimeout(this.heartbeatTimer);
     }
-    
+
     this.abortController?.abort();
     this.cleanup?.();
     this.listeners.clear();
@@ -215,14 +254,14 @@ export function isOfflineError(error: unknown): boolean {
       message.includes('fetch') ||
       message.includes('connection') ||
       message.includes('timeout') ||
-      message.includes('dns')
-    );
+      message.includes('dns'));
+
   }
 
   // Check for specific HTTP status codes that indicate offline
   if (typeof error === 'object' && error !== null) {
     const status = (error as any).status || (error as any).statusCode;
-    return status === 408 || status === 429 || (status >= 500 && status < 600);
+    return status === 408 || status === 429 || status >= 500 && status < 600;
   }
 
   return false;
@@ -230,16 +269,16 @@ export function isOfflineError(error: unknown): boolean {
 
 // Exponential backoff with jitter
 export function calculateBackoffDelay(
-  attempt: number,
-  baseDelay: number = 300,
-  maxDelay: number = 10000,
-  factor: number = 2
-): number {
+attempt: number,
+baseDelay: number = 300,
+maxDelay: number = 10000,
+factor: number = 2)
+: number {
   const exponentialDelay = baseDelay * Math.pow(factor, attempt);
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
-  
+
   // Add jitter (±25% randomization)
   const jitter = cappedDelay * 0.25 * (Math.random() - 0.5);
-  
+
   return Math.max(0, cappedDelay + jitter);
 }

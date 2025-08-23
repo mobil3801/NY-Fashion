@@ -14,24 +14,24 @@ export function useNetworkApi() {
   }, [online]);
 
   const executeWithOfflineHandling = useCallback(
-    async <T>(
-      operation: () => Promise<T>,
-      options: {
-        successMessage?: string;
-        errorMessage?: string;
-        offlineMessage?: string;
-      } = {}
-    ): Promise<T | null> => {
+    async <T,>(
+    operation: () => Promise<T>,
+    options: {
+      successMessage?: string;
+      errorMessage?: string;
+      offlineMessage?: string;
+    } = {})
+    : Promise<T | null> => {
       try {
         const result = await operation();
-        
+
         if (options.successMessage) {
           toast({
             title: "Success",
-            description: options.successMessage,
+            description: options.successMessage
           });
         }
-        
+
         return result;
       } catch (error) {
         if (error instanceof Error) {
@@ -40,7 +40,7 @@ export function useNetworkApi() {
             toast({
               title: "Saved offline",
               description: options.offlineMessage || "Changes will sync when connection is restored",
-              variant: "default",
+              variant: "default"
             });
             return null;
           }
@@ -50,9 +50,9 @@ export function useNetworkApi() {
         toast({
           title: "Error",
           description: options.errorMessage || "An unexpected error occurred",
-          variant: "destructive",
+          variant: "destructive"
         });
-        
+
         throw error;
       }
     },
@@ -63,6 +63,6 @@ export function useNetworkApi() {
     online,
     executeWithOfflineHandling,
     queueStatus: apiClient.getQueueStatus(),
-    clearQueue: apiClient.clearQueue.bind(apiClient),
+    clearQueue: apiClient.clearQueue.bind(apiClient)
   };
 }

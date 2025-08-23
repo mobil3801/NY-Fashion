@@ -7,22 +7,22 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 const mockNavigator = {
-  onLine: true,
+  onLine: true
 };
 Object.defineProperty(global, 'navigator', {
   value: mockNavigator,
-  writable: true,
+  writable: true
 });
 
 describe('ConnectivityMonitor', () => {
   let monitor: ConnectivityMonitor;
-  
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigator.onLine = true;
     monitor = new ConnectivityMonitor({
       heartbeatInterval: 100, // Fast for testing
-      heartbeatTimeout: 50,
+      heartbeatTimeout: 50
     });
   });
 
@@ -38,7 +38,7 @@ describe('ConnectivityMonitor', () => {
 
   it('should detect offline status after failures', async () => {
     mockFetch.mockRejectedValue(new TypeError('Network error'));
-    
+
     const statusPromise = new Promise((resolve) => {
       monitor.addListener((status) => {
         if (!status.online) {
@@ -62,7 +62,7 @@ describe('ConnectivityMonitor', () => {
 
     // Then recover
     mockFetch.mockResolvedValue(new Response('', { status: 200 }));
-    
+
     const statusPromise = new Promise((resolve) => {
       monitor.addListener((status) => {
         if (status.online && status.consecutiveFailures === 0) {
@@ -90,9 +90,9 @@ describe('ConnectivityMonitor', () => {
   it('should clean up properly when destroyed', () => {
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-    
+
     monitor.destroy();
-    
+
     expect(removeEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
     expect(removeEventListenerSpy).toHaveBeenCalledWith('offline', expect.any(Function));
   });
@@ -132,7 +132,7 @@ describe('calculateBackoffDelay', () => {
 
   it('should add jitter', () => {
     const delays = Array.from({ length: 10 }, () => calculateBackoffDelay(1, 100, 1000, 2));
-    const allSame = delays.every(delay => delay === delays[0]);
+    const allSame = delays.every((delay) => delay === delays[0]);
     expect(allSame).toBe(false); // Should have some variation due to jitter
   });
 });
