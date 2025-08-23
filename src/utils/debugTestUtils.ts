@@ -81,7 +81,7 @@ export class NetworkFailureSimulator {
     window.fetch = async (...args) => {
       // Add delay if specified
       if (this.delayMs > 0) {
-        await new Promise(resolve => setTimeout(resolve, this.delayMs));
+        await new Promise((resolve) => setTimeout(resolve, this.delayMs));
       }
 
       // Simulate failure if specified
@@ -126,9 +126,9 @@ export class NetworkFailureSimulator {
  * Test a specific endpoint
  */
 export async function testEndpoint(
-  url: string,
-  options: RequestInit = {}
-): Promise<NetworkTestResult> {
+url: string,
+options: RequestInit = {})
+: Promise<NetworkTestResult> {
   const startTime = performance.now();
 
   try {
@@ -178,12 +178,12 @@ export async function testEndpoint(
  * Run comprehensive network benchmark
  */
 export async function runNetworkBenchmark(
-  options: {
-    testCount?: number;
-    testUrls?: string[];
-    uploadTest?: boolean;
-  } = {}
-): Promise<BenchmarkResult> {
+options: {
+  testCount?: number;
+  testUrls?: string[];
+  uploadTest?: boolean;
+} = {})
+: Promise<BenchmarkResult> {
   const {
     testCount = 10,
     testUrls = [`${window.location.origin}/favicon.ico`],
@@ -199,12 +199,12 @@ export async function runNetworkBenchmark(
   for (let i = 0; i < testCount; i++) {
     const url = testUrls[i % testUrls.length];
     const result = await testEndpoint(url, { method: 'HEAD' });
-    
+
     latencyTests.push(result.duration);
     reliabilityTests.push(result.success);
 
     // Small delay between tests
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   // Calculate latency metrics
@@ -238,7 +238,7 @@ export async function runNetworkBenchmark(
     const downloadData = await downloadResponse.blob();
     const downloadDuration = performance.now() - downloadStart;
     const downloadSizeBytes = downloadData.size;
-    bandwidth.downloadMbps = (downloadSizeBytes * 8) / (downloadDuration / 1000) / (1024 * 1024);
+    bandwidth.downloadMbps = downloadSizeBytes * 8 / (downloadDuration / 1000) / (1024 * 1024);
 
     // Upload test (if enabled and supported)
     if (uploadTest) {
@@ -253,11 +253,11 @@ export async function runNetworkBenchmark(
           body: formData
         });
         const uploadDuration = performance.now() - uploadStart;
-        bandwidth.uploadMbps = (testData.size * 8) / (uploadDuration / 1000) / (1024 * 1024);
+        bandwidth.uploadMbps = testData.size * 8 / (uploadDuration / 1000) / (1024 * 1024);
       } catch {
+
         // Upload test failed, keep upload as 0
-      }
-    }
+      }}
   } catch (error) {
     console.warn('Bandwidth test failed:', error);
   }
@@ -308,14 +308,14 @@ export async function testDnsResolution(domains: string[] = ['google.com', 'clou
     })
   );
 
-  return results.map((result, index) => 
-    result.status === 'fulfilled' 
-      ? result.value 
-      : {
-          domain: domains[index],
-          resolved: false,
-          duration: 0
-        }
+  return results.map((result, index) =>
+  result.status === 'fulfilled' ?
+  result.value :
+  {
+    domain: domains[index],
+    resolved: false,
+    duration: 0
+  }
   );
 }
 

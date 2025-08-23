@@ -23,7 +23,7 @@ class DebugLogger {
 
   private shouldLog(level: 'debug' | 'info' | 'warn' | 'error'): boolean {
     if (!this.isEnabled) return false;
-    
+
     const levels = { debug: 0, info: 1, warn: 2, error: 3 };
     return levels[level] >= levels[this.logLevel];
   }
@@ -31,11 +31,11 @@ class DebugLogger {
   private formatMessage(message: string, data?: any): string {
     const timestamp = new Date().toISOString();
     const prefix = `🔧 [${timestamp}]`;
-    
+
     if (data) {
       return `${prefix} ${message}\n${JSON.stringify(data, null, 2)}`;
     }
-    
+
     return `${prefix} ${message}`;
   }
 
@@ -67,7 +67,7 @@ class DebugLogger {
   apiCall(method: string, url: string, duration: number, success: boolean, data?: any) {
     const status = success ? '✅' : '❌';
     const message = `${status} ${method} ${url} (${duration.toFixed(0)}ms)`;
-    
+
     if (success) {
       this.debug(message, data);
     } else {
@@ -83,7 +83,7 @@ class DebugLogger {
   // Retry-specific logging
   retryAttempt(operation: string, attempt: number, maxAttempts: number, error?: ApiError) {
     const message = `🔄 Retry ${operation}: attempt ${attempt}/${maxAttempts}`;
-    
+
     if (error) {
       this.warn(message, { error: error.message, type: error.type });
     } else {
@@ -128,7 +128,7 @@ export const debugCommands = {
     localStorage.clear();
     sessionStorage.clear();
     if ('caches' in window) {
-      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+      caches.keys().then((names) => names.forEach((name) => caches.delete(name)));
     }
     console.log('🔧 All storage cleared');
   },
@@ -146,19 +146,19 @@ export const debugCommands = {
 
   testEndpoints: async () => {
     const endpoints = [
-      `${window.location.origin}/`,
-      `${window.location.origin}/api/health`,
-      'https://www.google.com',
-      'https://api.github.com'
-    ];
+    `${window.location.origin}/`,
+    `${window.location.origin}/api/health`,
+    'https://www.google.com',
+    'https://api.github.com'];
+
 
     console.log('🔧 Testing endpoints...');
-    
+
     for (const endpoint of endpoints) {
       const start = performance.now();
       try {
-        const response = await fetch(endpoint, { 
-          method: 'HEAD', 
+        const response = await fetch(endpoint, {
+          method: 'HEAD',
           cache: 'no-cache',
           mode: endpoint.includes(window.location.origin) ? 'same-origin' : 'no-cors'
         });
@@ -177,11 +177,11 @@ export const debugCommands = {
       action: 'Manual error report generation',
       timestamp: new Date().toISOString()
     });
-    
+
     console.group('🔧 Error Report');
     console.log(JSON.stringify(report, null, 2));
     console.groupEnd();
-    
+
     return report;
   },
 
@@ -214,7 +214,7 @@ export function initConsoleDebugUtils() {
     // Log available commands
     console.group('🔧 Debug Commands Available');
     console.log('Access debug utilities via window.debug:');
-    Object.keys(debugCommands).forEach(command => {
+    Object.keys(debugCommands).forEach((command) => {
       console.log(`  debug.${command}()`);
     });
     console.log('\nExample usage:');

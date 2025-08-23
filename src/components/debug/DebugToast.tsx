@@ -63,34 +63,34 @@ const DebugToast: React.FC<DebugToastProps> = ({
         <div className="text-xs text-gray-500">
           Type: {error.type}
         </div>
-        {canRetry && onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-            className="text-xs h-6"
-          >
+        {canRetry && onRetry &&
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          className="text-xs h-6">
+
             <RefreshCw className="h-3 w-3 mr-1" />
             Retry
           </Button>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 /**
  * Enhanced toast function for debug mode
  */
 export function showDebugToast(
-  error: ApiError,
-  operation: string,
-  options: {
-    attempt?: number;
-    maxAttempts?: number;
-    onRetry?: () => void;
-  } = {}
-) {
+error: ApiError,
+operation: string,
+options: {
+  attempt?: number;
+  maxAttempts?: number;
+  onRetry?: () => void;
+} = {})
+{
   const { toast } = useToast();
 
   // Show regular toast for production or when debug is disabled

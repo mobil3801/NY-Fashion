@@ -10,26 +10,26 @@ import { useDebug } from '@/contexts/DebugContext';
 import { useToast } from '@/hooks/use-toast';
 
 const ConnectionRecovery: React.FC = () => {
-  const { 
-    apiCalls, 
-    networkStatus, 
-    retryFailedCall, 
-    clearCache, 
+  const {
+    apiCalls,
+    networkStatus,
+    retryFailedCall,
+    clearCache,
     checkNetworkStatus,
-    clearApiCalls 
+    clearApiCalls
   } = useDebug();
   const { toast } = useToast();
-  
+
   const [isClearing, setIsClearing] = useState(false);
   const [retryingCalls, setRetryingCalls] = useState<Set<string>>(new Set());
 
-  const failedCalls = apiCalls.filter(call => call.status === 'error');
+  const failedCalls = apiCalls.filter((call) => call.status === 'error');
   const recentFailures = failedCalls.slice(0, 5);
 
   const handleRetryAll = async () => {
     if (failedCalls.length === 0) return;
 
-    const callIds = failedCalls.map(call => call.id);
+    const callIds = failedCalls.map((call) => call.id);
     setRetryingCalls(new Set(callIds));
 
     let successCount = 0;
@@ -58,8 +58,8 @@ const ConnectionRecovery: React.FC = () => {
   };
 
   const handleRetryCall = async (callId: string) => {
-    setRetryingCalls(prev => new Set([...prev, callId]));
-    
+    setRetryingCalls((prev) => new Set([...prev, callId]));
+
     try {
       await retryFailedCall(callId);
       toast({
@@ -73,7 +73,7 @@ const ConnectionRecovery: React.FC = () => {
         variant: "destructive"
       });
     } finally {
-      setRetryingCalls(prev => {
+      setRetryingCalls((prev) => {
         const next = new Set(prev);
         next.delete(callId);
         return next;
@@ -83,7 +83,7 @@ const ConnectionRecovery: React.FC = () => {
 
   const handleClearCache = async () => {
     setIsClearing(true);
-    
+
     try {
       await clearCache();
       toast({
@@ -103,12 +103,12 @@ const ConnectionRecovery: React.FC = () => {
 
   const handleFullReset = async () => {
     setIsClearing(true);
-    
+
     try {
       await clearCache();
       clearApiCalls();
       await checkNetworkStatus();
-      
+
       toast({
         title: "Reset Complete",
         description: "Connection state has been reset"
@@ -128,19 +128,19 @@ const ConnectionRecovery: React.FC = () => {
     if (!networkStatus.isOnline) {
       return { status: 'critical', message: 'No internet connection', color: 'red' };
     }
-    
+
     if (networkStatus.latency === null) {
       return { status: 'unknown', message: 'Connection status unknown', color: 'gray' };
     }
-    
+
     if (networkStatus.latency > 1000) {
       return { status: 'poor', message: 'Very slow connection', color: 'red' };
     }
-    
+
     if (networkStatus.latency > 500) {
       return { status: 'fair', message: 'Slow connection', color: 'yellow' };
     }
-    
+
     return { status: 'good', message: 'Connection healthy', color: 'green' };
   };
 
@@ -165,11 +165,11 @@ const ConnectionRecovery: React.FC = () => {
           </div>
           <AlertDescription className="ml-6">
             {healthStatus.message}
-            {networkStatus.latency && (
-              <span className="ml-2 text-xs">
+            {networkStatus.latency &&
+            <span className="ml-2 text-xs">
                 (Latency: {networkStatus.latency.toFixed(0)}ms)
               </span>
-            )}
+            }
           </AlertDescription>
         </Alert>
 
@@ -182,8 +182,8 @@ const ConnectionRecovery: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={checkNetworkStatus}
-                className="text-xs"
-              >
+                className="text-xs">
+
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Test Connection
               </Button>
@@ -196,8 +196,8 @@ const ConnectionRecovery: React.FC = () => {
               size="sm"
               onClick={handleClearCache}
               disabled={isClearing}
-              className="text-xs"
-            >
+              className="text-xs">
+
               <Trash2 className="h-3 w-3 mr-1" />
               {isClearing ? 'Clearing...' : 'Clear Cache'}
             </Button>
@@ -206,8 +206,8 @@ const ConnectionRecovery: React.FC = () => {
               size="sm"
               onClick={handleFullReset}
               disabled={isClearing}
-              className="text-xs"
-            >
+              className="text-xs">
+
               <RotateCcw className="h-3 w-3 mr-1" />
               {isClearing ? 'Resetting...' : 'Full Reset'}
             </Button>
@@ -225,28 +225,28 @@ const ConnectionRecovery: React.FC = () => {
                 {failedCalls.length}
               </Badge>
             </div>
-            {failedCalls.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetryAll}
-                disabled={retryingCalls.size > 0}
-                className="text-xs"
-              >
+            {failedCalls.length > 0 &&
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRetryAll}
+              disabled={retryingCalls.size > 0}
+              className="text-xs">
+
                 <RotateCcw className={`h-3 w-3 mr-1 ${retryingCalls.size > 0 ? 'animate-spin' : ''}`} />
                 Retry All
               </Button>
-            )}
+            }
           </div>
 
-          {recentFailures.length === 0 ? (
-            <div className="text-center py-4 text-gray-500 text-sm">
+          {recentFailures.length === 0 ?
+          <div className="text-center py-4 text-gray-500 text-sm">
               No recent failures
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {recentFailures.map((call) => (
-                <div key={call.id} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200">
+            </div> :
+
+          <div className="space-y-2">
+              {recentFailures.map((call) =>
+            <div key={call.id} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
                       {call.operation}
@@ -254,30 +254,30 @@ const ConnectionRecovery: React.FC = () => {
                     <div className="text-xs text-gray-500 truncate">
                       {call.url}
                     </div>
-                    {call.error && (
-                      <div className="text-xs text-red-600 truncate">
+                    {call.error &&
+                <div className="text-xs text-red-600 truncate">
                         {call.error.message}
                       </div>
-                    )}
+                }
                   </div>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRetryCall(call.id)}
-                    disabled={retryingCalls.has(call.id)}
-                    className="ml-2 text-xs"
-                  >
+                variant="outline"
+                size="sm"
+                onClick={() => handleRetryCall(call.id)}
+                disabled={retryingCalls.has(call.id)}
+                className="ml-2 text-xs">
+
                     <RotateCcw className={`h-3 w-3 ${retryingCalls.has(call.id) ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
-              ))}
-              {failedCalls.length > 5 && (
-                <div className="text-center text-xs text-gray-500">
+            )}
+              {failedCalls.length > 5 &&
+            <div className="text-center text-xs text-gray-500">
                   ... and {failedCalls.length - 5} more
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
         </div>
 
         {/* Tips */}
@@ -291,8 +291,8 @@ const ConnectionRecovery: React.FC = () => {
           </ul>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default ConnectionRecovery;

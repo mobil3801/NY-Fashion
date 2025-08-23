@@ -33,7 +33,7 @@ const DebugSettingsPanel: React.FC = () => {
       simulateNetworkConditions: 'none',
       retryOverrides: {}
     });
-    
+
     toast({
       title: "Settings Reset",
       description: "Debug settings have been reset to defaults"
@@ -46,11 +46,11 @@ const DebugSettingsPanel: React.FC = () => {
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Settings className="h-4 w-4" />
           Debug Settings
-          {debugSettings.enabled && (
-            <Badge variant="default" className="text-xs">
+          {debugSettings.enabled &&
+          <Badge variant="default" className="text-xs">
               Active
             </Badge>
-          )}
+          }
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -65,16 +65,16 @@ const DebugSettingsPanel: React.FC = () => {
             </div>
             <Switch
               checked={debugSettings.enabled}
-              onCheckedChange={(enabled) => updateDebugSettings({ enabled })}
-            />
+              onCheckedChange={(enabled) => updateDebugSettings({ enabled })} />
+
           </div>
 
           <div className="space-y-2">
             <Label className="text-sm font-medium">Log Level</Label>
             <Select
               value={debugSettings.logLevel}
-              onValueChange={(logLevel: any) => updateDebugSettings({ logLevel })}
-            >
+              onValueChange={(logLevel: any) => updateDebugSettings({ logLevel })}>
+
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -112,13 +112,13 @@ const DebugSettingsPanel: React.FC = () => {
             <Input
               type="number"
               value={debugSettings.maxApiCalls}
-              onChange={(e) => updateDebugSettings({ 
-                maxApiCalls: parseInt(e.target.value) || 100 
+              onChange={(e) => updateDebugSettings({
+                maxApiCalls: parseInt(e.target.value) || 100
               })}
               min="10"
               max="1000"
-              className="w-24"
-            />
+              className="w-24" />
+
             <div className="text-xs text-gray-500">
               Number of API calls to keep in history (10-1000)
             </div>
@@ -134,10 +134,10 @@ const DebugSettingsPanel: React.FC = () => {
           <div className="space-y-2">
             <Select
               value={debugSettings.simulateNetworkConditions}
-              onValueChange={(simulateNetworkConditions: any) => 
-                updateDebugSettings({ simulateNetworkConditions })
-              }
-            >
+              onValueChange={(simulateNetworkConditions: any) =>
+              updateDebugSettings({ simulateNetworkConditions })
+              }>
+
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -155,16 +155,16 @@ const DebugSettingsPanel: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => handleSimulateNetworkFailure(5000)}
-              className="text-xs"
-            >
+              className="text-xs">
+
               5s Failure
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSimulateNetworkFailure(15000)}
-              className="text-xs"
-            >
+              className="text-xs">
+
               15s Failure
             </Button>
           </div>
@@ -183,7 +183,7 @@ const DebugSettingsPanel: React.FC = () => {
                 type="number"
                 placeholder="Default: 3"
                 value={debugSettings.retryOverrides.attempts || ''}
-                onChange={(e) => updateDebugSettings({ 
+                onChange={(e) => updateDebugSettings({
                   retryOverrides: {
                     ...debugSettings.retryOverrides,
                     attempts: e.target.value ? parseInt(e.target.value) : undefined
@@ -191,8 +191,8 @@ const DebugSettingsPanel: React.FC = () => {
                 })}
                 min="1"
                 max="10"
-                className="w-24"
-              />
+                className="w-24" />
+
             </div>
             
             <div className="space-y-2">
@@ -201,7 +201,7 @@ const DebugSettingsPanel: React.FC = () => {
                 type="number"
                 placeholder="Default: 300"
                 value={debugSettings.retryOverrides.baseDelayMs || ''}
-                onChange={(e) => updateDebugSettings({ 
+                onChange={(e) => updateDebugSettings({
                   retryOverrides: {
                     ...debugSettings.retryOverrides,
                     baseDelayMs: e.target.value ? parseInt(e.target.value) : undefined
@@ -209,8 +209,8 @@ const DebugSettingsPanel: React.FC = () => {
                 })}
                 min="100"
                 max="5000"
-                className="w-24"
-              />
+                className="w-24" />
+
             </div>
             
             <div className="space-y-2">
@@ -219,7 +219,7 @@ const DebugSettingsPanel: React.FC = () => {
                 type="number"
                 placeholder="Default: 10000"
                 value={debugSettings.retryOverrides.maxDelayMs || ''}
-                onChange={(e) => updateDebugSettings({ 
+                onChange={(e) => updateDebugSettings({
                   retryOverrides: {
                     ...debugSettings.retryOverrides,
                     maxDelayMs: e.target.value ? parseInt(e.target.value) : undefined
@@ -227,8 +227,8 @@ const DebugSettingsPanel: React.FC = () => {
                 })}
                 min="1000"
                 max="60000"
-                className="w-24"
-              />
+                className="w-24" />
+
             </div>
           </div>
           
@@ -245,8 +245,8 @@ const DebugSettingsPanel: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={resetToDefaults}
-            className="text-xs"
-          >
+            className="text-xs">
+
             Reset to Defaults
           </Button>
           <div className="text-xs text-gray-500">
@@ -261,8 +261,8 @@ const DebugSettingsPanel: React.FC = () => {
           <div>User Agent: {navigator.userAgent.slice(0, 50)}...</div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default DebugSettingsPanel;

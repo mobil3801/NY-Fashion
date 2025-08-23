@@ -10,7 +10,7 @@ import { useDebug } from '@/contexts/DebugContext';
 const NetworkStatusMonitor: React.FC = () => {
   const { networkStatus, checkNetworkStatus, runNetworkBenchmark } = useDebug();
   const [isRunningBenchmark, setIsRunningBenchmark] = useState(false);
-  const [benchmarkResults, setBenchmarkResults] = useState<{ latency: number; bandwidth: number } | null>(null);
+  const [benchmarkResults, setBenchmarkResults] = useState<{latency: number;bandwidth: number;} | null>(null);
 
   const handleRunBenchmark = async () => {
     setIsRunningBenchmark(true);
@@ -24,9 +24,9 @@ const NetworkStatusMonitor: React.FC = () => {
     }
   };
 
-  const getConnectionQuality = (latency: number | null): { label: string; color: string; score: number } => {
+  const getConnectionQuality = (latency: number | null): {label: string;color: string;score: number;} => {
     if (!latency) return { label: 'Unknown', color: 'gray', score: 0 };
-    
+
     if (latency < 100) return { label: 'Excellent', color: 'green', score: 100 };
     if (latency < 300) return { label: 'Good', color: 'yellow', score: 75 };
     if (latency < 600) return { label: 'Fair', color: 'orange', score: 50 };
@@ -49,19 +49,19 @@ const NetworkStatusMonitor: React.FC = () => {
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
-          {networkStatus.isOnline ? (
-            <Wifi className="h-4 w-4 text-green-500" />
-          ) : (
-            <WifiOff className="h-4 w-4 text-red-500" />
-          )}
+          {networkStatus.isOnline ?
+          <Wifi className="h-4 w-4 text-green-500" /> :
+
+          <WifiOff className="h-4 w-4 text-red-500" />
+          }
           Network Status
         </CardTitle>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={checkNetworkStatus}
-          className="text-xs"
-        >
+          className="text-xs">
+
           Refresh
         </Button>
       </CardHeader>
@@ -75,8 +75,8 @@ const NetworkStatusMonitor: React.FC = () => {
         </div>
 
         {/* Latency */}
-        {networkStatus.latency && (
-          <div className="space-y-2">
+        {networkStatus.latency &&
+        <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -94,19 +94,19 @@ const NetworkStatusMonitor: React.FC = () => {
               <Progress value={quality.score} className="h-2" />
             </div>
           </div>
-        )}
+        }
 
         {/* Connection Info */}
-        {(networkStatus.connectionType || networkStatus.downlink) && (
-          <div className="space-y-2">
-            {networkStatus.connectionType && (
-              <div className="flex items-center justify-between">
+        {(networkStatus.connectionType || networkStatus.downlink) &&
+        <div className="space-y-2">
+            {networkStatus.connectionType &&
+          <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Type:</span>
                 <Badge variant="outline">{networkStatus.connectionType}</Badge>
               </div>
-            )}
-            {networkStatus.downlink && (
-              <div className="flex items-center justify-between">
+          }
+            {networkStatus.downlink &&
+          <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600 flex items-center gap-1">
                   <Download className="h-3 w-3" />
                   Downlink:
@@ -115,9 +115,9 @@ const NetworkStatusMonitor: React.FC = () => {
                   {networkStatus.downlink.toFixed(1)} Mbps
                 </span>
               </div>
-            )}
+          }
           </div>
-        )}
+        }
 
         {/* Last Check */}
         <div className="flex items-center justify-between text-xs text-gray-500">
@@ -132,26 +132,26 @@ const NetworkStatusMonitor: React.FC = () => {
               <Activity className="h-3 w-3" />
               Benchmark
             </span>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleRunBenchmark}
               disabled={isRunningBenchmark}
-              className="text-xs"
-            >
-              {isRunningBenchmark ? (
-                <>
+              className="text-xs">
+
+              {isRunningBenchmark ?
+              <>
                   <Zap className="h-3 w-3 mr-1 animate-spin" />
                   Testing...
-                </>
-              ) : (
-                'Run Test'
-              )}
+                </> :
+
+              'Run Test'
+              }
             </Button>
           </div>
 
-          {benchmarkResults && (
-            <div className="space-y-2 text-sm">
+          {benchmarkResults &&
+          <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Avg Latency:</span>
                 <span className="font-mono">{benchmarkResults.latency.toFixed(0)}ms</span>
@@ -161,11 +161,11 @@ const NetworkStatusMonitor: React.FC = () => {
                 <span className="font-mono">{formatBandwidth(benchmarkResults.bandwidth)}</span>
               </div>
             </div>
-          )}
+          }
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default NetworkStatusMonitor;

@@ -27,15 +27,15 @@ const NetworkDebugPage: React.FC = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate('/dashboard')}
-                className="mt-4"
-              >
+                className="mt-4">
+
                 Back to Dashboard
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -46,8 +46,8 @@ const NetworkDebugPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
-          >
+            onClick={() => navigate(-1)}>
+
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -83,8 +83,8 @@ const NetworkDebugPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.location.reload()}
-                >
+                  onClick={() => window.location.reload()}>
+
                   Reload Page
                 </Button>
                 <Button
@@ -93,8 +93,8 @@ const NetworkDebugPage: React.FC = () => {
                   onClick={() => {
                     localStorage.clear();
                     sessionStorage.clear();
-                  }}
-                >
+                  }}>
+
                   Clear Storage
                 </Button>
                 <Button
@@ -102,17 +102,17 @@ const NetworkDebugPage: React.FC = () => {
                   size="sm"
                   onClick={() => {
                     if ('caches' in window) {
-                      caches.keys().then(names => names.forEach(name => caches.delete(name)));
+                      caches.keys().then((names) => names.forEach((name) => caches.delete(name)));
                     }
-                  }}
-                >
+                  }}>
+
                   Clear Cache
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => console.clear()}
-                >
+                  onClick={() => console.clear()}>
+
                   Clear Console
                 </Button>
               </div>
@@ -144,8 +144,8 @@ const NetworkDebugPage: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default NetworkDebugPage;

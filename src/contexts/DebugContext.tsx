@@ -41,24 +41,24 @@ interface DebugContextType {
   // Network status
   networkStatus: NetworkStatus;
   checkNetworkStatus: () => Promise<void>;
-  
+
   // API monitoring
   apiCalls: ApiCall[];
   addApiCall: (call: Omit<ApiCall, 'id'>) => string;
   updateApiCall: (id: string, updates: Partial<ApiCall>) => void;
   clearApiCalls: () => void;
-  
+
   // Debug settings
   debugSettings: DebugSettings;
   updateDebugSettings: (updates: Partial<DebugSettings>) => void;
-  
+
   // Recovery tools
   retryFailedCall: (callId: string) => Promise<void>;
   clearCache: () => void;
-  
+
   // Testing utilities
   simulateNetworkFailure: (duration: number) => void;
-  runNetworkBenchmark: () => Promise<{ latency: number; bandwidth: number }>;
+  runNetworkBenchmark: () => Promise<{latency: number;bandwidth: number;}>;
 }
 
 const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
@@ -89,26 +89,26 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     latency: null,
     lastCheck: new Date()
   });
-  
+
   const [apiCalls, setApiCalls] = useState<ApiCall[]>([]);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(DEFAULT_DEBUG_SETTINGS);
-  
+
   const networkCheckRef = useRef<number>();
   const simulationTimeoutRef = useRef<number>();
 
   // Network status monitoring
   const checkNetworkStatus = useCallback(async (): Promise<void> => {
     const startTime = performance.now();
-    
+
     try {
       const response = await fetch(`${window.location.origin}/api/health`, {
         method: 'HEAD',
         cache: 'no-cache'
       });
-      
+
       const latency = performance.now() - startTime;
       const connection = (navigator as any).connection;
-      
+
       setNetworkStatus({
         isOnline: response.ok,
         latency,
@@ -117,7 +117,7 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
         downlink: connection?.downlink
       });
     } catch (error) {
-      setNetworkStatus(prev => ({
+      setNetworkStatus((prev) => ({
         ...prev,
         isOnline: false,
         latency: null,
@@ -130,18 +130,18 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   const addApiCall = useCallback((call: Omit<ApiCall, 'id'>): string => {
     const id = `api_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newCall: ApiCall = { ...call, id };
-    
-    setApiCalls(prev => {
+
+    setApiCalls((prev) => {
       const updated = [newCall, ...prev].slice(0, debugSettings.maxApiCalls);
       return updated;
     });
-    
+
     return id;
   }, [debugSettings.maxApiCalls]);
 
   const updateApiCall = useCallback((id: string, updates: Partial<ApiCall>): void => {
-    setApiCalls(prev => prev.map(call => 
-      call.id === id ? { ...call, ...updates } : call
+    setApiCalls((prev) => prev.map((call) =>
+    call.id === id ? { ...call, ...updates } : call
     ));
   }, []);
 
@@ -151,12 +151,12 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
   // Settings management
   const updateDebugSettings = useCallback((updates: Partial<DebugSettings>): void => {
-    setDebugSettings(prev => ({ ...prev, ...updates }));
+    setDebugSettings((prev) => ({ ...prev, ...updates }));
   }, []);
 
   // Recovery tools
   const retryFailedCall = useCallback(async (callId: string): Promise<void> => {
-    const call = apiCalls.find(c => c.id === callId);
+    const call = apiCalls.find((c) => c.id === callId);
     if (!call || call.status === 'pending') return;
 
     updateApiCall(callId, { status: 'pending', attempt: call.attempt + 1 });
@@ -166,14 +166,14 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
         method: call.method,
         headers: call.requestHeaders
       });
-      
-      updateApiCall(callId, { 
+
+      updateApiCall(callId, {
         status: 'success',
         duration: performance.now(),
         response: await response.json()
       });
     } catch (error) {
-      updateApiCall(callId, { 
+      updateApiCall(callId, {
         status: 'error',
         error: error as ApiError,
         duration: performance.now()
@@ -183,13 +183,13 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
   const clearCache = useCallback((): void => {
     if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => caches.delete(name));
+      caches.keys().then((names) => {
+        names.forEach((name) => caches.delete(name));
       });
     }
-    
+
     // Clear localStorage debug data
-    Object.keys(localStorage).forEach(key => {
+    Object.keys(localStorage).forEach((key) => {
       if (key.startsWith('debug_') || key.startsWith('api_')) {
         localStorage.removeItem(key);
       }
@@ -213,23 +213,23 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
     }, duration);
   }, []);
 
-  const runNetworkBenchmark = useCallback(async (): Promise<{ latency: number; bandwidth: number }> => {
+  const runNetworkBenchmark = useCallback(async (): Promise<{latency: number;bandwidth: number;}> => {
     const testSizes = [1, 10, 100]; // KB
     const results = [];
 
     for (const size of testSizes) {
       const startTime = performance.now();
-      
+
       try {
         const response = await fetch(`${window.location.origin}/api/benchmark?size=${size}`, {
           cache: 'no-cache'
         });
-        
+
         const data = await response.text();
         const endTime = performance.now();
         const duration = endTime - startTime;
-        const bandwidth = (size * 1024) / (duration / 1000); // bytes per second
-        
+        const bandwidth = size * 1024 / (duration / 1000); // bytes per second
+
         results.push({ latency: duration, bandwidth });
       } catch (error) {
         console.warn('Benchmark test failed for size:', size);
@@ -248,8 +248,8 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
 
     checkNetworkStatus();
 
-    const handleOnline = () => setNetworkStatus(prev => ({ ...prev, isOnline: true }));
-    const handleOffline = () => setNetworkStatus(prev => ({ ...prev, isOnline: false }));
+    const handleOnline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: true }));
+    const handleOffline = () => setNetworkStatus((prev) => ({ ...prev, isOnline: false }));
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -283,6 +283,6 @@ export const DebugProvider: React.FC<DebugProviderProps> = ({ children }) => {
   return (
     <DebugContext.Provider value={value}>
       {children}
-    </DebugContext.Provider>
-  );
+    </DebugContext.Provider>);
+
 };

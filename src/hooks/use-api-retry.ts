@@ -191,7 +191,7 @@ options: RetryOptions)
 export function useApiRetry() {
   const abortControllersRef = useRef<Set<AbortController>>(new Set());
   const isMountedRef = useRef(true);
-  
+
   // Try to get debug context, but don't fail if it's not available
   let debugContext: any = null;
   try {
@@ -200,9 +200,9 @@ export function useApiRetry() {
     const DebugContext = require('@/contexts/DebugContext').DebugContext;
     debugContext = useContext(DebugContext);
   } catch {
+
     // Debug context not available, continue without it
   }
-
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true;
@@ -221,7 +221,7 @@ export function useApiRetry() {
 
   const executeWithRetry = useCallback(async <T,>(
   fn: (ctx: RetryContext) => Promise<T>,
-  options?: Partial<RetryOptions> & { operation?: string; url?: string; method?: string })
+  options?: Partial<RetryOptions> & {operation?: string;url?: string;method?: string;})
   : Promise<T> => {
     if (!isMountedRef.current) {
       throw new Error('Component is unmounted');

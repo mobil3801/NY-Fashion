@@ -329,7 +329,7 @@ interface NetworkDiagnostics {
 /**
  * Perform DNS resolution test
  */
-async function testDnsResolution(): Promise<{ success: boolean; time: number }> {
+async function testDnsResolution(): Promise<{success: boolean;time: number;}> {
   const startTime = performance.now();
   try {
     // Use a simple image request to test DNS resolution
@@ -338,11 +338,11 @@ async function testDnsResolution(): Promise<{ success: boolean; time: number }> 
       img.onload = () => resolve();
       img.onerror = () => reject();
       img.src = `https://www.google.com/favicon.ico?${Date.now()}`;
-      
+
       // Timeout after 5 seconds
       setTimeout(() => reject(new Error('DNS timeout')), 5000);
     });
-    
+
     return {
       success: true,
       time: performance.now() - startTime
@@ -358,14 +358,14 @@ async function testDnsResolution(): Promise<{ success: boolean; time: number }> 
 /**
  * Perform ping test to measure latency
  */
-async function testPing(): Promise<{ success: boolean; latency: number }> {
+async function testPing(): Promise<{success: boolean;latency: number;}> {
   const startTime = performance.now();
   try {
     const response = await fetch(`${window.location.origin}/favicon.ico`, {
       method: 'HEAD',
       cache: 'no-cache'
     });
-    
+
     return {
       success: response.ok,
       latency: performance.now() - startTime
@@ -383,7 +383,7 @@ async function testPing(): Promise<{ success: boolean; latency: number }> {
  */
 async function gatherNetworkDiagnostics(): Promise<NetworkDiagnostics> {
   const connection = (navigator as any).connection;
-  
+
   const diagnostics: NetworkDiagnostics = {
     isOnline: navigator.onLine,
     connectionType: connection?.effectiveType,
@@ -394,9 +394,9 @@ async function gatherNetworkDiagnostics(): Promise<NetworkDiagnostics> {
   // Run diagnostic tests
   try {
     const [dnsTest, pingTest] = await Promise.allSettled([
-      testDnsResolution(),
-      testPing()
-    ]);
+    testDnsResolution(),
+    testPing()]
+    );
 
     if (dnsTest.status === 'fulfilled') {
       diagnostics.dnsResolution = dnsTest.value;
@@ -446,22 +446,22 @@ export function createErrorReport(error: unknown, context: Record<string, unknow
     url: typeof window !== 'undefined' ? window.location.href : 'Unknown',
     retryable: isRetryable(error),
     userFriendlyMessage: getUserFriendlyMessage(error),
-    
+
     // Enhanced diagnostics
     viewport: typeof window !== 'undefined' ? {
       width: window.innerWidth,
       height: window.innerHeight,
       devicePixelRatio: window.devicePixelRatio
     } : null,
-    
+
     browserCompatibility: getBrowserCompatibility(),
-    
+
     memory: (performance as any).memory ? {
       usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
       totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
       jsHeapSizeLimit: (performance as any).memory.jsHeapSizeLimit
     } : null,
-    
+
     timing: typeof performance !== 'undefined' ? {
       navigationStart: performance.timeOrigin,
       now: performance.now()
@@ -475,11 +475,11 @@ export function createErrorReport(error: unknown, context: Record<string, unknow
  * Creates an enhanced error report with network diagnostics (async)
  */
 export async function createEnhancedErrorReport(
-  error: unknown, 
-  context: Record<string, unknown> = {}
-): Promise<Record<string, unknown>> {
+error: unknown,
+context: Record<string, unknown> = {})
+: Promise<Record<string, unknown>> {
   const baseReport = createErrorReport(error, context);
-  
+
   try {
     const networkDiagnostics = await gatherNetworkDiagnostics();
     return {
