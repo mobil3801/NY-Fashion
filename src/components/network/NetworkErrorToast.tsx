@@ -18,26 +18,26 @@ export function NetworkErrorToast({ error, onRetry, onDismiss }: NetworkErrorToa
 
   const handleRetry = async () => {
     if (isRetrying) return;
-    
+
     setIsRetrying(true);
     try {
       // First check network connection
       if (!online) {
         await retryNow();
       }
-      
+
       // Then retry the operation if provided
       if (onRetry) {
         await onRetry();
       }
-      
+
       // Show success toast
       toast({
         title: "Success",
         description: "Operation completed successfully",
         variant: "default"
       });
-      
+
       onDismiss?.();
     } catch (retryError) {
       console.error('Retry failed:', retryError);
@@ -91,45 +91,45 @@ export function NetworkErrorToast({ error, onRetry, onDismiss }: NetworkErrorToa
           {getUserFriendlyMessage(error)}
         </p>
         
-        {error.retryable && (
-          <div className="flex items-center gap-2 mt-3">
+        {error.retryable &&
+        <div className="flex items-center gap-2 mt-3">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRetry}
-              disabled={isRetrying}
-              className="h-8"
-            >
-              {isRetrying ? (
-                <>
+            variant="outline"
+            size="sm"
+            onClick={handleRetry}
+            disabled={isRetrying}
+            className="h-8">
+
+              {isRetrying ?
+            <>
                   <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                   Retrying...
-                </>
-              ) : (
-                <>
+                </> :
+
+            <>
                   <RefreshCw className="h-3 w-3 mr-1" />
                   Try Again
                 </>
-              )}
+            }
             </Button>
             
-            {!online && (
-              <span className="text-xs text-amber-600">
+            {!online &&
+          <span className="text-xs text-amber-600">
                 Will retry when connection returns
               </span>
-            )}
+          }
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 // Utility function to show network error toasts
 export function showNetworkErrorToast(
-  error: unknown, 
-  onRetry?: () => Promise<void>
-): void {
+error: unknown,
+onRetry?: () => Promise<void>)
+: void {
   const apiError = error instanceof ApiError ? error : new ApiError(
     error instanceof Error ? error.message : 'Unknown error',
     ERROR_CODES.UNKNOWN_ERROR,
@@ -139,16 +139,16 @@ export function showNetworkErrorToast(
   const toastId = toast({
     title: undefined,
     description: undefined,
-    variant: apiError.code === ERROR_CODES.QUEUED_OFFLINE ? "default" : 
-             apiError.retryable ? "default" : "destructive",
+    variant: apiError.code === ERROR_CODES.QUEUED_OFFLINE ? "default" :
+    apiError.retryable ? "default" : "destructive",
     duration: apiError.code === ERROR_CODES.QUEUED_OFFLINE ? 5000 : Infinity,
-    action: (
-      <NetworkErrorToast
-        error={apiError}
-        onRetry={onRetry}
-        onDismiss={() => toast.dismiss?.(toastId.id)}
-      />
-    ) as any
+    action:
+    <NetworkErrorToast
+      error={apiError}
+      onRetry={onRetry}
+      onDismiss={() => toast.dismiss?.(toastId.id)} /> as
+
+    any
   });
 }
 

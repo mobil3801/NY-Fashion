@@ -22,19 +22,19 @@ interface UseNetworkApiReturn<T> {
 }
 
 export function useNetworkApi<T = any>(
-  defaultOptions: UseNetworkApiOptions = {}
-): UseNetworkApiReturn<T> {
+defaultOptions: UseNetworkApiOptions = {})
+: UseNetworkApiReturn<T> {
   const { online, retryNow } = useNetwork();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [lastOperation, setLastOperation] = useState<(() => Promise<T>) | null>(null);
 
   const execute = useCallback(async (
-    operation: () => Promise<T>,
-    options: UseNetworkApiOptions = {}
-  ): Promise<T | null> => {
+  operation: () => Promise<T>,
+  options: UseNetworkApiOptions = {})
+  : Promise<T | null> => {
     const finalOptions = { ...defaultOptions, ...options };
-    
+
     setLoading(true);
     setError(null);
     setLastOperation(() => operation);
@@ -124,12 +124,12 @@ function normalizeError(error: unknown): ApiError {
 
   if (error instanceof Error) {
     // Check for network-related errors
-    if (error.name === 'TypeError' || 
-        error.message.includes('fetch') || 
-        error.message.includes('network') ||
-        error.message.includes('Failed to fetch') ||
-        error.message.includes('NetworkError') ||
-        error.message.includes('ERR_NETWORK')) {
+    if (error.name === 'TypeError' ||
+    error.message.includes('fetch') ||
+    error.message.includes('network') ||
+    error.message.includes('Failed to fetch') ||
+    error.message.includes('NetworkError') ||
+    error.message.includes('ERR_NETWORK')) {
       return new ApiError(
         'Connection lost. Your changes will be saved offline.',
         ERROR_CODES.NETWORK_OFFLINE,
@@ -139,8 +139,8 @@ function normalizeError(error: unknown): ApiError {
 
     // Check for timeout errors
     if (error.name === 'AbortError' ||
-        error.message.includes('timeout') || 
-        error.message.includes('aborted')) {
+    error.message.includes('timeout') ||
+    error.message.includes('aborted')) {
       return new ApiError(
         'Request timeout. Please check your connection and try again.',
         ERROR_CODES.TIMEOUT,

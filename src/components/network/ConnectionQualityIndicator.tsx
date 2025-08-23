@@ -12,9 +12,9 @@ interface ConnectionQualityIndicatorProps {
   showDetails?: boolean;
 }
 
-export function ConnectionQualityIndicator({ 
-  variant = 'full', 
-  showDetails = true 
+export function ConnectionQualityIndicator({
+  variant = 'full',
+  showDetails = true
 }: ConnectionQualityIndicatorProps) {
   const { online, status, retryNow } = useNetwork();
   const [quality, setQuality] = useState<'excellent' | 'good' | 'fair' | 'poor' | 'offline'>('offline');
@@ -23,19 +23,19 @@ export function ConnectionQualityIndicator({
 
   useEffect(() => {
     let mounted = true;
-    
+
     const checkQuality = async () => {
       if (!online) {
         setQuality('offline');
         return;
       }
-      
+
       try {
         const [qualityResult, diagnosticsResult] = await Promise.all([
-          networkDiagnostics.getConnectionQuality(),
-          networkDiagnostics.runDiagnostics()
-        ]);
-        
+        networkDiagnostics.getConnectionQuality(),
+        networkDiagnostics.runDiagnostics()]
+        );
+
         if (mounted) {
           setQuality(qualityResult);
           setDiagnostics(diagnosticsResult);
@@ -49,7 +49,7 @@ export function ConnectionQualityIndicator({
 
     // Check quality on mount and when online status changes
     checkQuality();
-    
+
     // Set up periodic checks when online
     let interval: NodeJS.Timeout | undefined;
     if (online) {
@@ -69,9 +69,9 @@ export function ConnectionQualityIndicator({
     try {
       await retryNow();
       const [qualityResult, diagnosticsResult] = await Promise.all([
-        networkDiagnostics.getConnectionQuality(),
-        networkDiagnostics.runDiagnostics()
-      ]);
+      networkDiagnostics.getConnectionQuality(),
+      networkDiagnostics.runDiagnostics()]
+      );
       setQuality(qualityResult);
       setDiagnostics(diagnosticsResult);
     } finally {
@@ -116,16 +116,16 @@ export function ConnectionQualityIndicator({
 
   if (variant === 'minimal') {
     return (
-      <Badge 
-        variant="outline" 
-        className={`${getQualityColor()} text-xs`}
-      >
+      <Badge
+        variant="outline"
+        className={`${getQualityColor()} text-xs`}>
+
         <div className="flex items-center gap-1">
           {getQualityIcon()}
           {online ? 'Online' : 'Offline'}
         </div>
-      </Badge>
-    );
+      </Badge>);
+
   }
 
   return (
@@ -134,8 +134,8 @@ export function ConnectionQualityIndicator({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-8 px-2 ${getQualityColor()}`}
-        >
+          className={`h-8 px-2 ${getQualityColor()}`}>
+
           <div className="flex items-center gap-2">
             {getQualityIcon()}
             <span className="text-xs font-medium">
@@ -145,18 +145,18 @@ export function ConnectionQualityIndicator({
         </Button>
       </PopoverTrigger>
       
-      {showDetails && (
-        <PopoverContent className="w-80" align="end">
+      {showDetails &&
+      <PopoverContent className="w-80" align="end">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-medium">Connection Status</h4>
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isChecking}
-                className="h-6 px-2"
-              >
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isChecking}
+              className="h-6 px-2">
+
                 <Wifi className={`h-3 w-3 ${isChecking ? 'animate-spin' : ''}`} />
               </Button>
             </div>
@@ -169,8 +169,8 @@ export function ConnectionQualityIndicator({
                 </Badge>
               </div>
 
-              {diagnostics && (
-                <>
+              {diagnostics &&
+            <>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Latency:</span>
                     <span className="text-sm font-medium">
@@ -178,14 +178,14 @@ export function ConnectionQualityIndicator({
                     </span>
                   </div>
 
-                  {diagnostics.effectiveType && (
-                    <div className="flex items-center justify-between">
+                  {diagnostics.effectiveType &&
+              <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Type:</span>
                       <span className="text-sm font-medium">
                         {diagnostics.effectiveType.toUpperCase()}
                       </span>
                     </div>
-                  )}
+              }
 
                   <div className="pt-2 border-t">
                     <p className="text-xs text-gray-500">
@@ -193,13 +193,13 @@ export function ConnectionQualityIndicator({
                     </p>
                   </div>
                 </>
-              )}
+            }
             </div>
           </div>
         </PopoverContent>
-      )}
-    </Popover>
-  );
+      }
+    </Popover>);
+
 }
 
 export default ConnectionQualityIndicator;

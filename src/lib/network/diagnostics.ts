@@ -29,10 +29,10 @@ export class NetworkDiagnostics {
 
   async runDiagnostics(): Promise<NetworkDiagnostics> {
     const startTime = performance.now();
-    
+
     // Get basic browser connection info
     const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-    
+
     const diagnostics: NetworkDiagnostics = {
       isOnline: navigator.onLine,
       connectionType: connection?.type,
@@ -48,23 +48,23 @@ export class NetworkDiagnostics {
     try {
       const dnsStart = performance.now();
       const img = new Image();
-      
+
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('DNS timeout')), 5000);
-        
+
         img.onload = () => {
           clearTimeout(timeout);
           resolve();
         };
-        
+
         img.onerror = () => {
           clearTimeout(timeout);
           reject(new Error('DNS failed'));
         };
-        
+
         img.src = `https://www.google.com/favicon.ico?${Date.now()}`;
       });
-      
+
       diagnostics.dnsResolution = {
         success: true,
         latency: performance.now() - dnsStart
@@ -83,7 +83,7 @@ export class NetworkDiagnostics {
         method: 'HEAD',
         cache: 'no-cache'
       });
-      
+
       diagnostics.apiTest = {
         success: response.ok,
         latency: performance.now() - apiStart,
@@ -105,15 +105,15 @@ export class NetworkDiagnostics {
     }
 
     const diagnostics = await this.runDiagnostics();
-    
+
     if (!diagnostics.apiTest.success) {
       return 'offline';
     }
 
     const latency = diagnostics.apiTest.latency;
-    
+
     if (latency < 100) return 'excellent';
-    if (latency < 300) return 'good';  
+    if (latency < 300) return 'good';
     if (latency < 1000) return 'fair';
     return 'poor';
   }

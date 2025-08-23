@@ -107,10 +107,10 @@ export class ConnectivityMonitor {
     try {
       // Use actual API endpoints - try EasySite built-in endpoints first, then fallbacks
       const endpoints = [
-        `${window.location.origin}/favicon.ico`, // Static resource (most reliable for EasySite)
-        `${window.location.origin}/`, // Home page
-        'https://httpbin.org/status/200', // Reliable external fallback
-        'https://www.google.com/favicon.ico' // Ultimate fallback
+      `${window.location.origin}/favicon.ico`, // Static resource (most reliable for EasySite)
+      `${window.location.origin}/`, // Home page
+      'https://httpbin.org/status/200', // Reliable external fallback
+      'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;
@@ -120,19 +120,19 @@ export class ConnectivityMonitor {
       for (const endpoint of endpoints) {
         try {
           const requestStart = performance.now();
-          
+
           // Create a timeout promise for better control
           const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => reject(new Error('Heartbeat timeout')), this.config.heartbeatTimeout);
           });
-          
+
           const fetchPromise = fetch(endpoint, {
             method: 'HEAD',
             mode: endpoint.includes(window.location.origin) ? 'cors' : 'no-cors',
             cache: 'no-cache',
             signal: this.abortController.signal
           });
-          
+
           const response = await Promise.race([fetchPromise, timeoutPromise]);
 
           const latency = performance.now() - requestStart;

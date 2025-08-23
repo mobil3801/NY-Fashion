@@ -292,6 +292,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -343,14 +345,12 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     <SelectContent>
                       {returnReasons.map((reason) => <SelectItem key={reason} value={reason}>
                           {reason}
-                        </SelectItem>
-                    )}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {returnType === 'return' &&
-              <div>
+                {returnType === 'return' && <div>
                     <Label htmlFor="refund-method">Refund Method *</Label>
                     <Select value={refundMethod} onValueChange={setRefundMethod}>
                       <SelectTrigger>

@@ -73,13 +73,13 @@ export class NetworkAwareAPI {
 
     if (error instanceof Error) {
       // Check for network-related errors (more comprehensive)
-      if (error.name === 'TypeError' || 
-          error.message.includes('fetch') || 
-          error.message.includes('network') ||
-          error.message.includes('Failed to fetch') ||
-          error.message.includes('NetworkError') ||
-          error.message.includes('ERR_NETWORK') ||
-          error.message.includes('ERR_INTERNET_DISCONNECTED')) {
+      if (error.name === 'TypeError' ||
+      error.message.includes('fetch') ||
+      error.message.includes('network') ||
+      error.message.includes('Failed to fetch') ||
+      error.message.includes('NetworkError') ||
+      error.message.includes('ERR_NETWORK') ||
+      error.message.includes('ERR_INTERNET_DISCONNECTED')) {
         return new ApiError(
           'Connection lost. Your changes will be saved offline.',
           ERROR_CODES.NETWORK_OFFLINE,
@@ -89,9 +89,9 @@ export class NetworkAwareAPI {
 
       // Check for timeout errors (more comprehensive)
       if (error.name === 'AbortError' ||
-          error.message.includes('timeout') || 
-          error.message.includes('aborted') ||
-          error.message.includes('The operation was aborted')) {
+      error.message.includes('timeout') ||
+      error.message.includes('aborted') ||
+      error.message.includes('The operation was aborted')) {
         return new ApiError(
           'Request timeout. Please check your connection and try again.',
           ERROR_CODES.TIMEOUT,
@@ -100,10 +100,10 @@ export class NetworkAwareAPI {
       }
 
       // Check for server errors that might be retryable
-      if (error.message.includes('500') || 
-          error.message.includes('502') ||
-          error.message.includes('503') ||
-          error.message.includes('504')) {
+      if (error.message.includes('500') ||
+      error.message.includes('502') ||
+      error.message.includes('503') ||
+      error.message.includes('504')) {
         return new ApiError(
           'Server temporarily unavailable. Will retry automatically.',
           ERROR_CODES.SERVER_ERROR,
