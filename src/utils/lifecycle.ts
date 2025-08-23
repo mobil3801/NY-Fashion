@@ -18,7 +18,7 @@ export interface LifecycleConfig {
 export class PageLifecycleManager {
   private config: LifecycleConfig;
   private isVisible: boolean = true;
-  private listeners: Array<{ element: EventTarget; event: string; handler: EventListener }> = [];
+  private listeners: Array<{element: EventTarget;event: string;handler: EventListener;}> = [];
 
   constructor(config: LifecycleConfig) {
     this.config = config;
@@ -32,7 +32,7 @@ export class PageLifecycleManager {
         this.isVisible = document.visibilityState === 'visible';
         this.config.onVisibilityChange?.(this.isVisible);
       };
-      
+
       this.addListener(document, 'visibilitychange', visibilityHandler);
     }
 
@@ -40,13 +40,13 @@ export class PageLifecycleManager {
     if (this.config.onPageHide || this.config.sendBeacon) {
       const pageHideHandler = (event: PageTransitionEvent) => {
         this.config.onPageHide?.(event);
-        
+
         // Send beacon data if configured
         if (this.config.sendBeacon && navigator.sendBeacon) {
           navigator.sendBeacon(this.config.sendBeacon.url, this.config.sendBeacon.data);
         }
       };
-      
+
       this.addListener(window, 'pagehide', pageHideHandler);
     }
 
@@ -55,7 +55,7 @@ export class PageLifecycleManager {
       const beforeUnloadHandler = (event: BeforeUnloadEvent) => {
         this.config.onBeforeUnload?.(event);
       };
-      
+
       this.addListener(window, 'beforeunload', beforeUnloadHandler);
     }
   }
@@ -91,7 +91,7 @@ export function usePageLifecycle(config: LifecycleConfig) {
 
   React.useEffect(() => {
     managerRef.current = new PageLifecycleManager(config);
-    
+
     return () => {
       managerRef.current?.destroy();
     };
@@ -99,7 +99,7 @@ export function usePageLifecycle(config: LifecycleConfig) {
 
   return {
     sendBeacon: (url: string, data: BodyInit) => managerRef.current?.sendBeaconData(url, data) || false,
-    isVisible: managerRef.current?.pageVisible || true,
+    isVisible: managerRef.current?.pageVisible || true
   };
 }
 

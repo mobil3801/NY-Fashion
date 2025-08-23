@@ -103,15 +103,13 @@ const MainLayout: React.FC = () => {
 
         {/* Main Content Area - Clean implementation */}
         <main
-          className="py-[10px] flex-1 w-full main-content"
+          className="flex-1 w-full main-content"
           role="main"
           aria-label="Main content"
           style={{
-            paddingTop: `${mainContentTopSpacing}px`,
             minHeight: `calc(100vh - ${isDesktop ? DESKTOP_HEADER_HEIGHT : MOBILE_HEADER_HEIGHT}px)`
-          }}>Analytics Dashboard
-
-          <Outlet />Analytics Dashboard
+          }}>
+          <Outlet />
         </main>
       </div>
 
