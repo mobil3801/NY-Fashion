@@ -284,11 +284,12 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
-      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);if (totalReturnQuantity === totalOriginalQuantity) {await window.ezsite.apis.tableUpdate(36856, { ID: invoice.id, status: 'refunded', refunded_amount: totalRefund, refunded_at: new Date().toISOString() });}toast({ title: "Return Processed", description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}` });onComplete();} catch (error) {console.error('Error processing return:', error);toast({ title: "Process Failed", description: "Unable to process the return/exchange", variant: "destructive" });} finally {setProcessing(false);}};const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;const returnReasons = ['Defective/Damaged', 'Wrong Size/Color', 'Customer Changed Mind', 'Not as Described', 'Duplicate Order', 'Quality Issues', 'Other'];const refundMethods = ['Original Payment Method', 'Cash', 'Store Credit', 'Gift Card', 'Bank Transfer'];const itemConditions = [{ value: 'good', label: 'Good - Can Resell' }, { value: 'damaged', label: 'Damaged - Cannot Resell' }, { value: 'opened', label: 'Opened - May Resell' }, { value: 'defective', label: 'Defective - Return to Supplier' }];const totalRefundAmount = returnItems.reduce((sum, item) => sum + item.refundAmount, 0);const selectedItemsCount = returnItems.filter((item) => item.returnQuantity > 0).length;if (!invoice) return null;return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);if (totalReturnQuantity === totalOriginalQuantity) {await window.ezsite.apis.tableUpdate(36856, { ID: invoice.id, status: 'refunded', refunded_amount: totalRefund, refunded_at: new Date().toISOString() });}toast({ title: "Return Processed", description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}` });onComplete();} catch (error) {console.error('Error processing return:', error);toast({ title: "Process Failed", description: "Unable to process the return/exchange", variant: "destructive" });} finally {setProcessing(false);}};const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;const returnReasons = ['Defective/Damaged', 'Wrong Size/Color', 'Customer Changed Mind', 'Not as Described', 'Duplicate Order', 'Quality Issues', 'Other'];const refundMethods = ['Original Payment Method', 'Cash', 'Store Credit', 'Gift Card', 'Bank Transfer'];const itemConditions = [{ value: 'good', label: 'Good - Can Resell' }, { value: 'damaged', label: 'Damaged - Cannot Resell' }, { value: 'opened', label: 'Opened - May Resell' }, { value: 'defective', label: 'Defective - Return to Supplier' }];const totalRefundAmount = returnItems.reduce((sum, item) => sum + item.refundAmount, 0);const selectedItemsCount = returnItems.filter((item) => item.returnQuantity > 0).length;if (!invoice) return null;return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
@@ -306,18 +307,17 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant={returnType === 'return' ? 'default' : 'outline'}
-                  onClick={() => setReturnType('return')}
-                  className="h-20 flex flex-col">
+                <Button variant={returnType === 'return' ? 'default' : 'outline'}
+              onClick={() => setReturnType('return')}
+              className="h-20 flex flex-col">
 
                   <Undo2 className="w-6 h-6 mb-2" />
                   <span>Return for Refund</span>
                 </Button>
                 <Button
-                  variant={returnType === 'exchange' ? 'default' : 'outline'}
-                  onClick={() => setReturnType('exchange')}
-                  className="h-20 flex flex-col">
+                variant={returnType === 'exchange' ? 'default' : 'outline'}
+                onClick={() => setReturnType('exchange')}
+                className="h-20 flex flex-col">
 
                   <RefreshCcw className="w-6 h-6 mb-2" />
                   <span>Exchange</span>
@@ -341,16 +341,16 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     </SelectTrigger>
                     <SelectContent>
                       {returnReasons.map((reason) =>
-                      <SelectItem key={reason} value={reason}>
+                    <SelectItem key={reason} value={reason}>
                           {reason}
                         </SelectItem>
-                      )}
+                    )}
                     </SelectContent>
                   </Select>
                 </div>
 
                 {returnType === 'return' &&
-                <div>
+              <div>
                     <Label htmlFor="refund-method">Refund Method *</Label>
                     <Select value={refundMethod} onValueChange={setRefundMethod}>
                       <SelectTrigger>
@@ -358,23 +358,23 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         {refundMethods.map((method) =>
-                      <SelectItem key={method} value={method}>
+                    <SelectItem key={method} value={method}>
                             {method}
                           </SelectItem>
-                      )}
+                    )}
                       </SelectContent>
                     </Select>
                   </div>
-                }
+              }
 
                 <div>
                   <Label htmlFor="notes">Additional Notes</Label>
                   <Textarea
-                    id="notes"
-                    placeholder="Any additional notes about the return..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3} />
+                  id="notes"
+                  placeholder="Any additional notes about the return..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3} />
 
                 </div>
               </CardContent>
@@ -412,9 +412,9 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             </CardHeader>
             <CardContent>
               {loading ?
-              <div className="text-center py-8">Loading items...</div> :
+            <div className="text-center py-8">Loading items...</div> :
 
-              <div className="border rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-hidden">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -428,65 +428,65 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                     </TableHeader>
                     <TableBody>
                       {invoiceItems.map((item) => {
-                      const returnItem = returnItems.find((ri) => ri.itemId === item.id);
-                      const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
+                    const returnItem = returnItems.find((ri) => ri.itemId === item.id);
+                    const maxReturnQty = item.quantity - (item.returnedQuantity || 0);
 
-                      return (
-                        <TableRow key={item.id}>
+                    return (
+                      <TableRow key={item.id}>
                             <TableCell>
                               <div>
                                 <p className="font-medium">{item.product_name}</p>
                                 {item.sku &&
-                              <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                              }
+                            <p className="text-sm text-gray-500">SKU: {item.sku}</p>
+                            }
                               </div>
                             </TableCell>
                             <TableCell className="text-center">{item.quantity}</TableCell>
                             <TableCell className="text-center">
                               <Input
-                              type="number"
-                              min="0"
-                              max={maxReturnQty}
-                              value={returnItem?.returnQuantity || 0}
-                              onChange={(e) =>
-                              handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
-                              }
-                              className="w-20 text-center" />
+                            type="number"
+                            min="0"
+                            max={maxReturnQty}
+                            value={returnItem?.returnQuantity || 0}
+                            onChange={(e) =>
+                            handleReturnQuantityChange(item.id, parseInt(e.target.value) || 0)
+                            }
+                            className="w-20 text-center" />
 
                             </TableCell>
                             <TableCell>
                               <Select
-                              value={returnItem?.condition || 'good'}
-                              onValueChange={(value) => handleConditionChange(item.id, value)}
-                              disabled={!returnItem?.returnQuantity}>
+                            value={returnItem?.condition || 'good'}
+                            onValueChange={(value) => handleConditionChange(item.id, value)}
+                            disabled={!returnItem?.returnQuantity}>
 
                                 <SelectTrigger className="w-40">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {itemConditions.map((condition) =>
-                                <SelectItem key={condition.value} value={condition.value}>
+                              <SelectItem key={condition.value} value={condition.value}>
                                       {condition.label}
                                     </SelectItem>
-                                )}
+                              )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
                             <TableCell>
                               <Select
-                              value={returnItem?.reason || ''}
-                              onValueChange={(value) => handleReasonChange(item.id, value)}
-                              disabled={!returnItem?.returnQuantity}>
+                            value={returnItem?.reason || ''}
+                            onValueChange={(value) => handleReasonChange(item.id, value)}
+                            disabled={!returnItem?.returnQuantity}>
 
                                 <SelectTrigger className="w-40">
                                   <SelectValue placeholder="Select reason" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {returnReasons.map((reason) =>
-                                <SelectItem key={reason} value={reason}>
+                              <SelectItem key={reason} value={reason}>
                                       {reason}
                                     </SelectItem>
-                                )}
+                              )}
                                 </SelectContent>
                               </Select>
                             </TableCell>
@@ -495,11 +495,11 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             </TableCell>
                           </TableRow>);
 
-                    })}
+                  })}
                     </TableBody>
                   </Table>
                 </div>
-              }
+            }
             </CardContent>
           </Card>
 
@@ -514,24 +514,24 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                 Cancel
               </Button>
               <Button
-                onClick={processReturn}
-                disabled={processing || selectedItemsCount === 0}
-                className="bg-emerald-600 hover:bg-emerald-700">
+              onClick={processReturn}
+              disabled={processing || selectedItemsCount === 0}
+              className="bg-emerald-600 hover:bg-emerald-700">
 
                 {processing ?
-                <>Processing...</> :
+              <>Processing...</> :
 
-                <>
+              <>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Process {returnType === 'return' ? 'Return' : 'Exchange'}
                   </>
-                }
+              }
               </Button>
             </div>
           </div>
         </div>
       </DialogContent>
-    </Dialog>);
+    </Dialog>;
 
 };
 
