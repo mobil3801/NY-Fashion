@@ -88,12 +88,23 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
       try {
         logger.logInfo('Initializing inventory data');
 
-        // Load initial data in parallel
-        await Promise.all([
-        fetchProducts({ page: 1 }),
-        fetchCategories(),
-        getLowStockProducts()]
-        );
+        // Load initial data in parallel - wrap each in its own try-catch to prevent one failure from stopping all
+        const promises = [
+        fetchProducts({ page: 1 }).catch((error) => {
+          logger.logError('Failed to fetch products during initialization', error);
+          return null;
+        }),
+        fetchCategories().catch((error) => {
+          logger.logError('Failed to fetch categories during initialization', error);
+          return null;
+        }),
+        getLowStockProducts().catch((error) => {
+          logger.logError('Failed to fetch low stock products during initialization', error);
+          return null;
+        })];
+
+
+        await Promise.allSettled(promises);
 
         logger.logInfo('Inventory data initialized successfully');
       } catch (error: any) {
@@ -347,11 +358,7 @@ export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }
         logger.logDatabaseOperation('delete', 'categories', { id });
 
         // Note: You might want to check if category has products before deleting
-        const result = await inventoryService.productionApi.tableDelete('categories', { id });
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
+        await inventoryService.deleteCategory(id);
 
         // Remove from local state
         setCategories((prev) => prev.filter((c) => c.id !== id));

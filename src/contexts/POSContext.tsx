@@ -20,14 +20,14 @@ interface POSContextType {
 }
 
 type POSAction =
-{type: 'ADD_TO_CART';payload: {product: Product;variant?: ProductVariant;quantity: number;};} |
-{type: 'UPDATE_QUANTITY';payload: {itemId: string;quantity: number;};} |
-{type: 'REMOVE_FROM_CART';payload: {itemId: string;};} |
-{type: 'APPLY_LINE_DISCOUNT';payload: {itemId: string;discount: number;type: 'percentage' | 'fixed';};} |
-{type: 'APPLY_ORDER_DISCOUNT';payload: {discount: number;type: 'percentage' | 'fixed';};} |
-{type: 'SET_CUSTOMER';payload: {customer: Customer | undefined;};} |
-{type: 'SET_PAYMENT_METHOD';payload: {method: PaymentMethod;};} |
-{type: 'CLEAR_CART';};
+| { type: 'ADD_TO_CART'; payload: { product: Product; variant?: ProductVariant; quantity: number; }; }
+| { type: 'UPDATE_QUANTITY'; payload: { itemId: string; quantity: number; }; }
+| { type: 'REMOVE_FROM_CART'; payload: { itemId: string; }; }
+| { type: 'APPLY_LINE_DISCOUNT'; payload: { itemId: string; discount: number; type: 'percentage' | 'fixed'; }; }
+| { type: 'APPLY_ORDER_DISCOUNT'; payload: { discount: number; type: 'percentage' | 'fixed'; }; }
+| { type: 'SET_CUSTOMER'; payload: { customer: Customer | undefined; }; }
+| { type: 'SET_PAYMENT_METHOD'; payload: { method: PaymentMethod; }; }
+| { type: 'CLEAR_CART'; };
 
 const initialState: POSState = {
   cart: [],
@@ -36,7 +36,7 @@ const initialState: POSState = {
 };
 
 // NYC Tax calculation - apparel under $110 is exempt
-const calculateTax = (items: CartItem[]): {taxableAmount: number;taxAmount: number;exemptAmount: number;} => {
+const calculateTax = (items: CartItem[]): { taxableAmount: number; taxAmount: number; exemptAmount: number; } => {
   let taxableAmount = 0;
   let exemptAmount = 0;
   const NYCTaxRate = 0.08375; // NYC sales tax rate
@@ -56,59 +56,59 @@ const calculateTax = (items: CartItem[]): {taxableAmount: number;taxAmount: numb
 
 const posReducer = (state: POSState, action: POSAction): POSState => {
   switch (action.type) {
-    case 'ADD_TO_CART':{
-        const { product, variant, quantity } = action.payload;
-        const existingItemIndex = state.cart.findIndex(
-          (item) => item.product.id === product.id &&
-          item.variant?.id === variant?.id
-        );
+    case 'ADD_TO_CART': {
+      const { product, variant, quantity } = action.payload;
+      const existingItemIndex = state.cart.findIndex(
+        (item) => item.product.id === product.id &&
+        item.variant?.id === variant?.id
+      );
 
-        if (existingItemIndex >= 0) {
-          const updatedCart = [...state.cart];
-          updatedCart[existingItemIndex].quantity += quantity;
-          updatedCart[existingItemIndex].subtotal =
+      if (existingItemIndex >= 0) {
+        const updatedCart = [...state.cart];
+        updatedCart[existingItemIndex].quantity += quantity;
+        updatedCart[existingItemIndex].subtotal =
           updatedCart[existingItemIndex].quantity * updatedCart[existingItemIndex].unitPrice;
-          return { ...state, cart: updatedCart };
-        }
-
-        const unitPrice = product.basePrice + (variant?.priceAdjustment || 0);
-        const newItem: CartItem = {
-          id: `${product.id}-${variant?.id || 'default'}-${Date.now()}`,
-          product,
-          variant,
-          quantity,
-          unitPrice,
-          lineDiscount: 0,
-          lineDiscountType: 'percentage',
-          subtotal: unitPrice * quantity
-        };
-
-        return { ...state, cart: [...state.cart, newItem] };
-      }
-
-    case 'UPDATE_QUANTITY':{
-        const { itemId, quantity } = action.payload;
-        if (quantity <= 0) {
-          return { ...state, cart: state.cart.filter((item) => item.id !== itemId) };
-        }
-
-        const updatedCart = state.cart.map((item) => {
-          if (item.id === itemId) {
-            const baseSubtotal = item.unitPrice * quantity;
-            const discountAmount = item.lineDiscountType === 'percentage' ?
-            baseSubtotal * (item.lineDiscount / 100) :
-            item.lineDiscount;
-            return {
-              ...item,
-              quantity,
-              subtotal: baseSubtotal - discountAmount
-            };
-          }
-          return item;
-        });
-
         return { ...state, cart: updatedCart };
       }
+
+      const unitPrice = product.basePrice + (variant?.priceAdjustment || 0);
+      const newItem: CartItem = {
+        id: `${product.id}-${variant?.id || 'default'}-${Date.now()}`,
+        product,
+        variant,
+        quantity,
+        unitPrice,
+        lineDiscount: 0,
+        lineDiscountType: 'percentage',
+        subtotal: unitPrice * quantity
+      };
+
+      return { ...state, cart: [...state.cart, newItem] };
+    }
+
+    case 'UPDATE_QUANTITY': {
+      const { itemId, quantity } = action.payload;
+      if (quantity <= 0) {
+        return { ...state, cart: state.cart.filter((item) => item.id !== itemId) };
+      }
+
+      const updatedCart = state.cart.map((item) => {
+        if (item.id === itemId) {
+          const baseSubtotal = item.unitPrice * quantity;
+          const discountAmount = item.lineDiscountType === 'percentage' ?
+            baseSubtotal * (item.lineDiscount / 100) :
+            item.lineDiscount;
+          return {
+            ...item,
+            quantity,
+            subtotal: baseSubtotal - discountAmount
+          };
+        }
+        return item;
+      });
+
+      return { ...state, cart: updatedCart };
+    }
 
     case 'REMOVE_FROM_CART':
       return {
@@ -116,26 +116,26 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
         cart: state.cart.filter((item) => item.id !== action.payload.itemId)
       };
 
-    case 'APPLY_LINE_DISCOUNT':{
-        const { itemId, discount, type } = action.payload;
-        const updatedCart = state.cart.map((item) => {
-          if (item.id === itemId) {
-            const baseSubtotal = item.unitPrice * item.quantity;
-            const discountAmount = type === 'percentage' ?
+    case 'APPLY_LINE_DISCOUNT': {
+      const { itemId, discount, type } = action.payload;
+      const updatedCart = state.cart.map((item) => {
+        if (item.id === itemId) {
+          const baseSubtotal = item.unitPrice * item.quantity;
+          const discountAmount = type === 'percentage' ?
             baseSubtotal * (discount / 100) :
             discount;
-            return {
-              ...item,
-              lineDiscount: discount,
-              lineDiscountType: type,
-              subtotal: baseSubtotal - discountAmount
-            };
-          }
-          return item;
-        });
+          return {
+            ...item,
+            lineDiscount: discount,
+            lineDiscountType: type,
+            subtotal: baseSubtotal - discountAmount
+          };
+        }
+        return item;
+      });
 
-        return { ...state, cart: updatedCart };
-      }
+      return { ...state, cart: updatedCart };
+    }
 
     case 'APPLY_ORDER_DISCOUNT':
       return {
@@ -163,7 +163,7 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
 
 const POSContext = createContext<POSContextType | undefined>(undefined);
 
-export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
+export const POSProvider: React.FC<{ children: ReactNode; }> = ({ children }) => {
   const [state, dispatch] = useReducer(posReducer, initialState);
 
   // Use modern lifecycle management for cart persistence
@@ -185,9 +185,13 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           selectedCustomer: state.customer,
           timestamp: Date.now()
         };
-        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
-        // Also save to sessionStorage for more immediate access
-        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+        try {
+          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+          // Also save to sessionStorage for more immediate access
+          sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+        } catch (error) {
+          console.warn('Failed to save cart data:', error);
+        }
       }
     },
     onVisibilityChange: (isVisible) => {
@@ -198,15 +202,19 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           selectedCustomer: state.customer,
           timestamp: Date.now()
         };
-        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
-        // sessionStorage is cleared when the session ends (tab close)
-        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+        try {
+          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+          // sessionStorage is cleared when the session ends (tab close)
+          sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+        } catch (error) {
+          console.warn('Failed to save cart data:', error);
+        }
       }
     }
   });
 
   // Helper functions for cart persistence
-  const setCart = (cartItems: CartItem[]) => {
+  const setCart = React.useCallback((cartItems: CartItem[]) => {
     // Since we're using useReducer, we need to dispatch actions to update cart
     // Clear current cart first
     dispatch({ type: 'CLEAR_CART' });
@@ -222,19 +230,19 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
         }
       });
     });
-  };
+  }, []);
 
-  const setSelectedCustomer = (customer: Customer | null) => {
+  const setSelectedCustomer = React.useCallback((customer: Customer | null) => {
     dispatch({ type: 'SET_CUSTOMER', payload: { customer: customer || undefined } });
-  };
+  }, []);
 
   // Load cart from storage on mount
-  useEffect(() => {
+  React.useEffect(() => {
     const loadPersistedCart = () => {
-      // Try to load from session storage first (most recent)
-      const sessionCart = sessionStorage.getItem('ny-fashion-pos-cart-session');
-      if (sessionCart) {
-        try {
+      try {
+        // Try to load from session storage first (most recent)
+        const sessionCart = sessionStorage.getItem('ny-fashion-pos-cart-session');
+        if (sessionCart) {
           const { cart: savedCart, selectedCustomer: savedCustomer } = JSON.parse(sessionCart);
           if (savedCart && savedCart.length > 0) {
             setCart(savedCart);
@@ -243,15 +251,11 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             setSelectedCustomer(savedCustomer);
           }
           return;
-        } catch (error) {
-          console.warn('Error loading session cart:', error);
         }
-      }
 
-      // Then try localStorage backup
-      const backupCart = localStorage.getItem('ny-fashion-pos-cart-backup');
-      if (backupCart) {
-        try {
+        // Then try localStorage backup
+        const backupCart = localStorage.getItem('ny-fashion-pos-cart-backup');
+        if (backupCart) {
           const { cart: savedCart, selectedCustomer: savedCustomer, timestamp } = JSON.parse(backupCart);
           // Only restore if backup is less than 1 hour old
           if (Date.now() - timestamp < 3600000) {
@@ -263,15 +267,11 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             }
             return;
           }
-        } catch (error) {
-          console.warn('Error loading backup cart:', error);
         }
-      }
 
-      // Fallback to legacy cart storage
-      const legacyCart = localStorage.getItem('posCart');
-      if (legacyCart) {
-        try {
+        // Fallback to legacy cart storage
+        const legacyCart = localStorage.getItem('posCart');
+        if (legacyCart) {
           const parsedCart = JSON.parse(legacyCart);
           if (parsedCart && parsedCart.length > 0) {
             setCart(parsedCart);
@@ -286,83 +286,98 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             timestamp: Date.now()
           };
           localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
-        } catch (error) {
-          console.error('Error loading legacy cart:', error);
         }
+      } catch (error) {
+        console.error('Error loading cart data:', error);
       }
     };
 
     loadPersistedCart();
+  }, [setCart, setSelectedCustomer]);
+
+  const addToCart = React.useCallback((product: Product, variant?: ProductVariant, quantity: number = 1) => {
+    dispatch({ type: 'ADD_TO_CART', payload: { product, variant, quantity } });
   }, []);
 
-  const addToCart = (product: Product, variant?: ProductVariant, quantity: number = 1) => {
-    dispatch({ type: 'ADD_TO_CART', payload: { product, variant, quantity } });
-  };
-
-  const updateCartItemQuantity = (itemId: string, quantity: number) => {
+  const updateCartItemQuantity = React.useCallback((itemId: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { itemId, quantity } });
-  };
+  }, []);
 
-  const removeFromCart = (itemId: string) => {
+  const removeFromCart = React.useCallback((itemId: string) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: { itemId } });
-  };
+  }, []);
 
-  const applyLineDiscount = (itemId: string, discount: number, type: 'percentage' | 'fixed') => {
+  const applyLineDiscount = React.useCallback((itemId: string, discount: number, type: 'percentage' | 'fixed') => {
     dispatch({ type: 'APPLY_LINE_DISCOUNT', payload: { itemId, discount, type } });
-  };
+  }, []);
 
-  const applyOrderDiscount = (discount: number, type: 'percentage' | 'fixed') => {
+  const applyOrderDiscount = React.useCallback((discount: number, type: 'percentage' | 'fixed') => {
     dispatch({ type: 'APPLY_ORDER_DISCOUNT', payload: { discount, type } });
-  };
+  }, []);
 
-  const setCustomer = (customer: Customer | undefined) => {
+  const setCustomer = React.useCallback((customer: Customer | undefined) => {
     dispatch({ type: 'SET_CUSTOMER', payload: { customer } });
-  };
+  }, []);
 
-  const setPaymentMethod = (method: PaymentMethod) => {
+  const setPaymentMethod = React.useCallback((method: PaymentMethod) => {
     dispatch({ type: 'SET_PAYMENT_METHOD', payload: { method } });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = React.useCallback(() => {
     dispatch({ type: 'CLEAR_CART' });
-  };
+  }, []);
 
-  const getCartSubtotal = () => {
+  const getCartSubtotal = React.useCallback(() => {
     return state.cart.reduce((sum, item) => sum + item.subtotal, 0);
-  };
+  }, [state.cart]);
 
-  const getTaxAmount = () => {
+  const getTaxAmount = React.useCallback(() => {
     const { taxAmount } = calculateTax(state.cart);
     return taxAmount;
-  };
+  }, [state.cart]);
 
-  const getCartTotal = () => {
+  const getCartTotal = React.useCallback(() => {
     const subtotal = getCartSubtotal();
     const tax = getTaxAmount();
     const orderDiscountAmount = state.orderDiscountType === 'percentage' ?
-    subtotal * (state.orderDiscount / 100) :
-    state.orderDiscount;
+      subtotal * (state.orderDiscount / 100) :
+      state.orderDiscount;
     return subtotal + tax - orderDiscountAmount;
-  };
+  }, [getCartSubtotal, getTaxAmount, state.orderDiscount, state.orderDiscountType]);
+
+  const contextValue = React.useMemo(() => ({
+    state,
+    addToCart,
+    updateCartItemQuantity,
+    removeFromCart,
+    applyLineDiscount,
+    applyOrderDiscount,
+    setCustomer,
+    setPaymentMethod,
+    clearCart,
+    getCartTotal,
+    getCartSubtotal,
+    getTaxAmount
+  }), [
+    state,
+    addToCart,
+    updateCartItemQuantity,
+    removeFromCart,
+    applyLineDiscount,
+    applyOrderDiscount,
+    setCustomer,
+    setPaymentMethod,
+    clearCart,
+    getCartTotal,
+    getCartSubtotal,
+    getTaxAmount
+  ]);
 
   return (
-    <POSContext.Provider value={{
-      state,
-      addToCart,
-      updateCartItemQuantity,
-      removeFromCart,
-      applyLineDiscount,
-      applyOrderDiscount,
-      setCustomer,
-      setPaymentMethod,
-      clearCart,
-      getCartTotal,
-      getCartSubtotal,
-      getTaxAmount
-    }}>
+    <POSContext.Provider value={contextValue}>
       {children}
-    </POSContext.Provider>);
-
+    </POSContext.Provider>
+  );
 };
 
 export const usePOS = () => {

@@ -16,7 +16,7 @@ import {
   WifiOff } from
 'lucide-react';
 import { cn } from '@/lib/utils';
-import PRODUCTION_CONFIG from '@/config/production';
+import { PRODUCTION_CONFIG } from '@/config/production';
 
 interface LoadingStateProps {
   isLoading: boolean;

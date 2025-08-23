@@ -495,6 +495,28 @@ class InventoryService {
     }
   }
 
+  async deleteCategory(id: number) {
+    try {
+      logger.logDatabaseOperation('Deleting category', { id });
+
+      const result = await productionApi.tableDelete('categories', { id }, {
+        showLoading: true,
+        loadingMessage: 'Deleting category...'
+      });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      logger.logDatabaseOperation('Category deleted successfully', { id });
+      return result.data;
+
+    } catch (error: any) {
+      logger.logError('Failed to delete category', error, { id });
+      throw error;
+    }
+  }
+
   // Low Stock Alerts
   async getLowStockProducts() {
     try {

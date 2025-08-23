@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 
 /**
  * Modern React hook for page lifecycle management
@@ -28,35 +28,35 @@ export interface UsePageLifecycleReturn {
 }
 
 export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLifecycleReturn {
-  const [isVisible, setIsVisible] = React.useState(!document.hidden);
-  const [isPageActive, setIsPageActive] = React.useState(document.hasFocus());
+  const [isVisible, setIsVisible] = useState(!document.hidden);
+  const [isPageActive, setIsPageActive] = useState(document.hasFocus());
 
-  const listenersRef = React.useRef<Array<{
+  const listenersRef = useRef<Array<{
     element: EventTarget;
     event: string;
     handler: EventListener;
   }>>([]);
 
   // Cleanup function
-  const cleanup = React.useCallback(() => {
+  const cleanup = useCallback(() => {
     listenersRef.current.forEach(({ element, event, handler }) => {
       element.removeEventListener(event, handler);
     });
     listenersRef.current = [];
   }, []);
 
-  const addListener = React.useCallback((
-  element: EventTarget,
-  event: string,
-  handler: EventListener,
-  options?: AddEventListenerOptions) =>
-  {
+  const addListener = useCallback((
+    element: EventTarget,
+    event: string,
+    handler: EventListener,
+    options?: AddEventListenerOptions
+  ) => {
     element.addEventListener(event, handler, options);
     listenersRef.current.push({ element, event, handler });
   }, []);
 
   // Flush data utility
-  const flushData = React.useCallback(async (url: string, data: Record<string, any>): Promise<boolean> => {
+  const flushData = useCallback(async (url: string, data: Record<string, any>): Promise<boolean> => {
     const payload = JSON.stringify(data);
 
     // Try sendBeacon first
@@ -83,7 +83,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   }, []);
 
   // Auto-flush helper
-  const handleAutoFlush = React.useCallback(() => {
+  const handleAutoFlush = useCallback(() => {
     if (config.autoFlushData) {
       const data = config.autoFlushData.getData();
       flushData(config.autoFlushData.url, data);
@@ -91,7 +91,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
   }, [config.autoFlushData, flushData]);
 
   // Persistence utilities
-  const getPersistedData = React.useCallback(() => {
+  const getPersistedData = useCallback(() => {
     if (!config.persistenceKey) return null;
 
     try {
@@ -103,13 +103,13 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
     }
   }, [config.persistenceKey]);
 
-  const clearPersistedData = React.useCallback(() => {
+  const clearPersistedData = useCallback(() => {
     if (config.persistenceKey) {
       localStorage.removeItem(config.persistenceKey);
     }
   }, [config.persistenceKey]);
 
-  const persistData = React.useCallback((data: any) => {
+  const persistData = useCallback((data: any) => {
     if (!config.persistenceKey) return;
 
     try {
@@ -123,7 +123,7 @@ export function usePageLifecycle(config: UsePageLifecycleConfig = {}): UsePageLi
     }
   }, [config.persistenceKey]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Page hide handler (primary - works with BFCache)
     const handlePageHide = (event: PageTransitionEvent) => {
       config.onPageHide?.(event);

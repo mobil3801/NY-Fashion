@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { createConnectivity } from '@/lib/network/connectivity';
-import { createProductionConnectivity } from '@/lib/network/production-connectivity';
-import { isProduction } from '@/utils/env-validator';
 import { apiClient } from '@/lib/network/client';
 import { NetworkErrorClassifier } from '@/lib/network/error-classifier';
 import { NetworkStatus, ConnectionQuality } from '@/types/network';
@@ -9,6 +7,7 @@ import { useNetworkRetry } from '@/hooks/use-network-retry';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/production-logger';
 import { PRODUCTION_CONFIG } from '@/config/production';
+import { offlineQueue } from '@/lib/offlineQueue';
 
 interface NetworkContextType {
   // Connection state
@@ -89,7 +88,7 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   const { toast } = useToast();
   const { retryWithBackoff } = useNetworkRetry();
 
-  const connectivity = isProduction() ? createProductionConnectivity() : createConnectivity();
+  const connectivity = createConnectivity();
 
   // Initialize network monitoring
   useEffect(() => {
@@ -169,11 +168,11 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
 
   const getSignalStrength = (effectiveType: string): number => {
     switch (effectiveType) {
-      case '4g':return 100;
-      case '3g':return 75;
-      case '2g':return 50;
-      case 'slow-2g':return 25;
-      default:return 0;
+      case '4g': return 100;
+      case '3g': return 75;
+      case '2g': return 50;
+      case 'slow-2g': return 25;
+      default: return 0;
     }
   };
 
@@ -297,40 +296,27 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
     try {
       logger.logInfo('Retrying failed requests');
 
-      // Process any queued operations - simplified for production
-      if (isProduction()) {
-        // In production, just log the retry attempt and continue
-        logger.logInfo('Retry requested in production mode');
+      // Process any queued operations using connectivity if available
+      if (connectivity && typeof connectivity.processQueue === 'function') {
+        await connectivity.processQueue();
       } else {
-        // Development mode - try to process queue
-        if (connectivity && typeof (connectivity as any).processQueue === 'function') {
-          await (connectivity as any).processQueue();
-        } else {
-          // Fallback to offlineQueue direct access
+        // Fallback to direct offline queue processing
+        await offlineQueue.flush(async (operation) => {
           try {
-            const { offlineQueue } = await import('@/lib/offlineQueue');
-            if (offlineQueue && typeof offlineQueue.flush === 'function') {
-              await offlineQueue.flush(async (operation) => {
-                try {
-                  const response = await fetch(operation.url, {
-                    method: operation.type,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...operation.headers
-                    },
-                    body: operation.data ? JSON.stringify(operation.data) : undefined
-                  });
-                  return response.ok;
-                } catch (error) {
-                  logger.logWarn('Queue operation failed', { error });
-                  return false;
-                }
-              });
-            }
-          } catch (fallbackError) {
-            logger.logWarn('Failed to process queue:', fallbackError);
+            const response = await fetch(operation.url, {
+              method: operation.type,
+              headers: {
+                'Content-Type': 'application/json',
+                ...operation.headers
+              },
+              body: operation.data ? JSON.stringify(operation.data) : undefined
+            });
+            return response.ok;
+          } catch (error) {
+            logger.logWarn('Queue operation failed', { error });
+            return false;
           }
-        }
+        });
       }
 
       setQueuedOperations(0);
@@ -394,39 +380,41 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
     return diagnostics;
   };
 
-  // Update queue count periodically
+  // Update queue count periodically with enhanced error handling
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        // Simplified queue size management for production
-        if (isProduction()) {
-          // In production, just set to 0 to avoid complex queue management
-          setQueuedOperations(0);
-        } else {
-          // Try to get queue size from connectivity
-          if (connectivity && typeof (connectivity as any).getQueueSize === 'function') {
-            const queueSize = await (connectivity as any).getQueueSize();
-            setQueuedOperations(queueSize);
-          } else {
-            // Fallback to offlineQueue direct access
+        // Try to get queue size using multiple approaches with proper fallbacks
+        let queueSize = 0;
+
+        // Method 1: Try connectivity.getQueueSize if available
+        if (connectivity && typeof connectivity.getQueueSize === 'function') {
+          try {
+            queueSize = await connectivity.getQueueSize();
+          } catch (error) {
+            logger.logWarn('Connectivity getQueueSize failed', { error });
+          }
+        }
+
+        // Method 2: Fallback to offlineQueue.size
+        if (queueSize === 0) {
+          try {
+            queueSize = await offlineQueue.size();
+          } catch (error) {
+            // Method 3: Try synchronous size method
             try {
-              const { offlineQueue } = await import('@/lib/offlineQueue');
-              if (offlineQueue && typeof offlineQueue.size === 'function') {
-                const queueSize = await offlineQueue.size();
-                setQueuedOperations(queueSize);
-              } else if (offlineQueue && typeof offlineQueue.sizeSync === 'function') {
-                const queueSize = offlineQueue.sizeSync();
-                setQueuedOperations(queueSize);
-              } else {
-                setQueuedOperations(0);
-              }
-            } catch (fallbackError) {
-              setQueuedOperations(0);
+              queueSize = offlineQueue.sizeSync();
+            } catch (syncError) {
+              logger.logWarn('All queue size methods failed', { error, syncError });
+              queueSize = 0;
             }
           }
         }
+
+        setQueuedOperations(queueSize);
       } catch (error) {
-        // Final fallback - set to 0
+        // Final fallback - set to 0 and log the issue
+        logger.logWarn('Queue size check failed completely', { error });
         setQueuedOperations(0);
       }
     }, 5000);
@@ -469,6 +457,8 @@ export const NetworkProvider: React.FC<NetworkProviderProps> = ({ children }) =>
   return (
     <NetworkContext.Provider value={contextValue}>
       {children}
-    </NetworkContext.Provider>);
-
+    </NetworkContext.Provider>
+  );
 };
+
+export default NetworkProvider;

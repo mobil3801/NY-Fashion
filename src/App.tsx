@@ -1,460 +1,221 @@
-import React from 'react';
+
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { LanguageProvider } from '@/contexts/LanguageContext';
-import { NetworkProvider } from '@/contexts/NetworkContext';
-import { InventoryProvider } from './contexts/InventoryContext';
-import { PurchaseOrderProvider } from './contexts/PurchaseOrderContext';
-import { EmployeeProvider } from '@/contexts/EmployeeContext';
-import { POSProvider } from '@/contexts/POSContext';
-import { ProductionProvider } from '@/contexts/ProductionContext';
-import { DebugProvider } from '@/debug';
+import { ProductionErrorMonitor } from '@/components/error-monitoring/ProductionErrorMonitor';
+import ErrorTrackingProvider from '@/components/monitoring/ErrorTrackingService';
+import GlobalErrorBoundary from '@/components/common/GlobalErrorBoundary';
+import LoadingState from '@/components/common/LoadingState';
+import { useAuth } from '@/contexts/AuthContext';
+import { isProduction } from '@/utils/env-validator';
+import { logger } from '@/utils/production-logger';
 
-import { PRODUCTION_CONFIG } from '@/config/production';
-import ProductionErrorBoundary from '@/components/common/EnhancedErrorBoundary';
-import NetworkErrorBoundary from '@/components/network/NetworkErrorBoundary';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import MainLayout from '@/components/layout/MainLayout';
+// Lazy load pages
+const HomePage = React.lazy(() => import('@/pages/HomePage'));
+const LoginPage = React.lazy(() => import('@/pages/auth/LoginPage'));
+const RegisterPage = React.lazy(() => import('@/pages/auth/RegisterPage'));
+const DashboardPage = React.lazy(() => import('@/pages/DashboardPage'));
+const POSPage = React.lazy(() => import('@/pages/POSPage'));
+const InventoryPage = React.lazy(() => import('@/pages/InventoryPage'));
+const PurchasePage = React.lazy(() => import('@/pages/PurchasePage'));
+const EmployeesPage = React.lazy(() => import('@/pages/EmployeesPage'));
+const SalaryPage = React.lazy(() => import('@/pages/SalaryPage'));
+const SalesPage = React.lazy(() => import('@/pages/SalesPage'));
+const InvoicesPage = React.lazy(() => import('@/pages/InvoicesPage'));
+const AdminPage = React.lazy(() => import('@/pages/AdminPage'));
+const SettingsPage = React.lazy(() => import('@/pages/SettingsPage'));
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
 
-// Auth Pages
-import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
-
-// Main Pages
-import DashboardPage from '@/pages/DashboardPage';
-import SalesPage from '@/pages/SalesPage';
-import InvoicesPage from '@/pages/InvoicesPage';
-import PurchasePage from '@/pages/PurchasePage';
-import InventoryPage from '@/pages/InventoryPage';
-import EmployeesPage from '@/pages/EmployeesPage';
-import SalaryPage from '@/pages/SalaryPage';
-import AdminPage from '@/pages/AdminPage';
-import SettingsPage from '@/pages/SettingsPage';
-import POSPage from '@/pages/POSPage';
-import NotFound from '@/pages/NotFound';
-
-// Debug Pages (Development only)
-import NetworkDebugPage from '@/pages/debug/NetworkDebugPage';
-import TestingPage from '@/pages/TestingPage';
-
-// Lazy load Performance Dashboard
-const LazyPerformanceDashboard = React.lazy(() =>
-import('@/components/monitoring/PerformanceDashboard').then((module) => ({
-  default: module.default
-})).catch(() => ({
-  default: () => <div>Performance Dashboard unavailable</div>
-}))
+// Conditionally load debug pages
+const NetworkDebugPage = React.lazy(() => 
+  isProduction() 
+    ? Promise.resolve({ default: () => <Navigate to="/" replace /> })
+    : import('@/pages/debug/NetworkDebugPage')
+);
+const TestingPage = React.lazy(() => 
+  isProduction() 
+    ? Promise.resolve({ default: () => <Navigate to="/" replace /> })
+    : import('@/pages/TestingPage')
 );
 
-// Import production utilities with safe imports
-let logger: any, enhancedToast: any, auditLogger: any;
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
 
-try {
-  const loggerModule = require('@/utils/production-logger');
-  logger = loggerModule.logger;
-} catch {
-  logger = {
-    logInfo: console.log,
-    logError: console.error,
-    logUserAction: console.log
-  };
-}
-
-try {
-  const toastModule = require('@/utils/enhanced-toast');
-  enhancedToast = toastModule.enhancedToast;
-} catch {
-  enhancedToast = {
-    showErrorToast: (title: string, message: string) => console.error(title, message),
-    showWarningToast: (message: string) => console.warn(message)
-  };
-}
-
-try {
-  const auditModule = require('@/utils/audit-logger');
-  auditLogger = auditModule.auditLogger;
-} catch {
-  auditLogger = {
-    logSystemEvent: console.log,
-    logSecurityEvent: console.log
-  };
-}
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error: any) => {
-        // Don't retry on 4xx errors (client errors)
-        if (error?.status >= 400 && error?.status < 500) {
-          return false;
-        }
-        return failureCount < (PRODUCTION_CONFIG?.api?.retryCount || 3);
-      },
-      retryDelay: PRODUCTION_CONFIG?.api?.retryDelay || 1000,
-      staleTime: PRODUCTION_CONFIG?.performance?.cacheTimeout || 300000,
-      cacheTime: (PRODUCTION_CONFIG?.performance?.cacheTimeout || 300000) * 2,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      refetchOnMount: false
-    },
-    mutations: {
-      retry: (failureCount, error: any) => {
-        // Don't retry mutations on client errors
-        if (error?.status >= 400 && error?.status < 500) {
-          return false;
-        }
-        return failureCount < (PRODUCTION_CONFIG?.api?.retryCount || 3);
-      },
-      retryDelay: PRODUCTION_CONFIG?.api?.retryDelay || 1000
-    }
+  if (loading) {
+    return <LoadingState />;
   }
-});
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Public Route Component (redirect if authenticated)
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Error Fallback Component
+const AppErrorFallback: React.FC<{ error: Error; errorId: string; retry: () => void }> = ({
+  error,
+  errorId,
+  retry
+}) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="max-w-md w-full text-center">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="text-red-500 mb-4">
+          <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          Application Error
+        </h2>
+        <p className="text-gray-600 mb-4">
+          The application encountered an unexpected error. Our team has been notified and is working on a fix.
+        </p>
+        <div className="space-y-2">
+          <button
+            onClick={retry}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Try again
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Reload page
+          </button>
+        </div>
+        <div className="mt-4 text-xs text-gray-500">
+          Error ID: {errorId}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 function App() {
-  // Initialize production features
   React.useEffect(() => {
-    try {
-      const isProduction = (import.meta.env.NODE_ENV || 'production') === 'production';
-
-      if (isProduction) {
-        logger.logInfo('Application started in production mode');
-
-        // Log application startup
-        auditLogger.logSystemEvent('APPLICATION_START', 'APPLICATION', {
-          version: '1.0.0',
-          environment: 'production'
-        });
-      } else {
-        logger.logInfo('Application started in development mode');
-      }
-
-      // Show toast notifications for critical errors
-      const handleError = (event: ErrorEvent) => {
-        enhancedToast.showErrorToast(
-          'Application Error',
-          event.error?.message || 'An unexpected error occurred'
-        );
-
-        // Log error for audit
-        auditLogger.logSecurityEvent('APPLICATION_ERROR', 'APPLICATION', 'HIGH', undefined, {
-          error: event.error?.message,
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno
-        });
-      };
-
-      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-        console.error('Unhandled promise rejection:', event.reason);
-        enhancedToast.showErrorToast(
-          'Application Error',
-          'An unexpected error occurred'
-        );
-      };
-
-      window.addEventListener('error', handleError);
-      window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-      // Cleanup on unmount
-      return () => {
-        window.removeEventListener('error', handleError);
-        window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-
-        if (isProduction) {
-          auditLogger.logSystemEvent('APPLICATION_STOP', 'APPLICATION');
-        }
-      };
-    } catch (initError) {
-      console.error('App initialization error:', initError);
-    }
+    // Log app initialization
+    logger.logInfo('App component mounted');
+    logger.logComponentLifecycle('App', 'mounted');
   }, []);
 
-  // Get current environment
-  const nodeEnv = import.meta.env.NODE_ENV || 'production';
-  const isDev = nodeEnv === 'development' || import.meta.env.DEV === true;
-
   return (
-    <ProductionErrorBoundary level="global">
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <LanguageProvider>
-            <NetworkProvider>
-              <NetworkErrorBoundary>
-                <ProductionErrorBoundary level="app">
-                  <AuthProvider>
-                    <InventoryProvider>
-                      <PurchaseOrderProvider>
-                        <EmployeeProvider>
-                          <POSProvider>
-                            {isDev && !import.meta.env.VITE_DISABLE_DEBUG_PROVIDER ?
-                            <DebugProvider>
-                                <AppRouter isDev={isDev} />
-                              </DebugProvider> :
+    <GlobalErrorBoundary>
+      <ErrorTrackingProvider>
+        <ProductionErrorMonitor fallback={AppErrorFallback}>
+          <Router>
+            <div className="min-h-screen bg-background">
+              <Suspense fallback={<LoadingState />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  } />
+                  <Route path="/register" element={
+                    <PublicRoute>
+                      <RegisterPage />
+                    </PublicRoute>
+                  } />
 
-                            <AppRouter isDev={isDev} />
-                            }
-                          </POSProvider>
-                        </EmployeeProvider>
-                      </PurchaseOrderProvider>
-                    </InventoryProvider>
-                  </AuthProvider>
-                </ProductionErrorBoundary>
-              </NetworkErrorBoundary>
-            </NetworkProvider>
-          </LanguageProvider>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ProductionErrorBoundary>);
+                  {/* Protected Routes */}
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/pos" element={
+                    <ProtectedRoute>
+                      <POSPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/inventory" element={
+                    <ProtectedRoute>
+                      <InventoryPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/purchase" element={
+                    <ProtectedRoute>
+                      <PurchasePage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/employees" element={
+                    <ProtectedRoute>
+                      <EmployeesPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/salary" element={
+                    <ProtectedRoute>
+                      <SalaryPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/sales" element={
+                    <ProtectedRoute>
+                      <SalesPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/invoices" element={
+                    <ProtectedRoute>
+                      <InvoicesPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <SettingsPage />
+                    </ProtectedRoute>
+                  } />
 
-}
-
-// Separate router component to reduce nesting complexity
-function AppRouter({ isDev }: {isDev: boolean;}) {
-  return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/login"
-          element={
-          <ProductionErrorBoundary level="page">
-              <LoginPage />
-            </ProductionErrorBoundary>
-          } />
-
-
-
-
-        <Route
-          path="/register"
-          element={
-          <ProductionErrorBoundary level="page">
-              <RegisterPage />
-            </ProductionErrorBoundary>
-          } />
-
-
-
-
-        {/* Protected Routes */}
-        <Route
-          path="/*"
-          element={
-          <ProtectedRoute>
-              <ProductionErrorBoundary level="layout">
-                <MainLayout />
-              </ProductionErrorBoundary>
-            </ProtectedRoute>
-          }>
-
-
-
-          <Route
-            index
-            element={
-            <ProductionErrorBoundary level="page">
-                <Navigate to="/dashboard" replace />
-              </ProductionErrorBoundary>
-            } />
-
-
-
-
-          <Route
-            path="dashboard"
-            element={
-            <ProtectedRoute resource="dashboard">
-                <ProductionErrorBoundary level="page">
-                  <DashboardPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="sales"
-            element={
-            <ProtectedRoute resource="sales">
-                <ProductionErrorBoundary level="page">
-                  <SalesPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="invoices"
-            element={
-            <ProtectedRoute resource="invoices">
-                <ProductionErrorBoundary level="page">
-                  <InvoicesPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="purchases"
-            element={
-            <ProtectedRoute resource="purchases">
-                <ProductionErrorBoundary level="page">
-                  <PurchasePage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="inventory"
-            element={
-            <ProtectedRoute resource="inventory">
-                <ProductionErrorBoundary level="page">
-                  <InventoryPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="employees"
-            element={
-            <ProtectedRoute resource="employees">
-                <ProductionErrorBoundary level="page">
-                  <EmployeesPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="salary"
-            element={
-            <ProtectedRoute resource="salary">
-                <ProductionErrorBoundary level="page">
-                  <SalaryPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="admin"
-            element={
-            <ProtectedRoute resource="admin">
-                <ProductionErrorBoundary level="page">
-                  <AdminPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="settings"
-            element={
-            <ProtectedRoute resource="settings">
-                <ProductionErrorBoundary level="page">
-                  <SettingsPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          <Route
-            path="pos"
-            element={
-            <ProtectedRoute resource="pos">
-                <ProductionErrorBoundary level="page">
-                  <POSPage />
-                </ProductionErrorBoundary>
-              </ProtectedRoute>
-            } />
-
-
-
-
-          {/* Debug Routes - Development Only */}
-          {isDev && !import.meta.env.VITE_DISABLE_DEBUG_ROUTES &&
-          <>
-              <Route
-              path="debug/network"
-              element={
-              <ProtectedRoute resource="admin">
-                    <ProductionErrorBoundary level="page">
+                  {/* Debug Routes (Development only) */}
+                  <Route path="/debug/network" element={
+                    <ProtectedRoute>
                       <NetworkDebugPage />
-                    </ProductionErrorBoundary>
-                  </ProtectedRoute>
-              } />
-
-
-
-
-              <Route
-              path="performance"
-              element={
-              <ProtectedRoute resource="admin">
-                    <ProductionErrorBoundary level="page">
-                      <React.Suspense fallback={<div>Loading...</div>}>
-                        <LazyPerformanceDashboard />
-                      </React.Suspense>
-                    </ProductionErrorBoundary>
-                  </ProtectedRoute>
-              } />
-
-
-
-
-              <Route
-              path="testing"
-              element={
-              <ProtectedRoute resource="admin">
-                    <ProductionErrorBoundary level="page">
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/performance" element={
+                    <ProtectedRoute>
                       <TestingPage />
-                    </ProductionErrorBoundary>
-                  </ProtectedRoute>
-              } />
+                    </ProtectedRoute>
+                  } />
 
+                  {/* 404 Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
 
-
-            </>
-          }
-        </Route>
-
-        {/* Fallback Route */}
-        <Route
-          path="*"
-          element={
-          <ProductionErrorBoundary level="page">
-              <NotFound />
-            </ProductionErrorBoundary>
-          } />
-
-
-
-      </Routes>
-    </Router>);
-
+              {/* Global UI Components */}
+              <Toaster />
+            </div>
+          </Router>
+        </ProductionErrorMonitor>
+      </ErrorTrackingProvider>
+    </GlobalErrorBoundary>
+  );
 }
 
 export default App;

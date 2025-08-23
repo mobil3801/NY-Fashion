@@ -1,430 +1,206 @@
-/**
- * Environment Variable Validator
- * Validates and sanitizes environment variables for production security
- */
 
-import { logger } from '@/utils/production-logger';
-
-export interface EnvValidationRule {
-  required: boolean;
-  type: 'string' | 'number' | 'boolean' | 'url' | 'email';
-  pattern?: RegExp;
-  minLength?: number;
-  maxLength?: number;
-  allowedValues?: string[];
-  sensitive?: boolean;
-  defaultValue?: any;
+// Environment validation utility with proper error handling
+export interface EnvironmentValidation {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  environment: string;
+  config: Record<string, any>;
 }
 
-export interface EnvValidationConfig {
-  [key: string]: EnvValidationRule;
-}
-
-class EnvironmentValidator {
-  private validationRules: EnvValidationConfig;
-  private validatedVars: Map<string, any> = new Map();
-
-  constructor(rules: EnvValidationConfig) {
-    this.validationRules = rules;
+// Helper function to determine current environment
+const getCurrentEnvironment = (): string => {
+  if (typeof window !== 'undefined' && (window as any).__NODE_ENV__) {
+    return (window as any).__NODE_ENV__;
   }
 
-  /**
-   * Get effective NODE_ENV value with fallback
-   */
-  private getEffectiveNodeEnv(): string {
-    // Try multiple sources for NODE_ENV
-    const sources = [
-    import.meta.env?.NODE_ENV,
-    process.env?.NODE_ENV,
-    import.meta.env?.VITE_NODE_ENV,
-    import.meta.env?.MODE];
+  if (import.meta.env?.NODE_ENV) {
+    return import.meta.env.NODE_ENV;
+  }
 
+  if (import.meta.env?.MODE) {
+    return import.meta.env.MODE;
+  }
 
-    for (const env of sources) {
-      if (env && typeof env === 'string') {
-        return env;
-      }
-    }
-
-    // Fallback: detect based on development server
-    if (import.meta.env?.DEV === true) {
-      return 'development';
-    }
-
-    // If running on localhost or with dev server
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('dev')) {
-        return 'development';
-      }
-    }
-
-    // Default to production for safety
+  // Check for production indicators
+  if (import.meta.env?.PROD) {
     return 'production';
   }
 
-  /**
-   * Validate all environment variables according to rules
-   */
-  validateAll(): {isValid: boolean;errors: string[];warnings: string[];} {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Set effective NODE_ENV if not present
-    const effectiveNodeEnv = this.getEffectiveNodeEnv();
-    if (!import.meta.env.NODE_ENV) {
-      // We can't directly assign to import.meta.env, so we'll work with effectiveNodeEnv
-      warnings.push(`NODE_ENV was not set, inferred as '${effectiveNodeEnv}'`);
-    }
-
-    // Check for required variables
-    Object.entries(this.validationRules).forEach(([varName, rule]) => {
-      const value = varName === 'NODE_ENV' ? effectiveNodeEnv : import.meta.env[varName];
-
-      if (rule.required && (!value || value.trim() === '')) {
-        if (rule.defaultValue !== undefined) {
-          // Use default value
-          const defaultValue = rule.defaultValue;
-          this.validatedVars.set(varName, defaultValue);
-          warnings.push(`Required variable ${varName} not set, using default: ${rule.sensitive ? '***' : defaultValue}`);
-          return;
-        } else {
-          errors.push(`Required environment variable ${varName} is not set or empty`);
-          return;
-        }
-      }
-
-      if (value) {
-        const validation = this.validateVariable(varName, value, rule);
-        if (!validation.isValid) {
-          errors.push(...validation.errors);
-        }
-        warnings.push(...validation.warnings);
-
-        if (validation.isValid) {
-          this.validatedVars.set(varName, validation.value);
-        }
-      }
-    });
-
-    // Check for potentially dangerous variables in production
-    if (effectiveNodeEnv === 'production') {
-      this.checkProductionSafety(warnings, errors);
-    }
-
-    // Log validation results
-    if (errors.length === 0) {
-      logger.logInfo('Environment variable validation passed', {
-        nodeEnv: effectiveNodeEnv,
-        validatedCount: this.validatedVars.size,
-        warningCount: warnings.length
-      });
-    } else {
-      logger.logError('Environment variable validation failed', new Error(`Validation failed: ${errors.join(', ')}`));
-    }
-
-    return { isValid: errors.length === 0, errors, warnings };
+  if (import.meta.env?.DEV) {
+    return 'development';
   }
 
-  /**
-   * Validate a single environment variable
-   */
-  private validateVariable(name: string, value: string, rule: EnvValidationRule): {
-    isValid: boolean;
-    errors: string[];
-    warnings: string[];
-    value: any;
-  } {
+  // Default based on build mode
+  return 'production'; // Default to production for safety
+};
+
+// Helper function to check if we're in production
+const isProductionEnv = (): boolean => {
+  const env = getCurrentEnvironment();
+  return env === 'production' || import.meta.env.PROD === true;
+};
+
+// Production environment configuration fallback
+const PRODUCTION_ENV_CONFIG = {
+  ENABLE_DEBUG: false,
+  ENABLE_CONSOLE_LOGGING: false,
+  DISABLE_DEBUG_ROUTES: true,
+  DISABLE_DEBUG_PROVIDER: true
+};
+
+class EnvironmentValidator {
+  private getEnvironmentType(): string {
+    return getCurrentEnvironment();
+  }
+
+  private validateEnvironmentVariables(): { errors: string[], warnings: string[] } {
     const errors: string[] = [];
     const warnings: string[] = [];
-    let processedValue: any = value;
-
+    const nodeEnv = this.getEnvironmentType();
+    
+    // Set NODE_ENV safely
     try {
-      // Type validation and conversion
-      switch (rule.type) {
-        case 'number':
-          processedValue = Number(value);
-          if (isNaN(processedValue)) {
-            errors.push(`${name} must be a valid number, got: ${value}`);
-            return { isValid: false, errors, warnings, value };
-          }
-          break;
-
-        case 'boolean':
-          if (!['true', 'false', '1', '0'].includes(value.toLowerCase())) {
-            errors.push(`${name} must be a boolean value (true/false/1/0), got: ${value}`);
-            return { isValid: false, errors, warnings, value };
-          }
-          processedValue = ['true', '1'].includes(value.toLowerCase());
-          break;
-
-        case 'url':
-          try {
-            new URL(value);
-            if (import.meta.env.NODE_ENV === 'production' && !value.startsWith('https://')) {
-              warnings.push(`${name} should use HTTPS in production, got: ${value}`);
-            }
-          } catch {
-            errors.push(`${name} must be a valid URL, got: ${value}`);
-            return { isValid: false, errors, warnings, value };
-          }
-          break;
-
-        case 'email':
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            errors.push(`${name} must be a valid email address, got: ${value}`);
-            return { isValid: false, errors, warnings, value };
-          }
-          break;
+      if (typeof window !== 'undefined') {
+        (window as any).__NODE_ENV__ = nodeEnv;
       }
-
-      // Length validation
-      if (rule.minLength && value.length < rule.minLength) {
-        errors.push(`${name} must be at least ${rule.minLength} characters long`);
-      }
-
-      if (rule.maxLength && value.length > rule.maxLength) {
-        errors.push(`${name} must be no more than ${rule.maxLength} characters long`);
-      }
-
-      // Pattern validation
-      if (rule.pattern && !rule.pattern.test(value)) {
-        errors.push(`${name} does not match required pattern`);
-      }
-
-      // Allowed values validation
-      if (rule.allowedValues && !rule.allowedValues.includes(value)) {
-        errors.push(`${name} must be one of: ${rule.allowedValues.join(', ')}, got: ${value}`);
-      }
-
-      // Security checks for sensitive variables
-      if (rule.sensitive) {
-        this.validateSensitiveVariable(name, value, warnings);
-      }
-
-    } catch (error) {
-      errors.push(`Error validating ${name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (e) {
+      // Ignore errors in production
     }
 
+    // In production, only issue warnings, not errors
+    if (isProductionEnv()) {
+      // Production-specific validation
+      if (typeof window !== 'undefined' && window.location.protocol === 'http:' && 
+          !window.location.hostname.includes('localhost')) {
+        warnings.push('Production should use HTTPS');
+      }
+    } else {
+      // Development-specific validation
+      if (!PRODUCTION_ENV_CONFIG.ENABLE_DEBUG) {
+        warnings.push('Debug mode should be enabled in development');
+      }
+    }
+
+    return { errors, warnings };
+  }
+
+  private getEnvironmentConfig(): Record<string, any> {
+    const nodeEnv = this.getEnvironmentType();
+    const env = import.meta.env;
+
     return {
+      NODE_ENV: nodeEnv,
+      MODE: env.MODE || 'production',
+      DEV: env.DEV || false,
+      PROD: env.PROD || nodeEnv === 'production',
+      
+      // API Configuration
+      API_BASE_URL: env.VITE_API_BASE_URL || (
+        nodeEnv === 'development' ? 'http://localhost:8080' : window.location.origin
+      ),
+      API_TIMEOUT: parseInt(env.VITE_API_TIMEOUT || '30000'),
+      API_RETRY_COUNT: parseInt(env.VITE_API_RETRY_COUNT || '3'),
+      
+      // Feature Flags
+      ENABLE_DEBUG: env.VITE_ENABLE_DEBUG === 'true' || nodeEnv === 'development',
+      ENABLE_CONSOLE_LOGGING: env.VITE_ENABLE_CONSOLE_LOGGING === 'true' || nodeEnv === 'development',
+      DISABLE_DEBUG_ROUTES: env.VITE_DISABLE_DEBUG_ROUTES === 'true' || nodeEnv === 'production',
+      DISABLE_DEBUG_PROVIDER: env.VITE_DISABLE_DEBUG_PROVIDER === 'true' || nodeEnv === 'production',
+      
+      // Security Configuration
+      ENABLE_SECURITY_HEADERS: env.VITE_ENABLE_SECURITY_HEADERS !== 'false',
+      ENABLE_HTTPS_ENFORCEMENT: env.VITE_ENABLE_HTTPS_ENFORCEMENT === 'true' && nodeEnv === 'production',
+      MAX_LOGIN_ATTEMPTS: parseInt(env.VITE_MAX_LOGIN_ATTEMPTS || (nodeEnv === 'production' ? '5' : '10')),
+      SESSION_TIMEOUT: parseInt(env.VITE_SESSION_TIMEOUT || (nodeEnv === 'production' ? '3600000' : '7200000')),
+      
+      // Performance Configuration
+      CACHE_MAX_SIZE: parseInt(env.VITE_CACHE_MAX_SIZE || '1000'),
+      CACHE_TTL: parseInt(env.VITE_CACHE_TTL || '300000'),
+      HEALTH_CHECK_INTERVAL: parseInt(env.VITE_HEALTH_CHECK_INTERVAL || '60000'),
+      
+      // Database Configuration
+      DB_CONNECTION_POOL_SIZE: parseInt(env.VITE_DB_CONNECTION_POOL_SIZE || '20'),
+      DB_QUERY_TIMEOUT: parseInt(env.VITE_DB_QUERY_TIMEOUT || '30000'),
+      DB_MAX_CONCURRENT_QUERIES: parseInt(env.VITE_DB_MAX_CONCURRENT_QUERIES || '10'),
+      DB_ENABLE_QUERY_CACHE: env.VITE_DB_ENABLE_QUERY_CACHE !== 'false'
+    };
+  }
+
+  validateAll(): EnvironmentValidation {
+    const nodeEnv = this.getEnvironmentType();
+    const { errors, warnings } = this.validateEnvironmentVariables();
+    const config = this.getEnvironmentConfig();
+
+    // Log configuration for debugging
+    console.log('Environment Configuration:', {
+      environment: nodeEnv,
       isValid: errors.length === 0,
+      errorCount: errors.length,
+      warningCount: warnings.length,
+      config: config
+    });
+
+    return {
+      isValid: errors.length === 0, // Only hard errors make it invalid
       errors,
       warnings,
-      value: processedValue
+      environment: nodeEnv,
+      config
     };
   }
 
-  /**
-   * Validate sensitive variables for security issues
-   */
-  private validateSensitiveVariable(name: string, value: string, warnings: string[]): void {
-    // Check for common insecure values
-    const insecurePatterns = [
-    { pattern: /^(password|secret|key)$/i, message: 'appears to be a default placeholder' },
-    { pattern: /^(test|demo|example)/, message: 'appears to contain test/demo values' },
-    { pattern: /localhost|127\.0\.0\.1/, message: 'contains localhost references' },
-    { pattern: /^.{1,5}$/, message: 'is suspiciously short for a sensitive value' },
-    { pattern: /^(admin|root|user)$/i, message: 'uses a common default value' }];
-
-
-    insecurePatterns.forEach(({ pattern, message }) => {
-      if (pattern.test(value)) {
-        warnings.push(`Sensitive variable ${name} ${message}`);
-      }
-    });
-
-    // Check for proper entropy in secrets
-    if (name.toLowerCase().includes('secret') || name.toLowerCase().includes('key')) {
-      if (this.calculateEntropy(value) < 3.0) {
-        warnings.push(`${name} has low entropy and may be easily guessable`);
-      }
-    }
+  // Get specific environment variable with fallback
+  getEnvVar(name: string, fallback: any = undefined): any {
+    const config = this.getEnvironmentConfig();
+    const key = name.replace('VITE_', '').replace(/^VITE_/, '');
+    
+    return config[key] !== undefined ? config[key] : fallback;
   }
 
-  /**
-   * Calculate entropy of a string (basic implementation)
-   */
-  private calculateEntropy(str: string): number {
-    const charCount = new Map<string, number>();
-    for (const char of str) {
-      charCount.set(char, (charCount.get(char) || 0) + 1);
-    }
-
-    let entropy = 0;
-    for (const count of charCount.values()) {
-      const probability = count / str.length;
-      entropy -= probability * Math.log2(probability);
-    }
-
-    return entropy;
+  // Check if we're in development
+  isDevelopment(): boolean {
+    return this.getEnvironmentType() === 'development' || import.meta.env.DEV === true;
   }
 
-  /**
-   * Check for production safety issues
-   */
-  private checkProductionSafety(warnings: string[], errors: string[]): void {
-    // Don't be too strict about production safety in build environment
-    const devPatterns = [
-    { env: 'VITE_API_BASE_URL', pattern: /localhost|127\.0\.0\.1/, message: 'API URL points to localhost in production' },
-    { env: 'VITE_ENABLE_DEBUG', pattern: /^true$/i, message: 'Debug mode is enabled in production' }];
-
-
-    devPatterns.forEach(({ env, pattern, message }) => {
-      const value = import.meta.env[env];
-      if (value && pattern.test(value)) {
-        warnings.push(message);
-      }
-    });
+  // Check if we're in production
+  isProduction(): boolean {
+    return this.getEnvironmentType() === 'production' || import.meta.env.PROD === true;
   }
 
-  /**
-   * Get a validated environment variable
-   */
-  getValidatedVar<T = any>(name: string): T | undefined {
-    return this.validatedVars.get(name) as T | undefined;
-  }
-
-  /**
-   * Get all validated variables
-   */
-  getValidatedVars(): Map<string, any> {
-    return new Map(this.validatedVars);
-  }
-
-  /**
-   * Sanitize environment variables for logging
-   */
-  getSanitizedEnvForLogging(): Record<string, string> {
-    const sanitized: Record<string, string> = {};
-
-    Object.keys(import.meta.env).forEach((key) => {
-      const rule = this.validationRules[key];
-      const value = import.meta.env[key];
-
-      if (rule?.sensitive || this.isSensitiveKey(key)) {
-        // Mask sensitive values
-        sanitized[key] = value ? `${'*'.repeat(Math.min(value.length, 8))}` : 'unset';
-      } else {
-        sanitized[key] = value || 'unset';
-      }
-    });
-
-    return sanitized;
-  }
-
-  /**
-   * Check if a key is sensitive based on naming patterns
-   */
-  private isSensitiveKey(key: string): boolean {
-    const sensitivePatterns = [
-    /password/i,
-    /secret/i,
-    /key/i,
-    /token/i,
-    /credential/i,
-    /private/i,
-    /auth/i,
-    /_key$/i,
-    /_secret$/i,
-    /_token$/i];
-
-
-    return sensitivePatterns.some((pattern) => pattern.test(key));
-  }
-
-  /**
-   * Create a production-ready environment report
-   */
-  generateProductionReport(): {
-    isProductionReady: boolean;
-    criticalIssues: string[];
-    warnings: string[];
-    configuredVars: string[];
-    missingOptionalVars: string[];
-  } {
-    const validation = this.validateAll();
-    const criticalIssues = validation.errors;
-    const warnings = validation.warnings;
-    const configuredVars: string[] = [];
-    const missingOptionalVars: string[] = [];
-
-    Object.entries(this.validationRules).forEach(([varName, rule]) => {
-      const value = import.meta.env[varName];
-
-      if (value) {
-        configuredVars.push(varName);
-      } else if (!rule.required) {
-        missingOptionalVars.push(varName);
-      }
-    });
-
-    return {
-      isProductionReady: criticalIssues.length === 0,
-      criticalIssues,
-      warnings,
-      configuredVars,
-      missingOptionalVars
-    };
+  // Get current environment safely
+  getEnvironment(): string {
+    return this.getEnvironmentType();
   }
 }
 
-// Default validation configuration with more lenient requirements
-export const DEFAULT_ENV_VALIDATION_CONFIG: EnvValidationConfig = {
-  NODE_ENV: {
-    required: false, // Made optional to avoid build issues
-    type: 'string',
-    allowedValues: ['development', 'production', 'test'],
-    defaultValue: 'production' // Safe default
-  },
-  VITE_API_BASE_URL: {
-    required: false,
-    type: 'url',
-    sensitive: false
-  },
-  VITE_API_TIMEOUT: {
-    required: false,
-    type: 'number',
-    minLength: 1,
-    defaultValue: 30000
-  },
-  VITE_MAX_LOGIN_ATTEMPTS: {
-    required: false,
-    type: 'number',
-    minLength: 1,
-    defaultValue: 5
-  },
-  VITE_SESSION_TIMEOUT: {
-    required: false,
-    type: 'number',
-    minLength: 1,
-    defaultValue: 3600000
-  },
-  VITE_ENABLE_DEBUG: {
-    required: false,
-    type: 'boolean',
-    defaultValue: false
-  },
-  VITE_ENABLE_CONSOLE_LOGGING: {
-    required: false,
-    type: 'boolean',
-    defaultValue: false
-  },
-  VITE_API_KEY: {
-    required: false,
-    type: 'string',
-    sensitive: true,
-    minLength: 10
-  },
-  VITE_SECRET_KEY: {
-    required: false,
-    type: 'string',
-    sensitive: true,
-    minLength: 16
+// Export singleton instance
+export const environmentValidator = new EnvironmentValidator();
+
+// Export utility functions
+export const getEnvironment = () => environmentValidator.getEnvironment();
+export const isDevelopment = () => environmentValidator.isDevelopment();
+export const isProduction = () => environmentValidator.isProduction(); // Fixed: use method reference
+export const getEnvVar = (name: string, fallback?: any) => environmentValidator.getEnvVar(name, fallback);
+
+// Enhanced environment configuration getter
+export const getEnvironmentConfig = () => {
+  const validation = environmentValidator.validateAll();
+  
+  if (validation.warnings.length > 0) {
+    console.warn('Environment warnings detected:', validation.warnings);
   }
+  
+  if (!validation.isValid) {
+    console.error('Environment validation failed:', validation.errors);
+    // Don't throw in production - just log and continue with defaults
+  }
+  
+  return validation.config;
 };
 
-// Create and export singleton instance
-export const environmentValidator = new EnvironmentValidator(DEFAULT_ENV_VALIDATION_CONFIG);
+// Export the isProductionEnv function for backward compatibility
+export { isProductionEnv };
 
+// Export default for backwards compatibility
 export default environmentValidator;

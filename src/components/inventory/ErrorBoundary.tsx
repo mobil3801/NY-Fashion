@@ -94,13 +94,13 @@ class InventoryErrorBoundary extends Component<Props, State> {
 
 
 
+
+
       // Example: Sentry, LogRocket, etc.
       // errorMonitoring.captureException(error, { extra: errorInfo });
     } catch (monitoringError) {console.error('Failed to report error:', monitoringError);}}componentWillUnmount() {if (this.retryTimeoutId) {clearTimeout(this.retryTimeoutId);}}handleRetry = () => {if (this.state.retryCount >= 3) {// Too many retries, suggest page reload
       window.location.reload();return;}this.setState((prevState) => ({ hasError: false, error: null, errorInfo: null, retryCount: prevState.retryCount + 1 })); // Auto-retry after a delay if it fails again
-    this.retryTimeoutId = window.setTimeout(() => {if (this.state.hasError && this.state.retryCount < 3) {this.handleRetry();}}, 2000);};handleReportBug = () => {const errorReport = { error: this.state.error?.message, stack: this.state.error?.stack,
-      componentStack: this.state.errorInfo?.componentStack,
-      userAgent: navigator.userAgent,
+    this.retryTimeoutId = window.setTimeout(() => {if (this.state.hasError && this.state.retryCount < 3) {this.handleRetry();}}, 2000);};handleReportBug = () => {const errorReport = { error: this.state.error?.message, stack: this.state.error?.stack, componentStack: this.state.errorInfo?.componentStack, userAgent: navigator.userAgent,
       timestamp: new Date().toISOString(),
       retryCount: this.state.retryCount
     };
