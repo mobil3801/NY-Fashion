@@ -20,13 +20,13 @@ export function onVisibilityHidden(cb: () => void) {
 
 export async function flushWithBeacon(url: string, body: any) {
   const payload = typeof body === 'string' ? body : JSON.stringify(body);
-  
+
   if (navigator.sendBeacon && typeof payload === 'string') {
     const blob = new Blob([payload], { type: 'application/json' });
     navigator.sendBeacon(url, blob);
     return;
   }
-  
+
   // Fallback to fetch with keepalive
   await fetch(url, {
     method: 'POST',
@@ -63,7 +63,7 @@ export function usePageLifecycle() {
 // Page lifecycle manager class
 export class PageLifecycleManager {
   private cleanupFunctions: (() => void)[] = [];
-  
+
   constructor() {
     this.setupListeners();
     this.preventUnloadInDev();
@@ -98,7 +98,7 @@ export class PageLifecycleManager {
   private preventUnloadInDev() {
     if (import.meta.env.DEV) {
       const orig = window.addEventListener;
-      window.addEventListener = function(type: any, ...rest: any[]) {
+      window.addEventListener = function (type: any, ...rest: any[]) {
         if (type === 'unload') {
           throw new Error('Do not use unload in main frame - use pagehide/visibilitychange instead');
         }
@@ -109,7 +109,7 @@ export class PageLifecycleManager {
   }
 
   public cleanup() {
-    this.cleanupFunctions.forEach(cleanup => cleanup());
+    this.cleanupFunctions.forEach((cleanup) => cleanup());
     this.cleanupFunctions = [];
   }
 }

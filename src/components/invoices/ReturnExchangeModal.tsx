@@ -330,6 +330,8 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
         }} // Update original sale if fully returned
@@ -493,9 +495,7 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                             <TableCell className="text-right font-semibold">
                               {formatCurrency(returnItem?.refundAmount || 0)}
                             </TableCell>
-                          </TableRow>;
-
-                    })}
+                          </TableRow>;})}
                     </TableBody>
                   </Table>
                 </div>

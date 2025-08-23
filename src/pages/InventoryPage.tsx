@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InventoryProvider } from '@/contexts/InventoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNetwork } from '@/contexts/NetworkContext';
 
 // Import accessibility utilities for dev mode
 if (import.meta.env.DEV) {
@@ -23,12 +24,25 @@ import InventoryAdjustments from '@/components/inventory/InventoryAdjustments';
 import LowStockAlerts from '@/components/inventory/LowStockAlerts';
 import CSVImport from '@/components/inventory/CSVImport';
 import BarcodeGeneration from '@/components/inventory/BarcodeGeneration';
+import NetworkDiagnosticsHelper from '@/components/network/NetworkDiagnosticsHelper';
 
 const InventoryPage = () => {
   const { t } = useLanguage();
+  const { online, connectionState, errorDetails } = useNetwork();
   const [activeTab, setActiveTab] = useState('products');
   const [showCSVImport, setShowCSVImport] = useState(false);
   const [showBarcodeGen, setShowBarcodeGen] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  // Auto-show diagnostics if there are persistent connection issues
+  useEffect(() => {
+    if (!online && connectionState === 'offline' && errorDetails) {
+      const timer = setTimeout(() => {
+        setShowDiagnostics(true);
+      }, 5000); // Show diagnostics after 5 seconds of being offline
+      return () => clearTimeout(timer);
+    }
+  }, [online, connectionState, errorDetails]);
 
   return (
     <InventoryProvider>
@@ -81,7 +95,7 @@ const InventoryPage = () => {
 
         {/* Main Inventory Interface with enhanced accessibility */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5" role="tablist" aria-label="Inventory management sections">
+          <TabsList className="grid w-full grid-cols-6" role="tablist" aria-label="Inventory management sections">
             <TabsTrigger
               value="products"
               className="flex items-center gap-2 focus-aa text-default-aa"
@@ -131,6 +145,16 @@ const InventoryPage = () => {
 
               <BarChart3 className="h-4 w-4" aria-hidden="true" />
               Reports
+            </TabsTrigger>
+            <TabsTrigger
+              value="diagnostics"
+              className="flex items-center gap-2 focus-aa text-default-aa"
+              aria-label="Network diagnostics and troubleshooting">
+
+
+
+              <Package className="h-4 w-4" aria-hidden="true" />
+              Diagnostics
             </TabsTrigger>
           </TabsList>
 
@@ -237,6 +261,10 @@ const InventoryPage = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="diagnostics" role="tabpanel" aria-labelledby="diagnostics-tab">
+            <NetworkDiagnosticsHelper />
           </TabsContent>
         </Tabs>
 

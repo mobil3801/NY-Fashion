@@ -213,7 +213,9 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
           // Only update state if this is still the current request
           if (isValidResponse(requestId)) {
-            setProducts(Array.isArray(data) ? data : []);
+            // Handle the response correctly - products are returned directly as array
+            const products = Array.isArray(data) ? data : [];
+            setProducts(products);
           }
 
           return data;
@@ -293,7 +295,9 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
           // Only update state if this is still the current request
           if (isValidResponse(requestId)) {
-            setCategories(Array.isArray(data) ? data : []);
+            // Handle the response correctly - categories are returned directly as array
+            const categories = Array.isArray(data) ? data : [];
+            setCategories(categories);
           }
 
           return data;
@@ -472,19 +476,24 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   }, [fetchProducts, handleError]);
 
   const getLowStockProducts = useCallback(async (): Promise<Product[]> => {
+    if (!isMountedRef.current) return [];
+
     try {
       return await executeWithRetry(
         async (ctx: RetryContext) => {
           const { data, error } = await window.ezsite.apis.run({
-            path: 'getProducts',
-            param: [{ low_stock_only: true }]
+            path: 'getLowStockProducts',
+            param: [{
+              limit: 100
+            }]
           });
 
           if (error) {
             throw new Error(typeof error === 'string' ? error : 'Failed to fetch low stock products');
           }
 
-          return data.products || [];
+          const products = Array.isArray(data) ? data : [];
+          return products;
         },
         {
           attempts: 3,
@@ -493,7 +502,9 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
         }
       );
     } catch (error) {
-      handleError(error, 'getLowStockProducts');
+      if (isMountedRef.current) {
+        handleError(error, 'getLowStockProducts');
+      }
       return [];
     }
   }, [executeWithRetry, handleError]);

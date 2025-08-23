@@ -128,14 +128,13 @@ class ConnectivityMonitor {
     this.diagnostics.totalAttempts++;
 
     try {
-      // Health check endpoint with fallbacks - using VITE_ prefix
-      const healthEndpoint = import.meta.env.VITE_API_HEALTH_URL || '/v1/health';
+      // Health check endpoint with fallbacks - use EasySite compatible endpoints
       const endpoints = [
-      `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
-      `${window.location.origin}/favicon.ico`, // Static resource fallback
-      `${window.location.origin}/`, // Home page fallback
-      'https://httpbin.org/status/200', // External fallback
-      'https://www.google.com/favicon.ico' // Ultimate fallback
+        `${window.location.origin}/`, // EasySite home page (most reliable)
+        `${window.location.origin}/favicon.ico`, // Static resource fallback
+        '/api/health', // If available
+        'https://httpbin.org/status/200', // External fallback
+        'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;

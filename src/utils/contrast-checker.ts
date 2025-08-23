@@ -59,7 +59,7 @@ function parseColor(colorStr: string): ColorInfo | null {
   }
 
   // Handle named colors (basic set)
-  const namedColors: { [key: string]: ColorInfo } = {
+  const namedColors: {[key: string]: ColorInfo;} = {
     white: { r: 255, g: 255, b: 255, a: 1 },
     black: { r: 0, g: 0, b: 0, a: 1 },
     red: { r: 255, g: 0, b: 0, a: 1 },
@@ -76,7 +76,7 @@ function parseColor(colorStr: string): ColorInfo | null {
  */
 function getLuminance(color: ColorInfo): number {
   const { r, g, b } = color;
-  
+
   // Convert to sRGB
   const rsRGB = r / 255;
   const gsRGB = g / 255;
@@ -97,10 +97,10 @@ function getLuminance(color: ColorInfo): number {
 function calculateContrastRatio(color1: ColorInfo, color2: ColorInfo): number {
   const lum1 = getLuminance(color1);
   const lum2 = getLuminance(color2);
-  
+
   const lighter = Math.max(lum1, lum2);
   const darker = Math.min(lum1, lum2);
-  
+
   return (lighter + 0.05) / (darker + 0.05);
 }
 
@@ -108,21 +108,21 @@ function calculateContrastRatio(color1: ColorInfo, color2: ColorInfo): number {
  * Check if contrast ratio meets WCAG guidelines
  */
 function checkContrastCompliance(ratio: number, fontSize: number, fontWeight: string | number): ContrastResult {
-  const isLarge = fontSize >= 18 || (fontSize >= 14 && (fontWeight === 'bold' || parseInt(String(fontWeight)) >= 700));
-  
+  const isLarge = fontSize >= 18 || fontSize >= 14 && (fontWeight === 'bold' || parseInt(String(fontWeight)) >= 700);
+
   const normalAA = ratio >= 4.5;
   const normalAAA = ratio >= 7;
   const largeAA = ratio >= 3;
   const largeAAA = ratio >= 4.5;
 
   let level: ContrastResult['level'] = 'FAIL';
-  
+
   if (isLarge) {
-    if (ratio >= 4.5) level = 'AAA';
-    else if (ratio >= 3) level = 'AA';
+    if (ratio >= 4.5) level = 'AAA';else
+    if (ratio >= 3) level = 'AA';
   } else {
-    if (ratio >= 7) level = 'AAA';
-    else if (ratio >= 4.5) level = 'AA';
+    if (ratio >= 7) level = 'AAA';else
+    if (ratio >= 4.5) level = 'AA';
   }
 
   return {
@@ -144,7 +144,7 @@ export function checkElementContrast(element: Element): ContrastResult | null {
   const styles = getComputedStyle(element);
   const color = parseColor(styles.color);
   const backgroundColor = parseColor(styles.backgroundColor);
-  
+
   if (!color) return null;
 
   // If no background color, check against parent or assume white
@@ -157,7 +157,7 @@ export function checkElementContrast(element: Element): ContrastResult | null {
       bgColor = parseColor(parentStyles.backgroundColor);
       parent = parent.parentElement;
     }
-    
+
     if (!bgColor || bgColor.a === 0) {
       bgColor = { r: 255, g: 255, b: 255, a: 1 }; // Default to white
     }
@@ -165,7 +165,7 @@ export function checkElementContrast(element: Element): ContrastResult | null {
 
   const fontSize = parseFloat(styles.fontSize);
   const fontWeight = styles.fontWeight;
-  
+
   const ratio = calculateContrastRatio(color, bgColor);
   return checkContrastCompliance(ratio, fontSize, fontWeight);
 }
@@ -173,18 +173,18 @@ export function checkElementContrast(element: Element): ContrastResult | null {
 /**
  * Audit page for contrast issues
  */
-export function auditPageContrast(): { element: Element; result: ContrastResult; info: any }[] {
-  const results: { element: Element; result: ContrastResult; info: any }[] = [];
-  
+export function auditPageContrast(): {element: Element;result: ContrastResult;info: any;}[] {
+  const results: {element: Element;result: ContrastResult;info: any;}[] = [];
+
   // Target common elements that might have contrast issues
   const selectors = [
-    'button', 'a', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    '[class*="badge"]', '[class*="text-"]', '[class*="bg-"]',
-    '.opacity-90', '.opacity-75', '.opacity-50'
-  ];
+  'button', 'a', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  '[class*="badge"]', '[class*="text-"]', '[class*="bg-"]',
+  '.opacity-90', '.opacity-75', '.opacity-50'];
 
-  selectors.forEach(selector => {
-    document.querySelectorAll(selector).forEach(element => {
+
+  selectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element) => {
       const result = checkElementContrast(element);
       if (result) {
         const styles = getComputedStyle(element);
@@ -212,15 +212,15 @@ export function reportContrastIssues(): void {
   if (!import.meta.env.DEV) return;
 
   console.group('[A11y] Contrast Audit Results');
-  
+
   const results = auditPageContrast();
-  const failures = results.filter(r => r.result.level === 'FAIL' || r.result.ratio < 4.5);
-  
+  const failures = results.filter((r) => r.result.level === 'FAIL' || r.result.ratio < 4.5);
+
   if (failures.length === 0) {
     console.log('✅ All elements pass WCAG AA contrast requirements!');
   } else {
     console.warn(`⚠️ Found ${failures.length} contrast issues:`);
-    
+
     failures.forEach(({ element, result, info }, index) => {
       console.group(`${index + 1}. ${info.selector} (${result.ratio}:1)`);
       console.log('Element:', element);
@@ -245,11 +245,11 @@ export function reportContrastIssues(): void {
 export function getAccessibleColorSuggestions(baseColor: string, backgroundColor: string = '#ffffff'): string[] {
   const base = parseColor(baseColor);
   const bg = parseColor(backgroundColor);
-  
+
   if (!base || !bg) return [];
 
   const suggestions: string[] = [];
-  
+
   // Generate darker variants for better contrast
   for (let factor = 0.7; factor >= 0.2; factor -= 0.1) {
     const adjusted = {
@@ -258,7 +258,7 @@ export function getAccessibleColorSuggestions(baseColor: string, backgroundColor
       b: Math.round(base.b * factor),
       a: 1
     };
-    
+
     const ratio = calculateContrastRatio(adjusted, bg);
     if (ratio >= 4.5) {
       suggestions.push(`rgb(${adjusted.r}, ${adjusted.g}, ${adjusted.b})`);
