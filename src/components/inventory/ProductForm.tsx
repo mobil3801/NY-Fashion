@@ -13,6 +13,28 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInventory } from '@/contexts/InventoryContext';
 import { useDropzone } from 'react-dropzone';
+import { toast } from '@/hooks/use-toast';
+import ImageUploadProgress from './ImageUploadProgress';
+import ImageGallery from './ImageGallery';
+
+interface ProductImage {
+  id: number;
+  product_id: number;
+  image_url: string;
+  alt_text: string;
+  sort_order: number;
+  file_size: number;
+  mime_type: string;
+  uploaded_at: string;
+}
+
+interface UploadProgressItem {
+  id: string;
+  fileName: string;
+  progress: number;
+  status: 'uploading' | 'completed' | 'error';
+  error?: string;
+}
 
 interface ProductFormProps {
   product?: any;
@@ -24,6 +46,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
   const { categories, saveProduct } = useInventory();
   const [loading, setLoading] = useState(false);
   const [hasVariants, setHasVariants] = useState(product?.has_variants || false);
+  const [productImages, setProductImages] = useState<ProductImage[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressItem[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { register, control, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -64,10 +89,251 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
     name: 'variants'
   });
 
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    // TODO: Implement image upload to EasySite storage
-    console.log('Files to upload:', acceptedFiles);
-  }, []);
+  // Load existing images when editing product
+  useEffect(() => {
+    if (product?.id) {
+      loadProductImages(product.id);
+    }
+  }, [product?.id]);
+
+  const loadProductImages = async (productId: number) => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: 'getProductImages',
+        param: [productId]
+      });
+
+      if (error) {
+        console.error('Error loading product images:', error);
+        return;
+      }
+
+      setProductImages(data || []);
+    } catch (error) {
+      console.error('Error loading product images:', error);
+    }
+  };
+
+  const validateFiles = (files: File[]): {valid: File[];invalid: {file: File;error: string;}[];} => {
+    const valid: File[] = [];
+    const invalid: {file: File;error: string;}[] = [];
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    const maxImages = 10;
+
+    // Check total image count
+    if (productImages.length + files.length > maxImages) {
+      files.forEach((file) => {
+        invalid.push({ file, error: `Maximum ${maxImages} images allowed per product` });
+      });
+      return { valid, invalid };
+    }
+
+    files.forEach((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        invalid.push({ file, error: 'Only JPG, PNG, and WebP formats are allowed' });
+      } else if (file.size > maxFileSize) {
+        invalid.push({ file, error: 'File size must be less than 5MB' });
+      } else {
+        valid.push(file);
+      }
+    });
+
+    return { valid, invalid };
+  };
+
+  const simulateProgress = (uploadId: string) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 30;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+      }
+
+      setUploadProgress((prev) =>
+      prev.map((item) =>
+      item.id === uploadId ?
+      { ...item, progress: Math.min(progress, 100) } :
+      item
+      )
+      );
+    }, 200);
+
+    return interval;
+  };
+
+  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
+    if (!product?.id && !product) {
+      toast({
+        title: "Error",
+        description: "Please save the product first before uploading images",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const { valid, invalid } = validateFiles(acceptedFiles);
+
+    // Show validation errors
+    invalid.forEach(({ file, error }) => {
+      toast({
+        title: "Upload Error",
+        description: `${file.name}: ${error}`,
+        variant: "destructive"
+      });
+    });
+
+    if (valid.length === 0) return;
+
+    setIsUploading(true);
+
+    // Initialize progress tracking
+    const progressItems: UploadProgressItem[] = valid.map((file) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      fileName: file.name,
+      progress: 0,
+      status: 'uploading' as const
+    }));
+
+    setUploadProgress(progressItems);
+
+    // Start progress simulation for each file
+    const intervals = progressItems.map((item) => simulateProgress(item.id));
+
+    try {
+      const productId = product?.id || (await saveCurrentProduct());
+      if (!productId) {
+        throw new Error('Failed to get product ID');
+      }
+
+      // Upload files
+      const { data, error } = await window.ezsite.apis.run({
+        path: 'uploadProductImages',
+        param: [productId, valid.map((file) => ({ file, altText: `${product?.name || 'Product'} image` }))]
+      });
+
+      // Clear progress intervals
+      intervals.forEach(clearInterval);
+
+      if (error) {
+        // Mark all as error
+        setUploadProgress((prev) =>
+        prev.map((item) => ({
+          ...item,
+          status: 'error' as const,
+          error: error,
+          progress: 0
+        }))
+        );
+        throw new Error(error);
+      }
+
+      // Mark all as completed
+      setUploadProgress((prev) =>
+      prev.map((item) => ({
+        ...item,
+        status: 'completed' as const,
+        progress: 100
+      }))
+      );
+
+      // Reload images
+      await loadProductImages(productId);
+
+      toast({
+        title: "Success",
+        description: `Successfully uploaded ${valid.length} image(s)`
+      });
+
+    } catch (error) {
+      // Clear progress intervals on error
+      intervals.forEach(clearInterval);
+
+      setUploadProgress((prev) =>
+      prev.map((item) => ({
+        ...item,
+        status: 'error' as const,
+        error: error.message || 'Upload failed'
+      }))
+      );
+
+      toast({
+        title: "Upload Error",
+        description: error.message || 'Failed to upload images',
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  }, [product, productImages.length]);
+
+  const saveCurrentProduct = async (): Promise<number | null> => {
+    try {
+      const formData = watch();
+      const productData = {
+        ...formData,
+        has_variants: hasVariants,
+        variants: hasVariants ? formData.variants : []
+      };
+
+      await saveProduct(productData);
+      return product?.id || null; // This would need to be updated to return the new product ID
+    } catch (error) {
+      console.error('Error saving product:', error);
+      return null;
+    }
+  };
+
+  const handleDeleteImage = async (imageId: number) => {
+    try {
+      const { data, error } = await window.ezsite.apis.run({
+        path: 'deleteProductImage',
+        param: [imageId]
+      });
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Reload images to reflect changes
+      if (product?.id) {
+        await loadProductImages(product.id);
+      }
+
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete image');
+    }
+  };
+
+  const handleReorderImages = async (newOrder: ProductImage[]) => {
+    try {
+      if (!product?.id) {
+        throw new Error('Product ID is required');
+      }
+
+      const imageOrders = newOrder.map((image, index) => ({
+        imageId: image.id,
+        sortOrder: index
+      }));
+
+      const { data, error } = await window.ezsite.apis.run({
+        path: 'reorderProductImages',
+        param: [product.id, imageOrders]
+      });
+
+      if (error) {
+        throw new Error(error);
+      }
+
+      // Update local state
+      setProductImages(newOrder);
+
+    } catch (error) {
+      throw new Error(error.message || 'Failed to reorder images');
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -509,34 +775,71 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) =
               <h3 className="text-lg font-medium mb-2">Product Images</h3>
               <p className="text-sm text-muted-foreground">
                 Upload high-quality images of your product. First image will be used as primary.
+                {!product?.id &&
+                <span className="block text-orange-600 mt-1 font-medium">
+                    Note: Save the product first before uploading images.
+                  </span>
+                }
               </p>
             </div>
 
+            {/* Upload Progress */}
+            <ImageUploadProgress
+              uploads={uploadProgress}
+              onClose={() => setUploadProgress([])} />
+
+
+            {/* Upload Zone */}
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
               isDragActive ?
               'border-primary bg-primary/10' :
-              'border-muted-foreground/25 hover:border-primary/50'}`
+              'border-muted-foreground/25 hover:border-primary/50'} ${
+
+              isUploading || !product?.id && !product ?
+              'opacity-50 pointer-events-none' :
+              ''}`
               }>
+
+
 
               <input {...getInputProps()} />
               <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              
               {isDragActive ?
               <p>Drop the images here ...</p> :
 
               <div>
-                  <p className="text-lg mb-2">Drag & drop images here, or click to select</p>
-                  <p className="text-sm text-muted-foreground">
-                    Supports: JPG, PNG, WebP (Max 5MB each)
+                  <p className="text-lg mb-2">
+                    {isUploading ? 'Uploading...' : 'Drag & drop images here, or click to select'}
                   </p>
+                  <p className="text-sm text-muted-foreground">
+                    Supports: JPG, PNG, WebP (Max 5MB each, 10 images total)
+                  </p>
+                  {productImages.length > 0 &&
+                <p className="text-xs text-muted-foreground mt-2">
+                      Current: {productImages.length}/10 images
+                    </p>
+                }
                 </div>
               }
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
-              {/* TODO: Display uploaded images */}
-            </div>
+            {/* Image Gallery */}
+            {productImages.length > 0 &&
+            <div>
+                <h4 className="text-md font-medium mb-3">
+                  Uploaded Images ({productImages.length})
+                </h4>
+                <ImageGallery
+                images={productImages}
+                onDeleteImage={handleDeleteImage}
+                onReorderImages={handleReorderImages}
+                productId={product?.id} />
+
+              </div>
+            }
           </div>
         </TabsContent>
       </Tabs>
