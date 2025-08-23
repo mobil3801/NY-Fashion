@@ -80,41 +80,43 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
     setLoading(true);
 
     // Create new retry manager
+    const operationId = `hook_${Date.now()}_${Math.random()}`;
     retryManagerRef.current = new ApiRetryManager({ maxAttempts, timeout });
 
     try {
       const result = await retryManagerRef.current.executeWithRetry(operation, {
         ...retryOptions,
+        operationId,
         onRetry: (attempt, retryError) => {
           if (!mountedRef.current) return;
-          
+
           console.log(`Retrying operation - attempt ${attempt}`, retryError);
           setIsRetrying(true);
           setError(retryError);
           setCanRetry(true);
-          
+
           if (showBanner) {
             banner.showRetrying(retryError);
           }
-          
+
           retryOptions.onRetry?.(attempt, retryError);
         },
         onSuccess: () => {
           if (!mountedRef.current) return;
-          
+
           resetState();
           retryOptions.onSuccess?.();
         },
         onMaxAttemptsReached: (maxError) => {
           if (!mountedRef.current) return;
-          
+
           setCanRetry(false);
           setIsRetrying(false);
-          
+
           if (showBanner) {
             banner.showError(maxError);
           }
-          
+
           retryOptions.onMaxAttemptsReached?.(maxError);
         }
       });
@@ -129,11 +131,11 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
       if (!mountedRef.current) return Promise.reject(executeError);
 
       const finalError = executeError instanceof Error ? executeError : new Error(String(executeError));
-      
+
       setError(finalError);
       setLoading(false);
       setIsRetrying(false);
-      
+
       // Determine if we can retry
       const canRetryNow = finalError instanceof RetryableError ? finalError.canRetry : true;
       setCanRetry(canRetryNow && autoRetry);
@@ -169,7 +171,7 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
   }, []);
 
   const handleBannerRetry = useCallback(() => {
-    if (canRetry || (error instanceof RetryableError && !error.canRetry)) {
+    if (canRetry || error instanceof RetryableError && !error.canRetry) {
       retry();
     }
   }, [canRetry, error, retry]);
@@ -179,6 +181,13 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
       banner.dismissError();
     }
   }, [showBanner, banner]);
+
+  useEffect(() => {
+    return () => {
+      // Cancel all operations when component unmounts
+      retryManagerRef.current?.cancel();
+    };
+  }, []);
 
   return {
     execute,
@@ -192,7 +201,7 @@ export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRe
     bannerProps: {
       error: showBanner ? banner.error : null,
       isRetrying: showBanner ? banner.isRetrying : isRetrying,
-      onRetry: canRetry || (error instanceof RetryableError && !error.canRetry) ? handleBannerRetry : undefined,
+      onRetry: canRetry || error instanceof RetryableError && !error.canRetry ? handleBannerRetry : undefined,
       onDismiss: showBanner ? handleBannerDismiss : undefined
     }
   };

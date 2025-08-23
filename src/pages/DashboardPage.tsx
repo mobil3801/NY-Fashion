@@ -166,7 +166,8 @@ const DashboardPage: React.FC = () => {
       });
 
       if (error) {
-        throw new Error(error);
+        console.error('Analytics API error:', error);
+        throw new Error(typeof error === 'string' ? error : 'Failed to fetch analytics data');
       }
 
       // Validate data structure before setting
@@ -174,7 +175,24 @@ const DashboardPage: React.FC = () => {
         setAnalyticsData(data);
         setRetryCount(0); // Reset retry count on success
       } else {
-        throw new Error('Invalid data structure received');
+        console.warn('No analytics data received or invalid structure');
+        setAnalyticsData({
+          kpis: {
+            todaySales: { total_revenue: 0, transaction_count: 0, avg_basket_value: 0 },
+            grossMargin: { revenue: 0, cost: 0, margin: 0 },
+            topProducts: [],
+            topCategories: [],
+            returns: [],
+            employeeLeaderboard: [],
+            lowStockAlerts: []
+          },
+          charts: {
+            paymentMethods: [],
+            salesTrend: [],
+            categoryBreakdown: [],
+            inventoryLevels: []
+          }
+        });
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
@@ -194,9 +212,28 @@ const DashboardPage: React.FC = () => {
         });
       } else {
         toast({
-          title: "Error",
-          description: "Failed to load dashboard analytics after 3 attempts",
+          title: "Analytics Error",
+          description: error.message || "Failed to load dashboard analytics. Please try again.",
           variant: "destructive"
+        });
+
+        // Set empty analytics to prevent UI issues
+        setAnalyticsData({
+          kpis: {
+            todaySales: { total_revenue: 0, transaction_count: 0, avg_basket_value: 0 },
+            grossMargin: { revenue: 0, cost: 0, margin: 0 },
+            topProducts: [],
+            topCategories: [],
+            returns: [],
+            employeeLeaderboard: [],
+            lowStockAlerts: []
+          },
+          charts: {
+            paymentMethods: [],
+            salesTrend: [],
+            categoryBreakdown: [],
+            inventoryLevels: []
+          }
         });
       }
     } finally {

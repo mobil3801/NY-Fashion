@@ -131,63 +131,69 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     showBanner: true
   });
 
-  const fetchProducts = async (filters: any = {}) => {
+  const fetchProducts = async (search?: string) => {
     try {
-      setLoading(true);
-      await apiRetry.execute(async (signal) => {
-        const { data, error } = await window.ezsite.apis.run({
-          path: 'getProducts',
-          param: [filters]
-        });
+      setLoadingProducts(true);
+      const { data, error } = await apiRetry.execute(
+        () => window.ezsite.apis.run({
+          path: "getProducts",
+          param: [{
+            search: search || '',
+            limit: 100,
+            order_by: 'name',
+            order_dir: 'asc'
+          }]
+        })
+      );
 
-        if (error) {
-          throw new Error(error.message);
-        }
+      if (error) {
+        console.error('Products API error:', error);
+        throw new Error(typeof error === 'string' ? error : 'Failed to fetch products');
+      }
 
-        setProducts(data.products || []);
-        return data.products || [];
-      });
+      setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      // Error handling is managed by the retry system
-      // Only show toast for final failures if not using banner
-      if (!apiRetry.bannerProps.error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch products",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Products Error",
+        description: error.message || "Failed to load products. Please try again.",
+        variant: "destructive"
+      });
+      setProducts([]); // Set empty array to prevent UI issues
     } finally {
-      setLoading(false);
+      setLoadingProducts(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
-      await apiRetry.execute(async (signal) => {
-        const { data, error } = await window.ezsite.apis.run({
-          path: 'getCategories',
-          param: []
-        });
+      setLoadingCategories(true);
+      const { data, error } = await apiRetry.execute(
+        () => window.ezsite.apis.run({
+          path: "getCategories",
+          param: [{
+            order_by: 'name',
+            order_dir: 'asc'
+          }]
+        })
+      );
 
-        if (error) {
-          throw new Error(error.message);
-        }
+      if (error) {
+        console.error('Categories API error:', error);
+        throw new Error(typeof error === 'string' ? error : 'Failed to fetch categories');
+      }
 
-        setCategories(data.categories || []);
-        return data.categories || [];
-      });
+      setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      // Error handling is managed by the retry system
-      if (!apiRetry.bannerProps.error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch categories",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Categories Error",
+        description: error.message || "Failed to load categories. Please try again.",
+        variant: "destructive"
+      });
+      setCategories([]); // Set empty array to prevent UI issues
+    } finally {
+      setLoadingCategories(false);
     }
   };
 

@@ -1,236 +1,208 @@
 
-function getDashboardAnalytics(dateRange, previousPeriod = false) {
-  const { startDate, endDate } = dateRange;
-
-  // Convert dates to proper format
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  // Calculate previous period dates for comparison
-  const periodDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-  const prevStart = new Date(start);
-  prevStart.setDate(start.getDate() - periodDays);
-  const prevEnd = new Date(start);
-  prevEnd.setDate(start.getDate() - 1);
-
-  const analytics = {
-    kpis: {},
-    charts: {},
-    trends: {},
-    comparison: {}
-  };
-
+function getDashboardAnalytics(dateRange = 'today') {
   try {
-    // Today's Sales Revenue
-    const salesQuery = `
-      SELECT 
-        COALESCE(SUM(total_cents), 0) as total_revenue,
-        COUNT(*) as transaction_count,
-        COALESCE(AVG(total_cents), 0) as avg_basket_value
-      FROM sales 
-      WHERE created_at >= $1 AND created_at <= $2 
-      AND status = 'sale'
-    `;
-
-    const salesResult = window.ezsite.db.query(salesQuery, [start.toISOString(), end.toISOString()]);
-    analytics.kpis.todaySales = salesResult.rows[0];
-
-    // Previous period comparison
-    if (previousPeriod) {
-      const prevSalesResult = window.ezsite.db.query(salesQuery, [prevStart.toISOString(), prevEnd.toISOString()]);
-      analytics.comparison.previousSales = prevSalesResult.rows[0];
+    const now = new Date();
+    let startDate, endDate;
+    
+    // Calculate date range
+    switch (dateRange) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'week':
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        break;
+      case 'year':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear() + 1, 0, 1);
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    // Gross Margin Calculation
-    const marginQuery = `
-      SELECT 
-        COALESCE(SUM(si.qty * si.unit_price_cents), 0) as total_revenue,
-        COALESCE(SUM(si.qty * si.unit_cost_cents), 0) as total_cost
-      FROM sale_items si
-      JOIN sales s ON si.sale_id = s.id
-      WHERE s.created_at >= $1 AND s.created_at <= $2 
-      AND s.status = 'sale'
-    `;
+    const startISO = startDate.toISOString();
+    const endISO = endDate.toISOString();
 
-    const marginResult = window.ezsite.db.query(marginQuery, [start.toISOString(), end.toISOString()]);
-    const marginData = marginResult.rows[0];
-    analytics.kpis.grossMargin = {
-      revenue: marginData.total_revenue,
-      cost: marginData.total_cost,
-      margin: marginData.total_revenue > 0 ? (marginData.total_revenue - marginData.total_cost) / marginData.total_revenue * 100 : 0
+    // Get total sales for the period
+    const salesQuery = `
+      SELECT 
+        COALESCE(COUNT(*), 0) as total_transactions,
+        COALESCE(SUM(total_cents), 0) as total_sales_cents,
+        COALESCE(AVG(total_cents), 0) as avg_basket_cents
+      FROM sales 
+      WHERE status = 'sale' 
+        AND created_at >= $1 
+        AND created_at < $2
+    `;
+    
+    const salesResult = window.ezsite.db.query(salesQuery, [startISO, endISO]);
+    const salesData = salesResult.length > 0 ? salesResult[0] : {
+      total_transactions: 0,
+      total_sales_cents: 0,
+      avg_basket_cents: 0
     };
 
-    // Top Selling Products
-    const topProductsQuery = `
-      SELECT 
-        p.name,
-        p.id,
-        SUM(si.qty) as total_qty,
-        SUM(si.qty * si.unit_price_cents) as total_revenue
-      FROM sale_items si
-      JOIN product_variants pv ON si.variant_id = pv.id
-      JOIN products p ON pv.product_id = p.id
-      JOIN sales s ON si.sale_id = s.id
-      WHERE s.created_at >= $1 AND s.created_at <= $2 
-      AND s.status = 'sale'
-      GROUP BY p.id, p.name
-      ORDER BY total_qty DESC
-      LIMIT 10
+    // Get returns count
+    const returnsQuery = `
+      SELECT COALESCE(COUNT(*), 0) as total_returns
+      FROM returns 
+      WHERE created_at >= $1 AND created_at < $2
     `;
+    
+    const returnsResult = window.ezsite.db.query(returnsQuery, [startISO, endISO]);
+    const returnsCount = returnsResult.length > 0 ? returnsResult[0].total_returns : 0;
 
-    const topProductsResult = window.ezsite.db.query(topProductsQuery, [start.toISOString(), end.toISOString()]);
-    analytics.kpis.topProducts = topProductsResult.rows;
-
-    // Top Categories
-    const topCategoriesQuery = `
-      SELECT 
-        c.name,
-        c.id,
-        SUM(si.qty) as total_qty,
-        SUM(si.qty * si.unit_price_cents) as total_revenue
-      FROM sale_items si
-      JOIN product_variants pv ON si.variant_id = pv.id
-      JOIN products p ON pv.product_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      JOIN sales s ON si.sale_id = s.id
-      WHERE s.created_at >= $1 AND s.created_at <= $2 
-      AND s.status = 'sale'
-      GROUP BY c.id, c.name
-      ORDER BY total_revenue DESC
-      LIMIT 10
-    `;
-
-    const topCategoriesResult = window.ezsite.db.query(topCategoriesQuery, [start.toISOString(), end.toISOString()]);
-    analytics.kpis.topCategories = topCategoriesResult.rows;
-
-    // Payment Method Distribution
+    // Get payment method breakdown
     const paymentQuery = `
       SELECT 
         payment_method,
-        COUNT(*) as transaction_count,
-        SUM(total_cents) as total_amount
-      FROM sales
-      WHERE created_at >= $1 AND created_at <= $2 
-      AND status = 'sale'
+        COALESCE(COUNT(*), 0) as count,
+        COALESCE(SUM(total_cents), 0) as total_cents
+      FROM sales 
+      WHERE status = 'sale' 
+        AND created_at >= $1 
+        AND created_at < $2
       GROUP BY payment_method
     `;
+    
+    const paymentResult = window.ezsite.db.query(paymentQuery, [startISO, endISO]);
+    const paymentMethods = paymentResult || [];
 
-    const paymentResult = window.ezsite.db.query(paymentQuery, [start.toISOString(), end.toISOString()]);
-    analytics.charts.paymentMethods = paymentResult.rows;
-
-    // Returns Rate
-    const returnsQuery = `
+    // Get top products
+    const topProductsQuery = `
       SELECT 
-        COUNT(DISTINCT r.id) as return_count,
-        COUNT(DISTINCT s.id) as total_sales,
-        r.reason,
-        COUNT(r.id) as reason_count
-      FROM returns r
-      JOIN sales s ON r.sale_id = s.id
-      WHERE s.created_at >= $1 AND s.created_at <= $2
-      GROUP BY r.reason
-    `;
-
-    const returnsResult = window.ezsite.db.query(returnsQuery, [start.toISOString(), end.toISOString()]);
-    analytics.kpis.returns = returnsResult.rows;
-
-    // Employee Sales Leaderboard
-    const employeeQuery = `
-      SELECT 
-        e.name as employee_name,
-        e.id as employee_id,
-        COUNT(s.id) as transaction_count,
-        SUM(s.total_cents) as total_sales,
-        AVG(s.total_cents) as avg_sale_value
-      FROM sales s
-      JOIN employees e ON s.created_by = e.user_id
-      WHERE s.created_at >= $1 AND s.created_at <= $2 
-      AND s.status = 'sale'
-      GROUP BY e.id, e.name
-      ORDER BY total_sales DESC
-      LIMIT 10
-    `;
-
-    const employeeResult = window.ezsite.db.query(employeeQuery, [start.toISOString(), end.toISOString()]);
-    analytics.kpis.employeeLeaderboard = employeeResult.rows;
-
-    // Low Stock Alerts
-    const lowStockQuery = `
-      SELECT 
-        p.name as product_name,
-        p.id as product_id,
-        pv.size,
-        pv.color,
-        il.qty_on_hand,
-        p.min_stock_level
-      FROM inventory_lots il
-      JOIN product_variants pv ON il.variant_id = pv.id
+        p.name,
+        SUM(si.qty) as quantity_sold,
+        SUM(si.qty * si.unit_price_cents) as revenue_cents
+      FROM sale_items si
+      JOIN product_variants pv ON si.variant_id = pv.id
       JOIN products p ON pv.product_id = p.id
-      WHERE il.qty_on_hand <= COALESCE(p.min_stock_level, 10)
-      ORDER BY il.qty_on_hand ASC
-      LIMIT 20
+      JOIN sales s ON si.sale_id = s.id
+      WHERE s.status = 'sale' 
+        AND s.created_at >= $1 
+        AND s.created_at < $2
+      GROUP BY p.id, p.name
+      ORDER BY quantity_sold DESC
+      LIMIT 5
     `;
+    
+    const topProductsResult = window.ezsite.db.query(topProductsQuery, [startISO, endISO]);
+    const topProducts = topProductsResult || [];
 
-    const lowStockResult = window.ezsite.db.query(lowStockQuery);
-    analytics.kpis.lowStockAlerts = lowStockResult.rows;
-
-    // Sales Trend Data (Daily for the period)
-    const trendQuery = `
+    // Get top categories
+    const topCategoriesQuery = `
       SELECT 
-        DATE(created_at) as sale_date,
-        COUNT(*) as transaction_count,
-        SUM(total_cents) as daily_revenue,
-        AVG(total_cents) as avg_basket
-      FROM sales
-      WHERE created_at >= $1 AND created_at <= $2 
-      AND status = 'sale'
-      GROUP BY DATE(created_at)
-      ORDER BY sale_date ASC
-    `;
-
-    const trendResult = window.ezsite.db.query(trendQuery, [start.toISOString(), end.toISOString()]);
-    analytics.charts.salesTrend = trendResult.rows;
-
-    // Category Revenue Breakdown for Pie Chart
-    const categoryBreakdownQuery = `
-      SELECT 
-        c.name as category_name,
-        SUM(si.qty * si.unit_price_cents) as category_revenue,
-        COUNT(DISTINCT s.id) as transaction_count
+        c.name,
+        SUM(si.qty) as quantity_sold,
+        SUM(si.qty * si.unit_price_cents) as revenue_cents
       FROM sale_items si
       JOIN product_variants pv ON si.variant_id = pv.id
       JOIN products p ON pv.product_id = p.id
       JOIN categories c ON p.category_id = c.id
       JOIN sales s ON si.sale_id = s.id
-      WHERE s.created_at >= $1 AND s.created_at <= $2 
-      AND s.status = 'sale'
+      WHERE s.status = 'sale' 
+        AND s.created_at >= $1 
+        AND s.created_at < $2
       GROUP BY c.id, c.name
-      ORDER BY category_revenue DESC
+      ORDER BY quantity_sold DESC
+      LIMIT 5
     `;
+    
+    const topCategoriesResult = window.ezsite.db.query(topCategoriesQuery, [startISO, endISO]);
+    const topCategories = topCategoriesResult || [];
 
-    const categoryBreakdownResult = window.ezsite.db.query(categoryBreakdownQuery, [start.toISOString(), end.toISOString()]);
-    analytics.charts.categoryBreakdown = categoryBreakdownResult.rows;
-
-    // Inventory Levels by Category
-    const inventoryQuery = `
+    // Get employee performance (if employee data exists)
+    const employeeQuery = `
       SELECT 
-        c.name as category_name,
-        SUM(il.qty_on_hand) as total_stock,
-        COUNT(DISTINCT p.id) as product_count
-      FROM inventory_lots il
-      JOIN product_variants pv ON il.variant_id = pv.id
-      JOIN products p ON pv.product_id = p.id
-      JOIN categories c ON p.category_id = c.id
-      GROUP BY c.id, c.name
-      ORDER BY total_stock DESC
+        e.name,
+        COALESCE(COUNT(s.id), 0) as sales_count,
+        COALESCE(SUM(s.total_cents), 0) as sales_total_cents
+      FROM employees e
+      LEFT JOIN sales s ON s.created_by = e.user_id 
+        AND s.status = 'sale' 
+        AND s.created_at >= $1 
+        AND s.created_at < $2
+      WHERE e.status = 'active'
+      GROUP BY e.id, e.name
+      ORDER BY sales_total_cents DESC
+      LIMIT 5
     `;
+    
+    const employeeResult = window.ezsite.db.query(employeeQuery, [startISO, endISO]);
+    const topEmployees = employeeResult || [];
 
-    const inventoryResult = window.ezsite.db.query(inventoryQuery);
-    analytics.charts.inventoryLevels = inventoryResult.rows;
+    // Get low stock alerts
+    const lowStockQuery = `
+      SELECT 
+        p.name,
+        pv.size,
+        pv.color,
+        COALESCE(il.qty_on_hand, 0) as stock_level
+      FROM products p
+      JOIN product_variants pv ON p.id = pv.product_id
+      LEFT JOIN inventory_lots il ON pv.id = il.variant_id
+      WHERE pv.active = true 
+        AND COALESCE(il.qty_on_hand, 0) <= 10
+      ORDER BY COALESCE(il.qty_on_hand, 0) ASC
+      LIMIT 10
+    `;
+    
+    const lowStockResult = window.ezsite.db.query(lowStockQuery, []);
+    const lowStockItems = lowStockResult || [];
+
+    // Calculate return rate
+    const totalTransactions = parseInt(salesData.total_transactions) || 0;
+    const totalReturns = parseInt(returnsCount) || 0;
+    const returnRate = totalTransactions > 0 ? (totalReturns / totalTransactions) * 100 : 0;
+
+    // Format response
+    const analytics = {
+      summary: {
+        totalSales: Math.round((parseInt(salesData.total_sales_cents) || 0) / 100),
+        totalTransactions: totalTransactions,
+        averageBasket: Math.round((parseInt(salesData.avg_basket_cents) || 0) / 100),
+        returnRate: Math.round(returnRate * 100) / 100
+      },
+      paymentMethods: paymentMethods.map(pm => ({
+        method: pm.payment_method,
+        count: parseInt(pm.count) || 0,
+        total: Math.round((parseInt(pm.total_cents) || 0) / 100)
+      })),
+      topProducts: topProducts.map(tp => ({
+        name: tp.name,
+        quantitySold: parseInt(tp.quantity_sold) || 0,
+        revenue: Math.round((parseInt(tp.revenue_cents) || 0) / 100)
+      })),
+      topCategories: topCategories.map(tc => ({
+        name: tc.name,
+        quantitySold: parseInt(tc.quantity_sold) || 0,
+        revenue: Math.round((parseInt(tc.revenue_cents) || 0) / 100)
+      })),
+      topEmployees: topEmployees.map(te => ({
+        name: te.name,
+        salesCount: parseInt(te.sales_count) || 0,
+        salesTotal: Math.round((parseInt(te.sales_total_cents) || 0) / 100)
+      })),
+      lowStockItems: lowStockItems.map(lsi => ({
+        name: lsi.name,
+        variant: `${lsi.size || ''} ${lsi.color || ''}`.trim(),
+        stockLevel: parseInt(lsi.stock_level) || 0
+      }))
+    };
 
     return analytics;
-
+    
   } catch (error) {
+    console.error('Dashboard analytics error:', error);
     throw new Error(`Failed to fetch dashboard analytics: ${error.message}`);
   }
 }

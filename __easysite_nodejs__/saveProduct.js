@@ -1,118 +1,107 @@
 
-function saveProduct(productData, userId) {
-  const {
-    id,
-    name,
-    name_bn,
-    description,
-    category_id,
-    brand,
-    sku,
-    barcode,
-    cost_price,
-    selling_price,
-    msrp,
-    min_stock_level,
-    max_stock_level,
-    unit,
-    weight,
-    dimensions,
-    has_variants,
-    tags,
-    variants = [],
-    images = []
-  } = productData;
-
-  if (id) {
-    // Update existing product
-    const sql = `
-            UPDATE products SET
-                name = ?, name_bn = ?, description = ?, category_id = ?,
-                brand = ?, sku = ?, barcode = ?, cost_price = ?, selling_price = ?,
-                msrp = ?, min_stock_level = ?, max_stock_level = ?, unit = ?,
-                weight = ?, dimensions = ?, has_variants = ?, tags = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `;
-
-    window.ezsite.db.exec(sql, [
-    name, name_bn, description, category_id, brand, sku, barcode,
-    cost_price, selling_price, msrp, min_stock_level, max_stock_level,
-    unit, weight, dimensions, has_variants ? 1 : 0, tags, id]
-    );
-
-    // Update variants if product has variants
-    if (has_variants && variants.length > 0) {
-      // Remove existing variants
-      window.ezsite.db.exec('DELETE FROM product_variants WHERE product_id = ?', [id]);
-
-      // Insert new variants
-      variants.forEach((variant) => {
-        const variantSql = `
-                    INSERT INTO product_variants 
-                    (product_id, variant_name, sku, barcode, size, color, material,
-                     cost_price, selling_price, msrp, current_stock)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-
-        window.ezsite.db.exec(variantSql, [
-        id, variant.variant_name, variant.sku, variant.barcode,
-        variant.size, variant.color, variant.material,
-        variant.cost_price, variant.selling_price, variant.msrp,
-        variant.current_stock || 0]
-        );
-      });
+function saveProduct(productData) {
+  try {
+    if (!productData) {
+      throw new Error('Product data is required');
     }
 
-    return { success: true, id, message: 'Product updated successfully' };
-  } else {
-    // Insert new product
-    const sql = `
-            INSERT INTO products 
-            (name, name_bn, description, category_id, brand, sku, barcode,
-             cost_price, selling_price, msrp, min_stock_level, max_stock_level,
-             unit, weight, dimensions, has_variants, tags, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
+    const {
+      id,
+      name,
+      description,
+      brand,
+      category_id,
+      cost_cents,
+      price_cents,
+      tax_exempt,
+      barcode,
+      sku,
+      images
+    } = productData;
 
-    const result = window.ezsite.db.exec(sql, [
-    name, name_bn, description, category_id, brand, sku, barcode,
-    cost_price, selling_price, msrp, min_stock_level, max_stock_level,
-    unit, weight, dimensions, has_variants ? 1 : 0, tags, userId]
-    );
+    // Validate required fields
+    if (!name || !category_id) {
+      throw new Error('Product name and category are required');
+    }
 
-    const productId = result.lastInsertRowid;
+    const costCents = parseInt(cost_cents) || 0;
+    const priceCents = parseInt(price_cents) || 0;
+    const categoryId = parseInt(category_id);
+    const taxExempt = Boolean(tax_exempt);
+    const imagesJson = JSON.stringify(Array.isArray(images) ? images : []);
 
-    // Insert variants if product has variants
-    if (has_variants && variants.length > 0) {
-      variants.forEach((variant) => {
-        const variantSql = `
-                    INSERT INTO product_variants 
-                    (product_id, variant_name, sku, barcode, size, color, material,
-                     cost_price, selling_price, msrp, current_stock)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
+    if (id) {
+      // Update existing product
+      const query = `
+        UPDATE products 
+        SET 
+          name = $1,
+          description = $2,
+          brand = $3,
+          category_id = $4,
+          cost_cents = $5,
+          price_cents = $6,
+          tax_exempt = $7,
+          barcode = $8,
+          sku = $9,
+          images = $10
+        WHERE id = $11
+        RETURNING id
+      `;
 
-        window.ezsite.db.exec(variantSql, [
-        productId, variant.variant_name, variant.sku, variant.barcode,
-        variant.size, variant.color, variant.material,
-        variant.cost_price, variant.selling_price, variant.msrp,
-        variant.current_stock || 0]
-        );
-      });
+      const result = window.ezsite.db.query(query, [
+        name,
+        description || '',
+        brand || '',
+        categoryId,
+        costCents,
+        priceCents,
+        taxExempt,
+        barcode || '',
+        sku || '',
+        imagesJson,
+        parseInt(id)
+      ]);
+
+      if (!result || result.length === 0) {
+        throw new Error('Product not found or could not be updated');
+      }
+
+      return { id: parseInt(id), message: 'Product updated successfully' };
+
     } else {
-      // Create a default variant for single products
-      const variantSql = `
-                INSERT INTO product_variants 
-                (product_id, variant_name, sku, barcode, cost_price, selling_price, msrp)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `;
+      // Create new product
+      const query = `
+        INSERT INTO products (
+          name, description, brand, category_id, cost_cents, 
+          price_cents, tax_exempt, barcode, sku, images
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING id
+      `;
 
-      window.ezsite.db.exec(variantSql, [
-      productId, 'Default', sku, barcode, cost_price, selling_price, msrp]
-      );
+      const result = window.ezsite.db.query(query, [
+        name,
+        description || '',
+        brand || '',
+        categoryId,
+        costCents,
+        priceCents,
+        taxExempt,
+        barcode || '',
+        sku || '',
+        imagesJson
+      ]);
+
+      if (!result || result.length === 0) {
+        throw new Error('Failed to create product');
+      }
+
+      return { id: result[0].id, message: 'Product created successfully' };
     }
 
-    return { success: true, id: productId, message: 'Product created successfully' };
+  } catch (error) {
+    console.error('Save product error:', error);
+    throw new Error(`Failed to save product: ${error.message}`);
   }
 }

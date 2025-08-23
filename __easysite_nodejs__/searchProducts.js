@@ -1,107 +1,90 @@
 
-function searchProducts(query, searchType = 'name') {
-  // Mock data for demonstration - replace with actual database queries
-  const mockProducts = [
-  {
-    id: 'prod-1',
-    sku: 'TSHIRT-001',
-    barcode: '1234567890123',
-    name: 'Basic Cotton T-Shirt',
-    description: 'Comfortable cotton t-shirt',
-    category: 'Apparel',
-    basePrice: 25.99,
-    isApparel: true,
-    isActive: true,
-    currentStock: 50,
-    minStockLevel: 10,
-    variants: [
-    {
-      id: 'var-1',
-      productId: 'prod-1',
-      size: 'M',
-      color: 'Blue',
-      sku: 'TSHIRT-001-M-BLU',
-      barcode: '1234567890124',
-      priceAdjustment: 0,
-      stockQuantity: 20
-    },
-    {
-      id: 'var-2',
-      productId: 'prod-1',
-      size: 'L',
-      color: 'Blue',
-      sku: 'TSHIRT-001-L-BLU',
-      barcode: '1234567890125',
-      priceAdjustment: 2,
-      stockQuantity: 15
-    }]
+function searchProducts(searchTerm, limit = 20) {
+  try {
+    if (!searchTerm || typeof searchTerm !== 'string') {
+      return [];
+    }
 
-  },
-  {
-    id: 'prod-2',
-    sku: 'JEANS-001',
-    barcode: '2234567890123',
-    name: 'Premium Denim Jeans',
-    description: 'High-quality denim jeans',
-    category: 'Apparel',
-    basePrice: 89.99,
-    isApparel: true,
-    isActive: true,
-    currentStock: 30,
-    minStockLevel: 5,
-    variants: [
-    {
-      id: 'var-3',
-      productId: 'prod-2',
-      size: '32',
-      color: 'Dark Blue',
-      sku: 'JEANS-001-32-DB',
-      barcode: '2234567890124',
-      priceAdjustment: 0,
-      stockQuantity: 12
-    }]
-
-  },
-  {
-    id: 'prod-3',
-    sku: 'ACCESSORY-001',
-    barcode: '3234567890123',
-    name: 'Leather Wallet',
-    description: 'Premium leather wallet',
-    category: 'Accessories',
-    basePrice: 45.99,
-    isApparel: false,
-    isActive: true,
-    currentStock: 25,
-    minStockLevel: 5,
-    variants: []
-  }];
-
-
-  let results = [];
-
-  switch (searchType) {
-    case 'barcode':
-      results = mockProducts.filter((product) =>
-      product.barcode === query ||
-      product.variants.some((variant) => variant.barcode === query)
-      );
-      break;
-    case 'sku':
-      results = mockProducts.filter((product) =>
-      product.sku.toLowerCase().includes(query.toLowerCase()) ||
-      product.variants.some((variant) =>
-      variant.sku.toLowerCase().includes(query.toLowerCase())
+    const query = `
+      SELECT 
+        p.id,
+        p.name,
+        p.brand,
+        p.price_cents,
+        p.barcode,
+        p.sku,
+        p.images,
+        c.name as category_name,
+        pv.id as variant_id,
+        pv.size,
+        pv.color,
+        pv.additional_sku,
+        pv.barcode as variant_barcode,
+        pv.price_override_cents,
+        COALESCE(il.qty_on_hand, 0) as stock_quantity
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN product_variants pv ON p.id = pv.product_id AND pv.active = true
+      LEFT JOIN inventory_lots il ON pv.id = il.variant_id
+      WHERE (
+        LOWER(p.name) LIKE LOWER($1) OR 
+        LOWER(p.brand) LIKE LOWER($1) OR
+        LOWER(p.sku) LIKE LOWER($1) OR
+        LOWER(p.barcode) LIKE LOWER($1) OR
+        LOWER(pv.additional_sku) LIKE LOWER($1) OR
+        LOWER(pv.barcode) LIKE LOWER($1)
       )
-      );
-      break;
-    default: // name search
-      results = mockProducts.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase()) ||
-      product.description?.toLowerCase().includes(query.toLowerCase())
-      );
-      break;
-  }
+      ORDER BY 
+        CASE 
+          WHEN LOWER(p.name) = LOWER($2) THEN 1
+          WHEN LOWER(p.sku) = LOWER($2) THEN 2
+          WHEN LOWER(p.barcode) = LOWER($2) THEN 3
+          WHEN LOWER(pv.barcode) = LOWER($2) THEN 4
+          ELSE 5
+        END,
+        p.name ASC
+      LIMIT $3
+    `;
 
-  return results.filter((product) => product.isActive);
+    const searchPattern = `%${searchTerm}%`;
+    const exactTerm = searchTerm.trim();
+    const limitInt = Math.min(parseInt(limit) || 20, 100); // Cap at 100 results
+
+    const result = window.ezsite.db.query(query, [searchPattern, exactTerm, limitInt]);
+    
+    if (!result || !Array.isArray(result)) {
+      return [];
+    }
+
+    // Format the results
+    const products = result.map(row => {
+      const basePrice = parseInt(row.price_override_cents) || parseInt(row.price_cents) || 0;
+      const images = row.images ? (Array.isArray(row.images) ? row.images : JSON.parse(row.images || '[]')) : [];
+      
+      return {
+        id: row.id,
+        variantId: row.variant_id || null,
+        name: row.name || '',
+        brand: row.brand || '',
+        categoryName: row.category_name || '',
+        size: row.size || '',
+        color: row.color || '',
+        sku: row.sku || '',
+        barcode: row.barcode || '',
+        variantSku: row.additional_sku || '',
+        variantBarcode: row.variant_barcode || '',
+        priceCents: basePrice,
+        price: Math.round(basePrice / 100 * 100) / 100,
+        stockQuantity: parseInt(row.stock_quantity) || 0,
+        images: images,
+        displayName: `${row.name || ''} ${row.size ? `(${row.size})` : ''} ${row.color ? `[${row.color}]` : ''}`.trim()
+      };
+    });
+
+    return products;
+    
+  } catch (error) {
+    console.error('Search products error:', error);
+    throw new Error(`Failed to search products: ${error.message}`);
+  }
 }

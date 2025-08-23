@@ -23,16 +23,16 @@ const DEFAULT_CONFIG: Required<RetryConfig> = {
   maxAttempts: 3,
   timeout: 10000, // 10 seconds
   baseDelay: 1000, // 1 second
-  maxDelay: 8000   // 8 seconds max
+  maxDelay: 8000 // 8 seconds max
 };
 
 export class RetryableError extends Error {
   constructor(
-    message: string,
-    public readonly attempt: number,
-    public readonly maxAttempts: number,
-    public readonly canRetry: boolean = true
-  ) {
+  message: string,
+  public readonly attempt: number,
+  public readonly maxAttempts: number,
+  public readonly canRetry: boolean = true)
+  {
     super(message);
     this.name = 'RetryableError';
   }
@@ -53,84 +53,109 @@ export class TimeoutError extends Error {
 }
 
 export class ApiRetryManager {
-  private abortController: AbortController | null = null;
-  private timeoutId: NodeJS.Timeout | null = null;
-  
-  constructor(private config: Required<RetryConfig> = DEFAULT_CONFIG) {}
+  private static instance: ApiRetryManager;
+  private retryAttempts = new Map<string, number>();
+  private abortControllers = new Map<string, AbortController>();
+
+  static getInstance(): ApiRetryManager {
+    if (!ApiRetryManager.instance) {
+      ApiRetryManager.instance = new ApiRetryManager();
+    }
+    return ApiRetryManager.instance;
+  }
 
   async executeWithRetry<T>(
-    operation: (signal: AbortSignal) => Promise<T>,
-    options: RetryOptions = {}
+    operation: () => Promise<T>,
+    maxAttempts: number = 3,
+    delay: number = 1000,
+    operationId?: string
   ): Promise<T> {
-    const finalConfig = { ...this.config, ...options };
-    let lastError: Error;
-
-    for (let attempt = 1; attempt <= finalConfig.maxAttempts; attempt++) {
-      try {
-        // Clean up previous attempt
-        this.cleanup();
-        
-        // Create new abort controller for this attempt
-        this.abortController = new AbortController();
-        
-        // Set up timeout
-        this.timeoutId = setTimeout(() => {
-          if (this.abortController && !this.abortController.signal.aborted) {
-            this.abortController.abort();
-          }
-        }, finalConfig.timeout);
-
-        // Execute the operation
-        const result = await operation(this.abortController.signal);
-        
-        // Success - cleanup and return
-        this.cleanup();
-        options.onSuccess?.();
-        return result;
-
-      } catch (error) {
-        // Always cleanup on error
-        this.cleanup();
-
-        const errorToHandle = this.processError(error);
-        lastError = errorToHandle;
-
-        // Log the error with context
-        console.error(`API Retry Manager - Attempt ${attempt}/${finalConfig.maxAttempts} failed:`, {
-          error: errorToHandle,
-          attempt,
-          maxAttempts: finalConfig.maxAttempts,
-          canRetry: this.shouldRetry(errorToHandle, attempt, finalConfig.maxAttempts)
-        });
-
-        // Don't retry if it's the last attempt or if error is non-retryable
-        if (attempt === finalConfig.maxAttempts || !this.shouldRetry(errorToHandle, attempt, finalConfig.maxAttempts)) {
-          if (attempt === finalConfig.maxAttempts) {
-            options.onMaxAttemptsReached?.(errorToHandle);
-          }
-          throw new RetryableError(
-            errorToHandle.message,
-            attempt,
-            finalConfig.maxAttempts,
-            false
-          );
+    const opId = operationId || `op_${Date.now()}_${Math.random()}`;
+    
+    // Cancel any existing operation with the same ID
+    this.cancelOperation(opId);
+    
+    const controller = new AbortController();
+    this.abortControllers.set(opId, controller);
+    
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Check if operation was cancelled
+        if (controller.signal.aborted) {
+          throw new Error('Operation cancelled');
         }
-
-        // Notify about retry
-        options.onRetry?.(attempt, errorToHandle);
-
-        // Wait before retrying with exponential backoff
-        const delay = Math.min(
-          finalConfig.baseDelay * Math.pow(2, attempt - 1),
-          finalConfig.maxDelay
-        );
         
-        await this.delay(delay);
+        try {
+          const result = await Promise.race([
+            operation(),
+            new Promise<never>((_, reject) => {
+              // 30 second timeout
+              setTimeout(() => reject(new Error('Request timeout')), 30000);
+            })
+          ]);
+          
+          // Success - cleanup and return
+          this.retryAttempts.delete(opId);
+          this.abortControllers.delete(opId);
+          return result;
+          
+        } catch (error: any) {
+          console.log('API Retry Manager - Attempt', attempt + '/' + maxAttempts, 'failed:', { 
+            error: error.message || error, 
+            attempt, 
+            maxAttempts, 
+            canRetry: attempt < maxAttempts 
+          });
+          
+          // Don't retry on 4xx errors (client errors)
+          if (error.status >= 400 && error.status < 500) {
+            throw new RetryableError(`Client error: ${error.message || 'Request failed'}`);
+          }
+          
+          if (attempt === maxAttempts) {
+            throw new RetryableError(
+              'Unable to complete request after multiple attempts. Please check your connection and try again.'
+            );
+          }
+          
+          // Check if cancelled before waiting
+          if (controller.signal.aborted) {
+            throw new Error('Operation cancelled');
+          }
+          
+          // Wait before retrying with exponential backoff (capped at 5 seconds)
+          const backoffDelay = Math.min(delay * Math.pow(2, attempt - 1), 5000);
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(resolve, backoffDelay);
+            controller.signal.addEventListener('abort', () => {
+              clearTimeout(timeout);
+              reject(new Error('Operation cancelled'));
+            });
+          });
+        }
       }
+    } finally {
+      // Cleanup
+      this.retryAttempts.delete(opId);
+      this.abortControllers.delete(opId);
     }
+    
+    throw new RetryableError('Maximum retry attempts exceeded');
+  }
 
-    // This should never be reached, but just in case
-    throw lastError!;
+  cancelOperation(operationId: string): void {
+    const controller = this.abortControllers.get(operationId);
+    if (controller) {
+      controller.abort();
+      this.abortControllers.delete(operationId);
+      this.retryAttempts.delete(operationId);
+    }
+  }
+
+  cancelAllOperations(): void {
+    this.abortControllers.forEach(controller => controller.abort());
+    this.abortControllers.clear();
+    this.retryAttempts.clear();
   }
 
   private processError(error: unknown): Error {
@@ -139,7 +164,7 @@ export class ApiRetryManager {
       if (error.name === 'AbortError') {
         return new TimeoutError(this.config.timeout);
       }
-      
+
       // Check if it's an HTTP error that shouldn't be retried
       if ('status' in error && typeof error.status === 'number') {
         const status = error.status as number;
@@ -148,7 +173,7 @@ export class ApiRetryManager {
           return new NonRetryableError(error.message, status);
         }
       }
-      
+
       return error;
     }
 
@@ -180,7 +205,7 @@ export class ApiRetryManager {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private cleanup(): void {
@@ -188,7 +213,7 @@ export class ApiRetryManager {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
-    
+
     if (this.abortController && !this.abortController.signal.aborted) {
       this.abortController.abort();
     }
@@ -202,9 +227,9 @@ export class ApiRetryManager {
 
   // Static convenience method
   static async execute<T>(
-    operation: (signal: AbortSignal) => Promise<T>,
-    options: RetryOptions = {}
-  ): Promise<T> {
+  operation: (signal: AbortSignal) => Promise<T>,
+  options: RetryOptions = {})
+  : Promise<T> {
     const manager = new ApiRetryManager();
     try {
       return await manager.executeWithRetry(operation, options);
@@ -219,7 +244,7 @@ export function createUserFriendlyErrorMessage(error: Error): string {
   if (error instanceof TimeoutError) {
     return "Request timed out. Please check your internet connection and try again.";
   }
-  
+
   if (error instanceof NonRetryableError) {
     if (error.statusCode === 401) {
       return "Authentication required. Please log in again.";
@@ -234,19 +259,19 @@ export function createUserFriendlyErrorMessage(error: Error): string {
       return "Invalid request. Please check your input and try again.";
     }
   }
-  
+
   if (error instanceof RetryableError) {
     if (!error.canRetry) {
       return `Failed after ${error.attempt} attempts. Please try again later.`;
     }
     return `Retrying request (attempt ${error.attempt}/${error.maxAttempts})...`;
   }
-  
+
   // Generic network/server error
-  if (error.message.toLowerCase().includes('network') || 
-      error.message.toLowerCase().includes('fetch')) {
+  if (error.message.toLowerCase().includes('network') ||
+  error.message.toLowerCase().includes('fetch')) {
     return "Network error. Please check your internet connection.";
   }
-  
+
   return "An unexpected error occurred. Please try again.";
 }
