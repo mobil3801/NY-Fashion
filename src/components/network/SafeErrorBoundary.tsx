@@ -39,12 +39,12 @@ export class SafeErrorBoundary extends Component<Props, State> {
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     // Detect if this is likely an initialization error
-    const isInitializationError = 
-      error.message?.includes('NetworkProvider') ||
-      error.message?.includes('useNetwork') ||
-      error.message?.includes('Context') ||
-      error.stack?.includes('NetworkContext') ||
-      error.stack?.includes('createConnectivity');
+    const isInitializationError =
+    error.message?.includes('NetworkProvider') ||
+    error.message?.includes('useNetwork') ||
+    error.message?.includes('Context') ||
+    error.stack?.includes('NetworkContext') ||
+    error.stack?.includes('createConnectivity');
 
     return {
       hasError: true,
@@ -104,7 +104,7 @@ export class SafeErrorBoundary extends Component<Props, State> {
     // Reset on any prop change if specified
     if (this.state.hasError && resetOnPropsChange) {
       const propsChanged = Object.keys(this.props).some(
-        key => (this.props as any)[key] !== (prevProps as any)[key]
+        (key) => (this.props as any)[key] !== (prevProps as any)[key]
       );
 
       if (propsChanged) {
@@ -148,7 +148,7 @@ export class SafeErrorBoundary extends Component<Props, State> {
 
     try {
       // Wait before retrying to allow any initialization issues to settle
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // For initialization errors, try to reset the entire error boundary
       this.resetErrorBoundary();
@@ -173,7 +173,7 @@ export class SafeErrorBoundary extends Component<Props, State> {
 
   private getErrorDetails = () => {
     const { error, isInitializationError } = this.state;
-    
+
     if (isInitializationError) {
       return {
         title: 'Initialization Error',
@@ -218,11 +218,11 @@ export class SafeErrorBoundary extends Component<Props, State> {
               <div className="text-center space-y-4">
                 <div className="flex justify-center">
                   <div className={`p-3 rounded-full ${
-                    severity === 'error' ? 'bg-red-100' : 'bg-yellow-100'
-                  }`}>
+                  severity === 'error' ? 'bg-red-100' : 'bg-yellow-100'}`
+                  }>
                     <Icon className={`h-8 w-8 ${
-                      severity === 'error' ? 'text-red-600' : 'text-yellow-600'
-                    }`} />
+                    severity === 'error' ? 'text-red-600' : 'text-yellow-600'}`
+                    } />
                   </div>
                 </div>
                 
@@ -236,56 +236,56 @@ export class SafeErrorBoundary extends Component<Props, State> {
                 </div>
 
                 {/* Retry count indicator */}
-                {retryCount > 0 && (
-                  <div className="text-xs text-gray-500">
+                {retryCount > 0 &&
+                <div className="text-xs text-gray-500">
                     Retry attempt: {retryCount} of {this.maxRetries}
                   </div>
-                )}
+                }
 
                 <div className="flex flex-col sm:flex-row gap-2 pt-4">
-                  {canRetry ? (
-                    <Button
-                      onClick={this.handleRetry}
-                      disabled={isRetrying}
-                      className="flex-1"
-                      variant="default"
-                    >
-                      {isRetrying ? (
-                        <>
+                  {canRetry ?
+                  <Button
+                    onClick={this.handleRetry}
+                    disabled={isRetrying}
+                    className="flex-1"
+                    variant="default">
+
+                      {isRetrying ?
+                    <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                           Retrying...
-                        </>
-                      ) : (
-                        <>
+                        </> :
+
+                    <>
                           <RefreshCw className="h-4 w-4 mr-2" />
                           Try Again ({this.maxRetries - retryCount} left)
                         </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={this.handleRetry}
-                      disabled={isRetrying}
-                      className="flex-1"
-                      variant="default"
-                    >
+                    }
+                    </Button> :
+
+                  <Button
+                    onClick={this.handleRetry}
+                    disabled={isRetrying}
+                    className="flex-1"
+                    variant="default">
+
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Retry Again
                     </Button>
-                  )}
+                  }
                   
                   <Button
                     onClick={this.handleReload}
                     variant="outline"
-                    className="flex-1"
-                  >
+                    className="flex-1">
+
                     Reload Page
                   </Button>
                 </div>
 
                 {/* Development error details */}
-                {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-                  <details className="mt-4 text-left">
+                {process.env.NODE_ENV === 'development' && this.state.errorInfo &&
+                <details className="mt-4 text-left">
                     <summary className="text-xs text-gray-500 cursor-pointer">
                       Error details (development only)
                     </summary>
@@ -294,11 +294,11 @@ export class SafeErrorBoundary extends Component<Props, State> {
                       {this.state.errorInfo}
                     </pre>
                   </details>
-                )}
+                }
 
                 {/* Connection status for network errors */}
-                {this.state.isInitializationError && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                {this.state.isInitializationError &&
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                     <div className="text-xs text-blue-800">
                       <strong>Status:</strong> {navigator?.onLine ? 'Online' : 'Offline'}
                     </div>
@@ -306,12 +306,12 @@ export class SafeErrorBoundary extends Component<Props, State> {
                       If the problem persists, try refreshing the page or checking your network connection.
                     </div>
                   </div>
-                )}
+                }
               </div>
             </CardContent>
           </Card>
-        </div>
-      );
+        </div>);
+
     }
 
     return this.props.children;

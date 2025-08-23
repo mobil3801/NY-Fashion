@@ -52,15 +52,15 @@ export async function performNetworkHealthCheck(): Promise<NetworkHealthCheck> {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       const response = await fetch('/', {
         method: 'HEAD',
         signal: controller.signal,
         cache: 'no-cache'
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok && response.status >= 500) {
         issues.push('Server appears to be having issues');
         recommendations.push('Try again in a few minutes');
@@ -119,10 +119,10 @@ export function getNetworkHealthSummary(healthCheck: NetworkHealthCheck): string
     return 'All network services are functioning normally.';
   }
 
-  const criticalIssues = healthCheck.issues.filter(issue => 
-    issue.includes('not available') || 
-    issue.includes('failed') || 
-    issue.includes('offline')
+  const criticalIssues = healthCheck.issues.filter((issue) =>
+  issue.includes('not available') ||
+  issue.includes('failed') ||
+  issue.includes('offline')
   );
 
   if (criticalIssues.length > 0) {
@@ -134,13 +134,13 @@ export function getNetworkHealthSummary(healthCheck: NetworkHealthCheck): string
 
 export function formatNetworkDiagnostics(healthCheck: NetworkHealthCheck): string {
   const { diagnostics } = healthCheck;
-  
+
   return [
-    `Browser Support: ${diagnostics.browserSupport ? '✅' : '❌'}`,
-    `Network Access: ${diagnostics.networkAccess ? '✅' : '❌'}`,
-    `API Client: ${diagnostics.apiClient ? '✅' : '❌'}`,
-    diagnostics.websockets !== undefined ? `WebSockets: ${diagnostics.websockets ? '✅' : '❌'}` : null
-  ].filter(Boolean).join('\n');
+  `Browser Support: ${diagnostics.browserSupport ? '✅' : '❌'}`,
+  `Network Access: ${diagnostics.networkAccess ? '✅' : '❌'}`,
+  `API Client: ${diagnostics.apiClient ? '✅' : '❌'}`,
+  diagnostics.websockets !== undefined ? `WebSockets: ${diagnostics.websockets ? '✅' : '❌'}` : null].
+  filter(Boolean).join('\n');
 }
 
 // Export for console debugging

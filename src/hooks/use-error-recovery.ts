@@ -35,8 +35,8 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
 
   const setError = useCallback((error: Error | string | null) => {
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    
-    setState(prev => ({
+
+    setState((prev) => ({
       ...prev,
       error: errorObj,
       hasError: !!error,
@@ -49,7 +49,7 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
   }, [onError, state.retryCount]);
 
   const clearError = useCallback(() => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       error: null,
       hasError: false,
@@ -67,17 +67,17 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
       if (onMaxRetriesReached && state.error) {
         onMaxRetriesReached(state.error);
       }
-      
+
       toast({
         title: "Maximum Retries Reached",
         description: "Please try refreshing the page or contact support if the problem persists.",
         variant: "destructive"
       });
-      
+
       return false;
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isRetrying: true,
       retryCount: prev.retryCount + 1
@@ -85,26 +85,26 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
 
     try {
       // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, retryDelay));
-      
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+
       if (retryFn) {
         await retryFn();
       }
-      
+
       // If we get here, the retry was successful
       clearError();
-      
+
       toast({
         title: "Recovery Successful",
         description: "The issue has been resolved.",
         variant: "default"
       });
-      
+
       return true;
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      
-      setState(prev => ({
+
+      setState((prev) => ({
         ...prev,
         error: errorObj,
         isRetrying: false
@@ -120,19 +120,19 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
 
   const forceRetry = useCallback(async (retryFn?: () => Promise<void>) => {
     // Reset retry count for force retry
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       retryCount: 0,
       isRetrying: true
     }));
 
     try {
-      await new Promise(resolve => setTimeout(resolve, retryDelay));
-      
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+
       if (retryFn) {
         await retryFn();
       }
-      
+
       clearError();
       return true;
     } catch (error) {
@@ -146,9 +146,9 @@ export function useErrorRecovery(options: ErrorRecoveryOptions = {}) {
   useEffect(() => {
     if (!state.hasError && state.retryCount > 0) {
       const timer = setTimeout(() => {
-        setState(prev => ({ ...prev, retryCount: 0 }));
+        setState((prev) => ({ ...prev, retryCount: 0 }));
       }, 5000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [state.hasError, state.retryCount]);
