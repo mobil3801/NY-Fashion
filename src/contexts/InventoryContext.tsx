@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useApiRetry } from '@/hooks/use-api-retry';
 
 interface Product {
   id?: number;
@@ -103,6 +104,15 @@ interface InventoryContextType {
   // Import/Export
   importProductsFromCSV: (csvData: string) => Promise<void>;
   exportProductsToCSV: () => Promise<string>;
+
+  // Retry functionality
+  retryBannerProps: {
+    error: Error | null;
+    isRetrying: boolean;
+    onRetry?: () => void;
+    onDismiss?: () => void;
+  };
+  isRetrying: boolean;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
@@ -113,25 +123,41 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Initialize retry functionality
+  const apiRetry = useApiRetry({
+    maxAttempts: 3,
+    timeout: 10000,
+    autoRetry: true,
+    showBanner: true
+  });
+
   const fetchProducts = async (filters: any = {}) => {
     try {
       setLoading(true);
-      const { data, error } = await window.ezsite.apis.run({
-        path: 'getProducts',
-        param: [filters]
+      await apiRetry.execute(async (signal) => {
+        const { data, error } = await window.ezsite.apis.run({
+          path: 'getProducts',
+          param: [filters]
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        setProducts(data.products || []);
+        return data.products || [];
       });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      setProducts(data.products || []);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch products",
-        variant: "destructive"
-      });
+      console.error('Failed to fetch products:', error);
+      // Error handling is managed by the retry system
+      // Only show toast for final failures if not using banner
+      if (!apiRetry.bannerProps.error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch products",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -139,49 +165,62 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
   const fetchCategories = async () => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: 'getCategories',
-        param: []
+      await apiRetry.execute(async (signal) => {
+        const { data, error } = await window.ezsite.apis.run({
+          path: 'getCategories',
+          param: []
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        setCategories(data.categories || []);
+        return data.categories || [];
       });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      setCategories(data.categories || []);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch categories",
-        variant: "destructive"
-      });
+      console.error('Failed to fetch categories:', error);
+      // Error handling is managed by the retry system
+      if (!apiRetry.bannerProps.error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch categories",
+          variant: "destructive"
+        });
+      }
     }
   };
 
   const saveProduct = async (product: Product) => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: 'saveProduct',
-        param: [product, 1] // TODO: Get actual user ID from auth context
+      await apiRetry.execute(async (signal) => {
+        const { data, error } = await window.ezsite.apis.run({
+          path: 'saveProduct',
+          param: [product, 1] // TODO: Get actual user ID from auth context
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        toast({
+          title: "Success",
+          description: data.message
+        });
+
+        // Refresh products list
+        await fetchProducts();
+        return data;
       });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      toast({
-        title: "Success",
-        description: data.message
-      });
-
-      // Refresh products list
-      await fetchProducts();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save product",
-        variant: "destructive"
-      });
+      console.error('Failed to save product:', error);
+      if (!apiRetry.bannerProps.error) {
+        toast({
+          title: "Error",
+          description: "Failed to save product",
+          variant: "destructive"
+        });
+      }
       throw error;
     }
   };
@@ -254,22 +293,27 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
   const getLowStockProducts = async (): Promise<Product[]> => {
     try {
-      const { data, error } = await window.ezsite.apis.run({
-        path: 'getProducts',
-        param: [{ low_stock_only: true }]
+      return await apiRetry.execute(async (signal) => {
+        const { data, error } = await window.ezsite.apis.run({
+          path: 'getProducts',
+          param: [{ low_stock_only: true }]
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        return data.products || [];
       });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data.products || [];
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch low stock products",
-        variant: "destructive"
-      });
+      console.error('Failed to fetch low stock products:', error);
+      if (!apiRetry.bannerProps.error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch low stock products",
+          variant: "destructive"
+        });
+      }
       return [];
     }
   };
@@ -315,7 +359,7 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
   const value: InventoryContextType = {
     products,
     categories,
-    loading,
+    loading: loading || apiRetry.loading,
     selectedProduct,
     fetchProducts,
     fetchCategories,
@@ -327,7 +371,9 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     adjustStock,
     getLowStockProducts,
     importProductsFromCSV,
-    exportProductsToCSV
+    exportProductsToCSV,
+    retryBannerProps: apiRetry.bannerProps,
+    isRetrying: apiRetry.isRetrying
   };
 
   return (
