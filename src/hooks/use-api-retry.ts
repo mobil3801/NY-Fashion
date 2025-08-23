@@ -1,198 +1,316 @@
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { ApiRetryManager, RetryOptions, RetryableError } from '@/utils/apiRetry';
-import { useRetryBanner } from '@/components/ui/retry-banner';
+import { useCallback, useRef, useEffect } from 'react';
+import { normalizeError, isRetryable, logApiEvent, type ApiError } from '@/lib/errors';
 
-export interface UseApiRetryOptions extends RetryOptions {
-  autoRetry?: boolean;
-  showBanner?: boolean;
+export interface RetryOptions {
+  attempts: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  isRetryable: (e: unknown) => boolean;
+  signal?: AbortSignal;
+  onAttempt?: (info: { attempt: number; error?: ApiError }) => void;
+  onGiveUp?: (e: unknown) => void;
 }
 
-export interface UseApiRetryReturn<T> {
-  execute: (operation: (signal: AbortSignal) => Promise<T>) => Promise<T>;
-  retry: () => Promise<void>;
-  cancel: () => void;
-  loading: boolean;
-  error: Error | null;
-  data: T | null;
-  canRetry: boolean;
-  isRetrying: boolean;
-  bannerProps: {
-    error: Error | null;
-    isRetrying: boolean;
-    onRetry?: () => void;
-    onDismiss?: () => void;
-  };
+export interface RetryContext {
+  signal: AbortSignal;
+  attempt: number;
+  isLastAttempt: boolean;
 }
 
-export function useApiRetry<T = any>(options: UseApiRetryOptions = {}): UseApiRetryReturn<T> {
-  const {
-    autoRetry = true,
-    showBanner = true,
-    maxAttempts = 3,
-    timeout = 10000,
-    ...retryOptions
-  } = options;
+/**
+ * Default retry options with exponential backoff
+ */
+const DEFAULT_RETRY_OPTIONS: Partial<RetryOptions> = {
+  attempts: 3,
+  baseDelayMs: 300,
+  maxDelayMs: 10000,
+  isRetryable: isRetryable,
+};
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<T | null>(null);
-  const [canRetry, setCanRetry] = useState(false);
-  const [isRetrying, setIsRetrying] = useState(false);
-
-  const retryManagerRef = useRef<ApiRetryManager | null>(null);
-  const lastOperationRef = useRef<((signal: AbortSignal) => Promise<T>) | null>(null);
-  const mountedRef = useRef(true);
-
-  const banner = useRetryBanner();
-
-  // Cleanup on unmount
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      retryManagerRef.current?.cancel();
-    };
-  }, []);
-
-  const resetState = useCallback(() => {
-    if (!mountedRef.current) return;
-    setError(null);
-    setData(null);
-    setCanRetry(false);
-    setIsRetrying(false);
-    if (showBanner) {
-      banner.hideError();
-    }
-  }, [showBanner, banner]);
-
-  const execute = useCallback(async (operation: (signal: AbortSignal) => Promise<T>): Promise<T> => {
-    if (!mountedRef.current) return Promise.reject(new Error('Component unmounted'));
-
-    // Store the operation for potential retry
-    lastOperationRef.current = operation;
-
-    // Cancel any existing operation
-    retryManagerRef.current?.cancel();
-
-    // Reset state
-    resetState();
-    setLoading(true);
-
-    // Create new retry manager
-    const operationId = `hook_${Date.now()}_${Math.random()}`;
-    retryManagerRef.current = new ApiRetryManager({ maxAttempts, timeout });
-
-    try {
-      const result = await retryManagerRef.current.executeWithRetry(operation, {
-        ...retryOptions,
-        operationId,
-        maxAttempts,
-        timeout,
-        onRetry: (attempt, retryError) => {
-          if (!mountedRef.current) return;
-
-          console.log(`Retrying operation - attempt ${attempt}`, retryError);
-          setIsRetrying(true);
-          setError(retryError);
-          setCanRetry(true);
-
-          retryOptions.onRetry?.(attempt, retryError);
-        },
-        onSuccess: () => {
-          if (!mountedRef.current) return;
-
-          resetState();
-          retryOptions.onSuccess?.();
-        },
-        onMaxAttemptsReached: (maxError) => {
-          if (!mountedRef.current) return;
-
-          setCanRetry(false);
-          setIsRetrying(false);
-
-          retryOptions.onMaxAttemptsReached?.(maxError);
-        }
-      });
-
-      if (!mountedRef.current) return Promise.reject(new Error('Component unmounted'));
-
-      setData(result);
-      setLoading(false);
-      return result;
-
-    } catch (executeError) {
-      if (!mountedRef.current) return Promise.reject(executeError);
-
-      const finalError = executeError instanceof Error ? executeError : new Error(String(executeError));
-
-      setError(finalError);
-      setLoading(false);
-      setIsRetrying(false);
-
-      // Determine if we can retry based on error type and autoRetry setting
-      const canRetryNow = autoRetry && !(finalError instanceof RetryableError && !finalError.canRetry);
-      setCanRetry(canRetryNow);
-
-      throw finalError;
-    }
-  }, [maxAttempts, timeout, retryOptions, autoRetry, showBanner, resetState]);
-
-  const retry = useCallback(async (): Promise<void> => {
-    if (!lastOperationRef.current) {
-      console.warn('No operation to retry');
+/**
+ * Sleep function that respects AbortSignal
+ */
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new Error('Aborted'));
       return;
     }
 
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, ms);
+
+    const cleanup = () => {
+      clearTimeout(timeout);
+      signal?.removeEventListener('abort', abortHandler);
+    };
+
+    const abortHandler = () => {
+      cleanup();
+      reject(new Error('Aborted'));
+    };
+
+    signal?.addEventListener('abort', abortHandler, { once: true });
+  });
+}
+
+/**
+ * Calculate delay with exponential backoff and full jitter
+ */
+function calculateDelay(attempt: number, baseDelayMs: number, maxDelayMs: number): number {
+  const exponentialDelay = baseDelayMs * Math.pow(2, attempt - 1);
+  const cappedDelay = Math.min(maxDelayMs, exponentialDelay);
+  // Apply full jitter: random value between 0 and cappedDelay
+  return Math.floor(Math.random() * cappedDelay);
+}
+
+/**
+ * Creates a composite AbortController that listens to multiple signals
+ */
+function createCompositeAbortController(signals: (AbortSignal | undefined)[]): AbortController {
+  const controller = new AbortController();
+  
+  const validSignals = signals.filter((signal): signal is AbortSignal => 
+    signal !== undefined && !signal.aborted
+  );
+
+  // If any signal is already aborted, abort immediately
+  if (validSignals.some(signal => signal.aborted)) {
+    controller.abort();
+    return controller;
+  }
+
+  // Listen to all signals
+  const abortHandlers = validSignals.map(signal => {
+    const handler = () => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    };
+    signal.addEventListener('abort', handler, { once: true });
+    return { signal, handler };
+  });
+
+  // Cleanup listeners when our controller is aborted
+  controller.signal.addEventListener('abort', () => {
+    abortHandlers.forEach(({ signal, handler }) => {
+      signal.removeEventListener('abort', handler);
+    });
+  }, { once: true });
+
+  return controller;
+}
+
+/**
+ * Execute a function with retry logic using exponential backoff and full jitter
+ */
+export async function executeWithRetry<T>(
+  fn: (ctx: RetryContext) => Promise<T>,
+  options: RetryOptions
+): Promise<T> {
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
+  const { attempts, baseDelayMs, maxDelayMs, isRetryable: shouldRetry, signal, onAttempt, onGiveUp } = opts;
+
+  // Create composite abort controller
+  const compositeController = createCompositeAbortController([signal]);
+  
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const isLastAttempt = attempt === attempts;
+    
     try {
-      await execute(lastOperationRef.current);
+      // Check if aborted before starting attempt
+      if (compositeController.signal.aborted) {
+        throw new Error('Aborted');
+      }
+
+      const result = await fn({
+        signal: compositeController.signal,
+        attempt,
+        isLastAttempt
+      });
+
+      // Success - cleanup and return
+      compositeController.abort(); // Cleanup listeners
+      return result;
+
     } catch (error) {
-      // Error is already handled in execute
-      console.error('Retry failed:', error);
-    }
-  }, [execute]);
+      lastError = error;
+      const normalizedError = normalizeError(error, 'retry-operation');
 
-  const cancel = useCallback(() => {
-    retryManagerRef.current?.cancel();
-    if (mountedRef.current) {
-      setLoading(false);
-      setIsRetrying(false);
-    }
-  }, []);
+      // Log the attempt
+      logApiEvent({
+        operation: 'executeWithRetry',
+        attempt,
+        statusCode: normalizedError.type === 'http' ? (normalizedError as any).statusCode : undefined,
+        retryable: shouldRetry(error) && !isLastAttempt,
+        message: normalizedError.message,
+        error: normalizedError,
+      });
 
-  const handleBannerRetry = useCallback(() => {
-    if (canRetry || error instanceof RetryableError && !error.canRetry) {
-      retry();
-    }
-  }, [canRetry, error, retry]);
+      // Call onAttempt callback
+      onAttempt?.({ attempt, error: normalizedError });
 
-  const handleBannerDismiss = useCallback(() => {
-    if (showBanner) {
-      banner.dismissError();
-    }
-  }, [showBanner, banner]);
+      // Don't retry if aborted
+      if (normalizedError.type === 'abort') {
+        compositeController.abort();
+        throw error;
+      }
 
+      // Don't retry if not retryable or last attempt
+      if (!shouldRetry(error) || isLastAttempt) {
+        break;
+      }
+
+      // Calculate delay with exponential backoff and full jitter
+      const delayMs = calculateDelay(attempt, baseDelayMs, maxDelayMs);
+
+      try {
+        await sleep(delayMs, compositeController.signal);
+      } catch (sleepError) {
+        // Sleep was aborted
+        compositeController.abort();
+        throw sleepError;
+      }
+    }
+  }
+
+  // All attempts failed
+  compositeController.abort(); // Cleanup listeners
+  onGiveUp?.(lastError);
+  throw lastError;
+}
+
+/**
+ * Hook that provides retry capabilities with proper cleanup
+ */
+export function useApiRetry() {
+  const abortControllersRef = useRef<Set<AbortController>>(new Set());
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true;
+    
     return () => {
-      // Cancel all operations when component unmounts
-      retryManagerRef.current?.cancel();
+      isMountedRef.current = false;
+      // Abort all ongoing operations
+      abortControllersRef.current.forEach(controller => {
+        if (!controller.signal.aborted) {
+          controller.abort();
+        }
+      });
+      abortControllersRef.current.clear();
     };
   }, []);
 
-  return {
-    execute,
-    retry,
-    cancel,
-    loading,
-    error,
-    data,
-    canRetry,
-    isRetrying,
-    bannerProps: {
-      error: error,
-      isRetrying: isRetrying,
-      onRetry: canRetry ? handleBannerRetry : undefined,
-      onDismiss: handleBannerDismiss
+  const executeWithRetry = useCallback(async <T>(
+    fn: (ctx: RetryContext) => Promise<T>,
+    options?: Partial<RetryOptions>
+  ): Promise<T> => {
+    if (!isMountedRef.current) {
+      throw new Error('Component is unmounted');
     }
+
+    const controller = new AbortController();
+    abortControllersRef.current.add(controller);
+
+    try {
+      const result = await executeWithRetry(fn, {
+        ...DEFAULT_RETRY_OPTIONS,
+        ...options,
+        signal: controller.signal,
+        onAttempt: (info) => {
+          if (isMountedRef.current) {
+            options?.onAttempt?.(info);
+          }
+        },
+        onGiveUp: (error) => {
+          if (isMountedRef.current) {
+            options?.onGiveUp?.(error);
+          }
+        }
+      } as RetryOptions);
+
+      return result;
+    } finally {
+      abortControllersRef.current.delete(controller);
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    }
+  }, []);
+
+  const abortAll = useCallback(() => {
+    abortControllersRef.current.forEach(controller => {
+      if (!controller.signal.aborted) {
+        controller.abort();
+      }
+    });
+    abortControllersRef.current.clear();
+  }, []);
+
+  return {
+    executeWithRetry,
+    abortAll,
+    isMounted: () => isMountedRef.current,
+  };
+}
+
+/**
+ * Hook for creating a managed AbortController with automatic cleanup
+ */
+export function useManagedAbortController() {
+  const controllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+      if (controllerRef.current && !controllerRef.current.signal.aborted) {
+        controllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const getController = useCallback(() => {
+    if (!isMountedRef.current) {
+      throw new Error('Component is unmounted');
+    }
+
+    if (!controllerRef.current || controllerRef.current.signal.aborted) {
+      controllerRef.current = new AbortController();
+    }
+
+    return controllerRef.current;
+  }, []);
+
+  const abort = useCallback(() => {
+    if (controllerRef.current && !controllerRef.current.signal.aborted) {
+      controllerRef.current.abort();
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    if (controllerRef.current && !controllerRef.current.signal.aborted) {
+      controllerRef.current.abort();
+    }
+    if (isMountedRef.current) {
+      controllerRef.current = new AbortController();
+    }
+  }, []);
+
+  return {
+    getController,
+    abort,
+    reset,
+    signal: controllerRef.current?.signal,
+    isMounted: () => isMountedRef.current,
   };
 }

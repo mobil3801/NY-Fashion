@@ -1,7 +1,8 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { useApiRetry } from '@/hooks/use-api-retry';
+import { useApiRetry, type RetryContext } from '@/hooks/use-api-retry';
+import { normalizeError, getUserFriendlyMessage, logApiEvent, type ApiError } from '@/lib/errors';
 
 interface Product {
   id?: number;
@@ -84,7 +85,11 @@ interface InventoryContextType {
   products: Product[];
   categories: Category[];
   loading: boolean;
+  loadingProducts: boolean;
+  loadingCategories: boolean;
   selectedProduct: Product | null;
+  error: ApiError | null;
+  isRetrying: boolean;
 
   // Product management
   fetchProducts: (filters?: any) => Promise<void>;
@@ -105,135 +110,318 @@ interface InventoryContextType {
   importProductsFromCSV: (csvData: string) => Promise<void>;
   exportProductsToCSV: () => Promise<string>;
 
-  // Retry functionality
-  retryBannerProps: {
-    error: Error | null;
-    isRetrying: boolean;
-    onRetry?: () => void;
-    onDismiss?: () => void;
-  };
-  isRetrying: boolean;
+  // Manual retry and error handling
+  retry: () => void;
+  clearError: () => void;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-export function InventoryProvider({ children }: {children: React.ReactNode;}) {
+export function InventoryProvider({ children }: { children: React.ReactNode }) {
+  // State management
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  // Initialize retry functionality
-  const apiRetry = useApiRetry({
-    maxAttempts: 3,
-    timeout: 10000,
-    autoRetry: true,
-    showBanner: true
-  });
+  // Request management
+  const currentRequestIdRef = useRef(0);
+  const isMountedRef = useRef(true);
+  const lastFailedOperationRef = useRef<string | null>(null);
 
-  const fetchProducts = async (search?: string) => {
-    try {
-      setLoadingProducts(true);
-      const { data, error } = await apiRetry.execute(
-        () => window.ezsite.apis.run({
-          path: "getProducts",
-          param: [{
-            search: search || '',
-            limit: 100,
-            order_by: 'name',
-            order_dir: 'asc'
-          }]
-        })
-      );
+  // API retry hook
+  const { executeWithRetry, abortAll, isMounted } = useApiRetry();
 
-      if (error) {
-        console.error('Products API error:', error);
-        throw new Error(typeof error === 'string' ? error : 'Failed to fetch products');
-      }
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    
+    return () => {
+      isMountedRef.current = false;
+      abortAll();
+    };
+  }, [abortAll]);
 
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
+  // Helper to generate and track request IDs
+  const getNextRequestId = useCallback(() => {
+    return ++currentRequestIdRef.current;
+  }, []);
+
+  // Helper to check if response is still valid
+  const isValidResponse = useCallback((requestId: number) => {
+    return isMountedRef.current && requestId === currentRequestIdRef.current;
+  }, []);
+
+  // Error handling helper
+  const handleError = useCallback((error: unknown, operation: string) => {
+    if (!isMountedRef.current) return;
+
+    const normalizedError = normalizeError(error, operation);
+    setError(normalizedError);
+    lastFailedOperationRef.current = operation;
+
+    // Show user-friendly error message
+    const message = getUserFriendlyMessage(error);
+    if (normalizedError.type !== 'business') {
       toast({
-        title: "Products Error",
-        description: error.message || "Failed to load products. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: message,
+        variant: 'destructive'
       });
-      setProducts([]); // Set empty array to prevent UI issues
-    } finally {
-      setLoadingProducts(false);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
-    try {
-      setLoadingCategories(true);
-      const { data, error } = await apiRetry.execute(
-        () => window.ezsite.apis.run({
-          path: "getCategories",
-          param: [{
-            order_by: 'name',
-            order_dir: 'asc'
-          }]
-        })
-      );
-
-      if (error) {
-        console.error('Categories API error:', error);
-        throw new Error(typeof error === 'string' ? error : 'Failed to fetch categories');
-      }
-
-      setCategories(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-      toast({
-        title: "Categories Error",
-        description: error.message || "Failed to load categories. Please try again.",
-        variant: "destructive"
-      });
-      setCategories([]); // Set empty array to prevent UI issues
-    } finally {
-      setLoadingCategories(false);
+  // Clear error state
+  const clearError = useCallback(() => {
+    if (isMountedRef.current) {
+      setError(null);
+      lastFailedOperationRef.current = null;
     }
-  };
+  }, []);
 
-  const saveProduct = async (product: Product) => {
+  // Fetch products with retry logic
+  const fetchProducts = useCallback(async (search?: string) => {
+    if (!isMountedRef.current) return;
+
+    const requestId = getNextRequestId();
+    setLoadingProducts(true);
+    clearError();
+
     try {
-      await apiRetry.execute(async (signal) => {
-        const { data, error } = await window.ezsite.apis.run({
-          path: 'saveProduct',
-          param: [product, 1] // TODO: Get actual user ID from auth context
-        });
+      await executeWithRetry(
+        async (ctx: RetryContext) => {
+          if (!isValidResponse(requestId)) {
+            throw new Error('Request cancelled');
+          }
 
-        if (error) {
-          throw new Error(error.message);
+          const { data, error } = await window.ezsite.apis.run({
+            path: "getProducts",
+            param: [{
+              search: search || '',
+              limit: 100,
+              order_by: 'name',
+              order_dir: 'asc'
+            }]
+          });
+
+          if (error) {
+            throw new Error(typeof error === 'string' ? error : 'Failed to fetch products');
+          }
+
+          // Only update state if this is still the current request
+          if (isValidResponse(requestId)) {
+            setProducts(Array.isArray(data) ? data : []);
+          }
+
+          return data;
+        },
+        {
+          attempts: 3,
+          baseDelayMs: 300,
+          maxDelayMs: 5000,
+          onAttempt: ({ attempt, error }) => {
+            if (isMountedRef.current) {
+              setIsRetrying(attempt > 1);
+              if (error) {
+                logApiEvent({
+                  operation: 'fetchProducts',
+                  attempt,
+                  retryable: attempt < 3,
+                  message: error.message,
+                  error
+                });
+              }
+            }
+          },
+          onGiveUp: (error) => {
+            if (isMountedRef.current) {
+              setIsRetrying(false);
+              handleError(error, 'fetchProducts');
+            }
+          }
         }
+      );
 
-        toast({
-          title: "Success",
-          description: data.message
-        });
-
-        // Refresh products list
-        await fetchProducts();
-        return data;
-      });
-    } catch (error) {
-      console.error('Failed to save product:', error);
-      if (!apiRetry.bannerProps.error) {
-        toast({
-          title: "Error",
-          description: "Failed to save product",
-          variant: "destructive"
-        });
+      // Success - clear any previous errors
+      if (isMountedRef.current) {
+        setIsRetrying(false);
+        clearError();
       }
-      throw error;
-    }
-  };
 
-  const deleteProduct = async (id: number) => {
+    } catch (error) {
+      if (isMountedRef.current) {
+        setIsRetrying(false);
+        handleError(error, 'fetchProducts');
+        setProducts([]); // Set empty array to prevent UI issues
+      }
+    } finally {
+      if (isValidResponse(requestId)) {
+        setLoadingProducts(false);
+      }
+    }
+  }, [executeWithRetry, getNextRequestId, isValidResponse, clearError, handleError]);
+
+  // Fetch categories with retry logic
+  const fetchCategories = useCallback(async () => {
+    if (!isMountedRef.current) return;
+
+    const requestId = getNextRequestId();
+    setLoadingCategories(true);
+    clearError();
+
+    try {
+      await executeWithRetry(
+        async (ctx: RetryContext) => {
+          if (!isValidResponse(requestId)) {
+            throw new Error('Request cancelled');
+          }
+
+          const { data, error } = await window.ezsite.apis.run({
+            path: "getCategories",
+            param: [{
+              order_by: 'name',
+              order_dir: 'asc'
+            }]
+          });
+
+          if (error) {
+            throw new Error(typeof error === 'string' ? error : 'Failed to fetch categories');
+          }
+
+          // Only update state if this is still the current request
+          if (isValidResponse(requestId)) {
+            setCategories(Array.isArray(data) ? data : []);
+          }
+
+          return data;
+        },
+        {
+          attempts: 3,
+          baseDelayMs: 300,
+          maxDelayMs: 5000,
+          onAttempt: ({ attempt, error }) => {
+            if (isMountedRef.current) {
+              setIsRetrying(attempt > 1);
+              if (error) {
+                logApiEvent({
+                  operation: 'fetchCategories',
+                  attempt,
+                  retryable: attempt < 3,
+                  message: error.message,
+                  error
+                });
+              }
+            }
+          },
+          onGiveUp: (error) => {
+            if (isMountedRef.current) {
+              setIsRetrying(false);
+              handleError(error, 'fetchCategories');
+            }
+          }
+        }
+      );
+
+      // Success - clear any previous errors
+      if (isMountedRef.current) {
+        setIsRetrying(false);
+        clearError();
+      }
+
+    } catch (error) {
+      if (isMountedRef.current) {
+        setIsRetrying(false);
+        handleError(error, 'fetchCategories');
+        setCategories([]); // Set empty array to prevent UI issues
+      }
+    } finally {
+      if (isValidResponse(requestId)) {
+        setLoadingCategories(false);
+      }
+    }
+  }, [executeWithRetry, getNextRequestId, isValidResponse, clearError, handleError]);
+
+  // Save product with retry logic
+  const saveProduct = useCallback(async (product: Product) => {
+    if (!isMountedRef.current) return;
+
+    try {
+      await executeWithRetry(
+        async (ctx: RetryContext) => {
+          const { data, error } = await window.ezsite.apis.run({
+            path: 'saveProduct',
+            param: [product, 1] // TODO: Get actual user ID from auth context
+          });
+
+          if (error) {
+            throw new Error(typeof error === 'string' ? error : 'Failed to save product');
+          }
+
+          if (isMountedRef.current) {
+            toast({
+              title: "Success",
+              description: data.message || "Product saved successfully"
+            });
+
+            // Refresh products list
+            fetchProducts();
+          }
+
+          return data;
+        },
+        {
+          attempts: 2, // Fewer attempts for write operations
+          baseDelayMs: 500,
+          maxDelayMs: 3000,
+          onAttempt: ({ attempt, error }) => {
+            if (isMountedRef.current && error) {
+              logApiEvent({
+                operation: 'saveProduct',
+                attempt,
+                retryable: attempt < 2,
+                message: error.message,
+                error
+              });
+            }
+          }
+        }
+      );
+
+    } catch (error) {
+      if (isMountedRef.current) {
+        handleError(error, 'saveProduct');
+        throw error; // Re-throw for form handling
+      }
+    }
+  }, [executeWithRetry, handleError, fetchProducts]);
+
+  // Manual retry function
+  const retry = useCallback(() => {
+    if (!isMountedRef.current || !lastFailedOperationRef.current) return;
+
+    const operation = lastFailedOperationRef.current;
+    clearError();
+
+    switch (operation) {
+      case 'fetchProducts':
+        fetchProducts();
+        break;
+      case 'fetchCategories':
+        fetchCategories();
+        break;
+      default:
+        // For unknown operations, refresh all data
+        fetchProducts();
+        fetchCategories();
+        break;
+    }
+  }, [clearError, fetchProducts, fetchCategories]);
+
+  // Stub implementations for other methods (keeping existing behavior)
+  const deleteProduct = useCallback(async (id: number) => {
     try {
       // TODO: Implement delete product API
       toast({
@@ -243,15 +431,11 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
       await fetchProducts();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete product",
-        variant: "destructive"
-      });
+      handleError(error, 'deleteProduct');
     }
-  };
+  }, [fetchProducts, handleError]);
 
-  const addStockMovement = async (movement: StockMovement) => {
+  const addStockMovement = useCallback(async (movement: StockMovement) => {
     try {
       // TODO: Implement stock movement API
       toast({
@@ -259,29 +443,21 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
         description: "Stock movement recorded"
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to record stock movement",
-        variant: "destructive"
-      });
+      handleError(error, 'addStockMovement');
     }
-  };
+  }, [handleError]);
 
-  const getStockMovements = async (productId: number, variantId?: number): Promise<StockMovement[]> => {
+  const getStockMovements = useCallback(async (productId: number, variantId?: number): Promise<StockMovement[]> => {
     try {
       // TODO: Implement get stock movements API
       return [];
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch stock movements",
-        variant: "destructive"
-      });
+      handleError(error, 'getStockMovements');
       return [];
     }
-  };
+  }, [handleError]);
 
-  const adjustStock = async (adjustments: any[]) => {
+  const adjustStock = useCallback(async (adjustments: any[]) => {
     try {
       // TODO: Implement stock adjustment API
       toast({
@@ -291,42 +467,38 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
       await fetchProducts();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to adjust stock",
-        variant: "destructive"
-      });
+      handleError(error, 'adjustStock');
     }
-  };
+  }, [fetchProducts, handleError]);
 
-  const getLowStockProducts = async (): Promise<Product[]> => {
+  const getLowStockProducts = useCallback(async (): Promise<Product[]> => {
     try {
-      return await apiRetry.execute(async (signal) => {
-        const { data, error } = await window.ezsite.apis.run({
-          path: 'getProducts',
-          param: [{ low_stock_only: true }]
-        });
+      return await executeWithRetry(
+        async (ctx: RetryContext) => {
+          const { data, error } = await window.ezsite.apis.run({
+            path: 'getProducts',
+            param: [{ low_stock_only: true }]
+          });
 
-        if (error) {
-          throw new Error(error.message);
+          if (error) {
+            throw new Error(typeof error === 'string' ? error : 'Failed to fetch low stock products');
+          }
+
+          return data.products || [];
+        },
+        {
+          attempts: 3,
+          baseDelayMs: 300,
+          maxDelayMs: 5000
         }
-
-        return data.products || [];
-      });
+      );
     } catch (error) {
-      console.error('Failed to fetch low stock products:', error);
-      if (!apiRetry.bannerProps.error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch low stock products",
-          variant: "destructive"
-        });
-      }
+      handleError(error, 'getLowStockProducts');
       return [];
     }
-  };
+  }, [executeWithRetry, handleError]);
 
-  const importProductsFromCSV = async (csvData: string) => {
+  const importProductsFromCSV = useCallback(async (csvData: string) => {
     try {
       // TODO: Implement CSV import
       toast({
@@ -336,39 +508,37 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
 
       await fetchProducts();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to import products",
-        variant: "destructive"
-      });
+      handleError(error, 'importProductsFromCSV');
     }
-  };
+  }, [fetchProducts, handleError]);
 
-  const exportProductsToCSV = async (): Promise<string> => {
+  const exportProductsToCSV = useCallback(async (): Promise<string> => {
     try {
       // TODO: Implement CSV export
       return "";
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to export products",
-        variant: "destructive"
-      });
+      handleError(error, 'exportProductsToCSV');
       return "";
     }
-  };
+  }, [handleError]);
 
-  // Initialize data
+  // Initialize data on mount
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
-  }, []);
+    if (isMountedRef.current) {
+      fetchCategories();
+      fetchProducts();
+    }
+  }, [fetchCategories, fetchProducts]);
 
   const value: InventoryContextType = {
     products,
     categories,
-    loading: loading || loadingProducts || loadingCategories || apiRetry.loading,
+    loading: loadingProducts || loadingCategories,
+    loadingProducts,
+    loadingCategories,
     selectedProduct,
+    error,
+    isRetrying,
     fetchProducts,
     fetchCategories,
     saveProduct,
@@ -380,15 +550,15 @@ export function InventoryProvider({ children }: {children: React.ReactNode;}) {
     getLowStockProducts,
     importProductsFromCSV,
     exportProductsToCSV,
-    retryBannerProps: apiRetry.bannerProps,
-    isRetrying: apiRetry.isRetrying
+    retry,
+    clearError
   };
 
   return (
     <InventoryContext.Provider value={value}>
       {children}
-    </InventoryContext.Provider>);
-
+    </InventoryContext.Provider>
+  );
 }
 
 export function useInventory() {

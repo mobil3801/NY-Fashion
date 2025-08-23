@@ -68,9 +68,9 @@ export class ApiRetryManager {
   }
 
   async executeWithRetry<T>(
-    operation: (signal: AbortSignal) => Promise<T>,
-    options: RetryOptions & { operationId?: string } = {}
-  ): Promise<T> {
+  operation: (signal: AbortSignal) => Promise<T>,
+  options: RetryOptions & {operationId?: string;} = {})
+  : Promise<T> {
     const {
       maxAttempts = this.config.maxAttempts,
       timeout = this.config.timeout,
@@ -90,7 +90,7 @@ export class ApiRetryManager {
     // Create abort controller for this operation
     const controller = new AbortController();
     this.abortControllers.set(opId, controller);
-    
+
     let lastError: Error | null = null;
 
     try {
@@ -107,7 +107,7 @@ export class ApiRetryManager {
               controller.abort();
               reject(new TimeoutError(timeout));
             }, timeout);
-            
+
             // Clear timeout if operation completes
             controller.signal.addEventListener('abort', () => {
               clearTimeout(timeoutId);
@@ -116,9 +116,9 @@ export class ApiRetryManager {
 
           // Race between operation and timeout
           const result = await Promise.race([
-            operation(controller.signal),
-            timeoutPromise
-          ]);
+          operation(controller.signal),
+          timeoutPromise]
+          );
 
           // Success - cleanup and return
           this.cleanup();
@@ -127,7 +127,7 @@ export class ApiRetryManager {
 
         } catch (error: any) {
           lastError = this.processError(error);
-          
+
           console.log('API Retry Manager - Attempt', attempt + '/' + maxAttempts, 'failed:', {
             error: lastError,
             attempt,
