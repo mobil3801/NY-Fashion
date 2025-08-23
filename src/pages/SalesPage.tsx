@@ -20,6 +20,7 @@ import SalesDataTable from '@/components/sales/SalesDataTable';
 import AdvancedFilters from '@/components/sales/AdvancedFilters';
 import BulkOperations from '@/components/sales/BulkOperations';
 import { NetworkAwareSaleForm } from '@/components/sales/NetworkAwareSaleForm';
+import { EnhancedSalesForm } from '@/components/sales/EnhancedSalesForm';
 import { useNetwork } from '@/contexts/NetworkContext';
 
 interface SalesData {
@@ -516,7 +517,7 @@ const SalesPage: React.FC = () => {
 
         <TabsContent value="new-sale" className="space-y-4">
           <div className="flex justify-center">
-            <NetworkAwareSaleForm />
+            <EnhancedSalesForm />
           </div>
         </TabsContent>
       </Tabs>

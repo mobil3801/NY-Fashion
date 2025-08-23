@@ -12,53 +12,96 @@ export interface ApiClientConfig {
   retryFactor?: number;
 }
 
+export interface RetryOptions {
+  attempts?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+}
+
 export interface ApiClientOptions extends RequestInit {
   timeout?: number;
   skipRetry?: boolean;
   skipOfflineQueue?: boolean;
   idempotencyKey?: string;
+  retry?: RetryOptions;
 }
 
 export interface RetryScheduler {
   pause(): void;
   resume(): void;
   isPaused(): boolean;
+  retryNow(): Promise<void>;
   scheduleRetry(fn: () => Promise<void>, attempt: number): number;
   clearRetry(id: number): void;
+}
+
+interface PendingRequest {
+  id: string;
+  promise: Promise<any>;
+  controller: AbortController;
+  idempotencyKey?: string;
 }
 
 class NetworkRetryScheduler implements RetryScheduler {
   private paused = false;
   private pendingRetries = new Map<number, number>();
+  private pausedRetries = new Map<number, () => Promise<void>>();
   private nextId = 1;
 
   pause(): void {
     this.paused = true;
-    // Clear all pending retries but keep track of them
-    this.pendingRetries.forEach((timerId) => clearTimeout(timerId));
+    // Clear all pending retries but store them for later
+    this.pendingRetries.forEach((timerId, retryId) => {
+      clearTimeout(timerId);
+      // Store paused retries would need the function reference, which we don't have here
+      // The caller should re-schedule after resume
+    });
     this.pendingRetries.clear();
   }
 
   resume(): void {
     this.paused = false;
-    // Note: Caller should re-schedule retries after resume
+    // Clear paused retries as caller should handle re-scheduling
+    this.pausedRetries.clear();
   }
 
   isPaused(): boolean {
     return this.paused;
   }
 
-  scheduleRetry(fn: () => Promise<void>, attempt: number): number {
+  async retryNow(): Promise<void> {
     if (this.paused) {
-      return -1; // Indicate retry was not scheduled
+      this.resume();
+    }
+    
+    // Execute all pending retries immediately
+    const retryPromises: Promise<void>[] = [];
+    
+    this.pendingRetries.forEach((timerId, retryId) => {
+      clearTimeout(timerId);
+      this.pendingRetries.delete(retryId);
+    });
+
+    this.pausedRetries.forEach((retryFn) => {
+      retryPromises.push(retryFn().catch(console.error));
+    });
+
+    this.pausedRetries.clear();
+    
+    await Promise.allSettled(retryPromises);
+  }
+
+  scheduleRetry(fn: () => Promise<void>, attempt: number): number {
+    const id = this.nextId++;
+
+    if (this.paused) {
+      this.pausedRetries.set(id, fn);
+      return id;
     }
 
     const delay = calculateBackoffDelay(attempt);
-    const id = this.nextId++;
-
     const timerId = window.setTimeout(async () => {
       this.pendingRetries.delete(id);
-      // Double-check paused state before executing
       if (!this.paused) {
         try {
           await fn();
@@ -78,11 +121,13 @@ class NetworkRetryScheduler implements RetryScheduler {
       clearTimeout(timerId);
       this.pendingRetries.delete(id);
     }
+    this.pausedRetries.delete(id);
   }
 
   destroy(): void {
     this.pendingRetries.forEach((timerId) => clearTimeout(timerId));
     this.pendingRetries.clear();
+    this.pausedRetries.clear();
   }
 }
 
@@ -92,6 +137,8 @@ export class ApiClient {
   private retryScheduler: RetryScheduler;
   private isOnline = true;
   private networkStatusCallbacks: Set<(online: boolean) => void> = new Set();
+  private pendingRequests = new Map<string, PendingRequest>();
+  private requestIdCounter = 0;
 
   constructor(config: ApiClientConfig = {}) {
     this.config = {
@@ -109,6 +156,12 @@ export class ApiClient {
 
     // Initialize offline queue
     this.offlineQueue.init();
+
+    // Cleanup on page unload
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => this.cleanup());
+      window.addEventListener('unload', () => this.cleanup());
+    }
   }
 
   setOnlineStatus(online: boolean): void {
@@ -139,12 +192,158 @@ export class ApiClient {
     return () => this.networkStatusCallbacks.delete(callback);
   }
 
+  async retryNow(): Promise<void> {
+    await this.retryScheduler.retryNow();
+    if (this.isOnline) {
+      await this.flushOfflineQueue();
+    }
+  }
+
   getNetworkDiagnostics() {
     return {
       isOnline: this.isOnline,
       queueStatus: this.getQueueStatus(),
-      retrySchedulerPaused: this.retryScheduler.isPaused()
+      retrySchedulerPaused: this.retryScheduler.isPaused(),
+      pendingRequestsCount: this.pendingRequests.size
     };
+  }
+
+  private generateRequestId(): string {
+    return `req_${++this.requestIdCounter}_${Date.now()}`;
+  }
+
+  private generateIdempotencyKey(): string {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      try {
+        return crypto.randomUUID();
+      } catch (error) {
+        console.warn('crypto.randomUUID() failed, using fallback:', error);
+      }
+    }
+    
+    return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  private enhancedErrorNormalization(error: unknown, operation?: string): ApiError {
+    // Handle AbortError
+    if (error instanceof Error && error.name === 'AbortError') {
+      return new ApiError(
+        'Request was cancelled',
+        'ABORT',
+        false,
+        { operation, originalError: error.message }
+      );
+    }
+
+    // Handle TimeoutError
+    if (error instanceof Error && (
+      error.name === 'TimeoutError' ||
+      error.message.toLowerCase().includes('timeout') ||
+      error.message.includes('signal timed out')
+    )) {
+      return new ApiError(
+        'Request timed out',
+        'TIMEOUT',
+        true,
+        { operation, originalError: error.message }
+      );
+    }
+
+    // Handle TypeError and network errors (comprehensive detection)
+    if (error instanceof TypeError ||
+        error instanceof Error && (
+          error.message.includes('fetch') ||
+          error.message.includes('ERR_NETWORK') ||
+          error.message.includes('NetworkError') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('ERR_INTERNET_DISCONNECTED') ||
+          error.message.includes('ERR_NAME_NOT_RESOLVED') ||
+          error.message.includes('ERR_CONNECTION_REFUSED') ||
+          error.message.includes('ERR_CONNECTION_TIMED_OUT') ||
+          error.message.includes('ERR_CONNECTION_RESET') ||
+          error.message.includes('net::') ||
+          error.name === 'NetworkError'
+        )) {
+      
+      const message = error instanceof Error ? error.message : String(error);
+      
+      // Classify specific network error types
+      if (message.includes('ERR_NAME_NOT_RESOLVED') || message.includes('ENOTFOUND')) {
+        return new ApiError(
+          'DNS resolution failed',
+          'DNS_ERROR',
+          true,
+          { operation, originalError: message, errorType: 'dns' }
+        );
+      }
+      
+      if (message.includes('ERR_CONNECTION_REFUSED') || message.includes('ECONNREFUSED')) {
+        return new ApiError(
+          'Connection refused by server',
+          'CONNECTION_REFUSED',
+          true,
+          { operation, originalError: message, errorType: 'connection' }
+        );
+      }
+      
+      if (message.includes('ERR_CONNECTION_RESET') || message.includes('ECONNRESET')) {
+        return new ApiError(
+          'Connection reset by server',
+          'CONNECTION_RESET',
+          true,
+          { operation, originalError: message, errorType: 'connection' }
+        );
+      }
+      
+      return new ApiError(
+        'Network connection issue',
+        'NETWORK_OFFLINE',
+        true,
+        { operation, originalError: message, errorType: 'network' }
+      );
+    }
+
+    // Handle Response-like objects (fetch errors) with enhanced status code handling
+    if (error && typeof error === 'object' && 'status' in error) {
+      const response = error as any;
+      const statusCode = response.status;
+      
+      // More granular status code handling
+      let code: string;
+      let retryable: boolean;
+      
+      if (statusCode >= 400 && statusCode < 500) {
+        // Client errors
+        code = 'CLIENT_ERROR';
+        retryable = statusCode === 408 || statusCode === 429; // Timeout and Rate Limit
+      } else if (statusCode >= 500) {
+        // Server errors
+        code = 'SERVER_ERROR';
+        retryable = true;
+      } else {
+        code = 'HTTP_ERROR';
+        retryable = false;
+      }
+
+      return new ApiError(
+        `HTTP ${statusCode}: ${response.statusText || 'Unknown error'}`,
+        code,
+        retryable,
+        { 
+          operation, 
+          statusCode, 
+          statusText: response.statusText,
+          responseBody: response.body 
+        }
+      );
+    }
+
+    // Fall back to the existing normalization
+    return normalizeError(error, operation);
   }
 
   async flushOfflineQueue(): Promise<void> {
@@ -166,7 +365,7 @@ export class ApiClient {
           return true;
         } catch (error) {
           // Only retry if it's not a client error (4xx)
-          const apiError = normalizeError(error);
+          const apiError = this.enhancedErrorNormalization(error);
           return apiError.code === 'CLIENT_ERROR' ? true : false;
         }
       });
@@ -180,9 +379,9 @@ export class ApiClient {
   }
 
   private async executeRequest<T = any>(
-  url: string,
-  options: ApiClientOptions = {})
-  : Promise<T> {
+    url: string,
+    options: ApiClientOptions = {}
+  ): Promise<T> {
     const {
       timeout = this.config.timeout,
       skipRetry = false,
@@ -194,9 +393,16 @@ export class ApiClient {
     // Resolve full URL
     const fullUrl = url.startsWith('http') ? url : `${this.config.baseURL}${url}`;
 
-    // Setup timeout
+    // Setup timeout with enhanced AbortController
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, timeout);
+
+    // Handle external signal
+    if (fetchOptions.signal) {
+      fetchOptions.signal.addEventListener('abort', () => controller.abort());
+    }
 
     try {
       const response = await fetch(fullUrl, {
@@ -215,7 +421,7 @@ export class ApiClient {
         throw new ApiError(
           `HTTP ${response.status}: ${response.statusText}`,
           response.status >= 400 && response.status < 500 ? 'CLIENT_ERROR' : 'SERVER_ERROR',
-          response.status < 500, // Only retry server errors
+          response.status >= 500 || response.status === 408 || response.status === 429,
           { status: response.status, statusText: response.statusText }
         );
       }
@@ -234,62 +440,60 @@ export class ApiClient {
         throw error;
       }
 
-      // Normalize network errors
-      if (isOfflineError(error)) {
-        // Update network status when we detect offline
+      // Use enhanced error normalization
+      const normalizedError = this.enhancedErrorNormalization(error, url);
+      
+      // Update network status when we detect offline
+      if (normalizedError.code === 'NETWORK_OFFLINE' || 
+          normalizedError.code === 'DNS_ERROR' ||
+          normalizedError.code === 'CONNECTION_REFUSED') {
         this.setOnlineStatus(false);
-        throw new ApiError(
-          'Connection lost. Your changes will be saved offline.',
-          'NETWORK_OFFLINE',
-          true,
-          { originalError: error }
-        );
       }
 
-      // Handle abort errors
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new ApiError(
-          'Request timeout',
-          'TIMEOUT',
-          true,
-          { timeout }
-        );
-      }
-
-      // Generic error
-      throw normalizeError(error);
+      throw normalizedError;
     }
   }
 
   private async requestWithRetry<T = any>(
-  url: string,
-  options: ApiClientOptions = {})
-  : Promise<T> {
-    const { skipRetry = false } = options;
+    url: string,
+    options: ApiClientOptions = {}
+  ): Promise<T> {
+    const { 
+      skipRetry = false, 
+      retry = {},
+      ...requestOptions 
+    } = options;
 
-    if (skipRetry || this.config.retries === 0) {
-      return this.executeRequest<T>(url, options);
+    // Use custom retry options or fall back to config defaults
+    const retryOptions = {
+      attempts: retry.attempts ?? this.config.retries,
+      baseDelayMs: retry.baseDelayMs ?? this.config.retryDelay,
+      maxDelayMs: retry.maxDelayMs ?? this.config.retryDelayMax
+    };
+
+    if (skipRetry || retryOptions.attempts === 0) {
+      return this.executeRequest<T>(url, requestOptions);
     }
 
     let lastError: Error;
 
-    for (let attempt = 0; attempt <= this.config.retries; attempt++) {
+    for (let attempt = 0; attempt <= retryOptions.attempts; attempt++) {
       try {
-        return await this.executeRequest<T>(url, options);
+        return await this.executeRequest<T>(url, requestOptions);
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         // Don't retry on client errors or if we've exhausted attempts
-        if (attempt === this.config.retries ||
-        error instanceof ApiError && !error.retryable) {
+        if (attempt === retryOptions.attempts ||
+            error instanceof ApiError && !error.retryable) {
           break;
         }
 
         // Wait before retry with full jitter backoff
         const delay = calculateBackoffDelay(
-          attempt + 1, // Pass attempt+1 for 1-based indexing
-          this.config.retryDelay,
-          this.config.retryDelayMax,
+          attempt + 1,
+          retryOptions.baseDelayMs,
+          retryOptions.maxDelayMs,
           this.config.retryFactor
         );
 
@@ -300,65 +504,122 @@ export class ApiClient {
     throw lastError!;
   }
 
+  async request<T = any>(
+    path: string, 
+    init: ApiClientOptions = {}
+  ): Promise<T> {
+    const { 
+      idempotencyKey = this.generateIdempotencyKey(),
+      signal,
+      ...options 
+    } = init;
+
+    // Check for duplicate requests using idempotency key
+    const existingRequest = this.pendingRequests.get(idempotencyKey);
+    if (existingRequest && !existingRequest.controller.signal.aborted) {
+      return existingRequest.promise;
+    }
+
+    // Create new request controller
+    const requestController = new AbortController();
+    const requestId = this.generateRequestId();
+
+    // Handle external signal
+    if (signal) {
+      signal.addEventListener('abort', () => requestController.abort());
+    }
+
+    // Create the request promise
+    const requestPromise = this.requestWithRetry<T>(path, {
+      ...options,
+      idempotencyKey,
+      signal: requestController.signal
+    }).finally(() => {
+      // Clean up completed request
+      this.pendingRequests.delete(idempotencyKey);
+    });
+
+    // Store pending request for deduplication
+    this.pendingRequests.set(idempotencyKey, {
+      id: requestId,
+      promise: requestPromise,
+      controller: requestController,
+      idempotencyKey
+    });
+
+    return requestPromise;
+  }
+
   async get<T = any>(url: string, options: Omit<ApiClientOptions, 'method'> = {}): Promise<T> {
-    return this.requestWithRetry<T>(url, { ...options, method: 'GET' });
+    return this.request<T>(url, { ...options, method: 'GET' });
   }
 
   async post<T = any>(url: string, data?: any, options: Omit<ApiClientOptions, 'method' | 'body'> = {}): Promise<T> {
-    const { skipOfflineQueue = false } = options;
+    const { skipOfflineQueue = false, idempotencyKey = this.generateIdempotencyKey() } = options;
 
     // Queue write operations when offline
     if (!this.isOnline && !skipOfflineQueue) {
-      await this.offlineQueue.enqueue('POST', url, data, options.headers as Record<string, string>);
+      await this.offlineQueue.enqueue('POST', url, data, {
+        ...options.headers as Record<string, string>,
+        'Idempotency-Key': idempotencyKey
+      });
       throw new ApiError(
         'Saved offline - will sync when online',
         'QUEUED_OFFLINE',
         false,
-        { queued: true }
+        { queued: true, idempotencyKey }
       );
     }
 
-    return this.requestWithRetry<T>(url, {
+    return this.request<T>(url, {
       ...options,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined
+      body: data ? JSON.stringify(data) : undefined,
+      idempotencyKey
     });
   }
 
   async put<T = any>(url: string, data?: any, options: Omit<ApiClientOptions, 'method' | 'body'> = {}): Promise<T> {
-    const { skipOfflineQueue = false } = options;
+    const { skipOfflineQueue = false, idempotencyKey = this.generateIdempotencyKey() } = options;
 
     if (!this.isOnline && !skipOfflineQueue) {
-      await this.offlineQueue.enqueue('PUT', url, data, options.headers as Record<string, string>);
+      await this.offlineQueue.enqueue('PUT', url, data, {
+        ...options.headers as Record<string, string>,
+        'Idempotency-Key': idempotencyKey
+      });
       throw new ApiError(
         'Saved offline - will sync when online',
         'QUEUED_OFFLINE',
         false,
-        { queued: true }
+        { queued: true, idempotencyKey }
       );
     }
 
-    return this.requestWithRetry<T>(url, {
+    return this.request<T>(url, {
       ...options,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined
+      body: data ? JSON.stringify(data) : undefined,
+      idempotencyKey
     });
   }
 
   async delete<T = any>(url: string, options: Omit<ApiClientOptions, 'method'> = {}): Promise<T> {
-    const { skipOfflineQueue = false } = options;
+    const { skipOfflineQueue = false, idempotencyKey = this.generateIdempotencyKey() } = options;
 
     if (!this.isOnline && !skipOfflineQueue) {
-      await this.offlineQueue.enqueue('DELETE', url, undefined, options.headers as Record<string, string>);
+      await this.offlineQueue.enqueue('DELETE', url, undefined, {
+        ...options.headers as Record<string, string>,
+        'Idempotency-Key': idempotencyKey
+      });
       throw new ApiError(
         'Saved offline - will sync when online',
         'QUEUED_OFFLINE',
         false,
-        { queued: true }
+        { queued: true, idempotencyKey }
       );
     }
 
-    return this.requestWithRetry<T>(url, { ...options, method: 'DELETE' });
+    return this.request<T>(url, { ...options, method: 'DELETE' });
   }
 
   getQueueStatus() {
@@ -373,10 +634,34 @@ export class ApiClient {
     await this.offlineQueue.clear();
   }
 
-  destroy(): void {
+  cancelAllRequests(): void {
+    this.pendingRequests.forEach((request) => {
+      if (!request.controller.signal.aborted) {
+        request.controller.abort();
+      }
+    });
+    this.pendingRequests.clear();
+  }
+
+  cancelRequest(idempotencyKey: string): boolean {
+    const request = this.pendingRequests.get(idempotencyKey);
+    if (request && !request.controller.signal.aborted) {
+      request.controller.abort();
+      this.pendingRequests.delete(idempotencyKey);
+      return true;
+    }
+    return false;
+  }
+
+  cleanup(): void {
+    this.cancelAllRequests();
     if (this.retryScheduler instanceof NetworkRetryScheduler) {
       this.retryScheduler.destroy();
     }
+  }
+
+  destroy(): void {
+    this.cleanup();
   }
 }
 
@@ -387,10 +672,10 @@ export const apiClient = new ApiClient({
 
 // Utility function to create typed API error
 export function createApiError(
-message: string,
-code: string = 'UNKNOWN_ERROR',
-retryable: boolean = false,
-details?: any)
-: ApiError {
+  message: string,
+  code: string = 'UNKNOWN_ERROR',
+  retryable: boolean = false,
+  details?: any
+): ApiError {
   return new ApiError(message, code, retryable, details);
 }

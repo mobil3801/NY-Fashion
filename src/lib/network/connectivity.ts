@@ -13,6 +13,7 @@ export interface ConnectivityConfig {
   baseDelay: number; // ms
   maxDelay: number; // ms
   backoffFactor: number;
+  debounceMs: number; // ms to debounce status changes
 }
 
 const DEFAULT_CONFIG: ConnectivityConfig = {
@@ -21,12 +22,13 @@ const DEFAULT_CONFIG: ConnectivityConfig = {
   maxRetries: 5,
   baseDelay: 300,
   maxDelay: 10000,
-  backoffFactor: 2
+  backoffFactor: 2,
+  debounceMs: 1500 // 1.5s debounce to prevent flapping
 };
 
 export type ConnectivityListener = (status: NetStatus) => void;
 
-export class ConnectivityMonitor {
+class ConnectivityMonitor {
   private config: ConnectivityConfig;
   private status: NetStatus;
   private listeners: Set<ConnectivityListener> = new Set();
@@ -34,6 +36,8 @@ export class ConnectivityMonitor {
   private abortController?: AbortController;
   private isDestroyed = false;
   private lastSuccessfulEndpoint?: string;
+  private debounceTimer?: number;
+  private pendingStatusUpdate?: NetStatus;
   private diagnostics: {
     totalAttempts: number;
     successfulAttempts: number;
@@ -57,19 +61,18 @@ export class ConnectivityMonitor {
     };
 
     this.setupBrowserListeners();
-    this.startHeartbeat();
   }
 
   private setupBrowserListeners(): void {
     const handleOnline = () => {
       if (this.isDestroyed) return;
-      this.updateStatus({ online: true, consecutiveFailures: 0 });
+      this.debouncedUpdateStatus({ online: true, consecutiveFailures: 0 });
       this.performHeartbeat(); // Immediate check when online
     };
 
     const handleOffline = () => {
       if (this.isDestroyed) return;
-      this.updateStatus({
+      this.debouncedUpdateStatus({
         online: false,
         lastError: 'Browser offline event'
       });
@@ -86,6 +89,26 @@ export class ConnectivityMonitor {
   }
 
   private cleanup?: () => void;
+
+  public start(): void {
+    if (this.isDestroyed) return;
+    this.startHeartbeat();
+  }
+
+  public stop(): void {
+    if (this.heartbeatTimer) {
+      clearTimeout(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
+    }
+    
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = undefined;
+    }
+
+    this.abortController?.abort();
+    this.abortController = undefined;
+  }
 
   private startHeartbeat(): void {
     if (this.isDestroyed) return;
@@ -105,14 +128,14 @@ export class ConnectivityMonitor {
     this.diagnostics.totalAttempts++;
 
     try {
-      // Health check endpoint with fallbacks
-      const healthEndpoint = process.env.NEXT_PUBLIC_HEALTH_ENDPOINT || '/v1/health';
+      // Health check endpoint with fallbacks - using VITE_ prefix
+      const healthEndpoint = import.meta.env.VITE_API_HEALTH_URL || '/v1/health';
       const endpoints = [
-      `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
-      `${window.location.origin}/favicon.ico`, // Static resource fallback
-      `${window.location.origin}/`, // Home page fallback
-      'https://httpbin.org/status/200', // External fallback
-      'https://www.google.com/favicon.ico' // Ultimate fallback
+        `${window.location.origin}${healthEndpoint}`, // Primary health check endpoint
+        `${window.location.origin}/favicon.ico`, // Static resource fallback
+        `${window.location.origin}/`, // Home page fallback
+        'https://httpbin.org/status/200', // External fallback
+        'https://www.google.com/favicon.ico' // Ultimate fallback
       ];
 
       let success = false;
@@ -161,7 +184,7 @@ export class ConnectivityMonitor {
 
       if (success) {
         this.diagnostics.successfulAttempts++;
-        this.updateStatus({
+        this.debouncedUpdateStatus({
           online: true,
           consecutiveFailures: 0,
           lastError: undefined
@@ -184,22 +207,40 @@ export class ConnectivityMonitor {
     const failures = this.status.consecutiveFailures + 1;
     const shouldMarkOffline = failures >= 2; // Mark offline after 2 consecutive failures
 
-    this.updateStatus({
+    this.debouncedUpdateStatus({
       online: shouldMarkOffline ? false : this.status.online,
       consecutiveFailures: failures,
       lastError: error
     });
   }
 
-  private updateStatus(updates: Partial<NetStatus>): void {
+  private debouncedUpdateStatus(updates: Partial<NetStatus>): void {
     if (this.isDestroyed) return;
 
-    const previousOnline = this.status.online;
-    this.status = {
+    // Store the pending update
+    this.pendingStatusUpdate = {
       ...this.status,
       ...updates,
       lastCheck: new Date()
     };
+
+    // Clear existing debounce timer
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    // Set up new debounce timer
+    this.debounceTimer = window.setTimeout(() => {
+      this.applyStatusUpdate();
+    }, this.config.debounceMs);
+  }
+
+  private applyStatusUpdate(): void {
+    if (this.isDestroyed || !this.pendingStatusUpdate) return;
+
+    const previousOnline = this.status.online;
+    this.status = { ...this.pendingStatusUpdate };
+    this.pendingStatusUpdate = undefined;
 
     // Only notify listeners if online status actually changed
     if (previousOnline !== this.status.online) {
@@ -237,14 +278,7 @@ export class ConnectivityMonitor {
 
   public destroy(): void {
     this.isDestroyed = true;
-
-    if (this.heartbeatTimer) {
-      clearTimeout(this.heartbeatTimer);
-      this.heartbeatTimer = undefined;
-    }
-
-    this.abortController?.abort();
-    this.abortController = undefined;
+    this.stop();
     this.cleanup?.();
     this.listeners.clear();
   }
@@ -279,15 +313,28 @@ export function isOfflineError(error: unknown): boolean {
 
 // Exponential backoff with full jitter
 export function calculateBackoffDelay(
-attempt: number,
-baseDelay: number = 300,
-maxDelay: number = 10000,
-factor: number = 2)
-: number {
+  attempt: number,
+  baseDelay: number = 300,
+  maxDelay: number = 10000,
+  factor: number = 2
+): number {
   // Full jitter exponential backoff: delay = Math.min(maxDelay, base * 2^(attempt-1))
   const exponentialDelay = baseDelay * Math.pow(factor, attempt - 1);
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
 
   // Full jitter: random value between 0 and cappedDelay
   return Math.floor(Math.random() * cappedDelay);
+}
+
+// Main factory function that returns the exact interface requested
+export function createConnectivity(config?: Partial<ConnectivityConfig>) {
+  const monitor = new ConnectivityMonitor(config);
+
+  return {
+    subscribe: (listener: ConnectivityListener) => monitor.addListener(listener),
+    get: () => monitor.getStatus(),
+    start: () => monitor.start(),
+    stop: () => monitor.stop(),
+    pingNow: () => monitor.checkNow()
+  };
 }

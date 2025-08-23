@@ -1,14 +1,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { ConnectivityMonitor, NetStatus } from '@/lib/network/connectivity';
+import { createConnectivity, NetStatus, ConnectivityListener } from '@/lib/network/connectivity';
 import { apiClient } from '@/lib/network/client';
 
 interface NetworkContextValue {
   online: boolean;
-  status: NetStatus;
-  retryNow: () => Promise<void>;
-  monitor: ConnectivityMonitor;
-  getDiagnostics: () => any;
+  lastChangeAt: number;
+  retryNow(): void;
 }
 
 const NetworkContext = createContext<NetworkContextValue | null>(null);
@@ -22,13 +20,22 @@ interface NetworkProviderProps {
 }
 
 export function NetworkProvider({ children, config }: NetworkProviderProps) {
-  const [monitor] = useState(() => new ConnectivityMonitor(config));
-  const [status, setStatus] = useState<NetStatus>(monitor.getStatus());
+  const [monitor] = useState(() => createConnectivity(config));
+  const [status, setStatus] = useState<NetStatus>(monitor.get());
+  const [lastChangeAt, setLastChangeAt] = useState<number>(Date.now());
 
   useEffect(() => {
-    const unsubscribe = monitor.addListener((newStatus) => {
+    const unsubscribe = monitor.subscribe((newStatus) => {
       const wasOffline = !status.online;
+      const statusChanged = status.online !== newStatus.online;
+
       setStatus(newStatus);
+
+      // Update lastChangeAt timestamp when online status changes
+      if (statusChanged) {
+        setLastChangeAt(Date.now());
+      }
+
       // Sync with API client
       apiClient.setOnlineStatus(newStatus.online);
 
@@ -42,35 +49,39 @@ export function NetworkProvider({ children, config }: NetworkProviderProps) {
             variant: "default"
           });
         });
+
+        // Flush any queued operations when coming back online
+        apiClient.flushQueue?.();
       }
     });
 
     // Initial sync
     apiClient.setOnlineStatus(status.online);
+    monitor.start();
 
     return () => {
       unsubscribe();
-      monitor.destroy();
+      monitor.stop();
     };
   }, [monitor, status.online]);
 
-  const retryNow = useCallback(async () => {
-    await monitor.checkNow();
-  }, [monitor]);
+  const retryNow = useCallback(() => {
+    // Trigger immediate connectivity check
+    monitor.pingNow();
 
-  const getDiagnostics = useCallback(() => {
-    return {
-      connectivity: monitor.getDiagnostics(),
-      apiClient: apiClient.getNetworkDiagnostics()
-    };
-  }, [monitor]);
+    // Signal retry scheduler for any pending operations
+    apiClient.retryNow?.();
+
+    // Flush queue if online
+    if (status.online) {
+      apiClient.flushQueue?.();
+    }
+  }, [monitor, status.online]);
 
   const contextValue: NetworkContextValue = {
     online: status.online,
-    status,
-    retryNow,
-    monitor,
-    getDiagnostics
+    lastChangeAt,
+    retryNow
   };
 
   return (

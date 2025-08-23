@@ -36,8 +36,8 @@ const Header: React.FC = () => {
           </span>
         </div>
       </div>
-    </header>
-  );
+    </header>);
+
 };
 
 export default Header;

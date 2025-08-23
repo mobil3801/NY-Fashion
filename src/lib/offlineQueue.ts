@@ -1,16 +1,13 @@
 
-import { generateId } from '@/lib/utils';
 
 export interface QueuedOperation {
   id: string;
-  type: 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   url: string;
-  data: any;
+  type: 'POST' | 'PUT' | 'DELETE';
+  data?: unknown;
   headers?: Record<string, string>;
   idempotencyKey: string;
-  timestamp: number;
-  attempts: number;
-  maxAttempts: number;
+  createdAt: number;
 }
 
 export interface OfflineQueueConfig {
@@ -23,6 +20,24 @@ const DEFAULT_CONFIG: OfflineQueueConfig = {
   maxItems: 100,
   maxAttempts: 3,
   persistentStorage: true
+};
+
+// Generate idempotency key with crypto.randomUUID() and fallback
+const generateIdempotencyKey = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch (error) {
+      console.warn('crypto.randomUUID() failed, using fallback:', error);
+    }
+  }
+  
+  // Fallback implementation
+  return 'xxxx-xxxx-4xxx-yxxx-xxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 };
 
 class IndexedDBWrapper {
@@ -50,7 +65,8 @@ class IndexedDBWrapper {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
-          store.createIndex('timestamp', 'timestamp', { unique: false });
+          store.createIndex('createdAt', 'createdAt', { unique: false });
+          store.createIndex('idempotencyKey', 'idempotencyKey', { unique: false });
         }
       };
     });
@@ -62,10 +78,14 @@ class IndexedDBWrapper {
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([this.storeName], 'readonly');
       const store = transaction.objectStore(this.storeName);
-      const index = store.index('timestamp');
+      const index = store.index('createdAt');
       const request = index.getAll();
 
-      request.onsuccess = () => resolve(request.result || []);
+      request.onsuccess = () => {
+        // Ensure FIFO ordering by sorting by createdAt
+        const results = (request.result || []).sort((a, b) => a.createdAt - b.createdAt);
+        resolve(results);
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -108,6 +128,19 @@ class IndexedDBWrapper {
       request.onerror = () => reject(request.error);
     });
   }
+
+  async count(): Promise<number> {
+    if (!this.db) return 0;
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([this.storeName], 'readonly');
+      const store = transaction.objectStore(this.storeName);
+      const request = store.count();
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
 }
 
 export class OfflineQueue {
@@ -129,9 +162,11 @@ export class OfflineQueue {
       const success = await this.idb.init();
 
       if (success) {
-        // Load existing operations from IndexedDB
+        // Load existing operations from IndexedDB and ensure FIFO ordering
         try {
           this.memoryQueue = await this.idb.getAll();
+          // Sort by createdAt to ensure FIFO ordering
+          this.memoryQueue.sort((a, b) => a.createdAt - b.createdAt);
         } catch (error) {
           console.warn('Failed to load offline queue from IndexedDB:', error);
           this.idb = null;
@@ -144,18 +179,14 @@ export class OfflineQueue {
     this.isInitialized = true;
   }
 
-  async enqueue(
-  type: QueuedOperation['type'],
-  url: string,
-  data: any,
-  headers: Record<string, string> = {})
-  : Promise<string> {
+  async enqueue(type: 'POST' | 'PUT' | 'DELETE', url: string, data?: any, headers?: Record<string, string>): Promise<void> {
     await this.init();
 
-    // Generate idempotency key if not provided
-    const idempotencyKey = headers['Idempotency-Key'] || `${type}-${url}-${Date.now()}-${Math.random()}`;
+    // Generate idempotency key and id
+    const idempotencyKey = headers?.['Idempotency-Key'] || generateIdempotencyKey();
+    const id = generateIdempotencyKey();
 
-    // Check for duplicate operations
+    // Check for duplicate operations by idempotency key
     const isDuplicate = this.memoryQueue.some(
       (op) => op.idempotencyKey === idempotencyKey
     );
@@ -165,18 +196,16 @@ export class OfflineQueue {
     }
 
     const operation: QueuedOperation = {
-      id: generateId(),
-      type,
+      id,
       url,
+      type,
       data,
       headers: { ...headers, 'Idempotency-Key': idempotencyKey },
       idempotencyKey,
-      timestamp: Date.now(),
-      attempts: 0,
-      maxAttempts: this.config.maxAttempts
+      createdAt: Date.now()
     };
 
-    // Enforce queue size limit
+    // Enforce queue size limit (remove oldest to maintain FIFO)
     if (this.memoryQueue.length >= this.config.maxItems) {
       const oldest = this.memoryQueue.shift();
       if (oldest && this.idb) {
@@ -184,6 +213,7 @@ export class OfflineQueue {
       }
     }
 
+    // Add to end of queue (FIFO)
     this.memoryQueue.push(operation);
 
     // Persist to IndexedDB if available
@@ -196,39 +226,26 @@ export class OfflineQueue {
     }
 
     this.notifyListeners();
-    return operation.id;
   }
 
-  async flush(executor: (operation: QueuedOperation) => Promise<boolean>): Promise<number> {
+  async flush(processOperation: (operation: QueuedOperation) => Promise<boolean>): Promise<number> {
     await this.init();
 
-    let processedCount = 0;
+    // Process operations in FIFO order (first to last)
     const operations = [...this.memoryQueue]; // Create a copy to iterate
+    let processedCount = 0;
 
     for (const operation of operations) {
       try {
-        const success = await executor(operation);
-
+        const success = await processOperation(operation);
         if (success) {
+          // If processing succeeded, remove from queue
           await this.remove(operation.id);
           processedCount++;
-        } else {
-          // Increment attempt count
-          operation.attempts++;
-
-          if (operation.attempts >= operation.maxAttempts) {
-            // Remove failed operation after max attempts
-            await this.remove(operation.id);
-            console.warn('Removing operation after max attempts:', operation);
-          }
         }
       } catch (error) {
         console.error('Error processing queued operation:', error);
-        operation.attempts++;
-
-        if (operation.attempts >= operation.maxAttempts) {
-          await this.remove(operation.id);
-        }
+        // Keep the operation in queue for potential retry
       }
     }
 
@@ -252,6 +269,15 @@ export class OfflineQueue {
     this.notifyListeners();
   }
 
+  async size(): Promise<number> {
+    await this.init();
+    return this.memoryQueue.length;
+  }
+
+  size(): number {
+    return this.memoryQueue.length;
+  }
+
   async clear(): Promise<void> {
     this.memoryQueue = [];
 
@@ -267,11 +293,8 @@ export class OfflineQueue {
   }
 
   getAll(): QueuedOperation[] {
-    return [...this.memoryQueue];
-  }
-
-  size(): number {
-    return this.memoryQueue.length;
+    // Return copy sorted by createdAt to ensure FIFO ordering
+    return [...this.memoryQueue].sort((a, b) => a.createdAt - b.createdAt);
   }
 
   isEmpty(): boolean {
@@ -293,3 +316,6 @@ export class OfflineQueue {
     });
   }
 }
+
+// Export default instance
+export const offlineQueue = new OfflineQueue();

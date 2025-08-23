@@ -21,6 +21,7 @@ import InvoiceDetailModal from '@/components/invoices/InvoiceDetailModal';
 import InvoiceStatusManager from '@/components/invoices/InvoiceStatusManager';
 import ReturnExchangeModal from '@/components/invoices/ReturnExchangeModal';
 import BulkInvoiceOperations from '@/components/invoices/BulkInvoiceOperations';
+import { EnhancedInvoiceOperations } from '@/components/invoices/EnhancedInvoiceOperations';
 
 interface InvoiceStats {
   totalInvoices: number;
@@ -382,7 +383,7 @@ const InvoicesPage: React.FC = () => {
 
       {/* Tabs for different invoice statuses */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="pending">
             Pending 
@@ -395,9 +396,15 @@ const InvoicesPage: React.FC = () => {
           <TabsTrigger value="paid">Paid</TabsTrigger>
           <TabsTrigger value="partial">Partial</TabsTrigger>
           <TabsTrigger value="voided">Voided</TabsTrigger>
+          <TabsTrigger value="operations">Operations</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-6">
+          {activeTab === 'operations' &&
+          <div className="flex justify-center">
+              <EnhancedInvoiceOperations />
+            </div>
+          }
           {selectedInvoices.length > 0 && canManageInvoices &&
           <BulkInvoiceOperations
             selectedIds={selectedInvoices}
