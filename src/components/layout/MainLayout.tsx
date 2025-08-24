@@ -137,6 +137,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
 
 
+
         // Error logging removed for production
       }}>
       <EnhancedNetworkErrorBoundary>
@@ -154,10 +155,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
             transition-all duration-200 ease-in-out
           `.trim()}>
             {/* Header with enhanced props */}
-            <Header
-              onToggleSidebar={toggleSidebar}
-              sidebarOpen={sidebarOpen}
-              isMobile={isMobile} />
+            <Header onToggleSidebar={toggleSidebar}
+            sidebarOpen={sidebarOpen}
+            isMobile={isMobile} />
 
             {/* Main content with enhanced error boundary and accessibility */}
             <main
