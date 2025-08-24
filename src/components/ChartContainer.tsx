@@ -182,6 +182,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -202,30 +204,28 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <div className="text-gray-600 text-sm mt-2">Loading chart...</div>
         </div>
-      </div>;}
-  return (
-    <div
-      ref={containerRef}
-      className={`relative chart-container ${className}`}
-      style={{ width, height }}
-      role="img"
-      aria-label="Categorical chart">
+      </div>;}return <div
+    ref={containerRef}
+    className={`relative chart-container ${className}`}
+    style={{ width, height }}
+    role="img"
+    aria-label="Categorical chart">
 
       {/* Chart canvas will be appended here by the chart instance */}
       
       {/* Optional overlay for hover information */}
       {hoveredBar &&
-      <div
-        className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10"
-        style={{
-          left: hoveredBar.x,
-          top: Math.max(0, hoveredBar.y - 30)
-        }}>
+    <div
+      className="absolute pointer-events-none bg-black text-white px-2 py-1 rounded text-xs z-10"
+      style={{
+        left: hoveredBar.x,
+        top: Math.max(0, hoveredBar.y - 30)
+      }}>
 
           {hoveredBar.label}: {hoveredBar.value}
         </div>
-      }
-    </div>);
+    }
+    </div>;
 
 };
 

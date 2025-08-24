@@ -58,7 +58,7 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   const initializeEmployeeSystem = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Window API guard
       if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
         console.warn('EzSite APIs not available');

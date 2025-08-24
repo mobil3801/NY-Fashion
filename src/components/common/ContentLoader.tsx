@@ -28,20 +28,20 @@ export function ContentLoader({
   // Client-side only state
   const [isClient, setIsClient] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   // Only proceed with network-dependent logic on client side
   if (!isClient) {
-    return loading ? (
-      <LoadingSkeleton />
-    ) : error ? (
-      <ErrorFallback error={error} onRetry={onRetry} />
-    ) : (
-      <>{children}</>
-    );
+    return loading ?
+    <LoadingSkeleton /> :
+    error ?
+    <ErrorFallback error={error} onRetry={onRetry} /> :
+
+    <>{children}</>;
+
   }
 
   return (
@@ -52,8 +52,8 @@ export function ContentLoader({
       fallback={fallback}
       minimumLoadTime={minimumLoadTime}>
       {children}
-    </SmartContentLoader>
-  );
+    </SmartContentLoader>);
+
 }
 
 function SmartContentLoader({
@@ -67,7 +67,7 @@ function SmartContentLoader({
   const { online, connectionState } = useNetwork();
   const { retry: autoRetry, canRetry, lastError } = useErrorRecovery();
   const { executeWithRetry, abortAll } = useApiRetry();
-  
+
   const [internalLoading, setInternalLoading] = useState(loading);
   const [showError, setShowError] = useState(!!error);
   const [retryCount, setRetryCount] = useState(0);
@@ -114,7 +114,7 @@ function SmartContentLoader({
 
   const handleRetry = async (isAutoRetry = false) => {
     if (!isAutoRetry) {
-      setRetryCount(prev => prev + 1);
+      setRetryCount((prev) => prev + 1);
     }
 
     setShowError(false);
@@ -143,7 +143,7 @@ function SmartContentLoader({
     } catch (retryError) {
       console.error('Retry failed:', retryError);
       setShowError(true);
-      
+
       const normalizedError = normalizeError(retryError);
       toast({
         title: "Retry Failed",
@@ -163,14 +163,14 @@ function SmartContentLoader({
   // Show error state
   if (showError || error) {
     return (
-      <ErrorFallback 
-        error={error || lastError} 
+      <ErrorFallback
+        error={error || lastError}
         onRetry={() => handleRetry(false)}
         retryCount={retryCount}
         online={online}
-        connectionState={connectionState}
-      />
-    );
+        connectionState={connectionState} />);
+
+
   }
 
   // Show content
@@ -186,8 +186,8 @@ function LoadingSkeleton() {
         <div className="h-4 bg-gray-200 rounded w-5/6"></div>
       </div>
       <div className="h-32 bg-gray-200 rounded"></div>
-    </div>
-  );
+    </div>);
+
 }
 
 interface ErrorFallbackProps {
@@ -198,9 +198,9 @@ interface ErrorFallbackProps {
   connectionState?: string;
 }
 
-function ErrorFallback({ 
-  error, 
-  onRetry, 
+function ErrorFallback({
+  error,
+  onRetry,
   retryCount = 0,
   online = true,
   connectionState = 'online'
@@ -250,24 +250,24 @@ function ErrorFallback({
                 {getErrorDescription()}
               </p>
               
-              {retryCount > 0 && (
-                <p className="text-xs text-gray-500">
+              {retryCount > 0 &&
+              <p className="text-xs text-gray-500">
                   Retry attempt: {retryCount}
                 </p>
-              )}
+              }
             </div>
 
-            {onRetry && (
-              <Button onClick={onRetry} className="w-full">
+            {onRetry &&
+            <Button onClick={onRetry} className="w-full">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
-            )}
+            }
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
 
 export { SmartContentLoader, ContentLoader as default };

@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
       isLoading: false,
       isAuthenticated: false
     });
-    
+
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out."

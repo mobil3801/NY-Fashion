@@ -285,7 +285,7 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
 
             if (parsedCart && Array.isArray(parsedCart)) {
               dispatch({ type: 'RESTORE_CART', payload: { cart: parsedCart, customer: undefined } });
-              
+
               // Migrate to new format
               const cartData = {
                 cart: parsedCart,

@@ -57,13 +57,13 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
   private logErrorToService(error: Error, errorInfo: React.ErrorInfo) {
     // Improved environment detection to prevent 405 errors in preview/dev
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    const isPreviewEnvironment = hostname.includes('preview') || 
-                                hostname.includes('localhost') || 
-                                hostname.includes('127.0.0.1') ||
-                                hostname.includes('dev') ||
-                                hostname.includes('staging') ||
-                                hostname.includes('netlify') ||
-                                hostname.includes('vercel');
+    const isPreviewEnvironment = hostname.includes('preview') ||
+    hostname.includes('localhost') ||
+    hostname.includes('127.0.0.1') ||
+    hostname.includes('dev') ||
+    hostname.includes('staging') ||
+    hostname.includes('netlify') ||
+    hostname.includes('vercel');
 
     if (isPreviewEnvironment || process.env.NODE_ENV === 'development') {
       console.warn('[NetworkErrorBoundary] Skipping error reporting in preview/development environment');
