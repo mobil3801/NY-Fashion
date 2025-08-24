@@ -136,6 +136,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
       onError={(error, errorInfo) => {
 
 
+
         // Error logging removed for production
       }}>
       <EnhancedNetworkErrorBoundary>
@@ -144,8 +145,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
           <OfflineBanner />
 
           {/* Sidebar with proper mobile handling */}
-          <Sidebar isOpen={isMobile ? sidebarOpen : true} onClose={closeSidebar}
-            className="transition-transform duration-200 ease-in-out" />
+          <Sidebar isOpen={isMobile ? sidebarOpen : true} onClose={closeSidebar} className="transition-transform duration-200 ease-in-out" />
 
           {/* Main content wrapper with responsive margins */}
           <div className={`
