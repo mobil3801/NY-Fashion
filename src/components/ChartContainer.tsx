@@ -178,6 +178,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -192,15 +194,13 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
           <div className="text-red-600 font-medium">Chart Error</div>
           <div className="text-red-500 text-sm mt-1">{error}</div>
         </div>
-      </div>;}if (isLoading) {return <div className={`flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg ${className}`}
-    style={{ width, height }}>
+      </div>;}if (isLoading) {return <div className={`flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg ${className}`} style={{ width, height }}>
 
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <div className="text-gray-600 text-sm mt-2">Loading chart...</div>
         </div>
       </div>;
-
   }
 
   return (

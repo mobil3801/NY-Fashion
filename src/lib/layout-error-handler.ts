@@ -52,9 +52,18 @@ class LayoutErrorHandler {
   }
 
   private sendToMonitoring(error: LayoutError): void {
+    // Skip error reporting in preview/development environments to prevent 405 errors
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isPreviewEnvironment = hostname.includes('preview') || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+    
+    if (isPreviewEnvironment || process.env.NODE_ENV === 'development') {
+      console.warn('[LayoutErrorHandler] Skipping error reporting in preview/development environment');
+      return;
+    }
+
     try {
-      // Use sendBeacon for reliability
-      if (navigator.sendBeacon) {
+      // Use sendBeacon for reliability only in production
+      if (navigator.sendBeacon && typeof window !== 'undefined') {
         const errorData = JSON.stringify({
           ...error,
           userAgent: navigator.userAgent,
@@ -63,7 +72,10 @@ class LayoutErrorHandler {
         });
 
         const blob = new Blob([errorData], { type: 'application/json' });
-        navigator.sendBeacon('/api/errors/layout', blob);
+        // Only attempt to send if we have a valid production API endpoint
+        if (window.location.origin && !isPreviewEnvironment) {
+          navigator.sendBeacon('/api/errors/layout', blob);
+        }
       }
     } catch (monitoringError) {
       console.warn('[LayoutErrorHandler] Failed to send error to monitoring:', monitoringError);
@@ -117,13 +129,16 @@ export default LayoutErrorHandler;
 export const setupGlobalErrorHandling = (): void => {
   const errorHandler = LayoutErrorHandler.getInstance();
 
-  // Unhandled JavaScript errors
-  window.addEventListener('error', (event) => {
-    errorHandler.logError(new Error(event.message), 'unknown', 'global');
-  });
+  // Only set up global error handling on client side
+  if (typeof window !== 'undefined') {
+    // Unhandled JavaScript errors
+    window.addEventListener('error', (event) => {
+      errorHandler.logError(new Error(event.message), 'unknown', 'global');
+    });
 
-  // Unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
-    errorHandler.logError(new Error(event.reason), 'unknown', 'promise');
-  });
+    // Unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      errorHandler.logError(new Error(event.reason), 'unknown', 'promise');
+    });
+  }
 };

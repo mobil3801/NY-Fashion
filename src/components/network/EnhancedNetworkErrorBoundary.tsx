@@ -55,6 +55,15 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
   }
 
   private logErrorToService(error: Error, errorInfo: React.ErrorInfo) {
+    // Skip error reporting in preview/development environments to prevent 405 errors
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isPreviewEnvironment = hostname.includes('preview') || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+
+    if (isPreviewEnvironment || process.env.NODE_ENV === 'development') {
+      console.warn('[NetworkErrorBoundary] Skipping error reporting in preview/development environment');
+      return;
+    }
+
     try {
       // In a real app, you would send this to your error monitoring service
       const errorReport = {
@@ -66,11 +75,12 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
         url: window.location.href
       };
 
-      // Use sendBeacon for reliability
-      if (navigator.sendBeacon) {
+      // Use sendBeacon for reliability only in production
+      if (navigator.sendBeacon && typeof window !== 'undefined' && !isPreviewEnvironment) {
         const blob = new Blob([JSON.stringify(errorReport)], {
           type: 'application/json'
         });
+        // Only attempt to send if we have a valid production API endpoint
         navigator.sendBeacon('/api/errors', blob);
       }
     } catch (loggingError) {
