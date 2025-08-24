@@ -243,7 +243,7 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
   }
 
   return (
-    <>
+    <React.Fragment>
       <Card className="rounded-3xl border-0 shadow-sm bg-blue-50">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -335,7 +335,7 @@ const BulkInvoiceOperations: React.FC<BulkInvoiceOperationsProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>);
+    </React.Fragment>);
 
 };
 

@@ -356,10 +356,75 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
 
 
+
+
           // Here you would update inventory quantities
           // This would depend on your inventory system
-        }} // Update original sale if fully returned
-      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);if (totalReturnQuantity === totalOriginalQuantity) {await window.ezsite.apis.tableUpdate(36856, { ID: invoice.id, status: 'refunded', refunded_amount: totalRefund, refunded_at: new Date().toISOString() });}toast({ title: "Return Processed", description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}` });onComplete();} catch (error) {console.error('Error processing return:', error);toast({ title: "Process Failed", description: "Unable to process the return/exchange", variant: "destructive" });} finally {setProcessing(false);}};const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;const returnReasons = ['Defective/Damaged', 'Wrong Size/Color', 'Customer Changed Mind', 'Not as Described', 'Duplicate Order', 'Quality Issues', 'Other'];const refundMethods = ['Original Payment Method', 'Cash', 'Store Credit', 'Gift Card', 'Bank Transfer'];const itemConditions = [{ value: 'good', label: 'Good - Can Resell' }, { value: 'damaged', label: 'Damaged - Cannot Resell' }, { value: 'opened', label: 'Opened - May Resell' }, { value: 'defective', label: 'Defective - Return to Supplier' }];const totalRefundAmount = returnItems.reduce((sum, item) => sum + item.refundAmount, 0);const selectedItemsCount = returnItems.filter((item) => item.returnQuantity > 0).length;if (!invoice) return null;return <Dialog open={open} onOpenChange={onOpenChange}>
+        }}
+      // Update original sale if fully returned
+      const totalReturnQuantity = itemsToReturn.reduce((sum, item) => sum + item.returnQuantity, 0);
+      const totalOriginalQuantity = invoiceItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      if (totalReturnQuantity === totalOriginalQuantity) {
+        await window.ezsite.apis.tableUpdate(36856, {
+          ID: invoice.id,
+          status: 'refunded',
+          refunded_amount: totalRefund,
+          refunded_at: new Date().toISOString()
+        });
+      }
+
+      toast({
+        title: "Return Processed",
+        description: `Successfully processed ${returnType} for ${formatCurrency(totalRefund)}`
+      });
+
+      onComplete();
+    } catch (error) {
+      console.error('Error processing return:', error);
+      toast({
+        title: "Process Failed",
+        description: "Unable to process the return/exchange",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => `$${amount?.toFixed(2) || '0.00'}`;
+
+  const returnReasons = [
+  'Defective/Damaged',
+  'Wrong Size/Color',
+  'Customer Changed Mind',
+  'Not as Described',
+  'Duplicate Order',
+  'Quality Issues',
+  'Other'];
+
+
+  const refundMethods = [
+  'Original Payment Method',
+  'Cash',
+  'Store Credit',
+  'Gift Card',
+  'Bank Transfer'];
+
+
+  const itemConditions = [
+  { value: 'good', label: 'Good - Can Resell' },
+  { value: 'damaged', label: 'Damaged - Cannot Resell' },
+  { value: 'opened', label: 'Opened - May Resell' },
+  { value: 'defective', label: 'Defective - Return to Supplier' }];
+
+
+  const totalRefundAmount = returnItems.reduce((sum, item) => sum + item.refundAmount, 0);
+  const selectedItemsCount = returnItems.filter((item) => item.returnQuantity > 0).length;
+
+  if (!invoice) return null;
+
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
@@ -538,10 +603,10 @@ const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
               </Button>
               <Button onClick={processReturn} disabled={processing || selectedItemsCount === 0} className="bg-emerald-600 hover:bg-emerald-700">
 
-                {processing ? <>Processing...</> : <>
+                {processing ? <React.Fragment>Processing...</React.Fragment> : <React.Fragment>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Process {returnType === 'return' ? 'Return' : 'Exchange'}
-                  </>}
+                  </React.Fragment>}
               </Button>
             </div>
           </div>

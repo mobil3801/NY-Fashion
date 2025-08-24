@@ -165,9 +165,30 @@ input:focus, select:focus, textarea:focus {
   @apply ring-2 ring-emerald-500 border-emerald-500;
 }
 
-/* High DPI displays */
+/* High DPI displays - Fixed vendor prefix syntax */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .sharp-rendering {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Text size adjustments for mobile Safari */
+@supports (-webkit-touch-callout: none) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* Additional font smoothing for retina displays */
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+       only screen and (min-device-pixel-ratio: 1.5),
+       only screen and (min-resolution: 144dpi) {
+  * {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

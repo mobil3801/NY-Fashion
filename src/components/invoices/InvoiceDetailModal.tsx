@@ -328,7 +328,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                   <span>{formatCurrency(invoice.total_amount)}</span>
                 </div>
                 {invoice.status === 'partial' &&
-                <>
+                <React.Fragment>
                     <div className="flex justify-between text-green-600">
                       <span>Amount Paid:</span>
                       <span>{formatCurrency(invoice.paid_amount || 0)}</span>
@@ -337,7 +337,7 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                       <span>Balance Due:</span>
                       <span>{formatCurrency((invoice.total_amount || 0) - (invoice.paid_amount || 0))}</span>
                     </div>
-                  </>
+                  </React.Fragment>
                 }
               </div>
             </CardContent>

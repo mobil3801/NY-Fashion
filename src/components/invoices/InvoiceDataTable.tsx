@@ -386,7 +386,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
                         </DropdownMenuItem>
                     }
                       {canManage &&
-                    <>
+                    <React.Fragment>
                           {invoice.status === 'pending' &&
                       <DropdownMenuItem onClick={() => handleStatusUpdate(invoice.id, 'paid')}>
                               <CheckCircle className="w-4 h-4 mr-2" />
@@ -403,7 +403,7 @@ const InvoiceDataTable: React.FC<InvoiceDataTableProps> = ({
                             <XCircle className="w-4 h-4 mr-2" />
                             Void Invoice
                           </DropdownMenuItem>
-                        </>
+                        </React.Fragment>
                     }
                     </DropdownMenuContent>
                   </DropdownMenu>

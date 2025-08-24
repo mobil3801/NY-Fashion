@@ -15,8 +15,8 @@ import {
   Activity,
   Globe,
   Server,
-  Database
-} from 'lucide-react';
+  Database } from
+'lucide-react';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -40,9 +40,9 @@ interface DiagnosticSummary {
   warnings: number;
 }
 
-const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({ 
-  networkId, 
-  diagnosticMode = 'passive' 
+const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
+  networkId,
+  diagnosticMode = 'passive'
 }: NetworkDiagnosticsProps) => {
   const {
     online,
@@ -55,15 +55,15 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
 
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
-  const [summary, setSummary] = useState<DiagnosticSummary>({ 
-    total: 0, 
-    passed: 0, 
-    failed: 0, 
-    warnings: 0 
+  const [summary, setSummary] = useState<DiagnosticSummary>({
+    total: 0,
+    passed: 0,
+    failed: 0,
+    warnings: 0
   });
 
   // Create abort controller for requests with enhanced error handling
-  const createAbortController = useCallback((timeoutMs: number): { controller: AbortController; timeoutId: NodeJS.Timeout } => {
+  const createAbortController = useCallback((timeoutMs: number): {controller: AbortController;timeoutId: NodeJS.Timeout;} => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -77,9 +77,9 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
     } catch (error) {
       console.error('Error creating abort controller:', error);
       // Fallback controller
-      return { 
-        controller: new AbortController(), 
-        timeoutId: setTimeout(() => {}, 0) 
+      return {
+        controller: new AbortController(),
+        timeoutId: setTimeout(() => {}, 0)
       };
     }
   }, []);
@@ -339,12 +339,12 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
       setResults([]);
 
       const tests: (() => Promise<DiagnosticResult>)[] = [
-        testBasicConnectivity,
-        testDNSResolution,
-        testApiEndpoint,
-        testInventoryAPI,
-        testLowStockAPI
-      ];
+      testBasicConnectivity,
+      testDNSResolution,
+      testApiEndpoint,
+      testInventoryAPI,
+      testLowStockAPI];
+
 
       const testResults: DiagnosticResult[] = [];
 
@@ -407,7 +407,7 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
   // Auto-run diagnostics on first load if there are connection issues
   useEffect(() => {
     try {
-      if (diagnosticMode === 'active' || (!online || connectionState === 'offline' || errorDetails)) {
+      if (diagnosticMode === 'active' || !online || connectionState === 'offline' || errorDetails) {
         // Wait a bit before running to allow component to settle
         const timer = setTimeout(() => {
           runDiagnostics().catch((error) => {
@@ -469,11 +469,11 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5" />
           Network Diagnostics
-          {networkId && (
-            <Badge variant="outline" className="text-xs">
+          {networkId &&
+          <Badge variant="outline" className="text-xs">
               ID: {networkId}
             </Badge>
-          )}
+          }
           <Badge variant="outline" className="text-xs">
             Mode: {diagnosticMode}
           </Badge>
@@ -491,19 +491,19 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
           <Button
             onClick={runDiagnostics}
             disabled={isRunning}
-            size="sm"
-          >
-            {isRunning ? (
-              <React.Fragment>
+            size="sm">
+
+            {isRunning ?
+            <React.Fragment>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Running...
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
+              </React.Fragment> :
+
+            <React.Fragment>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Run Diagnostics
               </React.Fragment>
-            )}
+            }
           </Button>
         </div>
       </CardHeader>
@@ -517,8 +517,8 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
           </TabsList>
 
           <TabsContent value="results" className="space-y-4">
-            {results.length === 0 && !isRunning && (
-              <div className="text-center py-8">
+            {results.length === 0 && !isRunning &&
+            <div className="text-center py-8">
                 <Globe className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium mb-2">Ready to Test</h3>
                 <p className="text-gray-600 mb-4">
@@ -529,12 +529,12 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
                   Start Diagnostics
                 </Button>
               </div>
-            )}
+            }
 
-            {(results.length > 0 || isRunning) && (
-              <div className="space-y-3">
-                {results.map((result, index) => (
-                  <Card key={index} className="p-4">
+            {(results.length > 0 || isRunning) &&
+            <div className="space-y-3">
+                {results.map((result, index) =>
+              <Card key={index} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(result.status)}
@@ -544,23 +544,23 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {result.latency && (
-                          <Badge variant="outline" className="text-xs">
+                        {result.latency &&
+                    <Badge variant="outline" className="text-xs">
                             {result.latency}ms
                           </Badge>
-                        )}
+                    }
                         {getStatusBadge(result.status)}
                       </div>
                     </div>
                   </Card>
-                ))}
+              )}
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="summary" className="space-y-4">
-            {summary.total > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {summary.total > 0 &&
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="p-4 text-center">
                   <div className="text-2xl font-bold text-blue-600">{summary.total}</div>
                   <div className="text-sm text-gray-600">Total Tests</div>
@@ -578,20 +578,20 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
                   <div className="text-sm text-gray-600">Failed</div>
                 </Card>
               </div>
-            )}
+            }
 
-            {summary.total > 0 && (
-              <div className="space-y-2">
+            {summary.total > 0 &&
+            <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Overall Health</span>
                   <span>{Math.round(summary.passed / summary.total * 100)}%</span>
                 </div>
                 <Progress
-                  value={summary.passed / summary.total * 100}
-                  className="h-2"
-                />
+                value={summary.passed / summary.total * 100}
+                className="h-2" />
+
               </div>
-            )}
+            }
           </TabsContent>
 
           <TabsContent value="details" className="space-y-4">
@@ -629,8 +629,8 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
                   Error Information
                 </h4>
                 <div className="space-y-2 text-sm">
-                  {errorDetails ? (
-                    <React.Fragment>
+                  {errorDetails ?
+                  <React.Fragment>
                       <div className="flex justify-between">
                         <span>Error Type:</span>
                         <span className="text-red-600">{errorDetails.type}</span>
@@ -642,18 +642,18 @@ const NetworkDiagnosticsHelper: React.FC<NetworkDiagnosticsProps> = memo(({
                       <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
                         {errorDetails.userMessage}
                       </div>
-                    </React.Fragment>
-                  ) : (
-                    <div className="text-gray-600">No current errors</div>
-                  )}
+                    </React.Fragment> :
+
+                  <div className="text-gray-600">No current errors</div>
+                  }
                 </div>
               </Card>
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 });
 
 NetworkDiagnosticsHelper.displayName = 'NetworkDiagnosticsHelper';

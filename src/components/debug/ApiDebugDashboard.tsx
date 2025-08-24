@@ -116,6 +116,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -237,8 +238,7 @@ const ApiDebugDashboard: React.FC = () => {
                   </div>
                   {call.duration && <div className="text-xs text-gray-500 mt-1">
                       Duration: {call.duration.toFixed(0)}ms
-                    </div>
-                }
+                    </div>}
                 </div>
             )}
               {filteredCalls.length === 0 &&
