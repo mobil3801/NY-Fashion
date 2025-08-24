@@ -18,11 +18,11 @@ export default defineConfig(({ mode }) => {
       port: 8080
     },
     plugins: [
-      react({
-        // Disable React DevTools in production/preview
-        devTarget: shouldDisableSourceMaps ? 'esbuild' : 'es2015'
-      })
-    ],
+    react({
+      // Disable React DevTools in production/preview
+      devTarget: shouldDisableSourceMaps ? 'esbuild' : 'es2015'
+    })],
+
     build: {
       // Disable source maps completely in production/preview to prevent 404 errors
       sourcemap: !shouldDisableSourceMaps,
@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
             return `assets/[name]-[hash][extname]`;
           },
           chunkFileNames: 'assets/js/[name]-[hash].js',
-          entryFileNames: 'assets/js/[name]-[hash].js',
+          entryFileNames: 'assets/js/[name]-[hash].js'
         }
       },
       // Minification settings
