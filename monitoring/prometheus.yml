@@ -1,0 +1,71 @@
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'nyfashion-production'
+
+rule_files:
+  - "alert-rules.yml"
+  - "recording-rules.yml"
+
+scrape_configs:
+  # NY Fashion Application
+  - job_name: 'nyfashion-app'
+    static_configs:
+      - targets: ['app-blue:80', 'app-green:80']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    honor_labels: true
+
+  # Nginx Load Balancer
+  - job_name: 'nginx-lb'
+    static_configs:
+      - targets: ['nginx-lb:9113']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Node Exporter (System metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Redis Exporter
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Docker Container Metrics
+  - job_name: 'docker-metrics'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Deployment Health Checks
+  - job_name: 'deployment-health'
+    static_configs:
+      - targets: ['nginx-lb:8080']
+    metrics_path: '/upstream-health'
+    scrape_interval: 15s
+    scrape_timeout: 5s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2

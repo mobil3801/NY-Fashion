@@ -196,6 +196,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -225,9 +227,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
           {hoveredBar.label}: {hoveredBar.value}
         </div>}
-    </div>;
-
-};
+    </div>;};
 
 export default ChartContainer;
 

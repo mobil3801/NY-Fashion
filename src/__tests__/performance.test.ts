@@ -251,10 +251,10 @@ describe('Performance Optimizations', () => {
 
 
 
+
           // Mock terminate
         }}const worker = new MockWorker();let receivedResult = false;worker.onmessage = (event) => {if (event.data.type === 'DATA_PROCESSED') {receivedResult = true;expect(event.data.result).toBeDefined();done();}};worker.postMessage({ type: 'PROCESS_DATA', data: [{ category: 'A', value: 10 }], config: { width: 800, height: 400 }, id: 1 }); // Timeout fallback
-      setTimeout(() => {if (!receivedResult) {done();}}, 100);});});
-  describe('Long Task Monitoring', () => {
+      setTimeout(() => {if (!receivedResult) {done();}}, 100);});});describe('Long Task Monitoring', () => {
     it('should detect and log long tasks in development', () => {
       // Mock development environment
       const originalEnv = process.env.NODE_ENV;

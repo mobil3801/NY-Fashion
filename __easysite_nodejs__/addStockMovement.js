@@ -68,15 +68,15 @@ function addStockMovement(movementData) {
     let result;
     try {
       result = window.ezsite.db.query(insertQuery, [
-        pId,
-        vId,
-        deltaValue,
-        sanitizedType,
-        refId,
-        sanitizedReason,
-        createdBy,
-        createdAt
-      ]);
+      pId,
+      vId,
+      deltaValue,
+      sanitizedType,
+      refId,
+      sanitizedReason,
+      createdBy,
+      createdAt]
+      );
     } catch (dbError) {
       if (dbError.message && dbError.message.includes('foreign key')) {
         throw new Error('Invalid product or variant ID');
@@ -101,9 +101,9 @@ function addStockMovement(movementData) {
         `;
         window.ezsite.db.query(updateStockQuery, [deltaValue, createdAt, pId]);
       } catch (stockUpdateError) {
+
         // Log warning but don't fail the movement creation
-      }
-    } else if (['sale', 'adjustment', 'transfer', 'loss'].includes(sanitizedType) && deltaValue < 0) {
+      }} else if (['sale', 'adjustment', 'transfer', 'loss'].includes(sanitizedType) && deltaValue < 0) {
       try {
         // Decrease stock but don't allow negative
         const updateStockQuery = `
@@ -115,9 +115,9 @@ function addStockMovement(movementData) {
         `;
         window.ezsite.db.query(updateStockQuery, [deltaValue, createdAt, pId]);
       } catch (stockUpdateError) {
+
         // Log warning but don't fail the movement creation
-      }
-    }
+      }}
 
     return {
       id: result[0].id,
@@ -131,7 +131,7 @@ function addStockMovement(movementData) {
     if (error.message.includes('required') || error.message.includes('Invalid')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to record stock movement. Please try again.');
   }
 }

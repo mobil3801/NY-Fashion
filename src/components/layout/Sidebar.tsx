@@ -9,9 +9,12 @@ import {
   Users,
   Wallet,
   Shield,
+  Monitor,
   Settings,
   X,
-  CreditCard } from
+  CreditCard,
+  Rocket,
+  Activity } from
 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,8 +42,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
   { icon: Package, label: t('inventory', 'Inventory'), path: '/inventory', resource: 'inventory' },
   { icon: Users, label: t('employees', 'Employees'), path: '/employees', resource: 'employees' },
   { icon: Wallet, label: t('salary', 'Payroll'), path: '/salary', resource: 'salary' },
+  { icon: Activity, label: 'Monitoring', path: '/monitoring', resource: 'monitoring' },
+  { icon: Shield, label: 'Security', path: '/security', resource: 'admin' },
   { icon: Shield, label: t('admin', 'Admin'), path: '/admin', resource: 'admin' },
-  { icon: Settings, label: t('settings', 'Settings'), path: '/settings', resource: 'settings' }];
+  { icon: Settings, label: t('settings', 'Settings'), path: '/settings', resource: 'settings' },
+  { icon: Rocket, label: 'CI/CD', path: '/deployment', resource: 'deployments' }];
 
 
   const availableMenuItems = menuItems.filter((item) =>

@@ -50,15 +50,15 @@ function seedInventoryData(options = {}) {
     // 2. Create sample categories
     if (includeCategories) {
       const categories = [
-        { name: 'Electronics', description: 'Electronic devices and accessories' },
-        { name: 'Clothing', description: 'Apparel and fashion items' },
-        { name: 'Books', description: 'Books and educational materials' },
-        { name: 'Home & Garden', description: 'Home improvement and gardening supplies' },
-        { name: 'Sports & Outdoors', description: 'Sports equipment and outdoor gear' },
-        { name: 'Toys & Games', description: 'Toys, games, and entertainment' },
-        { name: 'Health & Beauty', description: 'Health and beauty products' },
-        { name: 'Automotive', description: 'Car parts and accessories' }
-      ];
+      { name: 'Electronics', description: 'Electronic devices and accessories' },
+      { name: 'Clothing', description: 'Apparel and fashion items' },
+      { name: 'Books', description: 'Books and educational materials' },
+      { name: 'Home & Garden', description: 'Home improvement and gardening supplies' },
+      { name: 'Sports & Outdoors', description: 'Sports equipment and outdoor gear' },
+      { name: 'Toys & Games', description: 'Toys, games, and entertainment' },
+      { name: 'Health & Beauty', description: 'Health and beauty products' },
+      { name: 'Automotive', description: 'Car parts and accessories' }];
+
 
       for (const category of categories) {
         try {
@@ -70,12 +70,12 @@ function seedInventoryData(options = {}) {
           `;
 
           const result = window.ezsite.db.query(insertCategoryQuery, [
-            category.name,
-            category.description,
-            true,
-            new Date().toISOString(),
-            new Date().toISOString()
-          ]);
+          category.name,
+          category.description,
+          true,
+          new Date().toISOString(),
+          new Date().toISOString()]
+          );
 
           if (result && result.length > 0) {
             results.summary.categories_created++;
@@ -101,17 +101,17 @@ function seedInventoryData(options = {}) {
     // 4. Create sample products
     if (includeProducts && availableCategories.length > 0) {
       const productTemplates = [
-        { name: 'Smartphone X1', brand: 'TechBrand', unit: 'piece', price: 699.99, cost: 450.00 },
-        { name: 'Wireless Headphones', brand: 'AudioPro', unit: 'piece', price: 199.99, cost: 120.00 },
-        { name: 'Laptop Bag', brand: 'CarryAll', unit: 'piece', price: 49.99, cost: 25.00 },
-        { name: 'USB Cable', brand: 'ConnectCorp', unit: 'piece', price: 15.99, cost: 8.00 },
-        { name: 'Blue Jeans', brand: 'DenimPlus', unit: 'piece', price: 89.99, cost: 35.00 },
-        { name: 'Cotton T-Shirt', brand: 'ComfortWear', unit: 'piece', price: 24.99, cost: 12.00 },
-        { name: 'Running Shoes', brand: 'FastFeet', unit: 'pair', price: 129.99, cost: 65.00 },
-        { name: 'Coffee Mug', brand: 'BrewMaster', unit: 'piece', price: 12.99, cost: 5.00 },
-        { name: 'Notebook Set', brand: 'WritePro', unit: 'set', price: 19.99, cost: 10.00 },
-        { name: 'Garden Shovel', brand: 'GrowTools', unit: 'piece', price: 34.99, cost: 18.00 }
-      ];
+      { name: 'Smartphone X1', brand: 'TechBrand', unit: 'piece', price: 699.99, cost: 450.00 },
+      { name: 'Wireless Headphones', brand: 'AudioPro', unit: 'piece', price: 199.99, cost: 120.00 },
+      { name: 'Laptop Bag', brand: 'CarryAll', unit: 'piece', price: 49.99, cost: 25.00 },
+      { name: 'USB Cable', brand: 'ConnectCorp', unit: 'piece', price: 15.99, cost: 8.00 },
+      { name: 'Blue Jeans', brand: 'DenimPlus', unit: 'piece', price: 89.99, cost: 35.00 },
+      { name: 'Cotton T-Shirt', brand: 'ComfortWear', unit: 'piece', price: 24.99, cost: 12.00 },
+      { name: 'Running Shoes', brand: 'FastFeet', unit: 'pair', price: 129.99, cost: 65.00 },
+      { name: 'Coffee Mug', brand: 'BrewMaster', unit: 'piece', price: 12.99, cost: 5.00 },
+      { name: 'Notebook Set', brand: 'WritePro', unit: 'set', price: 19.99, cost: 10.00 },
+      { name: 'Garden Shovel', brand: 'GrowTools', unit: 'piece', price: 34.99, cost: 18.00 }];
+
 
       const maxProducts = Math.min(productCount, 100); // Limit to reasonable number
 
@@ -119,14 +119,14 @@ function seedInventoryData(options = {}) {
         try {
           const template = productTemplates[i % productTemplates.length];
           const category = availableCategories[i % availableCategories.length];
-          
+
           // Generate unique product data
           const productName = `${template.name} ${i + 1}`;
           const sku = `SKU-${Date.now()}-${i}`;
           const barcode = `${Math.random().toString().substring(2, 15)}`;
           const currentStock = Math.floor(Math.random() * 100) + 1;
           const minStock = Math.floor(Math.random() * 10) + 5;
-          
+
           const insertProductQuery = `
             INSERT INTO products (
               name, description, brand, category_id, sku, barcode, unit,
@@ -140,26 +140,26 @@ function seedInventoryData(options = {}) {
           `;
 
           const result = window.ezsite.db.query(insertProductQuery, [
-            productName,
-            `High-quality ${template.name.toLowerCase()} from ${template.brand}`,
-            template.brand,
-            category.id,
-            sku,
-            barcode,
-            template.unit,
-            template.cost,
-            template.price,
-            Math.round(template.cost * 100),
-            Math.round(template.price * 100),
-            currentStock,
-            minStock,
-            Math.max(minStock + 10, 50),
-            true,
-            true,
-            10.0, // 10% tax rate
-            new Date().toISOString(),
-            new Date().toISOString()
-          ]);
+          productName,
+          `High-quality ${template.name.toLowerCase()} from ${template.brand}`,
+          template.brand,
+          category.id,
+          sku,
+          barcode,
+          template.unit,
+          template.cost,
+          template.price,
+          Math.round(template.cost * 100),
+          Math.round(template.price * 100),
+          currentStock,
+          minStock,
+          Math.max(minStock + 10, 50),
+          true,
+          true,
+          10.0, // 10% tax rate
+          new Date().toISOString(),
+          new Date().toISOString()]
+          );
 
           if (result && result.length > 0) {
             results.summary.products_created++;
@@ -176,14 +176,14 @@ function seedInventoryData(options = {}) {
 
                 // Initial stock receipt
                 window.ezsite.db.query(movementQuery, [
-                  result[0].id,
-                  null,
-                  currentStock,
-                  'receipt',
-                  'Initial inventory setup',
-                  new Date().toISOString(),
-                  null
-                ]);
+                result[0].id,
+                null,
+                currentStock,
+                'receipt',
+                'Initial inventory setup',
+                new Date().toISOString(),
+                null]
+                );
 
                 results.summary.movements_created++;
               } catch (movementError) {
@@ -197,7 +197,7 @@ function seedInventoryData(options = {}) {
       }
 
       addOperation('Create Products', 'success', `Created ${results.summary.products_created} products`);
-      
+
       if (includeStockMovements) {
         addOperation('Create Stock Movements', 'success', `Created ${results.summary.movements_created} stock movements`);
       }
@@ -211,20 +211,20 @@ function seedInventoryData(options = {}) {
           (SELECT COUNT(*) FROM products WHERE is_active = true) as products,
           (SELECT COUNT(*) FROM stock_movements) as movements
       `;
-      
+
       const validation = window.ezsite.db.query(validationQuery);
       const counts = validation[0] || {};
-      
-      addOperation('Final Validation', 'success', 
-        `Database now contains: ${counts.categories || 0} categories, ${counts.products || 0} products, ${counts.movements || 0} movements`
+
+      addOperation('Final Validation', 'success',
+      `Database now contains: ${counts.categories || 0} categories, ${counts.products || 0} products, ${counts.movements || 0} movements`
       );
-      
+
       results.final_counts = {
         categories: parseInt(counts.categories) || 0,
         products: parseInt(counts.products) || 0,
         movements: parseInt(counts.movements) || 0
       };
-      
+
     } catch (validationError) {
       addOperation('Final Validation', 'warning', 'Could not perform final validation');
     }

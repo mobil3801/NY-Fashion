@@ -4,7 +4,7 @@ function healthCheckInventory() {
     const timestamp = new Date().toISOString();
     const checks = [];
     let overallStatus = 'healthy';
-    
+
     // 1. Database connectivity check
     try {
       const connectivityQuery = 'SELECT 1 as test';
@@ -36,10 +36,10 @@ function healthCheckInventory() {
           COUNT(CASE WHEN current_stock <= min_stock_level THEN 1 END) as low_stock
         FROM products
       `;
-      
+
       const productStats = window.ezsite.db.query(productsQuery);
       const stats = productStats[0] || {};
-      
+
       checks.push({
         name: 'Products Table Health',
         status: 'pass',
@@ -68,7 +68,7 @@ function healthCheckInventory() {
       const categoriesQuery = 'SELECT COUNT(*) as total_categories FROM categories';
       const categoryStats = window.ezsite.db.query(categoriesQuery);
       const categoryCount = parseInt(categoryStats[0]?.total_categories) || 0;
-      
+
       checks.push({
         name: 'Categories Table Health',
         status: 'pass',
@@ -94,10 +94,10 @@ function healthCheckInventory() {
           COUNT(CASE WHEN created_at >= NOW() - INTERVAL '24 hours' THEN 1 END) as recent_movements
         FROM stock_movements
       `;
-      
+
       const movementStats = window.ezsite.db.query(movementsQuery);
       const movements = movementStats[0] || {};
-      
+
       checks.push({
         name: 'Stock Movements Health',
         status: 'pass',
@@ -125,10 +125,10 @@ function healthCheckInventory() {
           COUNT(DISTINCT product_id) as products_with_images
         FROM product_images
       `;
-      
+
       const imageStats = window.ezsite.db.query(imagesQuery);
       const images = imageStats[0] || {};
-      
+
       checks.push({
         name: 'Product Images Health',
         status: 'pass',
@@ -157,10 +157,10 @@ function healthCheckInventory() {
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.category_id IS NOT NULL AND c.id IS NULL
       `;
-      
+
       const orphanResult = window.ezsite.db.query(orphanProductsQuery);
       const orphanCount = parseInt(orphanResult[0]?.orphan_count) || 0;
-      
+
       if (orphanCount > 0) {
         checks.push({
           name: 'Data Consistency',
@@ -196,10 +196,10 @@ function healthCheckInventory() {
           AND is_trackable = true 
           AND (current_stock IS NULL OR current_stock = 0)
       `;
-      
+
       const criticalResult = window.ezsite.db.query(criticalStockQuery);
       const criticalCount = parseInt(criticalResult[0]?.critical_count) || 0;
-      
+
       if (criticalCount > 0) {
         checks.push({
           name: 'Stock Alerts',
@@ -226,9 +226,9 @@ function healthCheckInventory() {
     }
 
     // Calculate summary statistics
-    const passCount = checks.filter(c => c.status === 'pass').length;
-    const warnCount = checks.filter(c => c.status === 'warn').length;
-    const failCount = checks.filter(c => c.status === 'fail').length;
+    const passCount = checks.filter((c) => c.status === 'pass').length;
+    const warnCount = checks.filter((c) => c.status === 'warn').length;
+    const failCount = checks.filter((c) => c.status === 'fail').length;
 
     // Determine final status
     if (failCount > 0) {

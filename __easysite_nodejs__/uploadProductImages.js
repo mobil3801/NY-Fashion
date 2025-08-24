@@ -11,7 +11,7 @@ function uploadProductImages(productId, files) {
     }
 
     const pId = parseInt(productId);
-    
+
     // Normalize files input to array
     const filesToProcess = Array.isArray(files) ? files : [files];
 
@@ -99,7 +99,7 @@ function uploadProductImages(productId, files) {
 
         // Sanitize filename
         const sanitizedFilename = file.name.toString().trim().slice(0, 100);
-        
+
         // Upload file to storage
         const uploadResult = window.ezsite.apis.upload({
           filename: sanitizedFilename,
@@ -122,8 +122,8 @@ function uploadProductImages(productId, files) {
         const sortOrder = currentCount + uploadedImages.length;
 
         // Prepare alt text
-        const altText = (fileData.altText || fileData.alt_text || `${product.name} - Image ${sortOrder + 1}`)
-          .toString().trim().slice(0, 200);
+        const altText = (fileData.altText || fileData.alt_text || `${product.name} - Image ${sortOrder + 1}`).
+        toString().trim().slice(0, 200);
 
         // Save image record to database
         const insertQuery = `
@@ -135,14 +135,14 @@ function uploadProductImages(productId, files) {
         `;
 
         const insertResult = window.ezsite.db.query(insertQuery, [
-          pId,
-          urlResult.data,
-          altText,
-          sortOrder,
-          parseInt(file.size),
-          file.type,
-          new Date().toISOString()
-        ]);
+        pId,
+        urlResult.data,
+        altText,
+        sortOrder,
+        parseInt(file.size),
+        file.type,
+        new Date().toISOString()]
+        );
 
         if (!insertResult || insertResult.length === 0) {
           errors.push(`File ${sanitizedFilename}: Database save failed`);
@@ -186,14 +186,14 @@ function uploadProductImages(productId, files) {
 
   } catch (error) {
     // Production error handling
-    if (error.message.includes('required') || 
-        error.message.includes('not found') ||
-        error.message.includes('Maximum') ||
-        error.message.includes('Invalid') ||
-        error.message.includes('No images were uploaded')) {
+    if (error.message.includes('required') ||
+    error.message.includes('not found') ||
+    error.message.includes('Maximum') ||
+    error.message.includes('Invalid') ||
+    error.message.includes('No images were uploaded')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to upload images. Please try again.');
   }
 }

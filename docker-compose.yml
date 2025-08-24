@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # React Development Server
+  react-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: react-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Source code hot reloading
+      - ./src:/app/src:cached
+      - ./public:/app/public:cached
+      - ./index.html:/app/index.html:cached
+      - ./vite.config.ts:/app/vite.config.ts:cached
+      - ./tsconfig.json:/app/tsconfig.json:cached
+      - ./tsconfig.app.json:/app/tsconfig.app.json:cached
+      - ./tailwind.config.ts:/app/tailwind.config.ts:cached
+      - ./postcss.config.js:/app/postcss.config.js:cached
+      # Node modules cache (avoid re-installing)
+      - node_modules_cache:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - FAST_REFRESH=true
+    networks:
+      - react-network
+    stdin_open: true
+    tty: true
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  node_modules_cache:
+    driver: local
+
+networks:
+  react-network:
+    driver: bridge

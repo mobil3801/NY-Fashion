@@ -49,7 +49,9 @@ export const rolePermissions: RolePermissions = {
   { resource: 'id_verification', actions: ['read', 'write'] },
   { resource: 'time_tracking', actions: ['read', 'write', 'delete'] },
   { resource: 'time_entries', actions: ['read', 'write', 'delete'] },
-  { resource: 'all_employees', actions: ['read'] }]
+  { resource: 'all_employees', actions: ['read'] },
+  { resource: 'view_settings', actions: ['read', 'write'] },
+  { resource: 'view_deployments', actions: ['read', 'write'] }]
 
 };
 

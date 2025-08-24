@@ -62,8 +62,32 @@ const ApiDebugDashboard: React.FC = () => {
   const handleRetryCall = async (callId: string) => {
     try {
       await retryFailedCall(callId);
+
+      // Track this retry attempt
+      await window.ezsite.apis.run({
+        path: "trackError",
+        param: [{
+          message: `API call retry attempted: ${callId}`,
+          type: 'ApiRetry',
+          severity: 'low',
+          component: 'ApiDebugDashboard',
+          additionalData: { callId }
+        }]
+      });
     } catch (error) {
       console.error('Failed to retry call:', error);
+
+      // Track the retry failure
+      await window.ezsite.apis.run({
+        path: "trackError",
+        param: [{
+          message: `API call retry failed: ${error}`,
+          type: 'ApiRetryFailure',
+          severity: 'medium',
+          component: 'ApiDebugDashboard',
+          additionalData: { callId, error: error.toString() }
+        }]
+      });
     }
   };
 
@@ -76,6 +100,7 @@ const ApiDebugDashboard: React.FC = () => {
     if (!isAutoRefresh) return;
 
     const interval = setInterval(() => {
+
 
 
 
@@ -356,8 +381,7 @@ const ApiDebugDashboard: React.FC = () => {
                     </div>
                   </ScrollArea> : <div className="text-center py-8 text-gray-500">
                     No error information available
-                  </div>
-            }
+                  </div>}
               </TabsContent>
             </Tabs>
         }

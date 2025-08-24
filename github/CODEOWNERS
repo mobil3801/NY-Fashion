@@ -1,0 +1,18 @@
+# Global owners
+* @team-leads
+
+# Production deployment approval
+.github/workflows/ci-cd.yml @devops-team @security-team
+configs/environment.production.js @devops-team @team-leads
+
+# Security-related files
+.github/workflows/security-scan.yml @security-team
+src/components/deployment/SecurityScanResults.tsx @security-team
+
+# Deployment configuration
+configs/ @devops-team
+__easysite_nodejs__/deploymentAPI.js @devops-team @backend-team
+
+# Critical application files
+src/App.tsx @team-leads
+src/main.tsx @team-leads

@@ -1,0 +1,99 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+        - staging
+        - production
+      rollback_to_deployment:
+        description: 'Deployment ID to rollback to (optional)'
+        required: false
+        type: string
+
+jobs:
+  rollback:
+    name: Rollback ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Get rollback target
+        id: rollback-target
+        run: |
+          if [ -n "${{ github.event.inputs.rollback_to_deployment }}" ]; then
+            echo "ROLLBACK_TO=${{ github.event.inputs.rollback_to_deployment }}" >> $GITHUB_ENV
+          else
+            # Get last successful deployment
+            LAST_DEPLOYMENT=$(curl -s "${{ secrets.API_ENDPOINT }}/api/deployments/last-successful?environment=${{ github.event.inputs.environment }}" \
+              -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" | jq -r '.deployment_id')
+            echo "ROLLBACK_TO=$LAST_DEPLOYMENT" >> $GITHUB_ENV
+          fi
+
+      - name: Create rollback deployment record
+        run: |
+          ROLLBACK_ID="${{ github.run_id }}-rollback"
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/start-rollback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "'$ROLLBACK_ID'",
+              "environment": "${{ github.event.inputs.environment }}",
+              "rollback_deployment_id": "'$ROLLBACK_TO'",
+              "initiated_by": "${{ github.actor }}"
+            }'
+          echo "ROLLBACK_DEPLOYMENT_ID=$ROLLBACK_ID" >> $GITHUB_ENV
+
+      - name: Download rollback artifacts
+        run: |
+          curl -o rollback-build.zip "${{ secrets.API_ENDPOINT }}/api/deployments/$ROLLBACK_TO/artifacts" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}"
+          unzip rollback-build.zip
+
+      - name: Execute rollback
+        run: |
+          echo "Rolling back ${{ github.event.inputs.environment }} to deployment $ROLLBACK_TO"
+          # Add your rollback deployment logic here
+          # This should restore the previous version
+
+      - name: Verify rollback health
+        run: |
+          HEALTH_URL="${{ github.event.inputs.environment == 'production' && secrets.PRODUCTION_URL || secrets.STAGING_URL }}"
+          for i in {1..30}; do
+            if curl -f "$HEALTH_URL/health"; then
+              echo "Rollback health check passed"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Rollback health check failed"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Record rollback success
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/complete" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "'$ROLLBACK_DEPLOYMENT_ID'",
+              "status": "success",
+              "health_check_status": "healthy"
+            }'
+
+      - name: Record rollback failure
+        if: failure()
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/complete" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "'$ROLLBACK_DEPLOYMENT_ID'",
+              "status": "failed",
+              "error_message": "Rollback failed for ${{ github.event.inputs.environment }}"
+            }'

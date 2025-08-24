@@ -1,0 +1,41 @@
+
+# Logrotate configuration for NY Fashion POS Nginx logs
+# Place this file in /etc/logrotate.d/nginx
+
+/var/log/nginx/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 nginx nginx
+    sharedscripts
+    prerotate
+        if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+            run-parts /etc/logrotate.d/httpd-prerotate; \
+        fi \
+    endscript
+    postrotate
+        # Send USR1 signal to nginx to reopen log files
+        /bin/kill -USR1 `cat /var/run/nginx.pid 2>/dev/null` 2>/dev/null || true
+        
+        # Optional: Send logs to centralized logging system
+        # systemctl restart rsyslog
+    endscript
+}
+
+# Separate configuration for error logs
+/var/log/nginx/*error.log {
+    daily
+    missingok
+    rotate 60
+    compress
+    delaycompress
+    notifempty
+    create 644 nginx nginx
+    sharedscripts
+    postrotate
+        /bin/kill -USR1 `cat /var/run/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}

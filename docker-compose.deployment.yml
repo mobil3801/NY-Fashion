@@ -1,0 +1,93 @@
+
+version: '3.8'
+
+services:
+  # Blue instance
+  app-blue:
+    build:
+      context: .
+      dockerfile: docker/deployment.dockerfile
+      target: production
+    container_name: nyfashion-blue
+    ports:
+      - "3001:80"
+    environment:
+      - NODE_ENV=production
+      - DEPLOYMENT_SLOT=blue
+      - HEALTH_CHECK_URL=http://localhost/health
+    volumes:
+      - ./logs:/var/log/nginx
+      - ./configs/production:/etc/app/config:ro
+    networks:
+      - deployment-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Green instance
+  app-green:
+    build:
+      context: .
+      dockerfile: docker/deployment.dockerfile
+      target: production
+    container_name: nyfashion-green
+    ports:
+      - "3002:80"
+    environment:
+      - NODE_ENV=production
+      - DEPLOYMENT_SLOT=green
+      - HEALTH_CHECK_URL=http://localhost/health
+    volumes:
+      - ./logs:/var/log/nginx
+      - ./configs/production:/etc/app/config:ro
+    networks:
+      - deployment-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Load balancer
+  nginx-lb:
+    image: nginx:alpine
+    container_name: nyfashion-lb
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx-lb.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - deployment-network
+    depends_on:
+      - app-blue
+      - app-green
+    restart: unless-stopped
+
+  # Monitoring
+  monitoring:
+    image: prom/prometheus:latest
+    container_name: nyfashion-monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - deployment-network
+    restart: unless-stopped
+
+networks:
+  deployment-network:
+    driver: bridge
+
+volumes:
+  prometheus_data:

@@ -49,11 +49,11 @@ function saveProduct(productData) {
     const sanitizedDescription = (description || '').toString().trim().slice(0, 1000);
     const sanitizedBrand = (brand || '').toString().trim().slice(0, 100);
     const categoryId = parseInt(category_id);
-    
+
     // Handle pricing with validation
     let finalCostPrice = Math.max(0, parseFloat(cost_price) || 0);
     let finalSellingPrice = Math.max(0, parseFloat(selling_price) || 0);
-    
+
     // Fallback to cents if primary price fields are not provided
     if (finalCostPrice === 0 && cost_cents) {
       finalCostPrice = Math.max(0, parseInt(cost_cents) / 100);
@@ -93,10 +93,10 @@ function saveProduct(productData) {
     if (imageData) {
       try {
         if (Array.isArray(imageData)) {
-          imageUrls = imageData.filter(url => typeof url === 'string' && url.trim());
+          imageUrls = imageData.filter((url) => typeof url === 'string' && url.trim());
         } else if (typeof imageData === 'string') {
           const parsed = JSON.parse(imageData);
-          imageUrls = Array.isArray(parsed) ? parsed.filter(url => typeof url === 'string' && url.trim()) : [];
+          imageUrls = Array.isArray(parsed) ? parsed.filter((url) => typeof url === 'string' && url.trim()) : [];
         }
       } catch (parseError) {
         imageUrls = [];
@@ -141,39 +141,39 @@ function saveProduct(productData) {
       `;
 
       const result = window.ezsite.db.query(updateQuery, [
-        sanitizedName,
-        sanitizedDescription,
-        sanitizedBrand,
-        categoryId,
-        finalCostPrice,
-        finalSellingPrice,
-        finalCostCents,
-        finalPriceCents,
-        finalTaxRate,
-        sanitizedBarcode,
-        sanitizedSku,
-        sanitizedUnit,
-        sanitizedSize,
-        sanitizedColor,
-        finalWeight,
-        finalCurrentStock,
-        finalMinStock,
-        finalMaxStock,
-        isActive,
-        isTrackable,
-        sanitizedBnName,
-        sanitizedBnDescription,
-        imagesJson,
-        now,
-        parseInt(id)
-      ]);
+      sanitizedName,
+      sanitizedDescription,
+      sanitizedBrand,
+      categoryId,
+      finalCostPrice,
+      finalSellingPrice,
+      finalCostCents,
+      finalPriceCents,
+      finalTaxRate,
+      sanitizedBarcode,
+      sanitizedSku,
+      sanitizedUnit,
+      sanitizedSize,
+      sanitizedColor,
+      finalWeight,
+      finalCurrentStock,
+      finalMinStock,
+      finalMaxStock,
+      isActive,
+      isTrackable,
+      sanitizedBnName,
+      sanitizedBnDescription,
+      imagesJson,
+      now,
+      parseInt(id)]
+      );
 
       if (!result || result.length === 0) {
         throw new Error('Product not found or could not be updated');
       }
 
-      return { 
-        id: parseInt(id), 
+      return {
+        id: parseInt(id),
         message: 'Product updated successfully',
         success: true
       };
@@ -193,39 +193,39 @@ function saveProduct(productData) {
       `;
 
       const result = window.ezsite.db.query(insertQuery, [
-        sanitizedName,
-        sanitizedDescription,
-        sanitizedBrand,
-        categoryId,
-        finalCostPrice,
-        finalSellingPrice,
-        finalCostCents,
-        finalPriceCents,
-        finalTaxRate,
-        sanitizedBarcode,
-        sanitizedSku,
-        sanitizedUnit,
-        sanitizedSize,
-        sanitizedColor,
-        finalWeight,
-        finalCurrentStock,
-        finalMinStock,
-        finalMaxStock,
-        isActive,
-        isTrackable,
-        sanitizedBnName,
-        sanitizedBnDescription,
-        imagesJson,
-        now,
-        now
-      ]);
+      sanitizedName,
+      sanitizedDescription,
+      sanitizedBrand,
+      categoryId,
+      finalCostPrice,
+      finalSellingPrice,
+      finalCostCents,
+      finalPriceCents,
+      finalTaxRate,
+      sanitizedBarcode,
+      sanitizedSku,
+      sanitizedUnit,
+      sanitizedSize,
+      sanitizedColor,
+      finalWeight,
+      finalCurrentStock,
+      finalMinStock,
+      finalMaxStock,
+      isActive,
+      isTrackable,
+      sanitizedBnName,
+      sanitizedBnDescription,
+      imagesJson,
+      now,
+      now]
+      );
 
       if (!result || result.length === 0) {
         throw new Error('Failed to create product');
       }
 
-      return { 
-        id: result[0].id, 
+      return {
+        id: result[0].id,
         message: 'Product created successfully',
         success: true
       };
@@ -242,7 +242,7 @@ function saveProduct(productData) {
     if (error.message.includes('required')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to save product. Please check your input and try again.');
   }
 }

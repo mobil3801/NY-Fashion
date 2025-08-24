@@ -93,17 +93,17 @@ function updateStock(productId, quantityChange, reason = 'manual', refId = null,
       `;
 
       const movementType = qtyChange > 0 ? 'receipt' : 'adjustment';
-      
+
       const movementResult = window.ezsite.db.query(movementQuery, [
-        pId,
-        null, // variant_id - null for product-level updates
-        qtyChange,
-        movementType,
-        finalRefId,
-        sanitizedReason,
-        finalCreatedBy,
-        timestamp
-      ]);
+      pId,
+      null, // variant_id - null for product-level updates
+      qtyChange,
+      movementType,
+      finalRefId,
+      sanitizedReason,
+      finalCreatedBy,
+      timestamp]
+      );
 
       // 3. Update or create inventory lot (if table exists)
       try {
@@ -135,9 +135,9 @@ function updateStock(productId, quantityChange, reason = 'manual', refId = null,
           window.ezsite.db.query(insertLotQuery, [pId, null, newStock, 'main', timestamp, timestamp]);
         }
       } catch (lotError) {
+
         // Inventory lots might not exist, don't fail the operation
       }
-
       // Determine stock status
       const minStockLevel = Math.max(1, parseInt(product.min_stock_level) || 5);
       let stockStatus = 'in_stock';
@@ -148,7 +148,7 @@ function updateStock(productId, quantityChange, reason = 'manual', refId = null,
         alertLevel = 'critical';
       } else if (newStock <= minStockLevel) {
         stockStatus = 'low_stock';
-        alertLevel = newStock <= (minStockLevel * 0.5) ? 'high' : 'medium';
+        alertLevel = newStock <= minStockLevel * 0.5 ? 'high' : 'medium';
       }
 
       return {
@@ -171,13 +171,13 @@ function updateStock(productId, quantityChange, reason = 'manual', refId = null,
 
   } catch (error) {
     // Production error handling
-    if (error.message.includes('required') || 
-        error.message.includes('not found') || 
-        error.message.includes('Insufficient') ||
-        error.message.includes('Cannot update')) {
+    if (error.message.includes('required') ||
+    error.message.includes('not found') ||
+    error.message.includes('Insufficient') ||
+    error.message.includes('Cannot update')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to update stock. Please try again.');
   }
 }

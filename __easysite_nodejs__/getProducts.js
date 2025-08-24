@@ -135,101 +135,101 @@ function getProducts(filters = {}) {
     }
 
     // Process and validate results
-    const products = result
-      .filter(product => product && typeof product === 'object')
-      .map(product => {
-        try {
-          // Parse image URLs safely
-          let imageUrls = [];
-          if (product.image_urls) {
-            try {
-              imageUrls = Array.isArray(product.image_urls) 
-                ? product.image_urls 
-                : JSON.parse(product.image_urls || '[]');
-              // Validate each URL
-              imageUrls = imageUrls.filter(url => typeof url === 'string' && url.trim());
-            } catch (parseError) {
-              imageUrls = [];
-            }
+    const products = result.
+    filter((product) => product && typeof product === 'object').
+    map((product) => {
+      try {
+        // Parse image URLs safely
+        let imageUrls = [];
+        if (product.image_urls) {
+          try {
+            imageUrls = Array.isArray(product.image_urls) ?
+            product.image_urls :
+            JSON.parse(product.image_urls || '[]');
+            // Validate each URL
+            imageUrls = imageUrls.filter((url) => typeof url === 'string' && url.trim());
+          } catch (parseError) {
+            imageUrls = [];
           }
-
-          // Safely convert numeric values with validation
-          const currentStock = Math.max(0, parseInt(product.current_stock) || 0);
-          const minStockLevel = Math.max(0, parseInt(product.min_stock_level) || 5);
-          const maxStockLevel = Math.max(minStockLevel, parseInt(product.max_stock_level) || 20);
-
-          // Handle pricing with validation
-          let sellingPrice = Math.max(0, parseFloat(product.selling_price) || 0);
-          let costPrice = Math.max(0, parseFloat(product.cost_price) || 0);
-
-          // Fallback to cents fields if needed
-          if (sellingPrice === 0 && product.price_cents) {
-            sellingPrice = Math.max(0, Math.round((parseInt(product.price_cents) || 0) / 100 * 100) / 100);
-          }
-          if (costPrice === 0 && product.cost_cents) {
-            costPrice = Math.max(0, Math.round((parseInt(product.cost_cents) || 0) / 100 * 100) / 100);
-          }
-
-          // Validate and sanitize text fields
-          const sanitizeText = (text, maxLength = 255) => {
-            return (text || '').toString().trim().slice(0, maxLength);
-          };
-
-          return {
-            id: parseInt(product.id) || 0,
-            name: sanitizeText(product.name, 100),
-            description: sanitizeText(product.description, 1000),
-            brand: sanitizeText(product.brand, 100),
-            category_id: parseInt(product.category_id) || null,
-            category_name: sanitizeText(product.category_name, 100),
-            sku: sanitizeText(product.sku, 50),
-            barcode: sanitizeText(product.barcode, 50),
-            unit: sanitizeText(product.unit || 'pcs', 20),
-            size: sanitizeText(product.size, 50),
-            color: sanitizeText(product.color, 50),
-            weight: Math.max(0, parseFloat(product.weight) || 0),
-
-            // Multilingual support
-            name_bn: sanitizeText(product.bn_name, 100),
-            bn_name: sanitizeText(product.bn_name, 100),
-            description_bn: sanitizeText(product.bn_description, 1000),
-            bn_description: sanitizeText(product.bn_description, 1000),
-
-            // Stock information
-            current_stock: currentStock,
-            total_stock: currentStock,
-            min_stock_level: minStockLevel,
-            max_stock_level: maxStockLevel,
-
-            // Pricing
-            selling_price: sellingPrice,
-            price: sellingPrice,
-            cost_price: costPrice,
-            cost: costPrice,
-            cost_cents: Math.round(costPrice * 100),
-            price_cents: Math.round(sellingPrice * 100),
-
-            // Other attributes
-            tax_rate: Math.max(0, Math.min(100, parseFloat(product.tax_rate) || 0)),
-            tax_exempt: Boolean(product.tax_rate === 0),
-            images: imageUrls,
-            image_urls: imageUrls,
-            is_active: Boolean(product.is_active),
-            is_trackable: Boolean(product.is_trackable),
-
-            // Timestamps
-            created_at: product.created_at,
-            updated_at: product.updated_at,
-
-            // Calculate stock status
-            stock_status: currentStock === 0 ? 'out_of_stock' :
-                         currentStock <= minStockLevel ? 'low_stock' : 'in_stock'
-          };
-        } catch (formatError) {
-          return null;
         }
-      })
-      .filter(product => product !== null);
+
+        // Safely convert numeric values with validation
+        const currentStock = Math.max(0, parseInt(product.current_stock) || 0);
+        const minStockLevel = Math.max(0, parseInt(product.min_stock_level) || 5);
+        const maxStockLevel = Math.max(minStockLevel, parseInt(product.max_stock_level) || 20);
+
+        // Handle pricing with validation
+        let sellingPrice = Math.max(0, parseFloat(product.selling_price) || 0);
+        let costPrice = Math.max(0, parseFloat(product.cost_price) || 0);
+
+        // Fallback to cents fields if needed
+        if (sellingPrice === 0 && product.price_cents) {
+          sellingPrice = Math.max(0, Math.round((parseInt(product.price_cents) || 0) / 100 * 100) / 100);
+        }
+        if (costPrice === 0 && product.cost_cents) {
+          costPrice = Math.max(0, Math.round((parseInt(product.cost_cents) || 0) / 100 * 100) / 100);
+        }
+
+        // Validate and sanitize text fields
+        const sanitizeText = (text, maxLength = 255) => {
+          return (text || '').toString().trim().slice(0, maxLength);
+        };
+
+        return {
+          id: parseInt(product.id) || 0,
+          name: sanitizeText(product.name, 100),
+          description: sanitizeText(product.description, 1000),
+          brand: sanitizeText(product.brand, 100),
+          category_id: parseInt(product.category_id) || null,
+          category_name: sanitizeText(product.category_name, 100),
+          sku: sanitizeText(product.sku, 50),
+          barcode: sanitizeText(product.barcode, 50),
+          unit: sanitizeText(product.unit || 'pcs', 20),
+          size: sanitizeText(product.size, 50),
+          color: sanitizeText(product.color, 50),
+          weight: Math.max(0, parseFloat(product.weight) || 0),
+
+          // Multilingual support
+          name_bn: sanitizeText(product.bn_name, 100),
+          bn_name: sanitizeText(product.bn_name, 100),
+          description_bn: sanitizeText(product.bn_description, 1000),
+          bn_description: sanitizeText(product.bn_description, 1000),
+
+          // Stock information
+          current_stock: currentStock,
+          total_stock: currentStock,
+          min_stock_level: minStockLevel,
+          max_stock_level: maxStockLevel,
+
+          // Pricing
+          selling_price: sellingPrice,
+          price: sellingPrice,
+          cost_price: costPrice,
+          cost: costPrice,
+          cost_cents: Math.round(costPrice * 100),
+          price_cents: Math.round(sellingPrice * 100),
+
+          // Other attributes
+          tax_rate: Math.max(0, Math.min(100, parseFloat(product.tax_rate) || 0)),
+          tax_exempt: Boolean(product.tax_rate === 0),
+          images: imageUrls,
+          image_urls: imageUrls,
+          is_active: Boolean(product.is_active),
+          is_trackable: Boolean(product.is_trackable),
+
+          // Timestamps
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+
+          // Calculate stock status
+          stock_status: currentStock === 0 ? 'out_of_stock' :
+          currentStock <= minStockLevel ? 'low_stock' : 'in_stock'
+        };
+      } catch (formatError) {
+        return null;
+      }
+    }).
+    filter((product) => product !== null);
 
     return products;
 

@@ -43,7 +43,7 @@ function reorderProductImages(productId, imageOrders) {
     `;
 
     const currentImages = window.ezsite.db.query(currentImagesQuery, [pId]);
-    const currentImageIds = new Set(currentImages.map(img => parseInt(img.id)));
+    const currentImageIds = new Set(currentImages.map((img) => parseInt(img.id)));
 
     // Validate image orders input
     const validOrders = [];
@@ -79,7 +79,7 @@ function reorderProductImages(productId, imageOrders) {
       }
 
       // Check for duplicate image IDs in the request
-      if (validOrders.some(vo => vo.imageId === imgId)) {
+      if (validOrders.some((vo) => vo.imageId === imgId)) {
         errors.push(`Order ${i + 1}: Duplicate image ID ${imgId}`);
         continue;
       }
@@ -121,10 +121,10 @@ function reorderProductImages(productId, imageOrders) {
 
         try {
           const updateResult = window.ezsite.db.query(updateQuery, [
-            order.sortOrder, 
-            order.imageId, 
-            pId
-          ]);
+          order.sortOrder,
+          order.imageId,
+          pId]
+          );
 
           // Note: Some DB adapters might not return affected rows count
           // We'll assume success if no error is thrown
@@ -161,7 +161,7 @@ function reorderProductImages(productId, imageOrders) {
         product_id: pId,
         updated_count: finalOrders.length,
         total_images: updatedImages.length,
-        images: updatedImages.map(img => ({
+        images: updatedImages.map((img) => ({
           id: parseInt(img.id),
           sort_order: parseInt(img.sort_order),
           alt_text: img.alt_text,
@@ -176,13 +176,13 @@ function reorderProductImages(productId, imageOrders) {
 
   } catch (error) {
     // Production error handling
-    if (error.message.includes('required') || 
-        error.message.includes('not found') ||
-        error.message.includes('Validation errors') ||
-        error.message.includes('No valid image orders')) {
+    if (error.message.includes('required') ||
+    error.message.includes('not found') ||
+    error.message.includes('Validation errors') ||
+    error.message.includes('No valid image orders')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to reorder images. Please try again.');
   }
 }

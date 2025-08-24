@@ -1,0 +1,139 @@
+
+groups:
+- name: nyfashion-application
+  rules:
+  - alert: HighResponseTime
+    expr: http_request_duration_seconds{quantile="0.95"} > 2
+    for: 5m
+    labels:
+      severity: warning
+      service: nyfashion
+    annotations:
+      summary: "High response time detected"
+      description: "95th percentile response time is {{ $value }}s for {{ $labels.instance }}"
+
+  - alert: HighErrorRate
+    expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+    for: 3m
+    labels:
+      severity: critical
+      service: nyfashion
+    annotations:
+      summary: "High error rate detected"
+      description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+  - alert: ServiceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: nyfashion
+    annotations:
+      summary: "Service is down"
+      description: "{{ $labels.job }} service is down on {{ $labels.instance }}"
+
+- name: nyfashion-infrastructure
+  rules:
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 5m
+    labels:
+      severity: warning
+      component: cpu
+    annotations:
+      summary: "High CPU usage"
+      description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+  - alert: HighMemoryUsage
+    expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+      component: memory
+    annotations:
+      summary: "High memory usage"
+      description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+  - alert: HighDiskUsage
+    expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 90
+    for: 2m
+    labels:
+      severity: critical
+      component: disk
+    annotations:
+      summary: "High disk usage"
+      description: "Disk usage is {{ $value }}% on {{ $labels.instance }} mount {{ $labels.mountpoint }}"
+
+  - alert: LoadBalancerDown
+    expr: up{job="nginx-lb"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: load-balancer
+    annotations:
+      summary: "Load balancer is down"
+      description: "Nginx load balancer is not responding"
+
+- name: nyfashion-database
+  rules:
+  - alert: DatabaseDown
+    expr: up{job="postgres-exporter"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: database
+    annotations:
+      summary: "Database is down"
+      description: "PostgreSQL database is not responding"
+
+  - alert: HighDatabaseConnections
+    expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+    for: 5m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "High database connections"
+      description: "Database connections are at {{ $value }}% of maximum"
+
+  - alert: SlowDatabaseQueries
+    expr: rate(pg_stat_database_tup_fetched[5m]) / rate(pg_stat_database_tup_returned[5m]) < 0.1
+    for: 5m
+    labels:
+      severity: warning
+      component: database
+    annotations:
+      summary: "Slow database queries detected"
+      description: "Database query efficiency is low on {{ $labels.instance }}"
+
+- name: nyfashion-deployment
+  rules:
+  - alert: DeploymentFailed
+    expr: increase(deployment_status{status="failed"}[5m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+      component: deployment
+    annotations:
+      summary: "Deployment failed"
+      description: "Deployment {{ $labels.deployment_id }} failed in {{ $labels.environment }}"
+
+  - alert: RollbackRequired
+    expr: rate(http_requests_total{status=~"5.."}[2m]) / rate(http_requests_total[2m]) > 0.1
+    for: 2m
+    labels:
+      severity: critical
+      component: deployment
+    annotations:
+      summary: "High error rate - rollback may be required"
+      description: "Error rate spiked to {{ $value | humanizePercentage }} - consider rollback"
+
+  - alert: HealthCheckFailing
+    expr: probe_success{job="deployment-health"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      component: deployment
+    annotations:
+      summary: "Application health check failing"
+      description: "Health check is failing for {{ $labels.instance }}"

@@ -57,37 +57,37 @@ function getStockMovements(productId, variantId = null, limit = 50) {
     }
 
     // Process and validate results
-    const movements = result
-      .filter(movement => movement && typeof movement === 'object')
-      .map(movement => {
-        try {
-          // Sanitize and validate fields
-          const sanitizeText = (text, maxLength = 255) => {
-            return (text || '').toString().trim().slice(0, maxLength);
-          };
+    const movements = result.
+    filter((movement) => movement && typeof movement === 'object').
+    map((movement) => {
+      try {
+        // Sanitize and validate fields
+        const sanitizeText = (text, maxLength = 255) => {
+          return (text || '').toString().trim().slice(0, maxLength);
+        };
 
-          return {
-            id: parseInt(movement.id) || 0,
-            product_id: parseInt(movement.product_id) || 0,
-            variant_id: parseInt(movement.variant_id) || null,
-            delta: parseInt(movement.delta) || 0,
-            type: sanitizeText(movement.type, 50),
-            reason: sanitizeText(movement.reason, 500),
-            ref_id: parseInt(movement.ref_id) || null,
-            created_at: movement.created_at,
-            created_by: parseInt(movement.created_by) || null,
-            product_name: sanitizeText(movement.product_name, 100),
-            product_sku: sanitizeText(movement.product_sku, 50),
-            variant_name: sanitizeText(movement.variant_name, 100),
-            variant_sku: sanitizeText(movement.variant_sku, 50)
-          };
-        } catch (formatError) {
-          return null;
-        }
-      })
-      .filter(movement => movement !== null);
+        return {
+          id: parseInt(movement.id) || 0,
+          product_id: parseInt(movement.product_id) || 0,
+          variant_id: parseInt(movement.variant_id) || null,
+          delta: parseInt(movement.delta) || 0,
+          type: sanitizeText(movement.type, 50),
+          reason: sanitizeText(movement.reason, 500),
+          ref_id: parseInt(movement.ref_id) || null,
+          created_at: movement.created_at,
+          created_by: parseInt(movement.created_by) || null,
+          product_name: sanitizeText(movement.product_name, 100),
+          product_sku: sanitizeText(movement.product_sku, 50),
+          variant_name: sanitizeText(movement.variant_name, 100),
+          variant_sku: sanitizeText(movement.variant_sku, 50)
+        };
+      } catch (formatError) {
+        return null;
+      }
+    }).
+    filter((movement) => movement !== null);
 
-    return { 
+    return {
       movements,
       total: movements.length
     };

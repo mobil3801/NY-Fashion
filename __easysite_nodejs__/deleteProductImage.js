@@ -110,12 +110,12 @@ function deleteProductImage(imageId) {
 
   } catch (error) {
     // Production error handling
-    if (error.message.includes('required') || 
-        error.message.includes('not found') ||
-        error.message.includes('Invalid image')) {
+    if (error.message.includes('required') ||
+    error.message.includes('not found') ||
+    error.message.includes('Invalid image')) {
       throw new Error(error.message);
     }
-    
+
     throw new Error('Failed to delete image. Please try again.');
   }
 }

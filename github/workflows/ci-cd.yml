@@ -1,0 +1,302 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  NODE_VERSION: '18'
+  DEPLOYMENT_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run dependency audit
+        run: |
+          npm audit --audit-level high
+          npm audit --json > audit-report.json || true
+
+      - name: Run Snyk vulnerability scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json > snyk-report.json
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            audit-report.json
+            snyk-report.json
+
+  code-quality:
+    name: Code Quality & Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run tests with coverage
+        run: |
+          npm test -- --coverage --watchAll=false
+          echo "COVERAGE_PERCENTAGE=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')" >> $GITHUB_ENV
+
+      - name: Check coverage threshold
+        run: |
+          THRESHOLD=80
+          if (( $(echo "$COVERAGE_PERCENTAGE < $THRESHOLD" | bc -l) )); then
+            echo "Coverage $COVERAGE_PERCENTAGE% is below threshold $THRESHOLD%"
+            exit 1
+          fi
+          echo "Coverage $COVERAGE_PERCENTAGE% meets threshold"
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: coverage/
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [security-scan, code-quality]
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for ${{ matrix.environment }}
+        run: |
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            npm run build:preview
+          else
+            npm run build:dev
+          fi
+        env:
+          VITE_ENVIRONMENT: ${{ matrix.environment }}
+          VITE_API_URL: ${{ matrix.environment == 'production' && secrets.PROD_API_URL || secrets.STAGING_API_URL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.environment }}
+          path: dist/
+          retention-days: 30
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: staging
+      url: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Record deployment start
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/start" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "environment": "staging",
+              "version": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "commit_hash": "${{ github.sha }}",
+              "initiated_by": "${{ github.actor }}"
+            }'
+
+      - name: Download staging build
+        uses: actions/download-artifact@v3
+        with:
+          name: build-staging
+
+      - name: Deploy to staging
+        run: |
+          # Deployment logic here (e.g., rsync, S3 upload, etc.)
+          echo "Deploying to staging environment"
+          # Add your deployment commands here
+
+      - name: Run health checks
+        run: |
+          for i in {1..30}; do
+            if curl -f "${{ secrets.STAGING_URL }}/health"; then
+              echo "Health check passed"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Health check failed after 30 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Record deployment success
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/complete" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "status": "success",
+              "health_check_status": "healthy"
+            }'
+
+      - name: Record deployment failure
+        if: failure()
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/complete" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "status": "failed",
+              "error_message": "Deployment failed during staging deployment"
+            }'
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+    steps:
+      - name: Request production approval
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/request-approval" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "environment": "production",
+              "version": "${{ github.sha }}",
+              "branch": "${{ github.ref_name }}",
+              "commit_hash": "${{ github.sha }}",
+              "initiated_by": "${{ github.actor }}"
+            }'
+
+      - name: Wait for approval
+        timeout-minutes: 60
+        run: |
+          while true; do
+            STATUS=$(curl -s "${{ secrets.API_ENDPOINT }}/api/deployments/${{ env.DEPLOYMENT_ID }}/approval-status" \
+              -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" | jq -r '.status')
+            
+            if [ "$STATUS" = "approved" ]; then
+              echo "Deployment approved"
+              break
+            elif [ "$STATUS" = "rejected" ]; then
+              echo "Deployment rejected"
+              exit 1
+            fi
+            
+            echo "Waiting for approval... (Status: $STATUS)"
+            sleep 30
+          done
+
+      - name: Download production build
+        uses: actions/download-artifact@v3
+        with:
+          name: build-production
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment"
+          # Add your production deployment commands here
+
+      - name: Run production health checks
+        run: |
+          for i in {1..30}; do
+            if curl -f "${{ secrets.PRODUCTION_URL }}/health"; then
+              echo "Production health check passed"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Production health check failed"
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Record production deployment success
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/complete" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "status": "success",
+              "health_check_status": "healthy"
+            }'
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure() && (contains(github.event.head_commit.message, '[rollback]') || github.event_name == 'workflow_dispatch')
+    steps:
+      - name: Trigger rollback
+        run: |
+          curl -X POST "${{ secrets.API_ENDPOINT }}/api/deployments/rollback" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -d '{
+              "deployment_id": "${{ env.DEPLOYMENT_ID }}",
+              "environment": "${{ github.event.inputs.environment || 'production' }}",
+              "initiated_by": "${{ github.actor }}"
+            }'
