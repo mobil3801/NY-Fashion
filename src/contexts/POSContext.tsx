@@ -27,7 +27,8 @@ type POSAction =
 {type: 'APPLY_ORDER_DISCOUNT';payload: {discount: number;type: 'percentage' | 'fixed';};} |
 {type: 'SET_CUSTOMER';payload: {customer: Customer | undefined;};} |
 {type: 'SET_PAYMENT_METHOD';payload: {method: PaymentMethod;};} |
-{type: 'CLEAR_CART';};
+{type: 'CLEAR_CART';} |
+{type: 'RESTORE_CART';payload: {cart: CartItem[];customer?: Customer | undefined;};};
 
 const initialState: POSState = {
   cart: [],
@@ -156,6 +157,13 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
         customer: state.customer // Keep customer for next transaction
       };
 
+    case 'RESTORE_CART':
+      return {
+        ...state,
+        cart: action.payload.cart || [],
+        customer: action.payload.customer
+      };
+
     default:
       return state;
   }
@@ -186,11 +194,19 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           timestamp: Date.now()
         };
         if (typeof window !== 'undefined' && window.localStorage) {
-          localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+          try {
+            localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+          } catch (error) {
+            console.warn('Failed to save cart to localStorage:', error);
+          }
         }
         // Also save to sessionStorage for more immediate access
         if (typeof window !== 'undefined' && window.sessionStorage) {
-          sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+          try {
+            sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+          } catch (error) {
+            console.warn('Failed to save cart to sessionStorage:', error);
+          }
         }
       }
     },
@@ -202,9 +218,21 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
           selectedCustomer: state.customer,
           timestamp: Date.now()
         };
-        localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+          } catch (error) {
+            console.warn('Failed to save cart to localStorage:', error);
+          }
+        }
         // sessionStorage is cleared when the session ends (tab close)
-        sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          try {
+            sessionStorage.setItem('ny-fashion-pos-cart-session', JSON.stringify(cartData));
+          } catch (error) {
+            console.warn('Failed to save cart to sessionStorage:', error);
+          }
+        }
       }
     }
   });
@@ -221,9 +249,10 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
         if (sessionCart) {
           try {
             const { cart: savedCart, selectedCustomer: savedCustomer } = JSON.parse(sessionCart);
-            // These setters don't exist in this context - need to dispatch actions instead
-            // For now, we'll skip this and fix the implementation properly
-            return;
+            if (savedCart && Array.isArray(savedCart)) {
+              dispatch({ type: 'RESTORE_CART', payload: { cart: savedCart, customer: savedCustomer } });
+              return;
+            }
           } catch (error) {
             console.warn('Error loading session cart:', error);
           }
@@ -236,8 +265,10 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             const { cart: savedCart, selectedCustomer: savedCustomer, timestamp } = JSON.parse(backupCart);
             // Only restore if backup is less than 1 hour old
             if (Date.now() - timestamp < 3600000) {
-              // TODO: Implement proper cart restoration with dispatch actions
-              return;
+              if (savedCart && Array.isArray(savedCart)) {
+                dispatch({ type: 'RESTORE_CART', payload: { cart: savedCart, customer: savedCustomer } });
+                return;
+              }
             }
           } catch (error) {
             console.warn('Error loading backup cart:', error);
@@ -252,13 +283,17 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
             // Clean up legacy storage
             localStorage.removeItem('posCart');
 
-            // Migrate to new format
-            const cartData = {
-              cart: parsedCart || [],
-              selectedCustomer: null,
-              timestamp: Date.now()
-            };
-            localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+            if (parsedCart && Array.isArray(parsedCart)) {
+              dispatch({ type: 'RESTORE_CART', payload: { cart: parsedCart, customer: undefined } });
+              
+              // Migrate to new format
+              const cartData = {
+                cart: parsedCart,
+                selectedCustomer: null,
+                timestamp: Date.now()
+              };
+              localStorage.setItem('ny-fashion-pos-cart-backup', JSON.stringify(cartData));
+            }
           } catch (error) {
             console.error('Error loading legacy cart:', error);
           }
@@ -268,7 +303,9 @@ export const POSProvider: React.FC<{children: ReactNode;}> = ({ children }) => {
       }
     };
 
-    loadPersistedCart();
+    // Use a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(loadPersistedCart, 100);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const addToCart = (product: Product, variant?: ProductVariant, quantity: number = 1) => {

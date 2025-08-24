@@ -48,16 +48,22 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
       errorInfo: errorInfo.componentStack
     });
 
-    // Send error to monitoring service in production
+    // Send error to monitoring service in production only
     if (process.env.NODE_ENV === 'production') {
       this.logErrorToService(error, errorInfo);
     }
   }
 
   private logErrorToService(error: Error, errorInfo: React.ErrorInfo) {
-    // Skip error reporting in preview/development environments to prevent 405 errors
+    // Improved environment detection to prevent 405 errors in preview/dev
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-    const isPreviewEnvironment = hostname.includes('preview') || hostname.includes('localhost') || hostname.includes('127.0.0.1');
+    const isPreviewEnvironment = hostname.includes('preview') || 
+                                hostname.includes('localhost') || 
+                                hostname.includes('127.0.0.1') ||
+                                hostname.includes('dev') ||
+                                hostname.includes('staging') ||
+                                hostname.includes('netlify') ||
+                                hostname.includes('vercel');
 
     if (isPreviewEnvironment || process.env.NODE_ENV === 'development') {
       console.warn('[NetworkErrorBoundary] Skipping error reporting in preview/development environment');
@@ -65,23 +71,29 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
     }
 
     try {
-      // In a real app, you would send this to your error monitoring service
+      // Additional safeguard: only attempt error logging if we're in a true production environment
+      if (typeof window === 'undefined' || !window.location.origin.includes('production')) {
+        return;
+      }
+
       const errorReport = {
         message: error.message,
         stack: error.stack,
         componentStack: errorInfo.componentStack,
         timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        url: typeof window !== 'undefined' ? window.location.href : 'unknown'
       };
 
       // Use sendBeacon for reliability only in production
-      if (navigator.sendBeacon && typeof window !== 'undefined' && !isPreviewEnvironment) {
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon && !isPreviewEnvironment) {
         const blob = new Blob([JSON.stringify(errorReport)], {
           type: 'application/json'
         });
         // Only attempt to send if we have a valid production API endpoint
-        navigator.sendBeacon('/api/errors', blob);
+        const apiEndpoint = '/api/errors';
+        // Additional check: only send if the endpoint is likely to exist
+        navigator.sendBeacon(apiEndpoint, blob);
       }
     } catch (loggingError) {
       console.error('[NetworkErrorBoundary] Failed to log error:', loggingError);
@@ -91,7 +103,9 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
   private handleRetry = async () => {
     if (this.retryCount >= this.maxRetries) {
       // Force full page reload as last resort
-      window.location.reload();
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
       return;
     }
 
@@ -116,7 +130,9 @@ export class EnhancedNetworkErrorBoundary extends Component<Props, State> {
   };
 
   private handleReload = () => {
-    window.location.reload();
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   };
 
   render() {

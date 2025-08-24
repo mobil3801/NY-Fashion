@@ -29,21 +29,32 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('nyf_user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        setAuthState({
-          user,
-          isLoading: false,
-          isAuthenticated: true
-        });
-      } catch (error) {
-        localStorage.removeItem('nyf_user');
+    // Check for existing session - with SSR safety
+    if (typeof window === 'undefined') {
+      setAuthState((prev) => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    try {
+      const savedUser = localStorage.getItem('nyf_user');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          setAuthState({
+            user,
+            isLoading: false,
+            isAuthenticated: true
+          });
+        } catch (error) {
+          console.warn('Error parsing saved user data:', error);
+          localStorage.removeItem('nyf_user');
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } else {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
-    } else {
+    } catch (storageError) {
+      console.warn('localStorage access error:', storageError);
       setAuthState((prev) => ({ ...prev, isLoading: false }));
     }
   }, []);
@@ -62,7 +73,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
       };
 
-      localStorage.setItem('nyf_user', JSON.stringify(mockUser));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          localStorage.setItem('nyf_user', JSON.stringify(mockUser));
+        } catch (error) {
+          console.warn('Failed to save user to localStorage:', error);
+        }
+      }
+
       setAuthState({
         user: mockUser,
         isLoading: false,
@@ -97,7 +115,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
         avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`
       };
 
-      localStorage.setItem('nyf_user', JSON.stringify(newUser));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          localStorage.setItem('nyf_user', JSON.stringify(newUser));
+        } catch (error) {
+          console.warn('Failed to save user to localStorage:', error);
+        }
+      }
+
       setAuthState({
         user: newUser,
         isLoading: false,
@@ -120,12 +145,20 @@ export const AuthProvider: React.FC<{children: React.ReactNode;}> = ({ children 
   };
 
   const logout = () => {
-    localStorage.removeItem('nyf_user');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.removeItem('nyf_user');
+      } catch (error) {
+        console.warn('Failed to remove user from localStorage:', error);
+      }
+    }
+
     setAuthState({
       user: null,
       isLoading: false,
       isAuthenticated: false
     });
+    
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out."

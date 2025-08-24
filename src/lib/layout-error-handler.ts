@@ -55,7 +55,7 @@ class LayoutErrorHandler {
     // Skip error reporting in preview/development environments to prevent 405 errors
     const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
     const isPreviewEnvironment = hostname.includes('preview') || hostname.includes('localhost') || hostname.includes('127.0.0.1');
-    
+
     if (isPreviewEnvironment || process.env.NODE_ENV === 'development') {
       console.warn('[LayoutErrorHandler] Skipping error reporting in preview/development environment');
       return;

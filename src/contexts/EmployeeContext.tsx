@@ -58,6 +58,13 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   const initializeEmployeeSystem = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        console.warn('EzSite APIs not available');
+        return;
+      }
+
       const response = await window.ezsite.apis.run({
         path: "createEmployeeTables",
         param: []
@@ -80,6 +87,12 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
     try {
       setLoading(true);
       const activeFilters = { ...filters, ...filterOverrides };
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        console.warn('EzSite APIs not available');
+        return;
+      }
 
       const response = await window.ezsite.apis.run({
         path: "getEmployees",
@@ -107,12 +120,19 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.limit, toast]);
+  }, [filters, pagination.limit, pagination, toast]);
 
   // Load single employee
   const loadEmployee = useCallback(async (employeeId: string | number) => {
     try {
       setLoading(true);
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        console.warn('EzSite APIs not available');
+        return;
+      }
+
       const response = await window.ezsite.apis.run({
         path: "getEmployee",
         param: [employeeId]
@@ -139,6 +159,12 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   const saveEmployee = useCallback(async (employee: Partial<Employee>): Promise<Employee> => {
     try {
       setLoading(true);
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        throw new Error('EzSite APIs not available');
+      }
+
       const response = await window.ezsite.apis.run({
         path: "saveEmployee",
         param: [employee]
@@ -173,6 +199,12 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   const savePhotoId = useCallback(async (photoId: Partial<PhotoId>): Promise<PhotoId> => {
     try {
       setLoading(true);
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        throw new Error('EzSite APIs not available');
+      }
+
       const response = await window.ezsite.apis.run({
         path: "savePhotoId",
         param: [photoId]
@@ -248,6 +280,12 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   {
     try {
       setLoading(true);
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        throw new Error('EzSite APIs not available');
+      }
+
       const response = await window.ezsite.apis.run({
         path: "clockInOut",
         param: [employeeId, action, location, notes]
@@ -268,7 +306,7 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
       console.error('Clock in/out failed:', error);
       toast({
         title: "Error",
-        description: error.message || "Clock in/out failed",
+        description: error instanceof Error ? error.message : "Clock in/out failed",
         variant: "destructive"
       });
       throw error;
@@ -286,6 +324,13 @@ export const EmployeeProvider: React.FC<{children: React.ReactNode;}> = ({ child
   {
     try {
       setLoading(true);
+
+      // Window API guard
+      if (typeof window === 'undefined' || !window.ezsite?.apis?.run) {
+        console.warn('EzSite APIs not available');
+        return;
+      }
+
       const response = await window.ezsite.apis.run({
         path: "getTimeTracking",
         param: [employeeId, startDate, endDate, page, pagination.limit]

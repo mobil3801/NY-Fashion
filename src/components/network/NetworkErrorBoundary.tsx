@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { Component, useContext } from 'react';
 import { AlertTriangle, RefreshCw, Wifi } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ interface NetworkErrorBoundaryProps {
   }>;
 }
 
-export class NetworkErrorBoundary extends React.Component<
+export class NetworkErrorBoundary extends Component<
   NetworkErrorBoundaryProps,
   NetworkErrorBoundaryState>
 {
@@ -105,7 +105,7 @@ export class NetworkErrorBoundary extends React.Component<
     }
 
     return (
-      <NetworkContextConsumer networkContext={this.networkContext}>
+      <NetworkContextConsumer>
         {(context) => {
           this.networkContext = context;
           return this.props.children;
@@ -117,12 +117,11 @@ export class NetworkErrorBoundary extends React.Component<
 
 // Helper component to access network context in class component
 function NetworkContextConsumer({
-  children,
-  networkContext
+  children
 
 
 
-}: {children: (context: any) => React.ReactNode;networkContext?: any;}) {
+}: {children: (context: any) => React.ReactNode;}) {
   const context = useNetwork();
   return <>{children(context)}</>;
 }

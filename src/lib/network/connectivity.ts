@@ -55,7 +55,7 @@ class ConnectivityMonitor {
   constructor(config: Partial<ConnectivityConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.status = {
-      online: navigator.onLine,
+      online: typeof navigator !== 'undefined' ? navigator.onLine : true,
       lastCheck: new Date(),
       consecutiveFailures: 0 // Ensure this is always initialized
     };
@@ -64,6 +64,11 @@ class ConnectivityMonitor {
   }
 
   private setupBrowserListeners(): void {
+    // SSR/window guard
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const handleOnline = () => {
       if (this.isDestroyed) return;
       this.debouncedUpdateStatus({ online: true, consecutiveFailures: 0 });
@@ -111,7 +116,7 @@ class ConnectivityMonitor {
   }
 
   private startHeartbeat(): void {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed || typeof window === 'undefined') return;
 
     this.heartbeatTimer = window.setTimeout(() => {
       this.performHeartbeat();
@@ -119,7 +124,7 @@ class ConnectivityMonitor {
   }
 
   private async performHeartbeat(): Promise<void> {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed || typeof window === 'undefined') return;
 
     this.abortController?.abort();
     this.abortController = new AbortController();
@@ -214,7 +219,7 @@ class ConnectivityMonitor {
   }
 
   private debouncedUpdateStatus(updates: Partial<NetStatus>): void {
-    if (this.isDestroyed) return;
+    if (this.isDestroyed || typeof window === 'undefined') return;
 
     // Store the pending update - ensure consecutiveFailures is always defined
     this.pendingStatusUpdate = {
@@ -345,7 +350,8 @@ export function createConnectivity(config?: Partial<ConnectivityConfig>) {
     get: () => monitor.getStatus(),
     start: () => monitor.start(),
     stop: () => monitor.stop(),
-    pingNow: () => monitor.checkNow(),
+    checkNow: () => monitor.checkNow(),
+    pingNow: () => monitor.checkNow(), // Alias for compatibility
     getDiagnostics: () => monitor.getDiagnostics()
   };
 }

@@ -7,6 +7,21 @@ import { useNetwork } from '@/contexts/NetworkContext';
 import { NetworkErrorClassifier } from '@/lib/network/error-classifier';
 
 export function OfflineBanner() {
+  // Component only renders on client side
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; // Prevent SSR hydration mismatch
+  }
+
+  return <OfflineBannerClient />;
+}
+
+function OfflineBannerClient() {
   const {
     online,
     connectionState,
