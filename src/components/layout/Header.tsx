@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen, isMobile 
             className="h-8 w-8 rounded object-contain" />
 
           <h1 className="text-[20px] font-bold text-lg lg:text-xl hidden sm:block">
-            {t('common.appName', 'Business Management')}
+            {t('common.appName', 'MANHAS CLOSET')}
           </h1>
           <h1 className="text-lg font-semibold text-gray-900 sm:hidden">
             BMS
