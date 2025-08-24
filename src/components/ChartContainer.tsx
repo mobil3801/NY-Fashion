@@ -166,6 +166,8 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
 
 
 
+
+
     // Chart instance will handle the actual click processing
     // This just provides the lightweight React integration
   }, []);const handleMouseDown = useCallback((event: MouseEvent) => {// Handle drag initiation if needed
@@ -174,9 +176,7 @@ export const ChartContainer: React.FC<ChartContainerProps> = ({
   const handleAnimationFrame = useCallback((deltaTime: number, timestamp: number) => {// Only run if chart is animating
       if (chartRef.current?.isAnimating) {// Chart handles its own animation, this is just for coordination
       }}, []);const { start: startAnimation, stop: stopAnimation } = useRafLoop({ onFrame: handleAnimationFrame, autoStart: false }); // Start/stop animation based on chart state
-  useEffect(() => {if (animate && !isLoading && !error) {startAnimation();} else {stopAnimation();}return stopAnimation;}, [animate, isLoading, error, startAnimation, stopAnimation]);
-  if (error) {
-    return (
+  useEffect(() => {if (animate && !isLoading && !error) {startAnimation();} else {stopAnimation();}return stopAnimation;}, [animate, isLoading, error, startAnimation, stopAnimation]);if (error) {return (
       <div
         className={`flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-4 ${className}`}
         style={{ width, height }}>

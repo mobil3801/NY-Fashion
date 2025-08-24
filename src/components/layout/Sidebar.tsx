@@ -81,9 +81,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, className }) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Sidebar close button clicked');
+              onClose();
+            }}
             className="lg:hidden p-2 text-white hover:bg-white/20 touch-manipulation"
             aria-label="Close sidebar">
+
+
 
             <X className="h-5 w-5" />
           </Button>

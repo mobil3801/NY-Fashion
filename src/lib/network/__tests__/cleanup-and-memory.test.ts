@@ -240,33 +240,33 @@ describe('Cleanup and Memory Management Tests', () => {
 
 
 
+
         // Expected to fail after destroy
       }expect(listener.mock.calls.length).toBe(listenerCallsBefore);});it('should handle listener removal during destroy', () => {monitor = new ConnectivityMonitor();const listeners: (() => void)[] = [];for (let i = 0; i < 5; i++) {const removeListener = monitor.addListener(vi.fn(() => {// Try to remove other listeners during callback
                 listeners.forEach((remove) => {try {remove();} catch {} // Ignore errors
-                  });}));listeners.push(removeListener);}expect(() => monitor.destroy()).not.toThrow();});});describe('Memory Leak Prevention', () => {it('should not retain references to destroyed components', () => {
-        const clients: ApiClient[] = [];
+                  });}));listeners.push(removeListener);}expect(() => monitor.destroy()).not.toThrow();});});describe('Memory Leak Prevention', () => {it('should not retain references to destroyed components', () => {const clients: ApiClient[] = [];
 
-        // Create multiple clients
-        for (let i = 0; i < 10; i++) {
-          const c = new ApiClient();
-          c.subscribeToNetworkStatus(vi.fn());
-          clients.push(c);
-        }
+          // Create multiple clients
+          for (let i = 0; i < 10; i++) {
+            const c = new ApiClient();
+            c.subscribeToNetworkStatus(vi.fn());
+            clients.push(c);
+          }
 
-        // Destroy all clients
-        clients.forEach((c) => c.destroy());
+          // Destroy all clients
+          clients.forEach((c) => c.destroy());
 
-        // Force garbage collection hint
-        if (global.gc) {
-          global.gc();
-        }
+          // Force garbage collection hint
+          if (global.gc) {
+            global.gc();
+          }
 
-        // Verify no lingering effects
-        clients.forEach((c) => {
-          expect(() => c.get('/test')).not.toThrow();
-          // The requests may return rejected promises, but shouldn't cause errors
+          // Verify no lingering effects
+          clients.forEach((c) => {
+            expect(() => c.get('/test')).not.toThrow();
+            // The requests may return rejected promises, but shouldn't cause errors
+          });
         });
-      });
 
       it('should handle rapid create/destroy cycles', () => {
         for (let i = 0; i < 50; i++) {

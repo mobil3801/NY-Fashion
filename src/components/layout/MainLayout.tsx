@@ -75,6 +75,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
   // Enhanced responsive behavior with better performance
   useEffect(() => {
+    console.log('Mobile state changed:', { isMobile, sidebarOpen });
     // Auto-close sidebar on desktop when switching from mobile
     if (!isMobile && sidebarOpen) {
       setSidebarOpen(false);
@@ -83,10 +84,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
 
   // Optimized sidebar toggle handlers
   const toggleSidebar = useCallback(() => {
+    console.log('Toggle sidebar called, current state:', sidebarOpen);
     setSidebarOpen((prev) => !prev);
-  }, []);
+  }, [sidebarOpen]);
 
   const closeSidebar = useCallback(() => {
+    console.log('Close sidebar called, setting sidebarOpen to false');
     setSidebarOpen(false);
   }, []);
 
@@ -175,10 +178,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
           <Sidebar
             isOpen={isMobile ? sidebarOpen : true}
             onClose={closeSidebar}
-            className={`
-              ${isMobile ? 'lg:translate-x-0' : ''}
-              transition-transform duration-200 ease-in-out
-            `.trim()} />
+            className="transition-transform duration-200 ease-in-out" />
 
 
 
