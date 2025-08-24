@@ -63,13 +63,13 @@ const POSPage: React.FC = () => {
           <NetworkAwarePOSOperations
             onCreateSale={handleCreateSale}
             onProcessReturn={handleProcessReturn}
-            onSyncOfflineData={handleSyncOfflineData}
-          />
+            onSyncOfflineData={handleSyncOfflineData} />
+
         </div>
 
         {/* Mobile Tabs Layout */}
-        {isMobile ? (
-          <div className="p-4">
+        {isMobile ?
+        <div className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="search" className="text-xs">
@@ -159,10 +159,10 @@ const POSPage: React.FC = () => {
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-        ) : (
-          /* Desktop Layout */
-          <div className="p-4 lg:p-6">
+          </div> : (
+
+        /* Desktop Layout */
+        <div className="p-4 lg:p-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column - Product Search and Cart */}
               <div className="lg:col-span-2 space-y-6">
@@ -237,11 +237,11 @@ const POSPage: React.FC = () => {
                 </Card>
               </div>
             </div>
-          </div>
-        )}
+          </div>)
+        }
       </div>
-    </POSProvider>
-  );
+    </POSProvider>);
+
 };
 
 export default POSPage;

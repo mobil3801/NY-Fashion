@@ -6,7 +6,7 @@ export const BREAKPOINTS = {
   md: 768,
   lg: 1024,
   xl: 1280,
-  '2xl': 1536,
+  '2xl': 1536
 } as const;
 
 export type Breakpoint = keyof typeof BREAKPOINTS;
@@ -14,7 +14,7 @@ export type Breakpoint = keyof typeof BREAKPOINTS;
 export function useResponsive() {
   const [windowSize, setWindowSize] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1024,
-    height: typeof window !== 'undefined' ? window.innerHeight : 768,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768
   });
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function useResponsive() {
     function handleResize() {
       setWindowSize({
         width: window.innerWidth,
-        height: window.innerHeight,
+        height: window.innerHeight
       });
     }
 
@@ -43,7 +43,7 @@ export function useResponsive() {
     isTablet: windowSize.width >= BREAKPOINTS.md && windowSize.width < BREAKPOINTS.lg,
     isDesktop: windowSize.width >= BREAKPOINTS.lg,
     isXl: windowSize.width >= BREAKPOINTS.xl,
-    is2Xl: windowSize.width >= BREAKPOINTS['2xl'],
+    is2Xl: windowSize.width >= BREAKPOINTS['2xl']
   };
 }
 
@@ -53,9 +53,9 @@ export function isMobileDevice() {
 }
 
 export function isTabletDevice() {
-  return typeof window !== 'undefined' && 
-         window.innerWidth >= BREAKPOINTS.md && 
-         window.innerWidth < BREAKPOINTS.lg;
+  return typeof window !== 'undefined' &&
+  window.innerWidth >= BREAKPOINTS.md &&
+  window.innerWidth < BREAKPOINTS.lg;
 }
 
 export function isDesktopDevice() {

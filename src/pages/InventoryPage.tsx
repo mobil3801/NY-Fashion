@@ -64,8 +64,8 @@ const InventoryPage = () => {
               onClick={() => setShowCSVImport(true)}
               className="touch-manipulation"
               aria-label="Import products from CSV file"
-              size={isMobile ? "sm" : "default"}
-            >
+              size={isMobile ? "sm" : "default"}>
+
               <Upload className="h-4 w-4 mr-2" aria-hidden="true" />
               {isMobile ? "Import" : "Import CSV"}
             </Button>
@@ -74,8 +74,8 @@ const InventoryPage = () => {
               onClick={() => setShowBarcodeGen(true)}
               className="touch-manipulation"
               aria-label="Generate barcode labels for products"
-              size={isMobile ? "sm" : "default"}
-            >
+              size={isMobile ? "sm" : "default"}>
+
               <QrCode className="h-4 w-4 mr-2" aria-hidden="true" />
               {isMobile ? "Labels" : "Generate Labels"}
             </Button>
@@ -83,8 +83,8 @@ const InventoryPage = () => {
               variant="outline"
               className="touch-manipulation"
               aria-label="Export inventory data"
-              size={isMobile ? "sm" : "default"}
-            >
+              size={isMobile ? "sm" : "default"}>
+
               <Download className="h-4 w-4 mr-2" aria-hidden="true" />
               Export
             </Button>
@@ -94,128 +94,128 @@ const InventoryPage = () => {
         {/* Main Inventory Interface with enhanced mobile responsiveness */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {isMobile ? (
-            /* Mobile scrollable tabs */
-            <div className="w-full overflow-x-auto">
+          /* Mobile scrollable tabs */
+          <div className="w-full overflow-x-auto">
               <TabsList className="inline-flex w-max min-w-full h-12" role="tablist" aria-label="Inventory management sections">
                 <TabsTrigger
-                  value="products"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="Manage products and variants"
-                >
+                value="products"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="Manage products and variants">
+
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Products
                 </TabsTrigger>
                 <TabsTrigger
-                  value="stock"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="View and manage stock movements"
-                >
+                value="stock"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="View and manage stock movements">
+
                   <BarChart3 className="h-4 w-4" aria-hidden="true" />
                   Stock
                 </TabsTrigger>
                 <TabsTrigger
-                  value="adjustments"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="Make inventory adjustments"
-                >
+                value="adjustments"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="Make inventory adjustments">
+
                   <FileText className="h-4 w-4" aria-hidden="true" />
                   Adjustments
                 </TabsTrigger>
                 <TabsTrigger
-                  value="alerts"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="View low stock alerts and critical items"
-                >
+                value="alerts"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="View low stock alerts and critical items">
+
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   Alerts
                 </TabsTrigger>
                 <TabsTrigger
-                  value="reports"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="Generate inventory reports and analytics"
-                >
+                value="reports"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="Generate inventory reports and analytics">
+
                   <BarChart3 className="h-4 w-4" aria-hidden="true" />
                   Reports
                 </TabsTrigger>
                 <TabsTrigger
-                  value="diagnostics"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="Network diagnostics and troubleshooting"
-                >
+                value="diagnostics"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="Network diagnostics and troubleshooting">
+
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Network
                 </TabsTrigger>
                 <TabsTrigger
-                  value="debug"
-                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                  aria-label="Inventory debug panel"
-                >
+                value="debug"
+                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                aria-label="Inventory debug panel">
+
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Debug
                 </TabsTrigger>
               </TabsList>
-            </div>
-          ) : (
-            /* Desktop grid tabs */
-            <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
+            </div>) : (
+
+          /* Desktop grid tabs */
+          <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
               <TabsTrigger
-                value="products"
-                className="flex items-center gap-2"
-                aria-label="Manage products and variants"
-              >
+              value="products"
+              className="flex items-center gap-2"
+              aria-label="Manage products and variants">
+
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Products
               </TabsTrigger>
               <TabsTrigger
-                value="stock"
-                className="flex items-center gap-2"
-                aria-label="View and manage stock movements"
-              >
+              value="stock"
+              className="flex items-center gap-2"
+              aria-label="View and manage stock movements">
+
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 Stock Movement
               </TabsTrigger>
               <TabsTrigger
-                value="adjustments"
-                className="flex items-center gap-2"
-                aria-label="Make inventory adjustments"
-              >
+              value="adjustments"
+              className="flex items-center gap-2"
+              aria-label="Make inventory adjustments">
+
                 <FileText className="h-4 w-4" aria-hidden="true" />
                 Adjustments
               </TabsTrigger>
               <TabsTrigger
-                value="alerts"
-                className="flex items-center gap-2"
-                aria-label="View low stock alerts and critical items"
-              >
+              value="alerts"
+              className="flex items-center gap-2"
+              aria-label="View low stock alerts and critical items">
+
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 Low Stock
               </TabsTrigger>
               <TabsTrigger
-                value="reports"
-                className="flex items-center gap-2"
-                aria-label="Generate inventory reports and analytics"
-              >
+              value="reports"
+              className="flex items-center gap-2"
+              aria-label="Generate inventory reports and analytics">
+
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 Reports
               </TabsTrigger>
               <TabsTrigger
-                value="diagnostics"
-                className="flex items-center gap-2"
-                aria-label="Network diagnostics and troubleshooting"
-              >
+              value="diagnostics"
+              className="flex items-center gap-2"
+              aria-label="Network diagnostics and troubleshooting">
+
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Diagnostics
               </TabsTrigger>
               <TabsTrigger
-                value="debug"
-                className="flex items-center gap-2"
-                aria-label="Inventory debug panel"
-              >
+              value="debug"
+              className="flex items-center gap-2"
+              aria-label="Inventory debug panel">
+
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Debug
               </TabsTrigger>
-            </TabsList>
-          )}
+            </TabsList>)
+          }
 
           <TabsContent value="products" className="mt-4">
             <ProductManagement />
@@ -335,8 +335,8 @@ const InventoryPage = () => {
         <CSVImport isOpen={showCSVImport} onClose={() => setShowCSVImport(false)} />
         <BarcodeGeneration isOpen={showBarcodeGen} onClose={() => setShowBarcodeGen(false)} />
       </div>
-    </InventoryProvider>
-  );
+    </InventoryProvider>);
+
 };
 
 export default InventoryPage;

@@ -26,7 +26,7 @@ const ShoppingCart: React.FC = () => {
 
   const { user } = useAuth();
   const { t } = useLanguage();
-  
+
   const [lineDiscountDialog, setLineDiscountDialog] = useState<{
     isOpen: boolean;
     itemId: string;
@@ -46,8 +46,8 @@ const ShoppingCart: React.FC = () => {
   const subtotal = getCartSubtotal();
   const taxAmount = getTaxAmount();
   const orderDiscountAmount = state.orderDiscountType === 'percentage' ?
-    subtotal * (state.orderDiscount / 100) :
-    state.orderDiscount;
+  subtotal * (state.orderDiscount / 100) :
+  state.orderDiscount;
   const total = getCartTotal();
 
   const handleQuantityChange = (itemId: string, change: number) => {
@@ -100,8 +100,8 @@ const ShoppingCart: React.FC = () => {
           <ShoppingCartIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
           <p className="text-gray-500">{t('pos.cart.empty', 'Cart is empty')}</p>
         </CardContent>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -118,26 +118,26 @@ const ShoppingCart: React.FC = () => {
       <CardContent className="p-4">
         {/* Cart Items - Mobile Optimized */}
         <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
-          {state.cart.map((item) => (
-            <div key={item.id} className="border rounded-lg p-3">
+          {state.cart.map((item) =>
+          <div key={item.id} className="border rounded-lg p-3">
               {/* Item Header */}
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="flex-1">
                   <h4 className="font-medium text-sm sm:text-base">{item.product.name}</h4>
-                  {item.variant && (
-                    <p className="text-xs text-gray-500 mt-1">
+                  {item.variant &&
+                <p className="text-xs text-gray-500 mt-1">
                       {item.variant.size && `Size: ${item.variant.size}`}
                       {item.variant.color && ` Color: ${item.variant.color}`}
                     </p>
-                  )}
+                }
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     ${item.unitPrice.toFixed(2)} each
                   </p>
-                  {item.lineDiscount > 0 && (
-                    <Badge variant="destructive" className="text-xs mt-2">
+                  {item.lineDiscount > 0 &&
+                <Badge variant="destructive" className="text-xs mt-2">
                       -{item.lineDiscountType === 'percentage' ? `${item.lineDiscount}%` : `$${item.lineDiscount}`}
                     </Badge>
-                  )}
+                }
                 </div>
                 
                 {/* Item Total - Mobile */}
@@ -153,21 +153,21 @@ const ShoppingCart: React.FC = () => {
                   <span className="text-sm font-medium">Qty:</span>
                   <div className="flex items-center border rounded-lg">
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.id, -1)}
-                      className="h-8 w-8 p-0"
-                      disabled={item.quantity <= 1}
-                    >
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleQuantityChange(item.id, -1)}
+                    className="h-8 w-8 p-0"
+                    disabled={item.quantity <= 1}>
+
                       <Minus className="h-3 w-3" />
                     </Button>
                     <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleQuantityChange(item.id, 1)}
-                      className="h-8 w-8 p-0"
-                    >
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleQuantityChange(item.id, 1)}
+                    className="h-8 w-8 p-0">
+
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
@@ -180,22 +180,22 @@ const ShoppingCart: React.FC = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-center sm:justify-end gap-2">
-                  {canApplyDiscount && (
-                    <Dialog
-                      open={lineDiscountDialog.isOpen && lineDiscountDialog.itemId === item.id}
-                      onOpenChange={(open) => {
-                        if (open) {
-                          setLineDiscountDialog({
-                            isOpen: true,
-                            itemId: item.id,
-                            currentDiscount: item.lineDiscount,
-                            discountType: item.lineDiscountType
-                          });
-                        } else {
-                          setLineDiscountDialog({ isOpen: false, itemId: '', currentDiscount: 0, discountType: 'percentage' });
-                        }
-                      }}
-                    >
+                  {canApplyDiscount &&
+                <Dialog
+                  open={lineDiscountDialog.isOpen && lineDiscountDialog.itemId === item.id}
+                  onOpenChange={(open) => {
+                    if (open) {
+                      setLineDiscountDialog({
+                        isOpen: true,
+                        itemId: item.id,
+                        currentDiscount: item.lineDiscount,
+                        discountType: item.lineDiscountType
+                      });
+                    } else {
+                      setLineDiscountDialog({ isOpen: false, itemId: '', currentDiscount: 0, discountType: 'percentage' });
+                    }
+                  }}>
+
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm" className="h-8 px-3">
                           <Percent className="h-3 w-3 mr-1" />
@@ -210,11 +210,11 @@ const ShoppingCart: React.FC = () => {
                           <div>
                             <label className="text-sm font-medium">Discount Type</label>
                             <Select
-                              value={lineDiscountDialog.discountType}
-                              onValueChange={(value: 'percentage' | 'fixed') =>
-                                setLineDiscountDialog((prev) => ({ ...prev, discountType: value }))
-                              }
-                            >
+                          value={lineDiscountDialog.discountType}
+                          onValueChange={(value: 'percentage' | 'fixed') =>
+                          setLineDiscountDialog((prev) => ({ ...prev, discountType: value }))
+                          }>
+
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
@@ -229,25 +229,25 @@ const ShoppingCart: React.FC = () => {
                               Discount {lineDiscountDialog.discountType === 'percentage' ? '(%)' : '($)'}
                             </label>
                             <Input
-                              type="number"
-                              value={lineDiscountDialog.currentDiscount}
-                              onChange={(e) =>
-                                setLineDiscountDialog((prev) => ({
-                                  ...prev,
-                                  currentDiscount: parseFloat(e.target.value) || 0
-                                }))
-                              }
-                              min="0"
-                              max={lineDiscountDialog.discountType === 'percentage' ? 100 : item.subtotal}
-                              step="0.01"
-                            />
+                          type="number"
+                          value={lineDiscountDialog.currentDiscount}
+                          onChange={(e) =>
+                          setLineDiscountDialog((prev) => ({
+                            ...prev,
+                            currentDiscount: parseFloat(e.target.value) || 0
+                          }))
+                          }
+                          min="0"
+                          max={lineDiscountDialog.discountType === 'percentage' ? 100 : item.subtotal}
+                          step="0.01" />
+
                           </div>
                           <div className="flex flex-col sm:flex-row justify-end gap-2">
                             <Button
-                              variant="outline"
-                              onClick={() => setLineDiscountDialog({ isOpen: false, itemId: '', currentDiscount: 0, discountType: 'percentage' })}
-                              className="w-full sm:w-auto"
-                            >
+                          variant="outline"
+                          onClick={() => setLineDiscountDialog({ isOpen: false, itemId: '', currentDiscount: 0, discountType: 'percentage' })}
+                          className="w-full sm:w-auto">
+
                               Cancel
                             </Button>
                             <Button onClick={handleLineDiscount} className="w-full sm:w-auto">
@@ -257,21 +257,21 @@ const ShoppingCart: React.FC = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
-                  )}
+                }
                   
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeFromCart(item.id)}
-                    className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeFromCart(item.id)}
+                  className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50">
+
                     <Trash2 className="h-3 w-3 mr-1" />
                     <span className="sm:hidden">Remove</span>
                   </Button>
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
 
         <Separator className="my-4" />
@@ -283,12 +283,12 @@ const ShoppingCart: React.FC = () => {
             <span>${subtotal.toFixed(2)}</span>
           </div>
           
-          {state.orderDiscount > 0 && (
-            <div className="flex justify-between text-sm sm:text-base text-red-600">
+          {state.orderDiscount > 0 &&
+          <div className="flex justify-between text-sm sm:text-base text-red-600">
               <span>Order Discount:</span>
               <span>-${orderDiscountAmount.toFixed(2)}</span>
             </div>
-          )}
+          }
           
           <div className="flex justify-between text-sm sm:text-base">
             <span>Tax:</span>
@@ -304,11 +304,11 @@ const ShoppingCart: React.FC = () => {
         </div>
 
         {/* Order Discount Button */}
-        {canApplyDiscount && (
-          <Dialog
-            open={orderDiscountDialog.isOpen}
-            onOpenChange={(open) => setOrderDiscountDialog((prev) => ({ ...prev, isOpen: open }))}
-          >
+        {canApplyDiscount &&
+        <Dialog
+          open={orderDiscountDialog.isOpen}
+          onOpenChange={(open) => setOrderDiscountDialog((prev) => ({ ...prev, isOpen: open }))}>
+
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full mt-4" size="lg">
                 <DollarSign className="h-4 w-4 mr-2" />
@@ -323,11 +323,11 @@ const ShoppingCart: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium">Discount Type</label>
                   <Select
-                    value={orderDiscountDialog.discountType}
-                    onValueChange={(value: 'percentage' | 'fixed') =>
-                      setOrderDiscountDialog((prev) => ({ ...prev, discountType: value }))
-                    }
-                  >
+                  value={orderDiscountDialog.discountType}
+                  onValueChange={(value: 'percentage' | 'fixed') =>
+                  setOrderDiscountDialog((prev) => ({ ...prev, discountType: value }))
+                  }>
+
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -342,25 +342,25 @@ const ShoppingCart: React.FC = () => {
                     Discount {orderDiscountDialog.discountType === 'percentage' ? '(%)' : '($)'}
                   </label>
                   <Input
-                    type="number"
-                    value={orderDiscountDialog.discount}
-                    onChange={(e) =>
-                      setOrderDiscountDialog((prev) => ({
-                        ...prev,
-                        discount: parseFloat(e.target.value) || 0
-                      }))
-                    }
-                    min="0"
-                    max={orderDiscountDialog.discountType === 'percentage' ? 100 : subtotal}
-                    step="0.01"
-                  />
+                  type="number"
+                  value={orderDiscountDialog.discount}
+                  onChange={(e) =>
+                  setOrderDiscountDialog((prev) => ({
+                    ...prev,
+                    discount: parseFloat(e.target.value) || 0
+                  }))
+                  }
+                  min="0"
+                  max={orderDiscountDialog.discountType === 'percentage' ? 100 : subtotal}
+                  step="0.01" />
+
                 </div>
                 <div className="flex flex-col sm:flex-row justify-end gap-2">
                   <Button
-                    variant="outline"
-                    onClick={() => setOrderDiscountDialog((prev) => ({ ...prev, isOpen: false }))}
-                    className="w-full sm:w-auto"
-                  >
+                  variant="outline"
+                  onClick={() => setOrderDiscountDialog((prev) => ({ ...prev, isOpen: false }))}
+                  className="w-full sm:w-auto">
+
                     Cancel
                   </Button>
                   <Button onClick={handleOrderDiscount} className="w-full sm:w-auto">
@@ -370,10 +370,10 @@ const ShoppingCart: React.FC = () => {
               </div>
             </DialogContent>
           </Dialog>
-        )}
+        }
       </CardContent>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default ShoppingCart;
