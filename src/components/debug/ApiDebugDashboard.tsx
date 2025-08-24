@@ -113,6 +113,8 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -219,12 +221,10 @@ const ApiDebugDashboard: React.FC = () => {
                         </Badge>}
                     </div>
                     <div className="flex items-center gap-2">
-                      {call.status === 'error' && <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation();handleRetryCall(call.id);
-                      }}>
+                      {call.status === 'error' && <Button variant="outline" size="sm" onClick={(e) => {e.stopPropagation();handleRetryCall(call.id);}}>
 
                           <RotateCcw className="h-3 w-3" />
-                        </Button>
-                    }
+                        </Button>}
                       <Badge variant={getStatusColor(call.status) as any} className="text-xs">
                         {call.status}
                       </Badge>
