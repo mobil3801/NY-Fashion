@@ -9,7 +9,6 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { InventoryProvider } from './contexts/InventoryContext';
 import { PurchaseOrderProvider } from './contexts/PurchaseOrderContext';
 import { EmployeeProvider } from '@/contexts/EmployeeContext';
-import { DebugProvider } from '@/debug';
 
 import NetworkErrorBoundary from '@/components/network/NetworkErrorBoundary';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -31,7 +30,6 @@ import AdminPage from '@/pages/AdminPage';
 import SettingsPage from '@/pages/SettingsPage';
 import POSPage from '@/pages/POSPage';
 import NotFound from '@/pages/NotFound';
-import NetworkDebugPage from '@/pages/debug/NetworkDebugPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,132 +50,107 @@ function App() {
               <InventoryProvider>
                 <PurchaseOrderProvider>
                   <EmployeeProvider>
-                  <DebugProvider>
                     <Router>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                
-                {/* Protected Routes */}
-                <Route
-                            path="/*"
-                            element={
+                      <Routes>
+                        {/* Public Routes */}
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        
+                        {/* Protected Routes */}
+                        <Route
+                          path="/*"
+                          element={
                             <ProtectedRoute>
-                      <MainLayout />
-                    </ProtectedRoute>
-                            }>
-
-                  <Route index element={<Navigate to="/dashboard" replace />} />
-                  <Route
-                              path="dashboard"
-                              element={
+                              <MainLayout />
+                            </ProtectedRoute>
+                          }>
+                          <Route index element={<Navigate to="/dashboard" replace />} />
+                          <Route
+                            path="dashboard"
+                            element={
                               <ProtectedRoute resource="dashboard">
-                        <DashboardPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="sales"
-                              element={
+                                <DashboardPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="sales"
+                            element={
                               <ProtectedRoute resource="sales">
-                        <SalesPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="invoices"
-                              element={
+                                <SalesPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="invoices"
+                            element={
                               <ProtectedRoute resource="invoices">
-                        <InvoicesPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="purchases"
-                              element={
+                                <InvoicesPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="purchases"
+                            element={
                               <ProtectedRoute resource="purchases">
-                        <PurchasePage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="inventory"
-                              element={
+                                <PurchasePage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="inventory"
+                            element={
                               <ProtectedRoute resource="inventory">
-                        <InventoryPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="employees"
-                              element={
+                                <InventoryPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="employees"
+                            element={
                               <ProtectedRoute resource="employees">
-                        <EmployeesPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="salary"
-                              element={
+                                <EmployeesPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="salary"
+                            element={
                               <ProtectedRoute resource="salary">
-                        <SalaryPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="admin"
-                              element={
+                                <SalaryPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="admin"
+                            element={
                               <ProtectedRoute resource="admin">
-                        <AdminPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="settings"
-                              element={
+                                <AdminPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="settings"
+                            element={
                               <ProtectedRoute resource="settings">
-                        <SettingsPage />
-                      </ProtectedRoute>
-                              } />
-
-                  <Route
-                              path="pos"
-                              element={
+                                <SettingsPage />
+                              </ProtectedRoute>
+                            } />
+                          <Route
+                            path="pos"
+                            element={
                               <ProtectedRoute resource="pos">
-                        <POSPage />
-                      </ProtectedRoute>
-                              } />
+                                <POSPage />
+                              </ProtectedRoute>
+                            } />
+                        </Route>
 
-                  {/* Debug Routes - Development Only */}
-                  {process.env.NODE_ENV === 'development' &&
-                            <Route
-                              path="debug/network"
-                              element={
-                              <ProtectedRoute resource="admin">
-                          <NetworkDebugPage />
-                        </ProtectedRoute>
-                              } />
-
-                            }
-
-                </Route>
-
-                {/* Fallback Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-                </Router>
-                </DebugProvider>
-                </EmployeeProvider>
-              </PurchaseOrderProvider>
-            </InventoryProvider>
-          </AuthProvider>
-        </NetworkErrorBoundary>
-        <Toaster />
-      </LanguageProvider>
-    </TooltipProvider>
-    </QueryClientProvider>);
-
+                        {/* Fallback Route */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Router>
+                  </EmployeeProvider>
+                </PurchaseOrderProvider>
+              </InventoryProvider>
+            </AuthProvider>
+          </NetworkErrorBoundary>
+          <Toaster />
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
 
 export default App;

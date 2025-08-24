@@ -1,12 +1,12 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const isProduction = mode === 'production';
-  const isPreview = mode === 'preview';
-  const shouldDisableSourceMaps = isProduction || isPreview;
+export default defineConfig(() => {
+  // Always use production settings
+  const isProduction = true;
 
   return {
     server: {
@@ -18,14 +18,15 @@ export default defineConfig(({ mode }) => {
       port: 8080
     },
     plugins: [
-    react({
-      // Disable React DevTools in production/preview
-      devTarget: shouldDisableSourceMaps ? 'esbuild' : 'es2015'
-    })],
+      react({
+        // Always use production settings
+        devTarget: 'esbuild'
+      })
+    ],
 
     build: {
-      // Disable source maps completely in production/preview to prevent 404 errors
-      sourcemap: !shouldDisableSourceMaps,
+      // Disable source maps completely
+      sourcemap: false,
       // Ensure proper asset handling
       assetsDir: 'assets',
       // Prevent URL encoding issues in asset paths
@@ -47,21 +48,25 @@ export default defineConfig(({ mode }) => {
           entryFileNames: 'assets/js/[name]-[hash].js'
         }
       },
-      // Minification settings
-      minify: shouldDisableSourceMaps ? 'esbuild' : false,
+      // Always minify
+      minify: 'esbuild',
       // Remove console logs and debugger statements in production
-      esbuild: shouldDisableSourceMaps ? {
+      esbuild: {
         drop: ['console', 'debugger'],
-        // Ensure no source map references are left in the build
         sourcemap: false
-      } : undefined
+      }
     },
-    // Define environment variables to disable React DevTools
+    // Force production environment variables
     define: {
-      __REACT_DEVTOOLS_GLOBAL_HOOK__: shouldDisableSourceMaps ? 'undefined' : '__REACT_DEVTOOLS_GLOBAL_HOOK__',
-      'process.env.NODE_ENV': JSON.stringify(mode),
+      // Disable React DevTools completely
+      __REACT_DEVTOOLS_GLOBAL_HOOK__: 'undefined',
+      'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env.REACT_APP_NODE_ENV': JSON.stringify('production'),
+      'process.env.VITE_NODE_ENV': JSON.stringify('production'),
       // Disable source map warnings
-      'process.env.GENERATE_SOURCEMAP': JSON.stringify(!shouldDisableSourceMaps)
+      'process.env.GENERATE_SOURCEMAP': JSON.stringify('false'),
+      // Disable React DevTools
+      'process.env.REACT_DEVTOOLS_DISABLED': JSON.stringify('true')
     },
     resolve: {
       alias: {

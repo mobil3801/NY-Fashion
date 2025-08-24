@@ -122,6 +122,7 @@ const ApiDebugDashboard: React.FC = () => {
 
 
 
+
       // Force re-render to show updated timestamps
     }, 5000);return () => clearInterval(interval);}, [isAutoRefresh]);const callStats = { total: apiCalls.length, success: apiCalls.filter((c) => c.status === 'success').length, error: apiCalls.filter((c) => c.status === 'error').length, pending: apiCalls.filter((c) => c.status === 'pending' || c.status === 'retrying').length };return <div className="space-y-4">
       {/* Header with stats */}
@@ -335,8 +336,7 @@ const ApiDebugDashboard: React.FC = () => {
                         <pre className="bg-gray-50 p-2 rounded text-xs overflow-x-auto">
                           {JSON.stringify(selectedCallData.response, null, 2)}
                         </pre>
-                      </div>
-                }
+                      </div>}
                   </div>
                 </ScrollArea>
               </TabsContent>
