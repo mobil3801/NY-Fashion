@@ -24,11 +24,11 @@ class SecurityHeadersManager {
     // HSTS Header
     if (this.config.headers.hsts.enabled) {
       let hstsValue = `max-age=${this.config.headers.hsts.maxAge}`;
-      
+
       if (this.config.headers.hsts.includeSubDomains) {
         hstsValue += '; includeSubDomains';
       }
-      
+
       if (this.config.headers.hsts.preload) {
         hstsValue += '; preload';
       }
@@ -96,7 +96,7 @@ class SecurityHeadersManager {
   securityHeadersMiddleware() {
     return (req: any, res: any, next: any) => {
       const headers = this.generateHeaders();
-      
+
       Object.entries(headers).forEach(([name, value]) => {
         if (value) {
           res.setHeader(name, value);
@@ -120,18 +120,18 @@ export const useSecurityHeaders = () => {
 };
 
 // Security headers validation
-export const validateSecurityHeaders = (response: Response): { valid: boolean; missing: string[]; warnings: string[] } => {
+export const validateSecurityHeaders = (response: Response): {valid: boolean;missing: string[];warnings: string[];} => {
   const requiredHeaders = [
-    'Strict-Transport-Security',
-    'X-Frame-Options',
-    'X-Content-Type-Options',
-    'Referrer-Policy'
-  ];
+  'Strict-Transport-Security',
+  'X-Frame-Options',
+  'X-Content-Type-Options',
+  'Referrer-Policy'];
+
 
   const missing: string[] = [];
   const warnings: string[] = [];
 
-  requiredHeaders.forEach(header => {
+  requiredHeaders.forEach((header) => {
     if (!response.headers.get(header)) {
       missing.push(header);
     }

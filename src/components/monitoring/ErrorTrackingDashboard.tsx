@@ -8,16 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  AlertCircle, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  AlertCircle,
+  TrendingUp,
+  TrendingDown,
   RefreshCw,
   Search,
   Filter,
   Eye,
-  CheckCircle
-} from 'lucide-react';
+  CheckCircle } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -57,7 +57,7 @@ const ErrorTrackingDashboard: React.FC = () => {
   const fetchErrors = async () => {
     try {
       setIsLoading(true);
-      
+
       const filters = [];
       if (severityFilter !== 'all') {
         filters.push({ name: 'severity', op: 'Equal', value: severityFilter });
@@ -78,7 +78,7 @@ const ErrorTrackingDashboard: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      
+
       setErrors(data?.List || []);
     } catch (error) {
       console.error('Failed to fetch errors:', error);
@@ -103,7 +103,7 @@ const ErrorTrackingDashboard: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      
+
       setStatistics(data?.List || []);
     } catch (error) {
       console.error('Failed to fetch error statistics:', error);
@@ -117,11 +117,11 @@ const ErrorTrackingDashboard: React.FC = () => {
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
+      case 'critical':return 'destructive';
+      case 'high':return 'destructive';
+      case 'medium':return 'secondary';
+      case 'low':return 'outline';
+      default:return 'outline';
     }
   };
 
@@ -138,12 +138,12 @@ const ErrorTrackingDashboard: React.FC = () => {
   };
 
   // Get unique error types for filter
-  const errorTypes = Array.from(new Set(errors.map(e => e.error_type))).filter(Boolean);
+  const errorTypes = Array.from(new Set(errors.map((e) => e.error_type))).filter(Boolean);
 
   // Calculate summary statistics
   const totalErrors = errors.length;
-  const criticalErrors = errors.filter(e => e.severity === 'critical').length;
-  const recentErrors = errors.filter(e => {
+  const criticalErrors = errors.filter((e) => e.severity === 'critical').length;
+  const recentErrors = errors.filter((e) => {
     const errorDate = new Date(e.timestamp);
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     return errorDate > oneHourAgo;
@@ -210,7 +210,7 @@ const ErrorTrackingDashboard: React.FC = () => {
               <div>
                 <p className="text-sm font-medium">Error Rate</p>
                 <p className="text-2xl font-bold">
-                  {totalErrors > 0 ? ((criticalErrors / totalErrors) * 100).toFixed(1) + '%' : '0%'}
+                  {totalErrors > 0 ? (criticalErrors / totalErrors * 100).toFixed(1) + '%' : '0%'}
                 </p>
               </div>
             </div>
@@ -228,8 +228,8 @@ const ErrorTrackingDashboard: React.FC = () => {
                 placeholder="Search errors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1"
-              />
+                className="flex-1" />
+
             </div>
             
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
@@ -251,9 +251,9 @@ const ErrorTrackingDashboard: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {errorTypes.map((type) => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
+                {errorTypes.map((type) =>
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+                )}
               </SelectContent>
             </Select>
 
@@ -264,8 +264,8 @@ const ErrorTrackingDashboard: React.FC = () => {
                 setSearchTerm('');
                 setSeverityFilter('all');
                 setTypeFilter('all');
-              }}
-            >
+              }}>
+
               <Filter className="h-4 w-4 mr-1" />
               Clear
             </Button>
@@ -280,30 +280,30 @@ const ErrorTrackingDashboard: React.FC = () => {
         </TabsList>
 
         <TabsContent value="errors" className="space-y-4">
-          {criticalErrors > 0 && (
-            <Alert variant="destructive">
+          {criticalErrors > 0 &&
+          <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {criticalErrors} critical error{criticalErrors > 1 ? 's' : ''} detected. 
                 Immediate attention required.
               </AlertDescription>
             </Alert>
-          )}
+          }
 
           <Card>
             <CardContent className="p-0">
               <div className="space-y-2">
-                {errors.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                {errors.length === 0 ?
+                <div className="text-center py-8 text-gray-500">
                     {isLoading ? 'Loading errors...' : 'No errors found'}
-                  </div>
-                ) : (
-                  errors.map((error) => (
-                    <div
-                      key={error.ID}
-                      className="border-b last:border-b-0 p-4 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => setSelectedError(error)}
-                    >
+                  </div> :
+
+                errors.map((error) =>
+                <div
+                  key={error.ID}
+                  className="border-b last:border-b-0 p-4 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedError(error)}>
+
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -312,9 +312,9 @@ const ErrorTrackingDashboard: React.FC = () => {
                               {error.severity.toUpperCase()}
                             </Badge>
                             <Badge variant="outline">{error.error_type}</Badge>
-                            {error.component && (
-                              <Badge variant="secondary">{error.component}</Badge>
-                            )}
+                            {error.component &&
+                        <Badge variant="secondary">{error.component}</Badge>
+                        }
                           </div>
                           <p className="font-medium text-sm mb-1">{error.error_message}</p>
                           <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -328,8 +328,8 @@ const ErrorTrackingDashboard: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-                  ))
-                )}
+                )
+                }
               </div>
             </CardContent>
           </Card>
@@ -343,8 +343,8 @@ const ErrorTrackingDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {statistics.slice(0, 10).map((stat) => (
-                    <div key={stat.ID} className="flex items-center justify-between">
+                  {statistics.slice(0, 10).map((stat) =>
+                  <div key={stat.ID} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">{stat.error_type}</Badge>
                       </div>
@@ -352,7 +352,7 @@ const ErrorTrackingDashboard: React.FC = () => {
                         <span className="font-medium">{stat.count}</span>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -363,11 +363,11 @@ const ErrorTrackingDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {statistics
-                    .sort((a, b) => new Date(b.last_occurrence).getTime() - new Date(a.last_occurrence).getTime())
-                    .slice(0, 10)
-                    .map((stat) => (
-                      <div key={stat.ID} className="flex items-center justify-between text-sm">
+                  {statistics.
+                  sort((a, b) => new Date(b.last_occurrence).getTime() - new Date(a.last_occurrence).getTime()).
+                  slice(0, 10).
+                  map((stat) =>
+                  <div key={stat.ID} className="flex items-center justify-between text-sm">
                         <div>
                           <Badge variant="outline" className="text-xs">{stat.error_type}</Badge>
                         </div>
@@ -375,7 +375,7 @@ const ErrorTrackingDashboard: React.FC = () => {
                           {formatDistanceToNow(new Date(stat.last_occurrence), { addSuffix: true })}
                         </div>
                       </div>
-                    ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -393,8 +393,8 @@ const ErrorTrackingDashboard: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           
-          {selectedError && (
-            <div className="space-y-4">
+          {selectedError &&
+          <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <label className="font-medium">Error ID:</label>
@@ -421,29 +421,29 @@ const ErrorTrackingDashboard: React.FC = () => {
                 <p className="bg-gray-50 p-2 rounded mt-1">{selectedError.error_message}</p>
               </div>
 
-              {selectedError.url && (
-                <div>
+              {selectedError.url &&
+            <div>
                   <label className="font-medium">URL:</label>
                   <p className="font-mono text-sm break-all bg-gray-50 p-2 rounded mt-1">
                     {selectedError.url}
                   </p>
                 </div>
-              )}
+            }
 
-              {selectedError.stack_trace && (
-                <div>
+              {selectedError.stack_trace &&
+            <div>
                   <label className="font-medium">Stack Trace:</label>
                   <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto mt-1">
                     {selectedError.stack_trace}
                   </pre>
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 export default ErrorTrackingDashboard;

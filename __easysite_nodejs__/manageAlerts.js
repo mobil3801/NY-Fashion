@@ -1,7 +1,7 @@
 
 async function manageAlerts(action, alertData) {
   const timestamp = new Date().toISOString();
-  
+
   switch (action) {
     case 'create':
       return await createAlert(alertData);
@@ -92,15 +92,15 @@ async function resolveAlert(alertId, userId) {
 async function listAlerts(filters = {}) {
   try {
     const queryFilters = [];
-    
+
     if (filters.severity) {
       queryFilters.push({ name: 'severity', op: 'Equal', value: filters.severity });
     }
-    
+
     if (filters.isActive !== undefined) {
       queryFilters.push({ name: 'is_active', op: 'Equal', value: filters.isActive });
     }
-    
+
     if (filters.acknowledged !== undefined) {
       queryFilters.push({ name: 'acknowledged', op: 'Equal', value: filters.acknowledged });
     }

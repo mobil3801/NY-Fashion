@@ -23,7 +23,7 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
     case 'getHealthStatus':
       const healthMetrics = generateHealthMetrics();
       const healthScore = calculateHealthScore(healthMetrics);
-      
+
       return {
         timestamp: new Date().toISOString(),
         overallStatus: getOverallStatus(healthScore),
@@ -58,7 +58,7 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
     case 'getMetricsHistory':
       const period = options.period || '24h';
       const history = generateMetricsHistory(period);
-      
+
       return {
         period,
         dataPoints: history.length,
@@ -72,23 +72,23 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
         ruleId: `alert_rule_${Date.now()}`,
         name: options.name || 'Database Health Alert',
         conditions: options.conditions || [
-          {
-            metric: 'response_time',
-            operator: 'greater_than',
-            threshold: 1000,
-            duration: 300 // 5 minutes
-          }
-        ],
+        {
+          metric: 'response_time',
+          operator: 'greater_than',
+          threshold: 1000,
+          duration: 300 // 5 minutes
+        }],
+
         actions: options.actions || [
-          {
-            type: 'email',
-            recipients: ['admin@company.com']
-          },
-          {
-            type: 'webhook',
-            url: 'https://hooks.slack.com/services/...'
-          }
-        ],
+        {
+          type: 'email',
+          recipients: ['admin@company.com']
+        },
+        {
+          type: 'webhook',
+          url: 'https://hooks.slack.com/services/...'
+        }],
+
         enabled: options.enabled !== false,
         severity: options.severity || 'medium'
       };
@@ -139,19 +139,19 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
           tempFiles: Math.floor(Math.random() * 3)
         },
         recentEvents: [
-          {
-            timestamp: new Date(Date.now() - 300000).toISOString(),
-            type: 'checkpoint',
-            message: 'Automatic checkpoint completed',
-            severity: 'info'
-          },
-          {
-            timestamp: new Date(Date.now() - 600000).toISOString(),
-            type: 'connection',
-            message: 'New connection established',
-            severity: 'info'
-          }
-        ]
+        {
+          timestamp: new Date(Date.now() - 300000).toISOString(),
+          type: 'checkpoint',
+          message: 'Automatic checkpoint completed',
+          severity: 'info'
+        },
+        {
+          timestamp: new Date(Date.now() - 600000).toISOString(),
+          type: 'connection',
+          message: 'New connection established',
+          severity: 'info'
+        }]
+
       };
 
       return diagnostics;
@@ -195,7 +195,7 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
     case 'generateReport':
       const reportType = options.type || 'comprehensive';
       const reportPeriod = options.period || '7d';
-      
+
       const report = {
         reportId: `health_report_${Date.now()}`,
         type: reportType,
@@ -232,10 +232,10 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
           }
         },
         recommendations: [
-          'Monitor memory usage trends and plan capacity upgrades',
-          'Optimize slow queries identified during peak hours',
-          'Consider implementing read replicas for better load distribution'
-        ]
+        'Monitor memory usage trends and plan capacity upgrades',
+        'Optimize slow queries identified during peak hours',
+        'Consider implementing read replicas for better load distribution']
+
       };
 
       return report;
@@ -275,14 +275,14 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
 
   function calculateHealthScore(metrics) {
     let score = 100;
-    
+
     // Deduct points based on various metrics
     if (metrics.performance.avgResponseTime > 1000) score -= 20;
     if (metrics.connections.utilization > 0.8) score -= 15;
     if (metrics.resources.cpuUsage > 80) score -= 10;
     if (metrics.resources.memoryUsage > 85) score -= 10;
     if (metrics.resources.diskUsage > 90) score -= 25;
-    
+
     return Math.max(score, 0);
   }
 
@@ -296,7 +296,7 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
 
   function generateActiveAlerts(metrics) {
     const alerts = [];
-    
+
     if (metrics.performance.avgResponseTime > healthConfig.alertThresholds.responseTime) {
       alerts.push({
         id: 'alert_response_time',
@@ -307,13 +307,13 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
         since: new Date(Date.now() - 300000).toISOString()
       });
     }
-    
+
     return alerts;
   }
 
   function generateHealthRecommendations(metrics) {
     const recommendations = [];
-    
+
     if (metrics.connections.utilization > 0.7) {
       recommendations.push({
         priority: 'medium',
@@ -322,7 +322,7 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
         reason: 'High connection utilization detected'
       });
     }
-    
+
     return recommendations;
   }
 
@@ -380,8 +380,8 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
   }
 
   function determineOverallResult(checks) {
-    const results = Object.values(checks).map(check => check.status);
-    
+    const results = Object.values(checks).map((check) => check.status);
+
     if (results.includes('fail')) return 'fail';
     if (results.includes('warning')) return 'warning';
     return 'pass';
@@ -390,18 +390,18 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
   function generateMetricsHistory(period) {
     const points = [];
     const now = Date.now();
-    const intervals = period === '24h' ? 24 : (period === '7d' ? 168 : 720);
-    
+    const intervals = period === '24h' ? 24 : period === '7d' ? 168 : 720;
+
     for (let i = intervals; i >= 0; i--) {
       points.push({
-        timestamp: new Date(now - (i * 60 * 60 * 1000)).toISOString(),
+        timestamp: new Date(now - i * 60 * 60 * 1000).toISOString(),
         responseTime: Math.floor(Math.random() * 300 + 200),
         cpuUsage: Math.floor(Math.random() * 40 + 30),
         memoryUsage: Math.floor(Math.random() * 30 + 50),
         connections: Math.floor(Math.random() * 20 + 10)
       });
     }
-    
+
     return points;
   }
 
@@ -416,13 +416,13 @@ function enhancedDatabaseHealthMonitor(action, options = {}) {
 
   function detectAnomalies(history) {
     return [
-      {
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        metric: 'responseTime',
-        value: 1500,
-        expectedRange: '200-600ms',
-        severity: 'medium'
-      }
-    ];
+    {
+      timestamp: new Date(Date.now() - 7200000).toISOString(),
+      metric: 'responseTime',
+      value: 1500,
+      expectedRange: '200-600ms',
+      severity: 'medium'
+    }];
+
   }
 }

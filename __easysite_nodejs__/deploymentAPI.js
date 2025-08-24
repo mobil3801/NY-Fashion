@@ -256,9 +256,9 @@ async function getLastSuccessfulDeployment(environment) {
       OrderByField: "start_time",
       IsAsc: false,
       Filters: [
-        { name: "environment", op: "Equal", value: environment },
-        { name: "status", op: "Equal", value: "success" }
-      ]
+      { name: "environment", op: "Equal", value: environment },
+      { name: "status", op: "Equal", value: "success" }]
+
     });
 
     if (error) throw new Error(error);

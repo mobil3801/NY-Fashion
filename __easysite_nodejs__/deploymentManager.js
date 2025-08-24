@@ -81,12 +81,12 @@ function deploymentManager(action, params = {}) {
 
     // Create deployment pipeline stages
     const pipelineStages = [
-      { stage: 'validation', stage_order: 1 },
-      { stage: 'build', stage_order: 2 },
-      { stage: 'test', stage_order: 3 },
-      { stage: 'deploy', stage_order: 4 },
-      { stage: 'verify', stage_order: 5 }
-    ];
+    { stage: 'validation', stage_order: 1 },
+    { stage: 'build', stage_order: 2 },
+    { stage: 'test', stage_order: 3 },
+    { stage: 'deploy', stage_order: 4 },
+    { stage: 'verify', stage_order: 5 }];
+
 
     // Insert pipeline stages
     for (const stage of pipelineStages) {
@@ -141,10 +141,10 @@ function deploymentManager(action, params = {}) {
 
     // Update deployment status and start execution
     await updateDeploymentStatus(deploymentId, 'approved');
-    
+
     const deployment = await getDeploymentById(deploymentId);
     const config = JSON.parse(deployment.deployment_config || '{}');
-    
+
     await startDeploymentExecution(deploymentId, config);
 
     return { message: 'Deployment approved and initiated', deploymentId };
@@ -158,13 +158,13 @@ function deploymentManager(action, params = {}) {
     // Execute deployment script asynchronously
     const scriptPath = path.join(process.cwd(), 'scripts', 'deploy.sh');
     const deployCommand = [
-      scriptPath,
-      `--environment ${config.environment}`,
-      config.version ? `--version ${config.version}` : '',
-      `--branch ${config.branch}`,
-      config.skipTests ? '--skip-tests' : '',
-      config.forceDeployment ? '--force' : ''
-    ].filter(Boolean).join(' ');
+    scriptPath,
+    `--environment ${config.environment}`,
+    config.version ? `--version ${config.version}` : '',
+    `--branch ${config.branch}`,
+    config.skipTests ? '--skip-tests' : '',
+    config.forceDeployment ? '--force' : ''].
+    filter(Boolean).join(' ');
 
     exec(deployCommand, async (error, stdout, stderr) => {
       if (error) {
@@ -183,7 +183,7 @@ function deploymentManager(action, params = {}) {
 
   async function initiateRollback(deploymentId, userId, targetDeploymentId) {
     const rollbackId = `rollback_${Date.now()}_${userId}`;
-    
+
     // Create rollback deployment record
     const rollback = {
       deployment_id: rollbackId,
@@ -199,7 +199,7 @@ function deploymentManager(action, params = {}) {
 
     // Execute rollback
     await insertDeployment(rollback);
-    
+
     // Start rollback execution
     const rollbackScript = path.join(process.cwd(), 'scripts', 'rollback.sh');
     const rollbackCommand = `${rollbackScript} --deployment-id ${targetDeploymentId}`;
@@ -229,10 +229,10 @@ function deploymentManager(action, params = {}) {
 
   async function performHealthCheck(environment) {
     try {
-      const healthEndpoint = environment === 'production' 
-        ? 'http://localhost/health' 
-        : 'http://localhost:3000/health';
-      
+      const healthEndpoint = environment === 'production' ?
+      'http://localhost/health' :
+      'http://localhost:3000/health';
+
       const response = await fetch(healthEndpoint);
       const data = await response.json();
 

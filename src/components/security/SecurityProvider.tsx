@@ -37,7 +37,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
   useEffect(() => {
     // Initialize security monitoring
     console.log('Security Provider initialized');
-    
+
     // Log system startup
     securityAuditLogger.log({
       eventType: 'system_event',
@@ -88,7 +88,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
-              
+
               // Check for potentially malicious script tags
               if (element.tagName?.toLowerCase() === 'script') {
                 const scriptElement = element as HTMLScriptElement;
@@ -127,7 +127,7 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
       window.removeEventListener('error', handleGlobalError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
       observer.disconnect();
-      
+
       securityAuditLogger.log({
         eventType: 'system_event',
         severity: 'info',
@@ -147,8 +147,8 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({ children }) 
   return (
     <SecurityContext.Provider value={value}>
       {children}
-    </SecurityContext.Provider>
-  );
+    </SecurityContext.Provider>);
+
 };
 
 export default SecurityProvider;

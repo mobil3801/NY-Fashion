@@ -4,18 +4,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
   Play,
   ArrowRight,
   GitBranch,
   Package,
   TestTube,
   Rocket,
-  Shield
-} from 'lucide-react';
+  Shield } from
+'lucide-react';
 
 interface PipelineStage {
   id: number;
@@ -65,57 +65,57 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
         description: "Failed to load pipeline stages",
         variant: "destructive"
       });
-      
+
       // For demo purposes, create mock data
       const mockStages: PipelineStage[] = [
-        {
-          id: 1,
-          deployment_id: id,
-          stage: 'validation',
-          stage_order: 1,
-          status: 'success',
-          start_time: new Date(Date.now() - 300000).toISOString(),
-          end_time: new Date(Date.now() - 240000).toISOString(),
-          logs: 'Validation completed successfully\nAll checks passed'
-        },
-        {
-          id: 2,
-          deployment_id: id,
-          stage: 'build',
-          stage_order: 2,
-          status: 'success',
-          start_time: new Date(Date.now() - 240000).toISOString(),
-          end_time: new Date(Date.now() - 180000).toISOString(),
-          logs: 'Build completed successfully\nArtifacts generated'
-        },
-        {
-          id: 3,
-          deployment_id: id,
-          stage: 'test',
-          stage_order: 3,
-          status: 'running',
-          start_time: new Date(Date.now() - 120000).toISOString(),
-          logs: 'Running tests...\nTest coverage: 85%'
-        },
-        {
-          id: 4,
-          deployment_id: id,
-          stage: 'security',
-          stage_order: 4,
-          status: 'pending',
-          start_time: '',
-          logs: ''
-        },
-        {
-          id: 5,
-          deployment_id: id,
-          stage: 'deploy',
-          stage_order: 5,
-          status: 'pending',
-          start_time: '',
-          logs: ''
-        }
-      ];
+      {
+        id: 1,
+        deployment_id: id,
+        stage: 'validation',
+        stage_order: 1,
+        status: 'success',
+        start_time: new Date(Date.now() - 300000).toISOString(),
+        end_time: new Date(Date.now() - 240000).toISOString(),
+        logs: 'Validation completed successfully\nAll checks passed'
+      },
+      {
+        id: 2,
+        deployment_id: id,
+        stage: 'build',
+        stage_order: 2,
+        status: 'success',
+        start_time: new Date(Date.now() - 240000).toISOString(),
+        end_time: new Date(Date.now() - 180000).toISOString(),
+        logs: 'Build completed successfully\nArtifacts generated'
+      },
+      {
+        id: 3,
+        deployment_id: id,
+        stage: 'test',
+        stage_order: 3,
+        status: 'running',
+        start_time: new Date(Date.now() - 120000).toISOString(),
+        logs: 'Running tests...\nTest coverage: 85%'
+      },
+      {
+        id: 4,
+        deployment_id: id,
+        stage: 'security',
+        stage_order: 4,
+        status: 'pending',
+        start_time: '',
+        logs: ''
+      },
+      {
+        id: 5,
+        deployment_id: id,
+        stage: 'deploy',
+        stage_order: 5,
+        status: 'pending',
+        start_time: '',
+        logs: ''
+      }];
+
       setStages(mockStages);
     }
     setLoading(false);
@@ -130,11 +130,11 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
     try {
       toast({
         title: "Retrying Stage",
-        description: "Pipeline stage is being restarted",
+        description: "Pipeline stage is being restarted"
       });
 
       // In production, this would trigger a stage retry
-      const updatedStages = stages.map(stage => {
+      const updatedStages = stages.map((stage) => {
         if (stage.id === stageId) {
           return {
             ...stage,
@@ -150,7 +150,7 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
 
       // Simulate completion
       setTimeout(() => {
-        const finalStages = stages.map(stage => {
+        const finalStages = stages.map((stage) => {
           if (stage.id === stageId) {
             return {
               ...stage,
@@ -217,8 +217,8 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
         {getStatusIcon(status)}
         <span className="ml-1 capitalize">{status}</span>
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const getDuration = (stage: PipelineStage) => {
@@ -235,8 +235,8 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
   };
 
   const getOverallProgress = () => {
-    const completedStages = stages.filter(s => s.status === 'success' || s.status === 'failed').length;
-    return (completedStages / stages.length) * 100;
+    const completedStages = stages.filter((s) => s.status === 'success' || s.status === 'failed').length;
+    return completedStages / stages.length * 100;
   };
 
   if (loading) {
@@ -246,8 +246,8 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
           <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
           <span className="ml-2">Loading pipeline...</span>
         </div>
-      </Card>
-    );
+      </Card>);
+
   }
 
   return (
@@ -265,16 +265,16 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
         </div>
 
         <div className="space-y-4">
-          {stages.map((stage, index) => (
-            <div key={stage.id} className="relative">
+          {stages.map((stage, index) =>
+          <div key={stage.id} className="relative">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className={`
                     w-12 h-12 rounded-full flex items-center justify-center
                     ${stage.status === 'success' ? 'bg-green-100 text-green-600' :
-                      stage.status === 'failed' ? 'bg-red-100 text-red-600' :
-                      stage.status === 'running' ? 'bg-blue-100 text-blue-600' :
-                      'bg-gray-100 text-gray-400'}
+                stage.status === 'failed' ? 'bg-red-100 text-red-600' :
+                stage.status === 'running' ? 'bg-blue-100 text-blue-600' :
+                'bg-gray-100 text-gray-400'}
                   `}>
                     {getStageIcon(stage.stage)}
                   </div>
@@ -291,21 +291,21 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(stage.status)}
-                      {stage.status === 'failed' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => retryStage(stage.id)}
-                        >
+                      {stage.status === 'failed' &&
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => retryStage(stage.id)}>
+
                           <Play className="h-3 w-3 mr-1" />
                           Retry
                         </Button>
-                      )}
+                    }
                       <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setSelectedStage(stage)}
-                      >
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedStage(stage)}>
+
                         View Logs
                       </Button>
                     </div>
@@ -314,26 +314,26 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
               </div>
 
               {/* Connector line */}
-              {index < stages.length - 1 && (
-                <div className="absolute left-6 top-12 w-px h-6 bg-gray-200"></div>
-              )}
+              {index < stages.length - 1 &&
+            <div className="absolute left-6 top-12 w-px h-6 bg-gray-200"></div>
+            }
             </div>
-          ))}
+          )}
         </div>
       </Card>
 
       {/* Stage Logs Modal */}
-      {selectedStage && (
-        <Card className="p-6">
+      {selectedStage &&
+      <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-semibold capitalize">
               {selectedStage.stage} Stage Logs
             </h4>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedStage(null)}
-            >
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedStage(null)}>
+
               Close
             </Button>
           </div>
@@ -343,9 +343,9 @@ const PipelineVisualization: React.FC<PipelineVisualizationProps> = ({ deploymen
             </pre>
           </div>
         </Card>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 };
 
 export default PipelineVisualization;

@@ -136,9 +136,9 @@ function updateStock(productId, quantityChange, reason = 'manual', refId = null,
         }
       } catch (lotError) {
 
+
         // Inventory lots might not exist, don't fail the operation
-      }
-      // Determine stock status
+      } // Determine stock status
       const minStockLevel = Math.max(1, parseInt(product.min_stock_level) || 5);
       let stockStatus = 'in_stock';
       let alertLevel = 'normal';

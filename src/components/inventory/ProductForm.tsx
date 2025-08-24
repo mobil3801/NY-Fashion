@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInventory } from '@/contexts/InventoryContext';
+import { useEnhancedInventory } from '@/contexts/EnhancedInventoryContext';
 import { useDropzone } from 'react-dropzone';
 import { toast } from '@/hooks/use-toast';
 import ImageUploadProgress from './ImageUploadProgress';
@@ -43,7 +43,7 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave }) => {
-  const { categories, saveProduct } = useInventory();
+  const { categories, saveProduct } = useEnhancedInventory();
   const [loading, setLoading] = useState(false);
   const [hasVariants, setHasVariants] = useState(product?.has_variants || false);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);

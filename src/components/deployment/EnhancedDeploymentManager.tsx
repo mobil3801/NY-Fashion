@@ -9,19 +9,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Rocket, 
-  GitBranch, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
+import {
+  Rocket,
+  GitBranch,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
   RotateCcw,
   Server,
   Database,
   Shield,
-  Activity
-} from 'lucide-react';
+  Activity } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Deployment {
@@ -72,33 +72,33 @@ const EnhancedDeploymentManager: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      
+
       // In a real implementation, this would load from the database
       // For now, we'll create some mock data
       const mockDeployments: Deployment[] = [
-        {
-          deployment_id: '20241201_140530_admin',
-          environment: 'production',
-          status: 'success',
-          version: 'v1.2.3',
-          branch: 'main',
-          commit_hash: 'abc123def',
-          initiated_by: 'admin',
-          start_time: new Date(Date.now() - 3600000).toISOString(),
-          end_time: new Date(Date.now() - 3000000).toISOString()
-        },
-        {
-          deployment_id: '20241201_120000_developer',
-          environment: 'staging',
-          status: 'success',
-          version: 'v1.2.4-beta',
-          branch: 'develop',
-          commit_hash: 'def456ghi',
-          initiated_by: 'developer',
-          start_time: new Date(Date.now() - 7200000).toISOString(),
-          end_time: new Date(Date.now() - 6600000).toISOString()
-        }
-      ];
+      {
+        deployment_id: '20241201_140530_admin',
+        environment: 'production',
+        status: 'success',
+        version: 'v1.2.3',
+        branch: 'main',
+        commit_hash: 'abc123def',
+        initiated_by: 'admin',
+        start_time: new Date(Date.now() - 3600000).toISOString(),
+        end_time: new Date(Date.now() - 3000000).toISOString()
+      },
+      {
+        deployment_id: '20241201_120000_developer',
+        environment: 'staging',
+        status: 'success',
+        version: 'v1.2.4-beta',
+        branch: 'develop',
+        commit_hash: 'def456ghi',
+        initiated_by: 'developer',
+        start_time: new Date(Date.now() - 7200000).toISOString(),
+        end_time: new Date(Date.now() - 6600000).toISOString()
+      }];
+
 
       setDeployments(mockDeployments);
     } catch (error) {
@@ -115,7 +115,7 @@ const EnhancedDeploymentManager: React.FC = () => {
   const initiateDeployment = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await window.ezsite.apis.run({
         path: 'deploymentManager',
         param: ['initiate', {
@@ -151,7 +151,7 @@ const EnhancedDeploymentManager: React.FC = () => {
   const approveDeployment = async (deploymentId: string) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await window.ezsite.apis.run({
         path: 'deploymentManager',
         param: ['approve', deploymentId, 1, 'Approved for deployment'] // userId from auth
@@ -180,7 +180,7 @@ const EnhancedDeploymentManager: React.FC = () => {
   const initiateRollback = async (deploymentId: string) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await window.ezsite.apis.run({
         path: 'deploymentManager',
         param: ['rollback', deploymentId, 1, null] // userId from auth
@@ -276,16 +276,16 @@ const EnhancedDeploymentManager: React.FC = () => {
           <Button
             onClick={() => performHealthCheck('staging')}
             variant="outline"
-            size="sm"
-          >
+            size="sm">
+
             <Activity className="h-4 w-4 mr-2" />
             Health Check (Staging)
           </Button>
           <Button
             onClick={() => performHealthCheck('production')}
             variant="outline"
-            size="sm"
-          >
+            size="sm">
+
             <Activity className="h-4 w-4 mr-2" />
             Health Check (Production)
           </Button>
@@ -311,17 +311,17 @@ const EnhancedDeploymentManager: React.FC = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Recent Deployments</h3>
               
-              {loading ? (
-                <div className="flex items-center justify-center p-8">
+              {loading ?
+              <div className="flex items-center justify-center p-8">
                   <Activity className="h-6 w-6 animate-spin" />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {deployments.map((deployment) => (
-                    <div
-                      key={deployment.deployment_id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                    >
+                </div> :
+
+              <div className="space-y-3">
+                  {deployments.map((deployment) =>
+                <div
+                  key={deployment.deployment_id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+
                       <div className="flex items-center space-x-4">
                         <div className="flex flex-col">
                           <div className="flex items-center space-x-2">
@@ -347,32 +347,32 @@ const EnhancedDeploymentManager: React.FC = () => {
                         <span className="text-sm text-gray-500">
                           {new Date(deployment.start_time).toLocaleString()}
                         </span>
-                        {deployment.status === 'success' && deployment.environment === 'production' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedDeployment(deployment);
-                              setRollbackDialog(true);
-                            }}
-                          >
+                        {deployment.status === 'success' && deployment.environment === 'production' &&
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedDeployment(deployment);
+                        setRollbackDialog(true);
+                      }}>
+
                             <RotateCcw className="h-4 w-4 mr-1" />
                             Rollback
                           </Button>
-                        )}
-                        {deployment.status === 'pending' && (
-                          <Button
-                            size="sm"
-                            onClick={() => approveDeployment(deployment.deployment_id)}
-                          >
+                    }
+                        {deployment.status === 'pending' &&
+                    <Button
+                      size="sm"
+                      onClick={() => approveDeployment(deployment.deployment_id)}>
+
                             Approve
                           </Button>
-                        )}
+                    }
                       </div>
                     </div>
-                  ))}
+                )}
                 </div>
-              )}
+              }
             </div>
           </Card>
         </TabsContent>
@@ -402,8 +402,8 @@ const EnhancedDeploymentManager: React.FC = () => {
               <label className="text-sm font-medium">Environment</label>
               <Select
                 value={newDeployment.environment}
-                onValueChange={(value) => setNewDeployment({ ...newDeployment, environment: value })}
-              >
+                onValueChange={(value) => setNewDeployment({ ...newDeployment, environment: value })}>
+
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -419,8 +419,8 @@ const EnhancedDeploymentManager: React.FC = () => {
               <Input
                 value={newDeployment.branch}
                 onChange={(e) => setNewDeployment({ ...newDeployment, branch: e.target.value })}
-                placeholder="main"
-              />
+                placeholder="main" />
+
             </div>
 
             <div>
@@ -428,8 +428,8 @@ const EnhancedDeploymentManager: React.FC = () => {
               <Input
                 value={newDeployment.version}
                 onChange={(e) => setNewDeployment({ ...newDeployment, version: e.target.value })}
-                placeholder="Leave empty for latest"
-              />
+                placeholder="Leave empty for latest" />
+
             </div>
 
             <div className="flex items-center space-x-2">
@@ -437,8 +437,8 @@ const EnhancedDeploymentManager: React.FC = () => {
                 type="checkbox"
                 id="skipTests"
                 checked={newDeployment.skipTests}
-                onChange={(e) => setNewDeployment({ ...newDeployment, skipTests: e.target.checked })}
-              />
+                onChange={(e) => setNewDeployment({ ...newDeployment, skipTests: e.target.checked })} />
+
               <label htmlFor="skipTests" className="text-sm">Skip tests</label>
             </div>
 
@@ -470,23 +470,23 @@ const EnhancedDeploymentManager: React.FC = () => {
               </AlertDescription>
             </Alert>
 
-            {selectedDeployment && (
-              <div className="text-sm">
+            {selectedDeployment &&
+            <div className="text-sm">
                 <p><strong>Deployment:</strong> {selectedDeployment.deployment_id}</p>
                 <p><strong>Environment:</strong> {selectedDeployment.environment}</p>
                 <p><strong>Version:</strong> {selectedDeployment.version}</p>
               </div>
-            )}
+            }
 
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setRollbackDialog(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => selectedDeployment && initiateRollback(selectedDeployment.deployment_id)}
-                disabled={loading}
-              >
+                disabled={loading}>
+
                 {loading ? <Activity className="h-4 w-4 animate-spin mr-2" /> : <RotateCcw className="h-4 w-4 mr-2" />}
                 Rollback
               </Button>
@@ -494,8 +494,8 @@ const EnhancedDeploymentManager: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 // Infrastructure Management Tab Component
@@ -511,7 +511,7 @@ const InfrastructureTab: React.FC = () => {
     try {
       const { data, error } = await window.ezsite.apis.run({
         path: 'infrastructureManager',
-        param: ['provision', { 
+        param: ['provision', {
           environment: 'production',
           autoScaling: true,
           database: true,
@@ -617,8 +617,8 @@ const InfrastructureTab: React.FC = () => {
           </Button>
         </div>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 // Monitoring Tab Component
@@ -672,8 +672,8 @@ const MonitoringTab: React.FC = () => {
           </Button>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 // Disaster Recovery Tab Component
@@ -726,8 +726,8 @@ const DisasterRecoveryTab: React.FC = () => {
           </Button>
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default EnhancedDeploymentManager;

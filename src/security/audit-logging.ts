@@ -95,7 +95,7 @@ class SecurityAuditLogger {
       // Send logs and alerts to server
       const payload = {
         logs: this.logs,
-        alerts: this.alerts.filter(a => !a.resolved),
+        alerts: this.alerts.filter((a) => !a.resolved),
         timestamp: new Date().toISOString()
       };
 
@@ -104,7 +104,7 @@ class SecurityAuditLogger {
 
       // Clear sent logs (keep last 100 for immediate access)
       this.logs = this.logs.slice(-100);
-      
+
     } catch (error) {
       console.error('Failed to flush security logs to server:', error);
     }
@@ -113,7 +113,7 @@ class SecurityAuditLogger {
   private async sendToSecurityService(payload: any): Promise<void> {
     // Implementation would depend on your security monitoring service
     // Examples: Splunk, ELK Stack, Datadog, New Relic, etc.
-    
+
     // For now, just log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.log('Security audit payload:', payload);
@@ -161,10 +161,10 @@ class SecurityAuditLogger {
 
     // Console logging for development
     if (process.env.NODE_ENV === 'development') {
-      const logLevel = entry.severity === 'critical' ? 'error' : 
-                      entry.severity === 'error' ? 'error' :
-                      entry.severity === 'warning' ? 'warn' : 'log';
-      
+      const logLevel = entry.severity === 'critical' ? 'error' :
+      entry.severity === 'error' ? 'error' :
+      entry.severity === 'warning' ? 'warn' : 'log';
+
       console[logLevel](`[SECURITY AUDIT] ${entry.action}:`, logEntry);
     }
   }
@@ -202,7 +202,7 @@ class SecurityAuditLogger {
   private async sendImmediateAlert(alert: SecurityAlert): Promise<void> {
     // Implementation for immediate alerting (email, SMS, Slack, PagerDuty, etc.)
     console.error('[CRITICAL SECURITY ALERT]', alert);
-    
+
     // Example webhook notification:
     /*
     try {
@@ -218,7 +218,7 @@ class SecurityAuditLogger {
   }
 
   resolveAlert(alertId: string, resolvedBy: string, mitigation?: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (!alert || alert.resolved) return false;
 
     alert.resolved = true;
@@ -302,23 +302,23 @@ class SecurityAuditLogger {
     let filtered = [...this.logs];
 
     if (options.eventType) {
-      filtered = filtered.filter(log => log.eventType === options.eventType);
+      filtered = filtered.filter((log) => log.eventType === options.eventType);
     }
 
     if (options.severity) {
-      filtered = filtered.filter(log => log.severity === options.severity);
+      filtered = filtered.filter((log) => log.severity === options.severity);
     }
 
     if (options.userId) {
-      filtered = filtered.filter(log => log.userId === options.userId);
+      filtered = filtered.filter((log) => log.userId === options.userId);
     }
 
     if (options.startDate) {
-      filtered = filtered.filter(log => log.timestamp >= options.startDate!);
+      filtered = filtered.filter((log) => log.timestamp >= options.startDate!);
     }
 
     if (options.endDate) {
-      filtered = filtered.filter(log => log.timestamp <= options.endDate!);
+      filtered = filtered.filter((log) => log.timestamp <= options.endDate!);
     }
 
     // Sort by timestamp (newest first)
@@ -340,15 +340,15 @@ class SecurityAuditLogger {
     let filtered = [...this.alerts];
 
     if (options.type) {
-      filtered = filtered.filter(alert => alert.type === options.type);
+      filtered = filtered.filter((alert) => alert.type === options.type);
     }
 
     if (options.severity) {
-      filtered = filtered.filter(alert => alert.severity === options.severity);
+      filtered = filtered.filter((alert) => alert.severity === options.severity);
     }
 
     if (options.resolved !== undefined) {
-      filtered = filtered.filter(alert => alert.resolved === options.resolved);
+      filtered = filtered.filter((alert) => alert.resolved === options.resolved);
     }
 
     // Sort by timestamp (newest first)
@@ -369,18 +369,18 @@ class SecurityAuditLogger {
     return {
       totalLogs: this.logs.length,
       totalAlerts: this.alerts.length,
-      unresolvedAlerts: this.alerts.filter(a => !a.resolved).length,
-      criticalAlerts: this.alerts.filter(a => a.severity === 'critical' && !a.resolved).length,
-      logsLastHour: this.logs.filter(l => now - new Date(l.timestamp).getTime() < oneHour).length,
-      logsLastDay: this.logs.filter(l => now - new Date(l.timestamp).getTime() < oneDay).length,
-      securityViolationsToday: this.logs.filter(l => 
-        l.eventType === 'security_violation' && 
-        now - new Date(l.timestamp).getTime() < oneDay
+      unresolvedAlerts: this.alerts.filter((a) => !a.resolved).length,
+      criticalAlerts: this.alerts.filter((a) => a.severity === 'critical' && !a.resolved).length,
+      logsLastHour: this.logs.filter((l) => now - new Date(l.timestamp).getTime() < oneHour).length,
+      logsLastDay: this.logs.filter((l) => now - new Date(l.timestamp).getTime() < oneDay).length,
+      securityViolationsToday: this.logs.filter((l) =>
+      l.eventType === 'security_violation' &&
+      now - new Date(l.timestamp).getTime() < oneDay
       ).length,
-      failedAuthenticationsToday: this.logs.filter(l => 
-        l.eventType === 'authentication' && 
-        !l.success && 
-        now - new Date(l.timestamp).getTime() < oneDay
+      failedAuthenticationsToday: this.logs.filter((l) =>
+      l.eventType === 'authentication' &&
+      !l.success &&
+      now - new Date(l.timestamp).getTime() < oneDay
       ).length
     };
   }

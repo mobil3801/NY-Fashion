@@ -9,21 +9,21 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Shield, 
-  AlertTriangle, 
-  Activity, 
-  Eye, 
-  Lock, 
-  Users, 
-  Server, 
+import {
+  Shield,
+  AlertTriangle,
+  Activity,
+  Eye,
+  Lock,
+  Users,
+  Server,
   Globe,
   RefreshCw,
   Download,
   Filter,
   Search,
-  X
-} from 'lucide-react';
+  X } from
+'lucide-react';
 import { useSecurityAudit } from '@/security/audit-logging';
 import { rateLimitManager } from '@/security/rate-limiting';
 import { cspNonceManager } from '@/security/csp-nonce';
@@ -74,9 +74,9 @@ const SecurityDashboard: React.FC = () => {
         suspiciousActivity: auditStats.securityViolationsToday,
         activeUsers: Math.floor(Math.random() * 50) + 20, // Mock data
         systemHealth: auditStats.criticalAlerts === 0 ? 100 : Math.max(60, 100 - auditStats.criticalAlerts * 10),
-        threatLevel: auditStats.criticalAlerts > 0 ? 'critical' : 
-                    auditStats.securityViolationsToday > 5 ? 'high' :
-                    auditStats.securityViolationsToday > 0 ? 'medium' : 'low'
+        threatLevel: auditStats.criticalAlerts > 0 ? 'critical' :
+        auditStats.securityViolationsToday > 5 ? 'high' :
+        auditStats.securityViolationsToday > 0 ? 'medium' : 'low'
       });
     } catch (error) {
       console.error('Failed to refresh security metrics:', error);
@@ -108,20 +108,20 @@ const SecurityDashboard: React.FC = () => {
 
   const getThreatLevelColor = (level: string) => {
     switch (level) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      default: return 'secondary';
+      case 'critical':return 'destructive';
+      case 'high':return 'destructive';
+      case 'medium':return 'default';
+      default:return 'secondary';
     }
   };
 
   const getAlertSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'destructive';
-      case 'high': return 'destructive';
-      case 'medium': return 'default';
-      case 'warning': return 'default';
-      default: return 'secondary';
+      case 'critical':return 'destructive';
+      case 'high':return 'destructive';
+      case 'medium':return 'default';
+      case 'warning':return 'default';
+      default:return 'secondary';
     }
   };
 
@@ -146,8 +146,8 @@ const SecurityDashboard: React.FC = () => {
       </div>
 
       {/* Threat Level Alert */}
-      {metrics.threatLevel !== 'low' && (
-        <Alert variant={metrics.threatLevel === 'critical' ? 'destructive' : 'default'}>
+      {metrics.threatLevel !== 'low' &&
+      <Alert variant={metrics.threatLevel === 'critical' ? 'destructive' : 'default'}>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             <strong>Threat Level: {metrics.threatLevel.toUpperCase()}</strong>
@@ -156,7 +156,7 @@ const SecurityDashboard: React.FC = () => {
             {metrics.threatLevel === 'medium' && ' - Monitoring for suspicious activity'}
           </AlertDescription>
         </Alert>
-      )}
+      }
 
       {/* Security Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -234,12 +234,12 @@ const SecurityDashboard: React.FC = () => {
                   </Badge>
                   <div className="flex-1">
                     <div className="text-sm text-gray-600 mb-1">System Status</div>
-                    <Progress 
-                      value={metrics.threatLevel === 'low' ? 25 : 
-                            metrics.threatLevel === 'medium' ? 50 :
-                            metrics.threatLevel === 'high' ? 75 : 100} 
-                      className="h-3"
-                    />
+                    <Progress
+                      value={metrics.threatLevel === 'low' ? 25 :
+                      metrics.threatLevel === 'medium' ? 50 :
+                      metrics.threatLevel === 'high' ? 75 : 100}
+                      className="h-3" />
+
                   </div>
                 </div>
                 <div className="text-sm text-gray-600">
@@ -259,8 +259,8 @@ const SecurityDashboard: React.FC = () => {
               <CardContent>
                 <ScrollArea className="h-64">
                   <div className="space-y-2">
-                    {getLogs({ limit: 10 }).map((log) => (
-                      <div key={log.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
+                    {getLogs({ limit: 10 }).map((log) =>
+                    <div key={log.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
                         <Badge variant={getAlertSeverityColor(log.severity)} className="text-xs">
                           {log.severity}
                         </Badge>
@@ -271,7 +271,7 @@ const SecurityDashboard: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -300,16 +300,16 @@ const SecurityDashboard: React.FC = () => {
           </div>
 
           <div className="grid gap-4">
-            {getAlerts({ 
+            {getAlerts({
               severity: alertFilter === 'all' ? undefined : alertFilter as any,
-              limit: 20 
-            }).map((alert) => (
-              <Card key={alert.id} className={`border-l-4 ${
-                alert.severity === 'critical' ? 'border-l-red-500' :
-                alert.severity === 'high' ? 'border-l-orange-500' :
-                alert.severity === 'medium' ? 'border-l-yellow-500' :
-                'border-l-blue-500'
-              }`}>
+              limit: 20
+            }).map((alert) =>
+            <Card key={alert.id} className={`border-l-4 ${
+            alert.severity === 'critical' ? 'border-l-red-500' :
+            alert.severity === 'high' ? 'border-l-orange-500' :
+            alert.severity === 'medium' ? 'border-l-yellow-500' :
+            'border-l-blue-500'}`
+            }>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">{alert.type.replace(/_/g, ' ').toUpperCase()}</CardTitle>
@@ -317,9 +317,9 @@ const SecurityDashboard: React.FC = () => {
                       <Badge variant={getAlertSeverityColor(alert.severity)}>
                         {alert.severity}
                       </Badge>
-                      {alert.resolved && (
-                        <Badge variant="secondary">Resolved</Badge>
-                      )}
+                      {alert.resolved &&
+                    <Badge variant="secondary">Resolved</Badge>
+                    }
                     </div>
                   </div>
                 </CardHeader>
@@ -331,15 +331,15 @@ const SecurityDashboard: React.FC = () => {
                       <span>Time: {format(new Date(alert.timestamp), 'MMM dd, yyyy HH:mm:ss')}</span>
                       {alert.affectedResource && <span>Resource: {alert.affectedResource}</span>}
                     </div>
-                    {alert.mitigation && (
-                      <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-800">
+                    {alert.mitigation &&
+                  <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-800">
                         <strong>Mitigation:</strong> {alert.mitigation}
                       </div>
-                    )}
+                  }
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -351,8 +351,8 @@ const SecurityDashboard: React.FC = () => {
                 placeholder="Search logs..."
                 value={logFilter}
                 onChange={(e) => setLogFilter(e.target.value)}
-                className="pl-10"
-              />
+                className="pl-10" />
+
             </div>
             <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
               <SelectTrigger className="w-32">
@@ -374,14 +374,14 @@ const SecurityDashboard: React.FC = () => {
             <CardContent>
               <ScrollArea className="h-96">
                 <div className="space-y-2">
-                  {getLogs({ limit: 50 })
-                    .filter(log => !logFilter || 
-                      log.action.toLowerCase().includes(logFilter.toLowerCase()) ||
-                      log.userId?.toLowerCase().includes(logFilter.toLowerCase()) ||
-                      log.resource?.toLowerCase().includes(logFilter.toLowerCase())
-                    )
-                    .map((log) => (
-                      <div key={log.id} className="p-3 border rounded-lg hover:bg-gray-50">
+                  {getLogs({ limit: 50 }).
+                  filter((log) => !logFilter ||
+                  log.action.toLowerCase().includes(logFilter.toLowerCase()) ||
+                  log.userId?.toLowerCase().includes(logFilter.toLowerCase()) ||
+                  log.resource?.toLowerCase().includes(logFilter.toLowerCase())
+                  ).
+                  map((log) =>
+                  <div key={log.id} className="p-3 border rounded-lg hover:bg-gray-50">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Badge variant={getAlertSeverityColor(log.severity)} className="text-xs">
@@ -405,16 +405,16 @@ const SecurityDashboard: React.FC = () => {
                           {log.errorMessage && <div className="text-red-600">Error: {log.errorMessage}</div>}
                         </div>
                         
-                        {Object.keys(log.details).length > 0 && (
-                          <details className="mt-2">
+                        {Object.keys(log.details).length > 0 &&
+                    <details className="mt-2">
                             <summary className="text-xs text-blue-600 cursor-pointer">View Details</summary>
                             <pre className="mt-1 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
                               {JSON.stringify(log.details, null, 2)}
                             </pre>
                           </details>
-                        )}
+                    }
                       </div>
-                    ))}
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
@@ -452,19 +452,19 @@ const SecurityDashboard: React.FC = () => {
               <CardContent>
                 <div className="space-y-2">
                   {[
-                    'Strict-Transport-Security',
-                    'X-Frame-Options',
-                    'X-Content-Type-Options',
-                    'Content-Security-Policy'
-                  ].map((header) => (
-                    <div key={header} className="flex items-center justify-between py-1">
+                  'Strict-Transport-Security',
+                  'X-Frame-Options',
+                  'X-Content-Type-Options',
+                  'Content-Security-Policy'].
+                  map((header) =>
+                  <div key={header} className="flex items-center justify-between py-1">
                       <span className="text-sm">{header}</span>
                       <Badge variant="secondary" className="text-xs">
                         <Lock className="w-3 h-3 mr-1" />
                         Active
                       </Badge>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -531,8 +531,8 @@ const SecurityDashboard: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SecurityDashboard;

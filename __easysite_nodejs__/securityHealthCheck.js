@@ -16,29 +16,29 @@ async function performSecurityHealthCheck() {
   try {
     // SSL Certificate Check
     results.checks.ssl = await checkSSLCertificate();
-    
+
     // Security Headers Check
     results.checks.headers = await checkSecurityHeaders();
-    
+
     // File Permissions Check
     results.checks.permissions = await checkFilePermissions();
-    
+
     // Dependencies Security Check
     results.checks.dependencies = await checkDependenciesSecurity();
-    
+
     // Configuration Security Check
     results.checks.configuration = await checkSecurityConfiguration();
-    
+
     // Log Analysis
     results.checks.logs = await analyzeLogs();
 
     // Determine overall health
-    const hasErrors = Object.values(results.checks).some(check => 
-      check.status === 'error' || check.status === 'critical'
+    const hasErrors = Object.values(results.checks).some((check) =>
+    check.status === 'error' || check.status === 'critical'
     );
-    
-    const hasWarnings = Object.values(results.checks).some(check => 
-      check.status === 'warning'
+
+    const hasWarnings = Object.values(results.checks).some((check) =>
+    check.status === 'warning'
     );
 
     if (hasErrors) {
@@ -48,7 +48,7 @@ async function performSecurityHealthCheck() {
     }
 
     // Collect recommendations and critical issues
-    Object.values(results.checks).forEach(check => {
+    Object.values(results.checks).forEach((check) => {
       if (check.recommendations) {
         results.recommendations.push(...check.recommendations);
       }
@@ -72,7 +72,7 @@ async function performSecurityHealthCheck() {
 async function checkSSLCertificate() {
   return new Promise((resolve) => {
     const domain = process.env.DOMAIN || 'localhost';
-    
+
     if (domain === 'localhost') {
       resolve({
         name: 'SSL Certificate',
@@ -92,7 +92,7 @@ async function checkSSLCertificate() {
 
     const req = https.request(options, (res) => {
       const cert = res.connection.getPeerCertificate();
-      
+
       if (!cert || !cert.valid_from) {
         resolve({
           name: 'SSL Certificate',
@@ -161,12 +161,12 @@ async function checkSSLCertificate() {
 
 async function checkSecurityHeaders() {
   const requiredHeaders = [
-    'Strict-Transport-Security',
-    'X-Frame-Options',
-    'X-Content-Type-Options',
-    'Content-Security-Policy',
-    'Referrer-Policy'
-  ];
+  'Strict-Transport-Security',
+  'X-Frame-Options',
+  'X-Content-Type-Options',
+  'Content-Security-Policy',
+  'Referrer-Policy'];
+
 
   const domain = process.env.DOMAIN || 'localhost';
   const protocol = domain === 'localhost' ? 'http' : 'https';
@@ -174,7 +174,7 @@ async function checkSecurityHeaders() {
 
   return new Promise((resolve) => {
     const module = protocol === 'https' ? require('https') : require('http');
-    
+
     const options = {
       hostname: domain,
       port: protocol === 'https' ? 443 : 8080,
@@ -187,7 +187,7 @@ async function checkSecurityHeaders() {
       const presentHeaders = [];
       const missingHeaders = [];
 
-      requiredHeaders.forEach(header => {
+      requiredHeaders.forEach((header) => {
         if (res.headers[header.toLowerCase()]) {
           presentHeaders.push(header);
         } else {
@@ -240,12 +240,12 @@ async function checkSecurityHeaders() {
 
 async function checkFilePermissions() {
   const criticalFiles = [
-    'package.json',
-    'src/config/security.ts',
-    '.env',
-    'scripts/ssl-setup.sh',
-    'scripts/ssl-renew.sh'
-  ];
+  'package.json',
+  'src/config/security.ts',
+  '.env',
+  'scripts/ssl-setup.sh',
+  'scripts/ssl-renew.sh'];
+
 
   const issues = [];
   const checked = [];
@@ -254,7 +254,7 @@ async function checkFilePermissions() {
     try {
       const stats = await fs.stat(file);
       const mode = stats.mode & parseInt('777', 8);
-      
+
       checked.push({
         file,
         permissions: mode.toString(8),
@@ -264,11 +264,11 @@ async function checkFilePermissions() {
       });
 
       // Check for overly permissive permissions
-      if (file.endsWith('.sh') && (mode & parseInt('022', 8))) {
+      if (file.endsWith('.sh') && mode & parseInt('022', 8)) {
         issues.push(`${file} has write permissions for group/others`);
       }
-      
-      if (file === '.env' && (mode & parseInt('044', 8))) {
+
+      if (file === '.env' && mode & parseInt('044', 8)) {
         issues.push(`${file} is readable by group/others`);
       }
 
@@ -293,12 +293,12 @@ async function checkDependenciesSecurity() {
   try {
     const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
     const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
-    
+
     // In a real implementation, you would check against vulnerability databases
     // For now, we'll do basic checks
     const vulnerablePackages = [];
     const outdatedPackages = [];
-    
+
     // Check for known vulnerable patterns
     Object.entries(dependencies).forEach(([name, version]) => {
       // This is a simplified check - in production, use npm audit or similar
@@ -347,18 +347,18 @@ async function checkSecurityConfiguration() {
 
   // Check environment variables
   const securityEnvVars = [
-    'NODE_ENV',
-    'CSP_ENABLED',
-    'RATE_LIMIT_ENABLED',
-    'NOTIFICATION_EMAIL'
-  ];
+  'NODE_ENV',
+  'CSP_ENABLED',
+  'RATE_LIMIT_ENABLED',
+  'NOTIFICATION_EMAIL'];
 
-  securityEnvVars.forEach(varName => {
+
+  securityEnvVars.forEach((varName) => {
     const value = process.env[varName];
     configs.push({
       name: varName,
       set: !!value,
-      value: varName === 'NOTIFICATION_EMAIL' ? (value ? '[SET]' : undefined) : value
+      value: varName === 'NOTIFICATION_EMAIL' ? value ? '[SET]' : undefined : value
     });
 
     if (!value && ['NODE_ENV'].includes(varName)) {
@@ -373,7 +373,7 @@ async function checkSecurityConfiguration() {
 
   return {
     name: 'Security Configuration',
-    status: issues.length > 0 ? (issues.length > 2 ? 'error' : 'warning') : 'healthy',
+    status: issues.length > 0 ? issues.length > 2 ? 'error' : 'warning' : 'healthy',
     message: issues.length > 0 ? `${issues.length} configuration issues found` : 'Configuration is secure',
     issues,
     configs,
@@ -383,10 +383,10 @@ async function checkSecurityConfiguration() {
 
 async function analyzeLogs() {
   const logFiles = [
-    '/var/log/ssl-setup.log',
-    '/var/log/ssl-renewal.log',
-    '/var/log/ssl-monitor.log'
-  ];
+  '/var/log/ssl-setup.log',
+  '/var/log/ssl-renewal.log',
+  '/var/log/ssl-monitor.log'];
+
 
   const analysis = {
     errors: 0,
@@ -399,9 +399,9 @@ async function analyzeLogs() {
   for (const logFile of logFiles) {
     try {
       const content = await fs.readFile(logFile, 'utf8');
-      const lines = content.split('\n').filter(line => line.trim());
-      
-      lines.forEach(line => {
+      const lines = content.split('\n').filter((line) => line.trim());
+
+      lines.forEach((line) => {
         if (line.includes('ERROR') || line.includes('FAILED')) {
           analysis.errors++;
           analysis.recentEvents.push({ type: 'error', message: line.substring(0, 100) });
@@ -412,9 +412,9 @@ async function analyzeLogs() {
       });
 
     } catch (error) {
+
       // Log file doesn't exist or can't be read - this is expected in many cases
-    }
-  }
+    }}
 
   // Keep only recent events
   analysis.recentEvents = analysis.recentEvents.slice(-10);

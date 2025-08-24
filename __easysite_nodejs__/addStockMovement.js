@@ -102,9 +102,9 @@ function addStockMovement(movementData) {
         window.ezsite.db.query(updateStockQuery, [deltaValue, createdAt, pId]);
       } catch (stockUpdateError) {
 
+
         // Log warning but don't fail the movement creation
-      }} else if (['sale', 'adjustment', 'transfer', 'loss'].includes(sanitizedType) && deltaValue < 0) {
-      try {
+      }} else if (['sale', 'adjustment', 'transfer', 'loss'].includes(sanitizedType) && deltaValue < 0) {try {
         // Decrease stock but don't allow negative
         const updateStockQuery = `
           UPDATE products 
@@ -116,9 +116,9 @@ function addStockMovement(movementData) {
         window.ezsite.db.query(updateStockQuery, [deltaValue, createdAt, pId]);
       } catch (stockUpdateError) {
 
+
         // Log warning but don't fail the movement creation
       }}
-
     return {
       id: result[0].id,
       created_at: result[0].created_at,

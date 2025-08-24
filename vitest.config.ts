@@ -20,15 +20,15 @@ export default defineConfig({
         }
       },
       exclude: [
-        'node_modules/',
-        'dist/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/coverage/**',
-        '**/__tests__/**',
-        '**/*.test.*',
-        '**/*.spec.*'
-      ]
+      'node_modules/',
+      'dist/',
+      '**/*.d.ts',
+      '**/*.config.*',
+      '**/coverage/**',
+      '**/__tests__/**',
+      '**/*.test.*',
+      '**/*.spec.*']
+
     }
   },
   resolve: {

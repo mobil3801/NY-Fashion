@@ -17,35 +17,35 @@ export interface ValidationSchema {
 
 export interface ValidationResult {
   valid: boolean;
-  errors: { field: string; message: string }[];
+  errors: {field: string;message: string;}[];
   sanitizedData?: any;
 }
 
 class SecurityValidator {
   private sqlInjectionPatterns = [
-    /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|UNION|SCRIPT)\b)/i,
-    /(--|\/\*|\*\/|xp_|sp_)/i,
-    /(\b(OR|AND)\s+\w+\s*=\s*\w+)/i,
-    /(\b\d+\s*=\s*\d+)/i,
-    /(INFORMATION_SCHEMA|sysobjects|syscolumns)/i
-  ];
+  /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE|UNION|SCRIPT)\b)/i,
+  /(--|\/\*|\*\/|xp_|sp_)/i,
+  /(\b(OR|AND)\s+\w+\s*=\s*\w+)/i,
+  /(\b\d+\s*=\s*\d+)/i,
+  /(INFORMATION_SCHEMA|sysobjects|syscolumns)/i];
+
 
   private xssPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-    /javascript:/gi,
-    /on\w+\s*=/gi,
-    /<img[^>]+src[^>]*>/gi,
-    /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi
-  ];
+  /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+  /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+  /javascript:/gi,
+  /on\w+\s*=/gi,
+  /<img[^>]+src[^>]*>/gi,
+  /<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi];
+
 
   private commandInjectionPatterns = [
-    /[;&|`$(){}[\]\\]/g,
-    /(rm|wget|curl|nc|telnet|ssh|ftp|scp)/i,
-    /(\.\.|\/etc\/|\/bin\/|\/usr\/)/i
-  ];
+  /[;&|`$(){}[\]\\]/g,
+  /(rm|wget|curl|nc|telnet|ssh|ftp|scp)/i,
+  /(\.\.|\/etc\/|\/bin\/|\/usr\/)/i];
 
-  sanitizeString(input: string, options: { allowHtml?: boolean; maxLength?: number } = {}): string {
+
+  sanitizeString(input: string, options: {allowHtml?: boolean;maxLength?: number;} = {}): string {
     if (typeof input !== 'string') {
       return '';
     }
@@ -71,28 +71,28 @@ class SecurityValidator {
       }
     } else {
       // Escape HTML characters
-      sanitized = sanitized
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
+      sanitized = sanitized.
+      replace(/&/g, '&amp;').
+      replace(/</g, '&lt;').
+      replace(/>/g, '&gt;').
+      replace(/"/g, '&quot;').
+      replace(/'/g, '&#x27;').
+      replace(/\//g, '&#x2F;');
     }
 
     return sanitized;
   }
 
   detectSQLInjection(input: string): boolean {
-    return this.sqlInjectionPatterns.some(pattern => pattern.test(input));
+    return this.sqlInjectionPatterns.some((pattern) => pattern.test(input));
   }
 
   detectXSS(input: string): boolean {
-    return this.xssPatterns.some(pattern => pattern.test(input));
+    return this.xssPatterns.some((pattern) => pattern.test(input));
   }
 
   detectCommandInjection(input: string): boolean {
-    return this.commandInjectionPatterns.some(pattern => pattern.test(input));
+    return this.commandInjectionPatterns.some((pattern) => pattern.test(input));
   }
 
   validateEmail(email: string): boolean {
@@ -125,26 +125,26 @@ class SecurityValidator {
     switch (rule.type) {
       case 'string':
         return this.sanitizeString(String(value), { maxLength: rule.max });
-      
+
       case 'email':
         return this.sanitizeString(String(value), { maxLength: 254 }).toLowerCase();
-      
+
       case 'number':
         const num = Number(value);
         if (isNaN(num)) return 0;
         if (rule.min !== undefined && num < rule.min) return rule.min;
         if (rule.max !== undefined && num > rule.max) return rule.max;
         return num;
-      
+
       case 'boolean':
         return Boolean(value);
-      
+
       case 'array':
         return Array.isArray(value) ? value : [];
-      
+
       case 'object':
         return typeof value === 'object' && value !== null ? value : {};
-      
+
       default:
         return value;
     }
@@ -176,7 +176,7 @@ class SecurityValidator {
         if (rule.pattern && !rule.pattern.test(value)) {
           return `${fieldName} format is invalid`;
         }
-        
+
         // Security checks
         if (this.detectSQLInjection(value)) {
           return `${fieldName} contains potentially dangerous content`;
@@ -264,14 +264,14 @@ class SecurityValidator {
   }
 
   validate(data: any, schema: ValidationSchema): ValidationResult {
-    const errors: { field: string; message: string }[] = [];
+    const errors: {field: string;message: string;}[] = [];
     const sanitizedData: any = {};
 
     // Validate each field in schema
     for (const [fieldName, rule] of Object.entries(schema)) {
       const value = data?.[fieldName];
       const error = this.validateField(value, rule, fieldName);
-      
+
       if (error) {
         errors.push({ field: fieldName, message: error });
       }
@@ -284,12 +284,12 @@ class SecurityValidator {
     if (typeof data === 'object' && data !== null) {
       const allowedFields = new Set(Object.keys(schema));
       const providedFields = Object.keys(data);
-      
+
       for (const field of providedFields) {
         if (!allowedFields.has(field)) {
-          errors.push({ 
-            field, 
-            message: `Unexpected field: ${field}` 
+          errors.push({
+            field,
+            message: `Unexpected field: ${field}`
           });
         }
       }
@@ -308,7 +308,7 @@ class SecurityValidator {
       email: { type: 'email' as const, required: true, sanitize: true },
       password: { type: 'string' as const, required: true, min: 8, max: 128 }
     },
-    
+
     register: {
       email: { type: 'email' as const, required: true, sanitize: true },
       password: { type: 'string' as const, required: true, min: 8, max: 128 },
@@ -349,12 +349,12 @@ export const useValidation = () => {
 };
 
 // Utility functions
-export const sanitizeInput = (input: string, options?: { allowHtml?: boolean; maxLength?: number }) => {
+export const sanitizeInput = (input: string, options?: {allowHtml?: boolean;maxLength?: number;}) => {
   return securityValidator.sanitizeString(input, options);
 };
 
 export const isSecureInput = (input: string): boolean => {
   return !securityValidator.detectSQLInjection(input) &&
-         !securityValidator.detectXSS(input) &&
-         !securityValidator.detectCommandInjection(input);
+  !securityValidator.detectXSS(input) &&
+  !securityValidator.detectCommandInjection(input);
 };

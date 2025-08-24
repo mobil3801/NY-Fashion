@@ -1,7 +1,7 @@
 
 async function trackError(errorData) {
   const timestamp = new Date().toISOString();
-  
+
   const errorRecord = {
     error_id: `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     error_message: errorData.message || 'Unknown error',
@@ -21,13 +21,13 @@ async function trackError(errorData) {
   try {
     // Store in error_tracking table
     await window.ezsite.apis.tableCreate('error_tracking', errorRecord);
-    
+
     // Update error statistics
     await updateErrorStatistics(errorRecord);
-    
+
     // Check if alert should be triggered
     await checkErrorAlerts(errorRecord);
-    
+
     return { success: true, errorId: errorRecord.error_id };
   } catch (error) {
     console.error('Failed to track error:', error);
@@ -37,18 +37,18 @@ async function trackError(errorData) {
 
 async function updateErrorStatistics(errorRecord) {
   const today = new Date().toISOString().split('T')[0];
-  
+
   try {
     // Try to update existing stats for today
     const existingStats = await window.ezsite.apis.tablePage('error_statistics', {
       PageNo: 1,
       PageSize: 1,
       Filters: [
-        { name: 'date', op: 'Equal', value: today },
-        { name: 'error_type', op: 'Equal', value: errorRecord.error_type }
-      ]
+      { name: 'date', op: 'Equal', value: today },
+      { name: 'error_type', op: 'Equal', value: errorRecord.error_type }]
+
     });
-    
+
     if (existingStats.data && existingStats.data.List.length > 0) {
       const stats = existingStats.data.List[0];
       await window.ezsite.apis.tableUpdate('error_statistics', {
@@ -79,11 +79,11 @@ async function checkErrorAlerts(errorRecord) {
       PageNo: 1,
       PageSize: 10,
       Filters: [
-        { name: 'error_type', op: 'Equal', value: errorRecord.error_type },
-        { name: 'is_active', op: 'Equal', value: true }
-      ]
+      { name: 'error_type', op: 'Equal', value: errorRecord.error_type },
+      { name: 'is_active', op: 'Equal', value: true }]
+
     });
-    
+
     if (alertConfigs.data && alertConfigs.data.List.length > 0) {
       for (const config of alertConfigs.data.List) {
         // Check threshold logic
@@ -105,7 +105,7 @@ function shouldTriggerAlert(config, errorRecord) {
 async function triggerAlert(config, errorRecord) {
   // In real implementation, this would send emails, Slack notifications, etc.
   console.warn(`ALERT TRIGGERED: ${config.alert_name} - ${errorRecord.error_message}`);
-  
+
   // Log the alert
   try {
     await window.ezsite.apis.tableCreate('error_alerts', {

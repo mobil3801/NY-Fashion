@@ -1,7 +1,7 @@
 
 async function collectSystemMetrics() {
   const timestamp = new Date().toISOString();
-  
+
   // Collect various system metrics
   const metrics = {
     timestamp,

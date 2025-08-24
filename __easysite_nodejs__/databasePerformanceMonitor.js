@@ -7,7 +7,7 @@ function databasePerformanceMonitor(action, options = {}) {
     highMemoryUsage: options.highMemoryThreshold || 85, // %
     highConnectionUsage: options.highConnectionThreshold || 80, // %
     lowCacheHitRatio: options.lowCacheHitRatio || 0.9, // 90%
-    maxLockWaitTime: options.maxLockWaitTime || 5000, // ms
+    maxLockWaitTime: options.maxLockWaitTime || 5000 // ms
   };
 
   switch (action) {
@@ -48,40 +48,40 @@ function databasePerformanceMonitor(action, options = {}) {
 
     case 'analyzeSlowQueries':
       const slowQueries = [
-        {
-          query: "SELECT * FROM products p JOIN categories c ON p.category_id = c.id WHERE p.name LIKE '%search%'",
-          executionTime: 1250,
-          frequency: 45,
-          lastExecuted: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-          recommendations: [
-            'Add index on products.name',
-            'Consider full-text search instead of LIKE',
-            'Add composite index on (category_id, name)'
-          ]
-        },
-        {
-          query: "SELECT COUNT(*) FROM sales s JOIN sale_items si ON s.id = si.sale_id WHERE s.created_at > ?",
-          executionTime: 890,
-          frequency: 120,
-          lastExecuted: new Date(Date.now() - Math.random() * 1800000).toISOString(),
-          recommendations: [
-            'Add index on sales.created_at',
-            'Consider materialized view for frequent aggregations',
-            'Partition sales table by date'
-          ]
-        },
-        {
-          query: "UPDATE stock_movements SET processed = true WHERE created_at < ?",
-          executionTime: 2100,
-          frequency: 12,
-          lastExecuted: new Date(Date.now() - Math.random() * 7200000).toISOString(),
-          recommendations: [
-            'Add index on (created_at, processed)',
-            'Process in smaller batches',
-            'Consider archiving old records'
-          ]
-        }
-      ];
+      {
+        query: "SELECT * FROM products p JOIN categories c ON p.category_id = c.id WHERE p.name LIKE '%search%'",
+        executionTime: 1250,
+        frequency: 45,
+        lastExecuted: new Date(Date.now() - Math.random() * 3600000).toISOString(),
+        recommendations: [
+        'Add index on products.name',
+        'Consider full-text search instead of LIKE',
+        'Add composite index on (category_id, name)']
+
+      },
+      {
+        query: "SELECT COUNT(*) FROM sales s JOIN sale_items si ON s.id = si.sale_id WHERE s.created_at > ?",
+        executionTime: 890,
+        frequency: 120,
+        lastExecuted: new Date(Date.now() - Math.random() * 1800000).toISOString(),
+        recommendations: [
+        'Add index on sales.created_at',
+        'Consider materialized view for frequent aggregations',
+        'Partition sales table by date']
+
+      },
+      {
+        query: "UPDATE stock_movements SET processed = true WHERE created_at < ?",
+        executionTime: 2100,
+        frequency: 12,
+        lastExecuted: new Date(Date.now() - Math.random() * 7200000).toISOString(),
+        recommendations: [
+        'Add index on (created_at, processed)',
+        'Process in smaller batches',
+        'Consider archiving old records']
+
+      }];
+
 
       return {
         slowQueries,
@@ -96,53 +96,53 @@ function databasePerformanceMonitor(action, options = {}) {
     case 'getQueryOptimizationSuggestions':
       return {
         indexOptimizations: [
-          {
-            table: 'products',
-            columns: ['name', 'category_id'],
-            type: 'composite',
-            estimatedImprovement: '40% faster search queries',
-            priority: 'high',
-            sql: 'CREATE INDEX idx_products_name_category ON products(name, category_id);'
-          },
-          {
-            table: 'sales',
-            columns: ['created_at'],
-            type: 'btree',
-            estimatedImprovement: '60% faster date range queries',
-            priority: 'high',
-            sql: 'CREATE INDEX idx_sales_created_at ON sales(created_at);'
-          },
-          {
-            table: 'stock_movements',
-            columns: ['created_at', 'processed'],
-            type: 'partial',
-            estimatedImprovement: '30% faster update operations',
-            priority: 'medium',
-            sql: 'CREATE INDEX idx_stock_movements_unprocessed ON stock_movements(created_at) WHERE processed = false;'
-          }
-        ],
+        {
+          table: 'products',
+          columns: ['name', 'category_id'],
+          type: 'composite',
+          estimatedImprovement: '40% faster search queries',
+          priority: 'high',
+          sql: 'CREATE INDEX idx_products_name_category ON products(name, category_id);'
+        },
+        {
+          table: 'sales',
+          columns: ['created_at'],
+          type: 'btree',
+          estimatedImprovement: '60% faster date range queries',
+          priority: 'high',
+          sql: 'CREATE INDEX idx_sales_created_at ON sales(created_at);'
+        },
+        {
+          table: 'stock_movements',
+          columns: ['created_at', 'processed'],
+          type: 'partial',
+          estimatedImprovement: '30% faster update operations',
+          priority: 'medium',
+          sql: 'CREATE INDEX idx_stock_movements_unprocessed ON stock_movements(created_at) WHERE processed = false;'
+        }],
+
         queryRewrites: [
-          {
-            original: "SELECT * FROM products WHERE name LIKE '%search%'",
-            optimized: "SELECT * FROM products WHERE to_tsvector('english', name) @@ to_tsquery('english', 'search')",
-            improvement: 'Use full-text search for better performance',
-            estimatedSpeedup: '3x faster'
-          }
-        ],
+        {
+          original: "SELECT * FROM products WHERE name LIKE '%search%'",
+          optimized: "SELECT * FROM products WHERE to_tsvector('english', name) @@ to_tsquery('english', 'search')",
+          improvement: 'Use full-text search for better performance',
+          estimatedSpeedup: '3x faster'
+        }],
+
         tableOptimizations: [
-          {
-            table: 'audit_logs',
-            recommendation: 'Implement table partitioning by date',
-            reason: 'Large table with time-series data',
-            estimatedBenefit: 'Improved query performance and easier maintenance'
-          },
-          {
-            table: 'product_images',
-            recommendation: 'Move to separate storage with reference',
-            reason: 'Large binary data affecting table performance',
-            estimatedBenefit: 'Reduced memory usage and faster queries'
-          }
-        ]
+        {
+          table: 'audit_logs',
+          recommendation: 'Implement table partitioning by date',
+          reason: 'Large table with time-series data',
+          estimatedBenefit: 'Improved query performance and easier maintenance'
+        },
+        {
+          table: 'product_images',
+          recommendation: 'Move to separate storage with reference',
+          reason: 'Large binary data affecting table performance',
+          estimatedBenefit: 'Reduced memory usage and faster queries'
+        }]
+
       };
 
     case 'runPerformanceAnalysis':
@@ -150,42 +150,42 @@ function databasePerformanceMonitor(action, options = {}) {
         timestamp: new Date().toISOString(),
         duration: Math.floor(Math.random() * 30 + 10), // 10-40 seconds
         tablesAnalyzed: [
-          'products', 'categories', 'customers', 'sales', 'sale_items',
-          'employees', 'stock_movements', 'suppliers', 'purchase_orders'
-        ],
+        'products', 'categories', 'customers', 'sales', 'sale_items',
+        'employees', 'stock_movements', 'suppliers', 'purchase_orders'],
+
         findings: {
           critical: [
-            {
-              type: 'missing_index',
-              table: 'products',
-              description: 'Missing index on frequently queried name column',
-              impact: 'High - affects search performance',
-              recommendation: 'CREATE INDEX idx_products_name ON products(name);'
-            }
-          ],
+          {
+            type: 'missing_index',
+            table: 'products',
+            description: 'Missing index on frequently queried name column',
+            impact: 'High - affects search performance',
+            recommendation: 'CREATE INDEX idx_products_name ON products(name);'
+          }],
+
           warnings: [
-            {
-              type: 'slow_query',
-              description: 'Multiple queries exceeding 1 second threshold',
-              impact: 'Medium - user experience degradation',
-              recommendation: 'Review and optimize slow queries'
-            },
-            {
-              type: 'high_table_size',
-              table: 'audit_logs',
-              description: 'Table size growing rapidly without archival',
-              impact: 'Medium - storage and performance impact',
-              recommendation: 'Implement data archival strategy'
-            }
-          ],
+          {
+            type: 'slow_query',
+            description: 'Multiple queries exceeding 1 second threshold',
+            impact: 'Medium - user experience degradation',
+            recommendation: 'Review and optimize slow queries'
+          },
+          {
+            type: 'high_table_size',
+            table: 'audit_logs',
+            description: 'Table size growing rapidly without archival',
+            impact: 'Medium - storage and performance impact',
+            recommendation: 'Implement data archival strategy'
+          }],
+
           optimizations: [
-            {
-              type: 'unused_index',
-              table: 'customers',
-              index: 'idx_customers_unused',
-              recommendation: 'Consider removing unused index to improve write performance'
-            }
-          ]
+          {
+            type: 'unused_index',
+            table: 'customers',
+            index: 'idx_customers_unused',
+            recommendation: 'Consider removing unused index to improve write performance'
+          }]
+
         },
         scores: {
           overallPerformance: Math.floor(Math.random() * 20 + 70), // 70-90
@@ -219,46 +219,46 @@ function databasePerformanceMonitor(action, options = {}) {
     case 'getRecommendations':
       return {
         immediate: [
-          {
-            priority: 'critical',
-            action: 'Add missing indexes',
-            description: 'Create indexes on frequently queried columns',
-            estimatedImpact: 'High performance improvement',
-            estimatedTime: '5-10 minutes'
-          }
-        ],
+        {
+          priority: 'critical',
+          action: 'Add missing indexes',
+          description: 'Create indexes on frequently queried columns',
+          estimatedImpact: 'High performance improvement',
+          estimatedTime: '5-10 minutes'
+        }],
+
         shortTerm: [
-          {
-            priority: 'high',
-            action: 'Optimize slow queries',
-            description: 'Rewrite queries exceeding performance thresholds',
-            estimatedImpact: 'Medium performance improvement',
-            estimatedTime: '2-4 hours'
-          },
-          {
-            priority: 'medium',
-            action: 'Implement query caching',
-            description: 'Cache frequently executed queries',
-            estimatedImpact: 'Medium performance improvement',
-            estimatedTime: '4-6 hours'
-          }
-        ],
+        {
+          priority: 'high',
+          action: 'Optimize slow queries',
+          description: 'Rewrite queries exceeding performance thresholds',
+          estimatedImpact: 'Medium performance improvement',
+          estimatedTime: '2-4 hours'
+        },
+        {
+          priority: 'medium',
+          action: 'Implement query caching',
+          description: 'Cache frequently executed queries',
+          estimatedImpact: 'Medium performance improvement',
+          estimatedTime: '4-6 hours'
+        }],
+
         longTerm: [
-          {
-            priority: 'medium',
-            action: 'Table partitioning',
-            description: 'Partition large tables for better performance',
-            estimatedImpact: 'High performance improvement for large datasets',
-            estimatedTime: '1-2 days'
-          },
-          {
-            priority: 'low',
-            action: 'Data archival strategy',
-            description: 'Archive old data to maintain performance',
-            estimatedImpact: 'Sustained performance',
-            estimatedTime: '2-3 days'
-          }
-        ]
+        {
+          priority: 'medium',
+          action: 'Table partitioning',
+          description: 'Partition large tables for better performance',
+          estimatedImpact: 'High performance improvement for large datasets',
+          estimatedTime: '1-2 days'
+        },
+        {
+          priority: 'low',
+          action: 'Data archival strategy',
+          description: 'Archive old data to maintain performance',
+          estimatedImpact: 'Sustained performance',
+          estimatedTime: '2-3 days'
+        }]
+
       };
 
     default:

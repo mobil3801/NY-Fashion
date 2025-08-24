@@ -61,8 +61,8 @@ const MonitoringPage: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MonitoringPage;

@@ -2,7 +2,7 @@
 async function runPerformanceAnalysis(timeWindow = '1h') {
   const endTime = new Date();
   const startTime = new Date();
-  
+
   // Set time window
   switch (timeWindow) {
     case '1h':
@@ -24,15 +24,15 @@ async function runPerformanceAnalysis(timeWindow = '1h') {
       PageNo: 1,
       PageSize: 1000,
       Filters: [
-        { name: 'timestamp', op: 'GreaterThanOrEqual', value: startTime.toISOString() },
-        { name: 'timestamp', op: 'LessThanOrEqual', value: endTime.toISOString() }
-      ],
+      { name: 'timestamp', op: 'GreaterThanOrEqual', value: startTime.toISOString() },
+      { name: 'timestamp', op: 'LessThanOrEqual', value: endTime.toISOString() }],
+
       OrderByField: 'timestamp',
       IsAsc: false
     });
 
     const performanceData = metrics.data?.List || [];
-    
+
     // Analyze the data
     const analysis = {
       timeWindow,
@@ -50,10 +50,10 @@ async function runPerformanceAnalysis(timeWindow = '1h') {
 
     // Store analysis results
     await storeAnalysisResults(analysis);
-    
+
     // Check for alerts
     await checkPerformanceAlerts(analysis);
-    
+
     return analysis;
   } catch (error) {
     console.error('Performance analysis failed:', error);
@@ -72,7 +72,7 @@ function calculatePerformanceSummary(data) {
 
   // Group by metric name
   const groupedMetrics = {};
-  data.forEach(metric => {
+  data.forEach((metric) => {
     const name = metric.metric_name;
     if (!groupedMetrics[name]) {
       groupedMetrics[name] = [];
@@ -101,19 +101,19 @@ function calculatePerformanceTrends(data) {
   const secondHalf = sorted.slice(midpoint);
 
   const trends = {};
-  
+
   // Group by metric name for trend analysis
   const firstHalfMetrics = groupByMetric(firstHalf);
   const secondHalfMetrics = groupByMetric(secondHalf);
 
-  Object.keys(firstHalfMetrics).forEach(metricName => {
+  Object.keys(firstHalfMetrics).forEach((metricName) => {
     const firstAvg = average(firstHalfMetrics[metricName]);
     const secondAvg = average(secondHalfMetrics[metricName] || []);
-    
+
     if (secondAvg > firstAvg * 1.1) {
       trends[metricName] = 'increasing';
     } else if (secondAvg < firstAvg * 0.9) {
-      trends[metricName] = 'decreasing'; 
+      trends[metricName] = 'decreasing';
     } else {
       trends[metricName] = 'stable';
     }
@@ -129,7 +129,7 @@ function detectPerformanceAnomalies(data) {
   Object.entries(groupedMetrics).forEach(([metricName, values]) => {
     const avg = average(values);
     const stdDev = standardDeviation(values);
-    const threshold = avg + (2 * stdDev); // 2 sigma rule
+    const threshold = avg + 2 * stdDev; // 2 sigma rule
 
     values.forEach((value, index) => {
       if (value > threshold) {
@@ -137,7 +137,7 @@ function detectPerformanceAnomalies(data) {
           metric_name: metricName,
           value: value,
           expected_range: [avg - stdDev, avg + stdDev],
-          severity: value > (avg + 3 * stdDev) ? 'high' : 'medium',
+          severity: value > avg + 3 * stdDev ? 'high' : 'medium',
           detected_at: new Date().toISOString()
         });
       }
@@ -205,24 +205,24 @@ function calculateHealthScore(data) {
   // Penalize high response times
   if (groupedMetrics.response_time) {
     const avgResponseTime = average(groupedMetrics.response_time);
-    if (avgResponseTime > 2000) score -= 30;
-    else if (avgResponseTime > 1000) score -= 15;
-    else if (avgResponseTime > 500) score -= 5;
+    if (avgResponseTime > 2000) score -= 30;else
+    if (avgResponseTime > 1000) score -= 15;else
+    if (avgResponseTime > 500) score -= 5;
   }
 
   // Penalize high error rates
   if (groupedMetrics.error_rate) {
     const avgErrorRate = average(groupedMetrics.error_rate);
-    if (avgErrorRate > 10) score -= 40;
-    else if (avgErrorRate > 5) score -= 20;
-    else if (avgErrorRate > 1) score -= 10;
+    if (avgErrorRate > 10) score -= 40;else
+    if (avgErrorRate > 5) score -= 20;else
+    if (avgErrorRate > 1) score -= 10;
   }
 
   // Penalize high resource usage
   if (groupedMetrics.cpu_usage) {
     const avgCpuUsage = average(groupedMetrics.cpu_usage);
-    if (avgCpuUsage > 90) score -= 25;
-    else if (avgCpuUsage > 70) score -= 10;
+    if (avgCpuUsage > 90) score -= 25;else
+    if (avgCpuUsage > 70) score -= 10;
   }
 
   return Math.max(0, Math.min(100, score));
@@ -269,7 +269,7 @@ async function checkPerformanceAlerts(analysis) {
 // Helper functions
 function groupByMetric(data) {
   const grouped = {};
-  data.forEach(item => {
+  data.forEach((item) => {
     const name = item.metric_name;
     if (!grouped[name]) grouped[name] = [];
     grouped[name].push(parseFloat(item.metric_value) || 0);
@@ -283,6 +283,6 @@ function average(values) {
 
 function standardDeviation(values) {
   const avg = average(values);
-  const squaredDiffs = values.map(value => Math.pow(value - avg, 2));
+  const squaredDiffs = values.map((value) => Math.pow(value - avg, 2));
   return Math.sqrt(average(squaredDiffs));
 }

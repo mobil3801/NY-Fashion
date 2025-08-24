@@ -3,7 +3,7 @@ import { Package, AlertTriangle, FileText, BarChart3, Upload, Download, QrCode }
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InventoryProvider } from '@/contexts/InventoryContext';
+import { EnhancedInventoryProvider } from '@/contexts/EnhancedInventoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNetwork } from '@/contexts/NetworkContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -18,7 +18,7 @@ if (import.meta.env.DEV) {
   });
 }
 
-import ProductManagement from '@/components/inventory/ProductManagement';
+import EnhancedProductManagement from '@/components/inventory/EnhancedProductManagement';
 import StockMovement from '@/components/inventory/StockMovement';
 import InventoryAdjustments from '@/components/inventory/InventoryAdjustments';
 import LowStockAlerts from '@/components/inventory/LowStockAlerts';
@@ -26,6 +26,9 @@ import CSVImport from '@/components/inventory/CSVImport';
 import BarcodeGeneration from '@/components/inventory/BarcodeGeneration';
 import NetworkDiagnosticsHelper from '@/components/network/NetworkDiagnosticsHelper';
 import InventoryDebugPanel from '@/components/inventory/InventoryDebugPanel';
+import EnhancedInventoryDiagnostics from '@/components/inventory/EnhancedInventoryDiagnostics';
+import InventoryErrorBoundary from '@/components/inventory/InventoryErrorBoundary';
+import InventoryNetworkMonitor from '@/components/inventory/InventoryNetworkMonitor';
 
 const InventoryPage = () => {
   const { t } = useLanguage();
@@ -46,7 +49,8 @@ const InventoryPage = () => {
   }, [online, connectionState, errorDetails]);
 
   return (
-    <InventoryProvider>
+    <InventoryErrorBoundary>
+      <EnhancedInventoryProvider>
       <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* Header with enhanced accessibility */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -60,30 +64,30 @@ const InventoryPage = () => {
           </div>
           <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Inventory actions">
             <Button
-              variant="outline"
-              onClick={() => setShowCSVImport(true)}
-              className="touch-manipulation"
-              aria-label="Import products from CSV file"
-              size={isMobile ? "sm" : "default"}>
+                variant="outline"
+                onClick={() => setShowCSVImport(true)}
+                className="touch-manipulation"
+                aria-label="Import products from CSV file"
+                size={isMobile ? "sm" : "default"}>
 
               <Upload className="h-4 w-4 mr-2" aria-hidden="true" />
               {isMobile ? "Import" : "Import CSV"}
             </Button>
             <Button
-              variant="outline"
-              onClick={() => setShowBarcodeGen(true)}
-              className="touch-manipulation"
-              aria-label="Generate barcode labels for products"
-              size={isMobile ? "sm" : "default"}>
+                variant="outline"
+                onClick={() => setShowBarcodeGen(true)}
+                className="touch-manipulation"
+                aria-label="Generate barcode labels for products"
+                size={isMobile ? "sm" : "default"}>
 
               <QrCode className="h-4 w-4 mr-2" aria-hidden="true" />
               {isMobile ? "Labels" : "Generate Labels"}
             </Button>
             <Button
-              variant="outline"
-              className="touch-manipulation"
-              aria-label="Export inventory data"
-              size={isMobile ? "sm" : "default"}>
+                variant="outline"
+                className="touch-manipulation"
+                aria-label="Export inventory data"
+                size={isMobile ? "sm" : "default"}>
 
               <Download className="h-4 w-4 mr-2" aria-hidden="true" />
               Export
@@ -94,61 +98,61 @@ const InventoryPage = () => {
         {/* Main Inventory Interface with enhanced mobile responsiveness */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {isMobile ? (
-          /* Mobile scrollable tabs */
-          <div className="w-full overflow-x-auto">
+            /* Mobile scrollable tabs */
+            <div className="w-full overflow-x-auto">
               <TabsList className="inline-flex w-max min-w-full h-12" role="tablist" aria-label="Inventory management sections">
                 <TabsTrigger
-                value="products"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="Manage products and variants">
+                  value="products"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="Manage products and variants">
 
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Products
                 </TabsTrigger>
                 <TabsTrigger
-                value="stock"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="View and manage stock movements">
+                  value="stock"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="View and manage stock movements">
 
                   <BarChart3 className="h-4 w-4" aria-hidden="true" />
                   Stock
                 </TabsTrigger>
                 <TabsTrigger
-                value="adjustments"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="Make inventory adjustments">
+                  value="adjustments"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="Make inventory adjustments">
 
                   <FileText className="h-4 w-4" aria-hidden="true" />
                   Adjustments
                 </TabsTrigger>
                 <TabsTrigger
-                value="alerts"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="View low stock alerts and critical items">
+                  value="alerts"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="View low stock alerts and critical items">
 
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                   Alerts
                 </TabsTrigger>
                 <TabsTrigger
-                value="reports"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="Generate inventory reports and analytics">
+                  value="reports"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="Generate inventory reports and analytics">
 
                   <BarChart3 className="h-4 w-4" aria-hidden="true" />
                   Reports
                 </TabsTrigger>
                 <TabsTrigger
-                value="diagnostics"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="Network diagnostics and troubleshooting">
+                  value="diagnostics"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="Network diagnostics and troubleshooting">
 
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Network
                 </TabsTrigger>
                 <TabsTrigger
-                value="debug"
-                className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
-                aria-label="Inventory debug panel">
+                  value="debug"
+                  className="flex items-center gap-2 px-3 h-10 text-sm whitespace-nowrap"
+                  aria-label="Inventory debug panel">
 
                   <Package className="h-4 w-4" aria-hidden="true" />
                   Debug
@@ -156,69 +160,69 @@ const InventoryPage = () => {
               </TabsList>
             </div>) : (
 
-          /* Desktop grid tabs */
-          <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
+            /* Desktop grid tabs */
+            <TabsList className="grid w-full grid-cols-7" role="tablist" aria-label="Inventory management sections">
               <TabsTrigger
-              value="products"
-              className="flex items-center gap-2"
-              aria-label="Manage products and variants">
+                value="products"
+                className="flex items-center gap-2"
+                aria-label="Manage products and variants">
 
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Products
               </TabsTrigger>
               <TabsTrigger
-              value="stock"
-              className="flex items-center gap-2"
-              aria-label="View and manage stock movements">
+                value="stock"
+                className="flex items-center gap-2"
+                aria-label="View and manage stock movements">
 
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 Stock Movement
               </TabsTrigger>
               <TabsTrigger
-              value="adjustments"
-              className="flex items-center gap-2"
-              aria-label="Make inventory adjustments">
+                value="adjustments"
+                className="flex items-center gap-2"
+                aria-label="Make inventory adjustments">
 
                 <FileText className="h-4 w-4" aria-hidden="true" />
                 Adjustments
               </TabsTrigger>
               <TabsTrigger
-              value="alerts"
-              className="flex items-center gap-2"
-              aria-label="View low stock alerts and critical items">
+                value="alerts"
+                className="flex items-center gap-2"
+                aria-label="View low stock alerts and critical items">
 
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                 Low Stock
               </TabsTrigger>
               <TabsTrigger
-              value="reports"
-              className="flex items-center gap-2"
-              aria-label="Generate inventory reports and analytics">
+                value="reports"
+                className="flex items-center gap-2"
+                aria-label="Generate inventory reports and analytics">
 
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 Reports
               </TabsTrigger>
               <TabsTrigger
-              value="diagnostics"
-              className="flex items-center gap-2"
-              aria-label="Network diagnostics and troubleshooting">
+                value="diagnostics"
+                className="flex items-center gap-2"
+                aria-label="Network diagnostics and troubleshooting">
 
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Diagnostics
               </TabsTrigger>
               <TabsTrigger
-              value="debug"
-              className="flex items-center gap-2"
-              aria-label="Inventory debug panel">
+                value="debug"
+                className="flex items-center gap-2"
+                aria-label="Inventory debug panel">
 
                 <Package className="h-4 w-4" aria-hidden="true" />
                 Debug
               </TabsTrigger>
             </TabsList>)
-          }
+            }
 
           <TabsContent value="products" className="mt-4">
-            <ProductManagement />
+            <EnhancedProductManagement />
           </TabsContent>
 
           <TabsContent value="stock" className="mt-4">
@@ -327,15 +331,19 @@ const InventoryPage = () => {
           </TabsContent>
           
           <TabsContent value="debug" role="tabpanel" aria-labelledby="debug-tab" className="mt-4">
-            <InventoryDebugPanel />
+            <EnhancedInventoryDiagnostics />
           </TabsContent>
         </Tabs>
 
         {/* Dialogs */}
         <CSVImport isOpen={showCSVImport} onClose={() => setShowCSVImport(false)} />
         <BarcodeGeneration isOpen={showBarcodeGen} onClose={() => setShowBarcodeGen(false)} />
+        
+        {/* Network Monitor */}
+        <InventoryNetworkMonitor />
       </div>
-    </InventoryProvider>);
+      </EnhancedInventoryProvider>
+    </InventoryErrorBoundary>);
 
 };
 

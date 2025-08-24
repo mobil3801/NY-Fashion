@@ -27,7 +27,7 @@ export interface DDoSDetection {
 
 class RateLimitManager {
   private store = new Map<string, RateLimitEntry>();
-  private suspiciousIPs = new Map<string, { violations: number; lastViolation: number; blockUntil?: number }>();
+  private suspiciousIPs = new Map<string, {violations: number;lastViolation: number;blockUntil?: number;}>();
   private config = getSecurityConfig();
   private cleanupInterval: NodeJS.Timeout | null = null;
 
@@ -44,7 +44,7 @@ class RateLimitManager {
 
   private cleanup(): void {
     const now = Date.now();
-    
+
     // Clean up expired rate limit entries
     for (const [key, entry] of this.store.entries()) {
       if (now > entry.resetTime) {
@@ -67,7 +67,7 @@ class RateLimitManager {
   private detectDDoS(identifier: string, entry: RateLimitEntry): DDoSDetection {
     const now = Date.now();
     const requestRate = entry.count / ((now - entry.firstRequest) / 1000); // requests per second
-    
+
     // High request rate detection
     if (requestRate > 100) {
       return {
@@ -259,7 +259,7 @@ class RateLimitManager {
   whitelist(identifier: string, duration: number = 24 * 60 * 60 * 1000): void {
     // Remove from suspicious IPs
     this.suspiciousIPs.delete(identifier);
-    
+
     // Remove all rate limit entries for this identifier
     for (const key of this.store.keys()) {
       if (key.startsWith(identifier)) {
@@ -273,8 +273,8 @@ class RateLimitManager {
     return {
       totalEntries: this.store.size,
       suspiciousIPs: this.suspiciousIPs.size,
-      blockedIPs: Array.from(this.suspiciousIPs.entries()).filter(([_, data]) => 
-        data.blockUntil && Date.now() < data.blockUntil
+      blockedIPs: Array.from(this.suspiciousIPs.entries()).filter(([_, data]) =>
+      data.blockUntil && Date.now() < data.blockUntil
       ).length
     };
   }
@@ -317,22 +317,22 @@ function generateClientFingerprint(): string {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   ctx?.fillText('fingerprint', 2, 2);
-  
+
   const fingerprint = [
-    navigator.userAgent,
-    navigator.language,
-    screen.width + 'x' + screen.height,
-    new Date().getTimezoneOffset(),
-    canvas.toDataURL()
-  ].join('|');
+  navigator.userAgent,
+  navigator.language,
+  screen.width + 'x' + screen.height,
+  new Date().getTimezoneOffset(),
+  canvas.toDataURL()].
+  join('|');
 
   // Simple hash
   let hash = 0;
   for (let i = 0; i < fingerprint.length; i++) {
     const char = fingerprint.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  
+
   return Math.abs(hash).toString(36);
 }

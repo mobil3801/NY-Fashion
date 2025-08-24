@@ -6,18 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  AlertCircle, 
-  CheckCircle, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  TrendingDown,
   RefreshCw,
   Server,
   Database,
   Zap,
-  Clock
-} from 'lucide-react';
+  Clock } from
+'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SystemHealth {
@@ -65,7 +65,7 @@ const MonitoringDashboard: React.FC = () => {
       });
 
       if (error) throw new Error(error);
-      
+
       setSystemHealth(data);
       setLastUpdate(new Date());
     } catch (error) {
@@ -93,27 +93,27 @@ const MonitoringDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'healthy': return 'default';
-      case 'degraded': return 'secondary';
-      case 'unhealthy': return 'destructive';
-      default: return 'outline';
+      case 'healthy':return 'default';
+      case 'degraded':return 'secondary';
+      case 'unhealthy':return 'destructive';
+      default:return 'outline';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'healthy': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'degraded': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'unhealthy': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
+      case 'healthy':return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'degraded':return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+      case 'unhealthy':return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
   const formatUptime = (seconds: number) => {
     const days = Math.floor(seconds / (24 * 3600));
-    const hours = Math.floor((seconds % (24 * 3600)) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    
+    const hours = Math.floor(seconds % (24 * 3600) / 3600);
+    const minutes = Math.floor(seconds % 3600 / 60);
+
     if (days > 0) return `${days}d ${hours}h ${minutes}m`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
@@ -126,8 +126,8 @@ const MonitoringDashboard: React.FC = () => {
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
           <p>Loading system health...</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -145,8 +145,8 @@ const MonitoringDashboard: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={autoRefresh ? 'bg-green-50 border-green-200' : ''}
-          >
+            className={autoRefresh ? 'bg-green-50 border-green-200' : ''}>
+
             <RefreshCw className={`h-4 w-4 mr-1 ${autoRefresh ? 'animate-spin' : ''}`} />
             Auto Refresh
           </Button>
@@ -154,8 +154,8 @@ const MonitoringDashboard: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={fetchSystemHealth}
-            disabled={isLoading}
-          >
+            disabled={isLoading}>
+
             <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -270,15 +270,15 @@ const MonitoringDashboard: React.FC = () => {
             </Card>
           </div>
 
-          {systemHealth.performance.errorRate > 0.1 && (
-            <Alert>
+          {systemHealth.performance.errorRate > 0.1 &&
+          <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 High error rate detected ({(systemHealth.performance.errorRate * 100).toFixed(2)}%). 
                 Consider investigating recent changes or system issues.
               </AlertDescription>
             </Alert>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
@@ -338,8 +338,8 @@ const MonitoringDashboard: React.FC = () => {
 
         <TabsContent value="components" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(systemHealth.components).map(([component, status]) => (
-              <Card key={component}>
+            {Object.entries(systemHealth.components).map(([component, status]) =>
+            <Card key={component}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -352,7 +352,7 @@ const MonitoringDashboard: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -383,14 +383,14 @@ const MonitoringDashboard: React.FC = () => {
                 <div>
                   <h4 className="font-medium mb-2">Health Checks</h4>
                   <div className="space-y-1">
-                    {Object.entries(systemHealth.checks || {}).map(([check, passed]) => (
-                      <div key={check} className="flex justify-between">
+                    {Object.entries(systemHealth.checks || {}).map(([check, passed]) =>
+                    <div key={check} className="flex justify-between">
                         <span className="capitalize">{check.replace('_', ' ')}</span>
                         <span className={passed ? 'text-green-600' : 'text-red-600'}>
                           {passed ? '✓' : '✗'}
                         </span>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>
@@ -398,8 +398,8 @@ const MonitoringDashboard: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default MonitoringDashboard;

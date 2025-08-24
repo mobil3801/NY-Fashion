@@ -1,7 +1,7 @@
 
 function enhancedHealthCheck() {
   const startTime = Date.now();
-  
+
   // Basic system health
   const systemHealth = {
     status: 'healthy',
@@ -23,7 +23,7 @@ function enhancedHealthCheck() {
 
   // CPU usage (simple estimation)
   const cpuUsage = process.cpuUsage();
-  
+
   // Database connectivity check (simulated - would need actual DB connection)
   const dbHealth = {
     connected: true,
@@ -42,7 +42,7 @@ function enhancedHealthCheck() {
   // System load
   const systemLoad = {
     cpu: Math.random() * 100,
-    memory: (memoryInfo.heapUsed / memoryInfo.heapTotal) * 100,
+    memory: memoryInfo.heapUsed / memoryInfo.heapTotal * 100,
     disk: Math.random() * 80 + 10 // Simulated 10-90%
   };
 
@@ -56,9 +56,9 @@ function enhancedHealthCheck() {
   };
 
   // Overall health status
-  const allComponentsHealthy = Object.values(components).every(status => status === 'healthy');
-  const overallStatus = allComponentsHealthy ? 'healthy' : 
-    Object.values(components).some(status => status === 'unhealthy') ? 'unhealthy' : 'degraded';
+  const allComponentsHealthy = Object.values(components).every((status) => status === 'healthy');
+  const overallStatus = allComponentsHealthy ? 'healthy' :
+  Object.values(components).some((status) => status === 'unhealthy') ? 'unhealthy' : 'degraded';
 
   return {
     ...systemHealth,

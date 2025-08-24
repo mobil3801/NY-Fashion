@@ -56,7 +56,7 @@ function disasterRecoveryManager(action, params = {}) {
     } = config;
 
     const rollbackId = `rollback_${Date.now()}_${userId}`;
-    
+
     // Validate rollback prerequisites
     const validation = await validateRollbackPrerequisites(deploymentId, targetVersion);
     if (!validation.valid) {
@@ -105,7 +105,7 @@ function disasterRecoveryManager(action, params = {}) {
 
     const backupId = `backup_${Date.now()}`;
     const backupPath = path.join(process.cwd(), 'backups', backupId);
-    
+
     await fs.mkdir(backupPath, { recursive: true });
 
     const backup = {
@@ -151,10 +151,10 @@ function disasterRecoveryManager(action, params = {}) {
       backup.status = 'failed';
       backup.error = error.message;
       backup.endTime = new Date().toISOString();
-      
+
       // Clean up partial backup
       await cleanupPartialBackup(backupPath);
-      
+
       throw error;
     }
 
@@ -299,7 +299,7 @@ function disasterRecoveryManager(action, params = {}) {
 
     // Check disk space
     validation.checks.diskSpace = await checkDiskSpace();
-    if (validation.checks.diskSpace.available < 1000000000) { // 1GB
+    if (validation.checks.diskSpace.available < 1000000000) {// 1GB
       validation.errors.push('Insufficient disk space for rollback');
       validation.valid = false;
     }
@@ -336,23 +336,23 @@ function disasterRecoveryManager(action, params = {}) {
         case 'system_failure':
           emergency.actions = await handleSystemFailure(environment, autoResolve);
           break;
-        
+
         case 'database_corruption':
           emergency.actions = await handleDatabaseCorruption(environment, autoResolve);
           break;
-        
+
         case 'security_breach':
           emergency.actions = await handleSecurityBreach(environment, autoResolve);
           break;
-        
+
         case 'data_loss':
           emergency.actions = await handleDataLoss(environment, autoResolve);
           break;
-        
+
         case 'performance_degradation':
           emergency.actions = await handlePerformanceDegradation(environment, autoResolve);
           break;
-        
+
         default:
           throw new Error(`Unknown emergency type: ${emergencyType}`);
       }
@@ -369,12 +369,12 @@ function disasterRecoveryManager(action, params = {}) {
       emergency.status = 'failed';
       emergency.error = error.message;
       emergency.endTime = new Date().toISOString();
-      
+
       // Send failure notifications
       if (notifications) {
         await sendEmergencyFailureNotifications(emergency);
       }
-      
+
       throw error;
     }
 
@@ -475,7 +475,7 @@ function disasterRecoveryManager(action, params = {}) {
 
   async function createDatabaseBackup(backupId, backupPath) {
     const dumpFile = path.join(backupPath, 'database.sql');
-    
+
     return new Promise((resolve, reject) => {
       exec(`pg_dump nyfashion_production > ${dumpFile}`, (error, stdout, stderr) => {
         if (error) {
@@ -494,7 +494,7 @@ function disasterRecoveryManager(action, params = {}) {
 
   async function createFileSystemBackup(backupId, backupPath) {
     const archiveFile = path.join(backupPath, 'filesystem.tar.gz');
-    
+
     return new Promise((resolve, reject) => {
       exec(`tar -czf ${archiveFile} --exclude='*.log' --exclude='node_modules' .`, (error) => {
         if (error) {
@@ -512,7 +512,7 @@ function disasterRecoveryManager(action, params = {}) {
 
   async function createConfigurationBackup(backupId, backupPath) {
     const configFile = path.join(backupPath, 'configuration.json');
-    
+
     const config = {
       environment_variables: process.env,
       docker_compose: await fs.readFile('docker-compose.yml', 'utf8').catch(() => null),
@@ -531,7 +531,7 @@ function disasterRecoveryManager(action, params = {}) {
 
   async function createContainerBackup(backupId, backupPath) {
     const imagesFile = path.join(backupPath, 'container-images.tar');
-    
+
     return new Promise((resolve, reject) => {
       exec(`docker save -o ${imagesFile} $(docker images --format "{{.Repository}}:{{.Tag}}")`, (error) => {
         if (error) {

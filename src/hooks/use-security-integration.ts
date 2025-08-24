@@ -10,11 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useSecurityIntegration = () => {
   const nonce = useCSPNonce();
   const { injectHeaders } = useSecurityHeaders();
-  const { 
-    logAuthentication, 
-    logAuthorization, 
-    logSecurityViolation, 
-    logDataAccess 
+  const {
+    logAuthentication,
+    logAuthorization,
+    logSecurityViolation,
+    logDataAccess
   } = useSecurityAudit();
   const { user } = useAuth();
 
@@ -36,9 +36,9 @@ export const useSecurityIntegration = () => {
 
   // Log security events
   const logSecurityEvent = useCallback((
-    eventType: 'authentication' | 'authorization' | 'data_access' | 'security_violation',
-    details: any
-  ) => {
+  eventType: 'authentication' | 'authorization' | 'data_access' | 'security_violation',
+  details: any) =>
+  {
     switch (eventType) {
       case 'authentication':
         logAuthentication(details.userId, details.success, details);
@@ -57,13 +57,13 @@ export const useSecurityIntegration = () => {
 
   // Enhanced fetch wrapper with security features
   const secureApiCall = useCallback(async (
-    url: string,
-    options: RequestInit & {
-      skipRateLimit?: boolean;
-      skipValidation?: boolean;
-      validationSchema?: any;
-    } = {}
-  ) => {
+  url: string,
+  options: RequestInit & {
+    skipRateLimit?: boolean;
+    skipValidation?: boolean;
+    validationSchema?: any;
+  } = {}) =>
+  {
     const {
       skipRateLimit = false,
       skipValidation = false,
@@ -93,7 +93,7 @@ export const useSecurityIntegration = () => {
         try {
           const data = JSON.parse(fetchOptions.body as string);
           const validation = validateInput(data, validationSchema);
-          
+
           if (!validation.valid) {
             logSecurityEvent('security_violation', {
               source: getClientIdentifier(),
@@ -101,15 +101,15 @@ export const useSecurityIntegration = () => {
               url,
               errors: validation.errors
             });
-            throw new Error(`Input validation failed: ${validation.errors.map(e => e.message).join(', ')}`);
+            throw new Error(`Input validation failed: ${validation.errors.map((e) => e.message).join(', ')}`);
           }
 
           // Use sanitized data
           fetchOptions.body = JSON.stringify(validation.sanitizedData);
         } catch (parseError) {
+
           // If body is not JSON, skip validation
-        }
-      }
+        }}
 
       // Add security headers
       const securityHeaders = {
@@ -218,10 +218,10 @@ export const useSecurityIntegration = () => {
     onResourceAccess,
     // Utility functions
     sanitizeString: securityValidator.sanitizeString.bind(securityValidator),
-    isSecureInput: (input: string) => 
-      !securityValidator.detectSQLInjection(input) &&
-      !securityValidator.detectXSS(input) &&
-      !securityValidator.detectCommandInjection(input)
+    isSecureInput: (input: string) =>
+    !securityValidator.detectSQLInjection(input) &&
+    !securityValidator.detectXSS(input) &&
+    !securityValidator.detectCommandInjection(input)
   };
 };
 
@@ -234,19 +234,19 @@ const getClientIdentifier = (): string => {
 
   // Generate client fingerprint
   const fingerprint = [
-    navigator.userAgent,
-    navigator.language,
-    screen.width + 'x' + screen.height,
-    new Date().getTimezoneOffset(),
-    navigator.hardwareConcurrency || 'unknown',
-    navigator.platform
-  ].join('|');
+  navigator.userAgent,
+  navigator.language,
+  screen.width + 'x' + screen.height,
+  new Date().getTimezoneOffset(),
+  navigator.hardwareConcurrency || 'unknown',
+  navigator.platform].
+  join('|');
 
   // Simple hash
   let hash = 0;
   for (let i = 0; i < fingerprint.length; i++) {
     const char = fingerprint.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
 

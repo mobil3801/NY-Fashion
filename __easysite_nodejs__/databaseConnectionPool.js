@@ -11,25 +11,25 @@ function databaseConnectionPool(action, config = {}) {
     destroyTimeout: config.destroyTimeout || 5000,
     idleTimeout: config.idleTimeout || 30000,
     reapInterval: config.reapInterval || 1000,
-    
+
     // Retry configuration
     createRetryInterval: config.createRetryInterval || 200,
     maxCreateRetries: config.maxCreateRetries || 3,
-    
+
     // Health check settings
     healthCheckInterval: config.healthCheckInterval || 60000,
     validateOnBorrow: config.validateOnBorrow || true,
     validationQuery: config.validationQuery || 'SELECT 1',
-    
+
     // Performance optimization
     enableConnectionCaching: config.enableConnectionCaching || true,
     enableQueryLogging: config.enableQueryLogging || false,
     slowQueryThreshold: config.slowQueryThreshold || 1000,
-    
+
     // Production settings
     logLevel: config.logLevel || 'info',
     enableStatistics: config.enableStatistics || true,
-    metricsInterval: config.metricsInterval || 300000, // 5 minutes
+    metricsInterval: config.metricsInterval || 300000 // 5 minutes
   };
 
   const stats = {
@@ -77,17 +77,17 @@ function databaseConnectionPool(action, config = {}) {
         checks: {
           connectionPool: stats.activeConnections < poolConfig.maxConnections ? 'pass' : 'warn',
           queryPerformance: stats.averageResponseTime < poolConfig.slowQueryThreshold ? 'pass' : 'warn',
-          errorRate: (stats.failedConnections / Math.max(stats.queryCount, 1)) < 0.05 ? 'pass' : 'fail'
+          errorRate: stats.failedConnections / Math.max(stats.queryCount, 1) < 0.05 ? 'pass' : 'fail'
         },
         metrics: stats,
         timestamp: new Date().toISOString()
       };
 
       // Determine overall health
-      const failedChecks = Object.values(healthStatus.checks).filter(status => status === 'fail').length;
+      const failedChecks = Object.values(healthStatus.checks).filter((status) => status === 'fail').length;
       if (failedChecks > 0) {
         healthStatus.status = 'unhealthy';
-      } else if (Object.values(healthStatus.checks).some(status => status === 'warn')) {
+      } else if (Object.values(healthStatus.checks).some((status) => status === 'warn')) {
         healthStatus.status = 'degraded';
       }
 
@@ -96,7 +96,7 @@ function databaseConnectionPool(action, config = {}) {
 
     case 'optimize':
       const optimizations = [];
-      
+
       // Analyze current performance
       if (stats.averageResponseTime > poolConfig.slowQueryThreshold) {
         optimizations.push({
@@ -129,7 +129,7 @@ function databaseConnectionPool(action, config = {}) {
       stats.failedConnections = 0;
       stats.averageResponseTime = 0;
       stats.uptime = Date.now();
-      
+
       return {
         success: true,
         message: 'Connection pool statistics reset',

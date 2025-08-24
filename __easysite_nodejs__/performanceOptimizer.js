@@ -101,9 +101,9 @@ function performanceOptimizer(action, params = {}) {
       },
       caching: {
         static: '31536000', // 1 year
-        images: '2592000',  // 30 days
-        html: '3600',       // 1 hour
-        api: '300'          // 5 minutes
+        images: '2592000', // 30 days
+        html: '3600', // 1 hour
+        api: '300' // 5 minutes
       },
       compression: {
         gzip: true,
@@ -150,27 +150,27 @@ function performanceOptimizer(action, params = {}) {
     try {
       // Get all image files
       const imageFiles = await findImageFiles(inputDir);
-      
+
       for (const file of imageFiles) {
         const beforeSize = (await fs.stat(file)).size;
         const afterSize = await compressSingleImage(file, outputDir, quality);
-        
+
         compressionResults.files.push({
           path: file,
           sizeBefore: beforeSize,
           sizeAfter: afterSize,
           savings: ((beforeSize - afterSize) / beforeSize * 100).toFixed(2)
         });
-        
+
         compressionResults.processed++;
         compressionResults.totalSizeBefore += beforeSize;
         compressionResults.totalSizeAfter += afterSize;
       }
 
       compressionResults.savings = (
-        (compressionResults.totalSizeBefore - compressionResults.totalSizeAfter) /
-        compressionResults.totalSizeBefore * 100
-      ).toFixed(2);
+      (compressionResults.totalSizeBefore - compressionResults.totalSizeAfter) /
+      compressionResults.totalSizeBefore * 100).
+      toFixed(2);
 
     } catch (error) {
       throw new Error(`Image compression failed: ${error.message}`);
@@ -262,7 +262,7 @@ function performanceOptimizer(action, params = {}) {
 
     // Generate caching headers configuration
     const cachingHeaders = generateCachingHeaders(cachingConfig);
-    
+
     // Update nginx configuration with caching rules
     await updateNginxCachingConfig(cachingHeaders);
 
@@ -286,10 +286,10 @@ function performanceOptimizer(action, params = {}) {
     // Simulate performance metrics (in a real implementation, you'd use tools like Lighthouse)
     auditResults.metrics = {
       lcp: Math.random() * 4000 + 1000, // 1-5 seconds
-      fid: Math.random() * 200 + 50,    // 50-250ms
-      cls: Math.random() * 0.25,        // 0-0.25
-      ttfb: Math.random() * 500 + 100,  // 100-600ms
-      fcp: Math.random() * 3000 + 500   // 500-3500ms
+      fid: Math.random() * 200 + 50, // 50-250ms
+      cls: Math.random() * 0.25, // 0-0.25
+      ttfb: Math.random() * 500 + 100, // 100-600ms
+      fcp: Math.random() * 3000 + 500 // 500-3500ms
     };
 
     // Generate recommendations based on metrics
@@ -324,15 +324,15 @@ function performanceOptimizer(action, params = {}) {
   }
 
   async function generateOptimizationReport(optimization) {
-    const totalSavings = Object.values(optimization.results)
-      .reduce((total, result) => total + (result.sizeBefore - result.sizeAfter), 0);
+    const totalSavings = Object.values(optimization.results).
+    reduce((total, result) => total + (result.sizeBefore - result.sizeAfter), 0);
 
     return {
-      totalFiles: Object.values(optimization.results)
-        .reduce((total, result) => total + result.files, 0),
+      totalFiles: Object.values(optimization.results).
+      reduce((total, result) => total + result.files, 0),
       totalSavings,
-      percentageSavings: (totalSavings / Object.values(optimization.results)
-        .reduce((total, result) => total + result.sizeBefore, 0) * 100).toFixed(2)
+      percentageSavings: (totalSavings / Object.values(optimization.results).
+      reduce((total, result) => total + result.sizeBefore, 0) * 100).toFixed(2)
     };
   }
 
@@ -386,16 +386,16 @@ echo "CDN deployment completed"
   async function findImageFiles(directory) {
     const files = [];
     const entries = await fs.readdir(directory, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(directory, entry.name);
       if (entry.isDirectory()) {
-        files.push(...await findImageFiles(fullPath));
+        files.push(...(await findImageFiles(fullPath)));
       } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(entry.name)) {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -409,16 +409,16 @@ echo "CDN deployment completed"
   async function findFiles(directory, pattern) {
     const files = [];
     const entries = await fs.readdir(directory, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(directory, entry.name);
       if (entry.isDirectory()) {
-        files.push(...await findFiles(fullPath, pattern));
+        files.push(...(await findFiles(fullPath, pattern)));
       } else if (pattern.test(entry.name)) {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -452,28 +452,28 @@ echo "CDN deployment completed"
 
   function generatePerformanceRecommendations(metrics) {
     const recommendations = [];
-    
+
     if (metrics.lcp > 2500) {
       recommendations.push({
         type: 'LCP',
         message: 'Optimize Largest Contentful Paint by reducing server response times and optimizing resource loading'
       });
     }
-    
+
     if (metrics.fid > 100) {
       recommendations.push({
         type: 'FID',
         message: 'Improve First Input Delay by reducing JavaScript execution time and code splitting'
       });
     }
-    
+
     if (metrics.cls > 0.1) {
       recommendations.push({
         type: 'CLS',
         message: 'Reduce Cumulative Layout Shift by ensuring images and ads have defined dimensions'
       });
     }
-    
+
     return recommendations;
   }
 
@@ -482,7 +482,7 @@ echo "CDN deployment completed"
     const lcpScore = metrics.lcp < 2500 ? 100 : Math.max(0, 100 - (metrics.lcp - 2500) / 50);
     const fidScore = metrics.fid < 100 ? 100 : Math.max(0, 100 - (metrics.fid - 100) / 5);
     const clsScore = metrics.cls < 0.1 ? 100 : Math.max(0, 100 - (metrics.cls - 0.1) * 1000);
-    
+
     return Math.round((lcpScore + fidScore + clsScore) / 3);
   }
 

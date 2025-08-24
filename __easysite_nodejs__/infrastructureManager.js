@@ -183,7 +183,7 @@ export const ${environment}Config = ${JSON.stringify(envConfig, null, 2)};
 
     // Create database backup
     const dbBackup = await createDatabaseBackup(backupId, environment);
-    
+
     // Create application backup (files, configs)
     const appBackup = await createApplicationBackup(backupId, environment);
 
@@ -240,7 +240,7 @@ export const ${environment}Config = ${JSON.stringify(envConfig, null, 2)};
 
   async function setupSSLCertificates(environment) {
     const sslDir = path.join(process.cwd(), 'ssl');
-    
+
     try {
       await fs.access(sslDir);
     } catch {
@@ -253,7 +253,7 @@ export const ${environment}Config = ${JSON.stringify(envConfig, null, 2)};
         -keyout ${sslDir}/server.key \\
         -out ${sslDir}/server.crt \\
         -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"`;
-      
+
       return new Promise((resolve) => {
         exec(certCommand, () => resolve());
       });
@@ -331,7 +331,7 @@ alerting:
 
     const configPath = path.join(process.cwd(), 'monitoring/prometheus.yml');
     await fs.writeFile(configPath, prometheusConfig);
-    
+
     return { message: 'Prometheus configuration created' };
   }
 

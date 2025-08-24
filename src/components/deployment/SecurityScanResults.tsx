@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle, 
-  XCircle, 
-  Package, 
+import {
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Package,
   Code,
   Zap,
   Download,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw } from
+'lucide-react';
 
 interface SecurityScanResult {
   id: number;
@@ -57,63 +57,63 @@ const SecurityScanResults: React.FC = () => {
       // For demo purposes, we'll create some mock data since we don't have security scan tables
       // In production, this would query your security scan results table
       const mockResults: SecurityScanResult[] = [
-        {
-          id: 1,
-          scan_type: 'dependency_audit',
-          environment: 'production',
-          status: 'completed',
-          vulnerabilities_high: 2,
-          vulnerabilities_medium: 5,
-          vulnerabilities_low: 12,
-          scan_time: new Date(Date.now() - 86400000).toISOString(),
-          report_data: JSON.stringify({
-            vulnerabilities: [
-              {
-                id: 'CVE-2024-1234',
-                title: 'Cross-site scripting in React Router',
-                severity: 'high',
-                description: 'Potential XSS vulnerability in route handling',
-                package: 'react-router-dom',
-                version: '6.26.1',
-                fixedIn: '6.26.2',
-                cve: 'CVE-2024-1234'
-              },
-              {
-                id: 'CVE-2024-5678',
-                title: 'Prototype pollution in lodash',
-                severity: 'medium',
-                description: 'Prototype pollution vulnerability',
-                package: 'lodash',
-                version: '4.17.20',
-                fixedIn: '4.17.21',
-                cve: 'CVE-2024-5678'
-              }
-            ]
-          })
-        },
-        {
-          id: 2,
-          scan_type: 'code_analysis',
-          environment: 'staging',
-          status: 'completed',
-          vulnerabilities_high: 0,
-          vulnerabilities_medium: 3,
-          vulnerabilities_low: 8,
-          scan_time: new Date(Date.now() - 43200000).toISOString(),
-          report_data: JSON.stringify({
-            vulnerabilities: [
-              {
-                id: 'ESL-001',
-                title: 'Potential SQL injection',
-                severity: 'medium',
-                description: 'Dynamic SQL query construction detected',
-                package: 'custom-code',
-                version: '1.0.0'
-              }
-            ]
-          })
-        }
-      ];
+      {
+        id: 1,
+        scan_type: 'dependency_audit',
+        environment: 'production',
+        status: 'completed',
+        vulnerabilities_high: 2,
+        vulnerabilities_medium: 5,
+        vulnerabilities_low: 12,
+        scan_time: new Date(Date.now() - 86400000).toISOString(),
+        report_data: JSON.stringify({
+          vulnerabilities: [
+          {
+            id: 'CVE-2024-1234',
+            title: 'Cross-site scripting in React Router',
+            severity: 'high',
+            description: 'Potential XSS vulnerability in route handling',
+            package: 'react-router-dom',
+            version: '6.26.1',
+            fixedIn: '6.26.2',
+            cve: 'CVE-2024-1234'
+          },
+          {
+            id: 'CVE-2024-5678',
+            title: 'Prototype pollution in lodash',
+            severity: 'medium',
+            description: 'Prototype pollution vulnerability',
+            package: 'lodash',
+            version: '4.17.20',
+            fixedIn: '4.17.21',
+            cve: 'CVE-2024-5678'
+          }]
+
+        })
+      },
+      {
+        id: 2,
+        scan_type: 'code_analysis',
+        environment: 'staging',
+        status: 'completed',
+        vulnerabilities_high: 0,
+        vulnerabilities_medium: 3,
+        vulnerabilities_low: 8,
+        scan_time: new Date(Date.now() - 43200000).toISOString(),
+        report_data: JSON.stringify({
+          vulnerabilities: [
+          {
+            id: 'ESL-001',
+            title: 'Potential SQL injection',
+            severity: 'medium',
+            description: 'Dynamic SQL query construction detected',
+            package: 'custom-code',
+            version: '1.0.0'
+          }]
+
+        })
+      }];
+
 
       setScanResults(mockResults);
     } catch (error) {
@@ -131,10 +131,10 @@ const SecurityScanResults: React.FC = () => {
     try {
       // In production, this would trigger a GitHub Actions workflow
       // or call your security scanning API
-      
+
       toast({
         title: "Security Scan Initiated",
-        description: `${scanType} scan has been started`,
+        description: `${scanType} scan has been started`
       });
 
       // Simulate scan progress
@@ -143,7 +143,7 @@ const SecurityScanResults: React.FC = () => {
         loadScanResults();
         toast({
           title: "Scan Complete",
-          description: "Security scan has completed successfully",
+          description: "Security scan has completed successfully"
         });
       }, 5000);
 
@@ -175,15 +175,15 @@ const SecurityScanResults: React.FC = () => {
     return (
       <Badge variant={variants[severity as keyof typeof variants] || 'outline'}>
         {severity.toUpperCase()} {count !== undefined && `(${count})`}
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const getOverallScore = (scan: SecurityScanResult) => {
     const total = scan.vulnerabilities_high + scan.vulnerabilities_medium + scan.vulnerabilities_low;
     if (total === 0) return 100;
-    
-    const weighted = (scan.vulnerabilities_high * 10) + (scan.vulnerabilities_medium * 5) + (scan.vulnerabilities_low * 1);
+
+    const weighted = scan.vulnerabilities_high * 10 + scan.vulnerabilities_medium * 5 + scan.vulnerabilities_low * 1;
     return Math.max(0, 100 - weighted);
   };
 
@@ -205,16 +205,16 @@ const SecurityScanResults: React.FC = () => {
           <Button
             onClick={() => triggerSecurityScan('dependency_audit')}
             disabled={scanInProgress}
-            variant="outline"
-          >
+            variant="outline">
+
             <Package className="h-4 w-4 mr-2" />
             Dependency Scan
           </Button>
           <Button
             onClick={() => triggerSecurityScan('code_analysis')}
             disabled={scanInProgress}
-            variant="outline"
-          >
+            variant="outline">
+
             <Code className="h-4 w-4 mr-2" />
             Code Analysis
           </Button>
@@ -225,8 +225,8 @@ const SecurityScanResults: React.FC = () => {
         </div>
       </div>
 
-      {scanInProgress && (
-        <Card className="p-4 border-blue-200 bg-blue-50">
+      {scanInProgress &&
+      <Card className="p-4 border-blue-200 bg-blue-50">
           <div className="flex items-center gap-3">
             <div className="animate-spin">
               <Shield className="h-5 w-5 text-blue-600" />
@@ -238,7 +238,7 @@ const SecurityScanResults: React.FC = () => {
             </div>
           </div>
         </Card>
-      )}
+      }
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
@@ -252,7 +252,7 @@ const SecurityScanResults: React.FC = () => {
             {scanResults.map((scan) => {
               const score = getOverallScore(scan);
               const totalVulns = scan.vulnerabilities_high + scan.vulnerabilities_medium + scan.vulnerabilities_low;
-              
+
               return (
                 <Card key={scan.id} className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -300,58 +300,58 @@ const SecurityScanResults: React.FC = () => {
                       {scan.vulnerabilities_high > 0 && getSeverityBadge('high', scan.vulnerabilities_high)}
                       {scan.vulnerabilities_medium > 0 && getSeverityBadge('medium', scan.vulnerabilities_medium)}
                       {scan.vulnerabilities_low > 0 && getSeverityBadge('low', scan.vulnerabilities_low)}
-                      {totalVulns === 0 && (
-                        <Badge variant="default">
+                      {totalVulns === 0 &&
+                      <Badge variant="default">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           No Issues Found
                         </Badge>
-                      )}
+                      }
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => viewScanDetails(scan)}
-                    >
+                      onClick={() => viewScanDetails(scan)}>
+
                       View Details
                     </Button>
                   </div>
-                </Card>
-              );
+                </Card>);
+
             })}
           </div>
         </TabsContent>
 
         <TabsContent value="vulnerabilities">
-          {selectedScan ? (
-            <Card>
+          {selectedScan ?
+          <Card>
               <div className="p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   Vulnerabilities - {selectedScan.scan_type} ({selectedScan.environment})
                 </h3>
                 <div className="space-y-4">
-                  {vulnerabilities.map((vuln, index) => (
-                    <div key={index} className="border rounded-lg p-4">
+                  {vulnerabilities.map((vuln, index) =>
+                <div key={index} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium">{vuln.title}</h4>
                             {getSeverityBadge(vuln.severity)}
                           </div>
-                          {vuln.cve && (
-                            <p className="text-sm text-blue-600 font-mono mb-1">{vuln.cve}</p>
-                          )}
+                          {vuln.cve &&
+                      <p className="text-sm text-blue-600 font-mono mb-1">{vuln.cve}</p>
+                      }
                           <p className="text-sm text-gray-600 mb-2">{vuln.description}</p>
-                          {vuln.package && (
-                            <div className="text-sm">
+                          {vuln.package &&
+                      <div className="text-sm">
                               <span className="font-medium">Package:</span> {vuln.package}
                               {vuln.version && ` (${vuln.version})`}
-                              {vuln.fixedIn && (
-                                <span className="text-green-600 ml-2">
+                              {vuln.fixedIn &&
+                        <span className="text-green-600 ml-2">
                                   → Fixed in {vuln.fixedIn}
                                 </span>
-                              )}
+                        }
                             </div>
-                          )}
+                      }
                         </div>
                         <Button size="sm" variant="outline">
                           <Download className="h-3 w-3 mr-1" />
@@ -359,24 +359,24 @@ const SecurityScanResults: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-                  ))}
-                  {vulnerabilities.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
+                )}
+                  {vulnerabilities.length === 0 &&
+                <div className="text-center py-8 text-gray-500">
                       <CheckCircle className="h-12 w-12 mx-auto mb-2" />
                       <p>No vulnerabilities found in this scan</p>
                     </div>
-                  )}
+                }
                 </div>
               </div>
-            </Card>
-          ) : (
-            <Card>
+            </Card> :
+
+          <Card>
               <div className="p-6 text-center">
                 <Shield className="h-12 w-12 mx-auto text-gray-400 mb-2" />
                 <p className="text-gray-600">Select a scan from the overview to view detailed vulnerability information</p>
               </div>
             </Card>
-          )}
+          }
         </TabsContent>
 
         <TabsContent value="compliance">
@@ -417,8 +417,8 @@ const SecurityScanResults: React.FC = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>);
+
 };
 
 export default SecurityScanResults;

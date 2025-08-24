@@ -4,10 +4,10 @@ function automatedBackupSystem(action, options = {}) {
   const defaultConfig = {
     backupTypes: ['full', 'incremental', 'differential'],
     retentionPolicy: {
-      daily: 7,      // Keep daily backups for 7 days
-      weekly: 4,     // Keep weekly backups for 4 weeks
-      monthly: 12,   // Keep monthly backups for 12 months
-      yearly: 3      // Keep yearly backups for 3 years
+      daily: 7, // Keep daily backups for 7 days
+      weekly: 4, // Keep weekly backups for 4 weeks
+      monthly: 12, // Keep monthly backups for 12 months
+      yearly: 3 // Keep yearly backups for 3 years
     },
     compression: true,
     encryption: true,
@@ -16,9 +16,9 @@ function automatedBackupSystem(action, options = {}) {
     backupLocation: '/backups',
     alertOnFailure: true,
     schedules: {
-      full: '0 2 * * 0',      // Sunday 2 AM
+      full: '0 2 * * 0', // Sunday 2 AM
       incremental: '0 2 * * 1-6', // Daily except Sunday
-      maintenance: '0 3 * * 0'   // Sunday 3 AM for cleanup
+      maintenance: '0 3 * * 0' // Sunday 3 AM for cleanup
     }
   };
 
@@ -29,7 +29,7 @@ function automatedBackupSystem(action, options = {}) {
       const backupType = options.type || 'full';
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const backupId = `backup_${backupType}_${timestamp}`;
-      
+
       const backupInfo = {
         id: backupId,
         type: backupType,
@@ -56,7 +56,7 @@ function automatedBackupSystem(action, options = {}) {
 
     case 'listBackups':
       const backups = generateBackupList();
-      
+
       return {
         backups,
         totalCount: backups.length,
@@ -76,20 +76,20 @@ function automatedBackupSystem(action, options = {}) {
       const backupsList = generateBackupList();
       const now = new Date();
 
-      backupsList.forEach(backup => {
+      backupsList.forEach((backup) => {
         const backupDate = new Date(backup.date);
         const ageInDays = Math.floor((now - backupDate) / (1000 * 60 * 60 * 24));
-        
+
         let shouldDelete = false;
-        
+
         // Apply retention policy
         if (backup.type === 'daily' && ageInDays > config.retentionPolicy.daily) {
           shouldDelete = true;
-        } else if (backup.type === 'weekly' && ageInDays > (config.retentionPolicy.weekly * 7)) {
+        } else if (backup.type === 'weekly' && ageInDays > config.retentionPolicy.weekly * 7) {
           shouldDelete = true;
-        } else if (backup.type === 'monthly' && ageInDays > (config.retentionPolicy.monthly * 30)) {
+        } else if (backup.type === 'monthly' && ageInDays > config.retentionPolicy.monthly * 30) {
           shouldDelete = true;
-        } else if (backup.type === 'yearly' && ageInDays > (config.retentionPolicy.yearly * 365)) {
+        } else if (backup.type === 'yearly' && ageInDays > config.retentionPolicy.yearly * 365) {
           shouldDelete = true;
         }
 
@@ -170,7 +170,7 @@ function automatedBackupSystem(action, options = {}) {
     const baseSizes = {
       full: 100 * 1024 * 1024, // 100MB
       incremental: 10 * 1024 * 1024, // 10MB
-      differential: 25 * 1024 * 1024  // 25MB
+      differential: 25 * 1024 * 1024 // 25MB
     };
     return baseSizes[type] || baseSizes.full;
   }
@@ -181,18 +181,18 @@ function automatedBackupSystem(action, options = {}) {
 
   function getAllTables() {
     return [
-      'products', 'categories', 'customers', 'sales', 'employees',
-      'stock_movements', 'suppliers', 'purchase_orders', 'audit_logs'
-    ];
+    'products', 'categories', 'customers', 'sales', 'employees',
+    'stock_movements', 'suppliers', 'purchase_orders', 'audit_logs'];
+
   }
 
   function generateBackupList() {
     const backups = [];
     const now = new Date();
-    
+
     // Generate sample backup history
     for (let i = 0; i < 30; i++) {
-      const date = new Date(now - (i * 24 * 60 * 60 * 1000));
+      const date = new Date(now - i * 24 * 60 * 60 * 1000);
       backups.push({
         id: `backup_${date.toISOString().split('T')[0]}_${i}`,
         type: i % 7 === 0 ? 'full' : 'incremental',
@@ -201,7 +201,7 @@ function automatedBackupSystem(action, options = {}) {
         status: 'completed'
       });
     }
-    
+
     return backups;
   }
 

@@ -6,18 +6,18 @@ import { Table } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Rocket, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  RotateCcw, 
+import {
+  Rocket,
+  Clock,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
   Activity,
   GitBranch,
   User,
   Calendar,
-  AlertTriangle
-} from 'lucide-react';
+  AlertTriangle } from
+'lucide-react';
 
 import RollbackManager from '@/components/deployment/RollbackManager';
 import SecurityScanResults from '@/components/deployment/SecurityScanResults';
@@ -190,8 +190,8 @@ const DeploymentDashboard: React.FC = () => {
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
         {getStatusIcon(status)}
         <span className="ml-1 capitalize">{status}</span>
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   return (
@@ -205,8 +205,8 @@ const DeploymentDashboard: React.FC = () => {
       </div>
 
       {/* Pending Approvals Alert */}
-      {approvals.length > 0 && (
-        <Card className="p-4 border-yellow-200 bg-yellow-50">
+      {approvals.length > 0 &&
+      <Card className="p-4 border-yellow-200 bg-yellow-50">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             <h3 className="font-semibold text-yellow-800">
@@ -215,9 +215,9 @@ const DeploymentDashboard: React.FC = () => {
           </div>
           <div className="space-y-2">
             {approvals.map((approval) => {
-              const deployment = deployments.find(d => d.deployment_id === approval.deployment_id);
-              return (
-                <div key={approval.id} className="flex items-center justify-between bg-white p-3 rounded border">
+            const deployment = deployments.find((d) => d.deployment_id === approval.deployment_id);
+            return (
+              <div key={approval.id} className="flex items-center justify-between bg-white p-3 rounded border">
                   <div className="flex items-center gap-4">
                     <Badge variant="outline">{deployment?.environment}</Badge>
                     <span className="font-medium">{deployment?.version}</span>
@@ -225,27 +225,27 @@ const DeploymentDashboard: React.FC = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      size="sm"
-                      onClick={() => approveDeployment(approval.id, approval.deployment_id)}
-                    >
+                    size="sm"
+                    onClick={() => approveDeployment(approval.id, approval.deployment_id)}>
+
                       <CheckCircle className="h-4 w-4 mr-1" />
                       Approve
                     </Button>
                     <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => rejectDeployment(approval.id)}
-                    >
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => rejectDeployment(approval.id)}>
+
                       <XCircle className="h-4 w-4 mr-1" />
                       Reject
                     </Button>
                   </div>
-                </div>
-              );
-            })}
+                </div>);
+
+          })}
           </div>
         </Card>
-      )}
+      }
 
       <Tabs defaultValue="deployments" className="space-y-6">
         <TabsList>
@@ -273,8 +273,8 @@ const DeploymentDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {deployments.map((deployment) => (
-                      <tr key={deployment.id} className="border-b hover:bg-gray-50">
+                    {deployments.map((deployment) =>
+                    <tr key={deployment.id} className="border-b hover:bg-gray-50">
                         <td className="p-2">{getStatusBadge(deployment.status)}</td>
                         <td className="p-2">
                           <Badge variant="outline">{deployment.environment}</Badge>
@@ -301,21 +301,21 @@ const DeploymentDashboard: React.FC = () => {
                           </div>
                         </td>
                         <td className="p-2 text-sm">
-                          {deployment.end_time && 
-                            `${Math.round((new Date(deployment.end_time).getTime() - new Date(deployment.start_time).getTime()) / 1000)}s`
-                          }
+                          {deployment.end_time &&
+                        `${Math.round((new Date(deployment.end_time).getTime() - new Date(deployment.start_time).getTime()) / 1000)}s`
+                        }
                         </td>
                         <td className="p-2">
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedDeployment(deployment)}
-                          >
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedDeployment(deployment)}>
+
                             View Details
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -341,8 +341,8 @@ const DeploymentDashboard: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Deployment Details</DialogTitle>
           </DialogHeader>
-          {selectedDeployment && (
-            <div className="space-y-4">
+          {selectedDeployment &&
+          <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="font-medium">Environment</label>
@@ -369,20 +369,20 @@ const DeploymentDashboard: React.FC = () => {
                   <p>{selectedDeployment.health_check_status}</p>
                 </div>
               </div>
-              {selectedDeployment.error_message && (
-                <div>
+              {selectedDeployment.error_message &&
+            <div>
                   <label className="font-medium">Error Message</label>
                   <p className="text-red-600 bg-red-50 p-2 rounded">
                     {selectedDeployment.error_message}
                   </p>
                 </div>
-              )}
+            }
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 };
 
 // Environment Status Component
@@ -411,8 +411,8 @@ const EnvironmentStatus: React.FC = () => {
 
   return (
     <div className="grid gap-4">
-      {environments.map((env: any) => (
-        <Card key={env.id} className="p-4">
+      {environments.map((env: any) =>
+      <Card key={env.id} className="p-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold capitalize">{env.environment_name}</h3>
@@ -425,9 +425,9 @@ const EnvironmentStatus: React.FC = () => {
             </Badge>
           </div>
         </Card>
-      ))}
-    </div>
-  );
+      )}
+    </div>);
+
 };
 
 // Pipeline View Component
@@ -459,19 +459,19 @@ const PipelineView: React.FC = () => {
       <div className="p-6">
         <h3 className="text-lg font-semibold mb-4">Pipeline Stages</h3>
         <div className="space-y-2">
-          {pipelineStages.map((stage: any) => (
-            <div key={stage.id} className="flex items-center justify-between p-3 border rounded">
+          {pipelineStages.map((stage: any) =>
+          <div key={stage.id} className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center gap-4">
                 <Badge variant="outline">{stage.stage}</Badge>
                 <span>{stage.deployment_id}</span>
               </div>
               {getStatusBadge(stage.status)}
             </div>
-          ))}
+          )}
         </div>
       </div>
-    </Card>
-  );
+    </Card>);
+
 };
 
 export default DeploymentDashboard;

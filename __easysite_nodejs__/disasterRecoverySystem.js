@@ -59,10 +59,10 @@ function disasterRecoverySystem(action, options = {}) {
         },
         issues: [],
         recommendations: [
-          'Update recovery documentation with latest procedures',
-          'Consider reducing backup frequency for faster recovery',
-          'Test automatic failover mechanisms'
-        ],
+        'Update recovery documentation with latest procedures',
+        'Consider reducing backup frequency for faster recovery',
+        'Test automatic failover mechanisms'],
+
         endTime: new Date().toISOString()
       };
 
@@ -79,48 +79,48 @@ function disasterRecoverySystem(action, options = {}) {
 
     case 'createPointInTimeRecovery':
       const recoveryPoint = options.recoveryPoint || new Date(Date.now() - 3600000).toISOString(); // 1 hour ago
-      
+
       const pitRecovery = {
         recoveryId: `pit_${Date.now()}`,
         targetTime: recoveryPoint,
         status: 'initiated',
         steps: [
-          {
-            step: 1,
-            description: 'Validate recovery point availability',
-            status: 'completed',
-            duration: 30
-          },
-          {
-            step: 2,
-            description: 'Restore database to point in time',
-            status: 'in_progress',
-            estimatedDuration: 900
-          },
-          {
-            step: 3,
-            description: 'Verify data consistency',
-            status: 'pending',
-            estimatedDuration: 300
-          },
-          {
-            step: 4,
-            description: 'Update application configuration',
-            status: 'pending',
-            estimatedDuration: 180
-          },
-          {
-            step: 5,
-            description: 'Perform smoke tests',
-            status: 'pending',
-            estimatedDuration: 600
-          }
-        ],
+        {
+          step: 1,
+          description: 'Validate recovery point availability',
+          status: 'completed',
+          duration: 30
+        },
+        {
+          step: 2,
+          description: 'Restore database to point in time',
+          status: 'in_progress',
+          estimatedDuration: 900
+        },
+        {
+          step: 3,
+          description: 'Verify data consistency',
+          status: 'pending',
+          estimatedDuration: 300
+        },
+        {
+          step: 4,
+          description: 'Update application configuration',
+          status: 'pending',
+          estimatedDuration: 180
+        },
+        {
+          step: 5,
+          description: 'Perform smoke tests',
+          status: 'pending',
+          estimatedDuration: 600
+        }],
+
         estimatedCompletion: new Date(Date.now() + 2100000).toISOString(), // 35 minutes
         dataLossWindow: calculateDataLoss(recoveryPoint),
         affectedTables: [
-          'sales', 'sale_items', 'stock_movements', 'audit_logs'
-        ]
+        'sales', 'sale_items', 'stock_movements', 'audit_logs']
+
       };
 
       return pitRecovery;
@@ -137,11 +137,11 @@ function disasterRecoverySystem(action, options = {}) {
         estimatedTimeRemaining: Math.floor(Math.random() * 30 + 10), // 10-40 minutes
         lastUpdate: new Date().toISOString(),
         logs: [
-          `${new Date().toISOString()} - Starting recovery process`,
-          `${new Date(Date.now() - 300000).toISOString()} - Validating backup integrity`,
-          `${new Date(Date.now() - 180000).toISOString()} - Restoring core tables`,
-          `${new Date(Date.now() - 60000).toISOString()} - Processing transaction logs`
-        ]
+        `${new Date().toISOString()} - Starting recovery process`,
+        `${new Date(Date.now() - 300000).toISOString()} - Validating backup integrity`,
+        `${new Date(Date.now() - 180000).toISOString()} - Restoring core tables`,
+        `${new Date(Date.now() - 60000).toISOString()} - Processing transaction logs`]
+
       };
 
     case 'validateBackupIntegrity':
@@ -203,21 +203,21 @@ function disasterRecoverySystem(action, options = {}) {
           }
         },
         incidents: [
-          {
-            date: new Date(currentTime - 7 * 86400000).toISOString(),
-            type: 'planned_maintenance',
-            rto: 45,
-            rpo: 0,
-            impact: 'minimal'
-          }
-        ],
+        {
+          date: new Date(currentTime - 7 * 86400000).toISOString(),
+          type: 'planned_maintenance',
+          rto: 45,
+          rpo: 0,
+          impact: 'minimal'
+        }],
+
         trends: {
           recoveryTimeImprovement: '+15%',
           backupFrequencyOptimal: true,
           recommendedActions: [
-            'Continue current backup strategy',
-            'Test disaster recovery procedures monthly'
-          ]
+          'Continue current backup strategy',
+          'Test disaster recovery procedures monthly']
+
         }
       };
 
@@ -225,7 +225,7 @@ function disasterRecoverySystem(action, options = {}) {
 
     case 'updateRecoveryConfig':
       Object.assign(recoveryConfig, options);
-      
+
       return {
         success: true,
         message: 'Disaster recovery configuration updated',
@@ -247,18 +247,18 @@ function disasterRecoverySystem(action, options = {}) {
   // Helper functions
   function generateRecoverySteps(scenario) {
     const baseSteps = [
-      'Assess damage and determine recovery scope',
-      'Notify stakeholders and activate recovery team',
-      'Prepare recovery environment',
-      'Restore database from latest backup',
-      'Apply transaction logs if available',
-      'Verify data integrity and consistency',
-      'Restore application services',
-      'Perform functional testing',
-      'Update DNS and routing if needed',
-      'Monitor system stability',
-      'Conduct post-recovery review'
-    ];
+    'Assess damage and determine recovery scope',
+    'Notify stakeholders and activate recovery team',
+    'Prepare recovery environment',
+    'Restore database from latest backup',
+    'Apply transaction logs if available',
+    'Verify data integrity and consistency',
+    'Restore application services',
+    'Perform functional testing',
+    'Update DNS and routing if needed',
+    'Monitor system stability',
+    'Conduct post-recovery review'];
+
 
     return baseSteps.map((step, index) => ({
       step: index + 1,
@@ -280,12 +280,12 @@ function disasterRecoverySystem(action, options = {}) {
 
   function getRecoveryPrerequisites() {
     return [
-      'Valid backup available within RPO window',
-      'Recovery environment provisioned and accessible',
-      'Recovery team contacted and available',
-      'Necessary credentials and access keys available',
-      'Communication channels established with stakeholders'
-    ];
+    'Valid backup available within RPO window',
+    'Recovery environment provisioned and accessible',
+    'Recovery team contacted and available',
+    'Necessary credentials and access keys available',
+    'Communication channels established with stakeholders'];
+
   }
 
   function calculateDataLoss(recoveryPoint) {

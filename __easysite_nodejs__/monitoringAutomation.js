@@ -372,7 +372,7 @@ function monitoringAutomation(action, params = {}) {
 
   async function createGrafanaDashboards(components) {
     const dashboards = [];
-    
+
     for (const component of components) {
       const dashboard = await createComponentDashboard(component);
       dashboards.push(dashboard);
@@ -429,7 +429,7 @@ function monitoringAutomation(action, params = {}) {
 
   function generateAlertRulesYAML(config) {
     let yaml = 'groups:\n- name: nyfashion-alerts\n  rules:\n';
-    
+
     for (const rule of config.rules) {
       yaml += `  - alert: ${rule.alert}\n`;
       yaml += `    expr: ${rule.expr}\n`;
@@ -444,17 +444,17 @@ function monitoringAutomation(action, params = {}) {
       }
       yaml += '\n';
     }
-    
+
     return yaml;
   }
 
   async function configureNotifications(channels, recipients) {
     const config = { channels: {} };
-    
+
     for (const channel of channels) {
       config.channels[channel] = await setupNotificationChannel(channel, recipients);
     }
-    
+
     return config;
   }
 
@@ -464,9 +464,9 @@ function monitoringAutomation(action, params = {}) {
       title: 'System Overview',
       type: 'stat',
       targets: [
-        { expr: 'up', legendFormat: 'Service Status' },
-        { expr: 'rate(http_requests_total[5m])', legendFormat: 'Request Rate' }
-      ]
+      { expr: 'up', legendFormat: 'Service Status' },
+      { expr: 'rate(http_requests_total[5m])', legendFormat: 'Request Rate' }]
+
     };
   }
 
@@ -476,9 +476,9 @@ function monitoringAutomation(action, params = {}) {
       title: 'Application Metrics',
       type: 'graph',
       targets: [
-        { expr: 'http_request_duration_seconds', legendFormat: 'Response Time' },
-        { expr: 'http_requests_total', legendFormat: 'Total Requests' }
-      ]
+      { expr: 'http_request_duration_seconds', legendFormat: 'Response Time' },
+      { expr: 'http_requests_total', legendFormat: 'Total Requests' }]
+
     };
   }
 
@@ -488,9 +488,9 @@ function monitoringAutomation(action, params = {}) {
       title: 'Database Metrics',
       type: 'graph',
       targets: [
-        { expr: 'pg_stat_database_tup_fetched', legendFormat: 'Rows Fetched' },
-        { expr: 'pg_stat_database_tup_inserted', legendFormat: 'Rows Inserted' }
-      ]
+      { expr: 'pg_stat_database_tup_fetched', legendFormat: 'Rows Fetched' },
+      { expr: 'pg_stat_database_tup_inserted', legendFormat: 'Rows Inserted' }]
+
     };
   }
 
@@ -500,9 +500,9 @@ function monitoringAutomation(action, params = {}) {
       title: 'Network Metrics',
       type: 'graph',
       targets: [
-        { expr: 'node_network_receive_bytes_total', legendFormat: 'Network In' },
-        { expr: 'node_network_transmit_bytes_total', legendFormat: 'Network Out' }
-      ]
+      { expr: 'node_network_receive_bytes_total', legendFormat: 'Network In' },
+      { expr: 'node_network_transmit_bytes_total', legendFormat: 'Network Out' }]
+
     };
   }
 
@@ -512,8 +512,8 @@ function monitoringAutomation(action, params = {}) {
       title: 'Error Tracking',
       type: 'graph',
       targets: [
-        { expr: 'rate(http_requests_total{status=~"5.."}[5m])', legendFormat: 'Error Rate' }
-      ]
+      { expr: 'rate(http_requests_total{status=~"5.."}[5m])', legendFormat: 'Error Rate' }]
+
     };
   }
 
@@ -524,22 +524,22 @@ function monitoringAutomation(action, params = {}) {
       parser: source === 'nginx' ? 'nginx' : 'json',
       fields: source === 'application' ? ['timestamp', 'level', 'message'] : []
     };
-    
+
     return config;
   }
 
   async function setupLogRotation(sources, retention) {
     for (const source of sources) {
+
       // Configure logrotate for each source
-    }
-    return { message: 'Log rotation configured', sources, retention };
+    }return { message: 'Log rotation configured', sources, retention };
   }
 
   async function setupLogIndexing(sources) {
     for (const source of sources) {
+
       // Setup log indexing for search
-    }
-    return { message: 'Log indexing configured', sources };
+    }return { message: 'Log indexing configured', sources };
   }
 
   async function setupSystemMetrics(interval) {

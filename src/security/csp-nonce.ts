@@ -16,19 +16,19 @@ class CSPNonceManager {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const array = new Uint8Array(16);
       crypto.getRandomValues(array);
-      return btoa(String.fromCharCode.apply(null, Array.from(array)))
-        .replace(/[+/=]/g, '')
-        .substring(0, 16);
+      return btoa(String.fromCharCode.apply(null, Array.from(array))).
+      replace(/[+/=]/g, '').
+      substring(0, 16);
     }
-    
+
     // Fallback for environments without crypto
     return Math.random().toString(36).substring(2, 18);
   }
 
   getCurrentNonce(): string {
     const now = Date.now();
-    
-    if (!this.currentNonce || (now - this.currentNonce.timestamp) > this.nonceLifetime) {
+
+    if (!this.currentNonce || now - this.currentNonce.timestamp > this.nonceLifetime) {
       this.currentNonce = {
         nonce: this.generateNonce(),
         timestamp: now
@@ -40,7 +40,7 @@ class CSPNonceManager {
 
   generateCSPHeader(nonce: string): string {
     const config = getSecurityConfig();
-    
+
     if (!config.csp.enabled) {
       return '';
     }
@@ -50,8 +50,8 @@ class CSPNonceManager {
     Object.entries(config.csp.directives).forEach(([key, values]) => {
       if (values.length > 0) {
         const directiveName = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        const directiveValues = values.map(value => 
-          value.includes('{nonce}') ? value.replace('{nonce}', nonce) : value
+        const directiveValues = values.map((value) =>
+        value.includes('{nonce}') ? value.replace('{nonce}', nonce) : value
         ).join(' ');
         directives.push(`${directiveName} ${directiveValues}`);
       }
@@ -121,13 +121,13 @@ export const useCSPNonce = () => {
 export const createSecureScript = (src: string, content?: string): HTMLScriptElement => {
   const script = document.createElement('script');
   const nonce = cspNonceManager.getCurrentNonce();
-  
+
   script.nonce = nonce;
-  
+
   if (src) {
     script.src = src;
   }
-  
+
   if (content) {
     script.textContent = content;
   }

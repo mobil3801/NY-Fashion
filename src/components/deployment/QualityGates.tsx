@@ -4,16 +4,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
   AlertTriangle,
   TestTube,
   Shield,
   Code,
-  Zap
-} from 'lucide-react';
+  Zap } from
+'lucide-react';
 
 interface QualityGate {
   id: string;
@@ -32,7 +32,7 @@ interface QualityGateReport {
   created_at: string;
 }
 
-const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => {
+const QualityGates: React.FC<{deploymentId?: string;}> = ({ deploymentId }) => {
   const [report, setReport] = useState<QualityGateReport | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -55,66 +55,66 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
         overall_status: 'passed',
         created_at: new Date().toISOString(),
         gates: [
-          {
-            id: 'test_coverage',
-            name: 'Test Coverage',
-            description: 'Code coverage must be at least 80%',
-            status: 'passed',
-            score: 85,
-            threshold: 80
-          },
-          {
-            id: 'security_scan',
-            name: 'Security Scan',
-            description: 'No high or critical security vulnerabilities',
-            status: 'passed',
-            score: 95,
-            threshold: 90,
-            details: {
-              high_vulnerabilities: 0,
-              medium_vulnerabilities: 2,
-              low_vulnerabilities: 5
-            }
-          },
-          {
-            id: 'code_quality',
-            name: 'Code Quality',
-            description: 'Code quality metrics above threshold',
-            status: 'passed',
-            score: 78,
-            threshold: 75,
-            details: {
-              complexity: 6.2,
-              maintainability: 82,
-              reliability: 95
-            }
-          },
-          {
-            id: 'performance',
-            name: 'Performance Tests',
-            description: 'Performance benchmarks meet requirements',
-            status: 'failed',
-            score: 65,
-            threshold: 80,
-            details: {
-              response_time: 450,
-              throughput: 850,
-              error_rate: 0.2
-            }
-          },
-          {
-            id: 'build_success',
-            name: 'Build Success',
-            description: 'Application builds without errors',
-            status: 'passed',
-            score: 100,
-            threshold: 100
+        {
+          id: 'test_coverage',
+          name: 'Test Coverage',
+          description: 'Code coverage must be at least 80%',
+          status: 'passed',
+          score: 85,
+          threshold: 80
+        },
+        {
+          id: 'security_scan',
+          name: 'Security Scan',
+          description: 'No high or critical security vulnerabilities',
+          status: 'passed',
+          score: 95,
+          threshold: 90,
+          details: {
+            high_vulnerabilities: 0,
+            medium_vulnerabilities: 2,
+            low_vulnerabilities: 5
           }
-        ]
+        },
+        {
+          id: 'code_quality',
+          name: 'Code Quality',
+          description: 'Code quality metrics above threshold',
+          status: 'passed',
+          score: 78,
+          threshold: 75,
+          details: {
+            complexity: 6.2,
+            maintainability: 82,
+            reliability: 95
+          }
+        },
+        {
+          id: 'performance',
+          name: 'Performance Tests',
+          description: 'Performance benchmarks meet requirements',
+          status: 'failed',
+          score: 65,
+          threshold: 80,
+          details: {
+            response_time: 450,
+            throughput: 850,
+            error_rate: 0.2
+          }
+        },
+        {
+          id: 'build_success',
+          name: 'Build Success',
+          description: 'Application builds without errors',
+          status: 'passed',
+          score: 100,
+          threshold: 100
+        }]
+
       };
 
       // Determine overall status based on gates
-      const failedGates = mockReport.gates.filter(gate => gate.status === 'failed');
+      const failedGates = mockReport.gates.filter((gate) => gate.status === 'failed');
       mockReport.overall_status = failedGates.length === 0 ? 'passed' : 'failed';
 
       setReport(mockReport);
@@ -137,7 +137,7 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
     try {
       toast({
         title: "Retrying Quality Gate",
-        description: "Quality gate check has been restarted",
+        description: "Quality gate check has been restarted"
       });
 
       // In production, this would trigger a retry of the specific quality gate
@@ -145,7 +145,7 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
       setTimeout(() => {
         if (report) {
           const updatedReport = { ...report };
-          const gateIndex = updatedReport.gates.findIndex(g => g.id === gateId);
+          const gateIndex = updatedReport.gates.findIndex((g) => g.id === gateId);
           if (gateIndex !== -1) {
             updatedReport.gates[gateIndex].status = 'running';
             setReport(updatedReport);
@@ -156,7 +156,7 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
         setTimeout(() => {
           if (report) {
             const finalReport = { ...report };
-            const gateIndex = finalReport.gates.findIndex(g => g.id === gateId);
+            const gateIndex = finalReport.gates.findIndex((g) => g.id === gateId);
             if (gateIndex !== -1) {
               finalReport.gates[gateIndex].status = Math.random() > 0.5 ? 'passed' : 'failed';
               setReport(finalReport);
@@ -201,8 +201,8 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
         {getStatusIcon(status)}
         <span className="ml-1 capitalize">{status}</span>
-      </Badge>
-    );
+      </Badge>);
+
   };
 
   const getGateIcon = (gateId: string) => {
@@ -227,8 +227,8 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
           <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
           <span className="ml-2">Loading quality gates...</span>
         </div>
-      </Card>
-    );
+      </Card>);
+
   }
 
   if (!report) {
@@ -236,13 +236,13 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
       <Card className="p-6 text-center">
         <AlertTriangle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
         <p className="text-gray-600">No quality gate reports available</p>
-      </Card>
-    );
+      </Card>);
+
   }
 
-  const passedGates = report.gates.filter(gate => gate.status === 'passed').length;
+  const passedGates = report.gates.filter((gate) => gate.status === 'passed').length;
   const totalGates = report.gates.length;
-  const overallProgress = (passedGates / totalGates) * 100;
+  const overallProgress = passedGates / totalGates * 100;
 
   return (
     <div className="space-y-6">
@@ -266,8 +266,8 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
         </div>
 
         <div className="grid gap-4">
-          {report.gates.map((gate) => (
-            <div key={gate.id} className="border rounded-lg p-4">
+          {report.gates.map((gate) =>
+          <div key={gate.id} className="border rounded-lg p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
@@ -280,20 +280,20 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
                 </div>
                 <div className="flex items-center gap-2">
                   {getStatusBadge(gate.status)}
-                  {gate.status === 'failed' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => retryFailedGate(gate.id)}
-                    >
+                  {gate.status === 'failed' &&
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => retryFailedGate(gate.id)}>
+
                       Retry
                     </Button>
-                  )}
+                }
                 </div>
               </div>
 
-              {gate.score !== undefined && (
-                <div className="flex items-center gap-4 mb-2">
+              {gate.score !== undefined &&
+            <div className="flex items-center gap-4 mb-2">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium">Score</span>
@@ -301,34 +301,34 @@ const QualityGates: React.FC<{ deploymentId?: string }> = ({ deploymentId }) => 
                         {gate.score}% (threshold: {gate.threshold}%)
                       </span>
                     </div>
-                    <Progress 
-                      value={gate.score} 
-                      className={`h-2 ${gate.score >= gate.threshold ? 'text-green-500' : 'text-red-500'}`}
-                    />
+                    <Progress
+                  value={gate.score}
+                  className={`h-2 ${gate.score >= gate.threshold ? 'text-green-500' : 'text-red-500'}`} />
+
                   </div>
                 </div>
-              )}
+            }
 
-              {gate.details && (
-                <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
+              {gate.details &&
+            <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
                   <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(gate.details).map(([key, value]) => (
-                      <div key={key}>
+                    {Object.entries(gate.details).map(([key, value]) =>
+                <div key={key}>
                         <span className="font-medium capitalize">
                           {key.replace('_', ' ')}:
                         </span>
                         <span className="ml-1">{String(value)}</span>
                       </div>
-                    ))}
+                )}
                   </div>
                 </div>
-              )}
+            }
             </div>
-          ))}
+          )}
         </div>
       </Card>
-    </div>
-  );
+    </div>);
+
 };
 
 export default QualityGates;

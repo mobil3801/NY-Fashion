@@ -6,6 +6,7 @@ import SafeNetworkProvider from '@/components/network/SafeNetworkProvider';
 import { setupPageLifecycle } from '@/lib/lifecycle';
 import { setupGlobalErrorHandling } from '@/lib/layout-error-handler';
 import './index.css';
+import { inventoryServiceWorker } from '@/lib/inventory-service-worker';
 import './styles/accessibility.css';
 
 // Initialize global error handling
@@ -17,6 +18,13 @@ const lifecycleManager = setupPageLifecycle();
 // Cleanup on page hide
 window.addEventListener('pagehide', () => {
   lifecycleManager.cleanup();
+});
+
+// Initialize service worker
+inventoryServiceWorker.initialize().then(() => {
+  console.log('Inventory service worker initialized');
+}).catch((error) => {
+  console.warn('Service worker initialization failed:', error);
 });
 
 createRoot(document.getElementById("root")!).render(
