@@ -60,7 +60,7 @@ function App() {
                         <Route
                           path="/*"
                           element={
-                            <ProtectedRoute>
+                          <ProtectedRoute>
                               <MainLayout />
                             </ProtectedRoute>
                           }>
@@ -68,70 +68,70 @@ function App() {
                           <Route
                             path="dashboard"
                             element={
-                              <ProtectedRoute resource="dashboard">
+                            <ProtectedRoute resource="dashboard">
                                 <DashboardPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="sales"
                             element={
-                              <ProtectedRoute resource="sales">
+                            <ProtectedRoute resource="sales">
                                 <SalesPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="invoices"
                             element={
-                              <ProtectedRoute resource="invoices">
+                            <ProtectedRoute resource="invoices">
                                 <InvoicesPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="purchases"
                             element={
-                              <ProtectedRoute resource="purchases">
+                            <ProtectedRoute resource="purchases">
                                 <PurchasePage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="inventory"
                             element={
-                              <ProtectedRoute resource="inventory">
+                            <ProtectedRoute resource="inventory">
                                 <InventoryPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="employees"
                             element={
-                              <ProtectedRoute resource="employees">
+                            <ProtectedRoute resource="employees">
                                 <EmployeesPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="salary"
                             element={
-                              <ProtectedRoute resource="salary">
+                            <ProtectedRoute resource="salary">
                                 <SalaryPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="admin"
                             element={
-                              <ProtectedRoute resource="admin">
+                            <ProtectedRoute resource="admin">
                                 <AdminPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="settings"
                             element={
-                              <ProtectedRoute resource="settings">
+                            <ProtectedRoute resource="settings">
                                 <SettingsPage />
                               </ProtectedRoute>
                             } />
                           <Route
                             path="pos"
                             element={
-                              <ProtectedRoute resource="pos">
+                            <ProtectedRoute resource="pos">
                                 <POSPage />
                               </ProtectedRoute>
                             } />
@@ -149,8 +149,8 @@ function App() {
           <Toaster />
         </LanguageProvider>
       </TooltipProvider>
-    </QueryClientProvider>
-  );
+    </QueryClientProvider>);
+
 }
 
 export default App;

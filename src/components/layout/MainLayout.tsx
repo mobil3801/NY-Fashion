@@ -88,8 +88,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
   }, []);
 
   // Error fallback UI for layout-specific errors
-  const renderLayoutError = () => (
-    <div className="flex items-center justify-center h-screen bg-gray-50 p-4">
+  const renderLayoutError = () =>
+  <div className="flex items-center justify-center h-screen bg-gray-50 p-4">
       <div className="text-center space-y-4 p-6 bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
         <div className="text-3xl text-red-500">⚠️</div>
         <h2 className="text-xl font-semibold text-gray-900">Layout Error</h2>
@@ -98,19 +98,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <button
-            onClick={resetLayoutError}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
+          onClick={resetLayoutError}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
             Retry
           </button>
           <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm">
             Reload Page
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
+
 
   // Render layout error if one occurred
   if (layoutError) {
@@ -125,8 +125,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
           isLoading={true}
           loadingMessage="Initializing application..."
           className="min-h-[200px]" />
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -134,6 +134,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
       resetKeys={[isMobile, sidebarOpen]}
       resetOnPropsChange={false}
       onError={(error, errorInfo) => {
+
+
         // Error logging removed for production
       }}>
       <EnhancedNetworkErrorBoundary>
@@ -142,9 +144,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
           <OfflineBanner />
 
           {/* Sidebar with proper mobile handling */}
-          <Sidebar
-            isOpen={isMobile ? sidebarOpen : true}
-            onClose={closeSidebar}
+          <Sidebar isOpen={isMobile ? sidebarOpen : true} onClose={closeSidebar}
             className="transition-transform duration-200 ease-in-out" />
 
           {/* Main content wrapper with responsive margins */}
@@ -166,17 +166,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
               aria-label="Main content">
               <EnhancedNetworkErrorBoundary
                 fallback={
-                  <ContentLoader
-                    hasError={true}
-                    errorTitle="Content Loading Error"
-                    errorMessage="Failed to load this section. This might be a temporary network issue."
-                    isNetworkError={true}
-                    onRetry={() => window.location.reload()}
-                    onReload={() => window.location.reload()}
-                    className="h-full min-h-[50vh]"
-                    autoRetry={true}
-                    maxAutoRetries={3}
-                    showNetworkStatus={true} />
+                <ContentLoader
+                  hasError={true}
+                  errorTitle="Content Loading Error"
+                  errorMessage="Failed to load this section. This might be a temporary network issue."
+                  isNetworkError={true}
+                  onRetry={() => window.location.reload()}
+                  onReload={() => window.location.reload()}
+                  className="h-full min-h-[50vh]"
+                  autoRetry={true}
+                  maxAutoRetries={3}
+                  showNetworkStatus={true} />
                 }>
                 <Outlet />
               </EnhancedNetworkErrorBoundary>
@@ -195,23 +195,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ className = '' }) => {
           </div>
 
           {/* Mobile Sidebar Overlay */}
-          {isMobile && sidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-              onClick={closeSidebar}
-              aria-label="Close sidebar"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  closeSidebar();
-                }
-              }} />
-          )}
+          {isMobile && sidebarOpen &&
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            onClick={closeSidebar}
+            aria-label="Close sidebar"
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                closeSidebar();
+              }
+            }} />
+          }
         </div>
       </EnhancedNetworkErrorBoundary>
-    </SafeErrorBoundary>
-  );
+    </SafeErrorBoundary>);
+
 };
 
 export default MainLayout;

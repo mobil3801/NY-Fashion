@@ -18,11 +18,11 @@ export default defineConfig(() => {
       port: 8080
     },
     plugins: [
-      react({
-        // Always use production settings
-        devTarget: 'esbuild'
-      })
-    ],
+    react({
+      // Always use production settings
+      devTarget: 'esbuild'
+    })],
+
 
     build: {
       // Disable source maps completely
